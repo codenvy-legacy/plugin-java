@@ -279,6 +279,60 @@
         }
     },
     {
+        "displayName": "Neo4j",
+        "category": "Samples - Hello World",
+        "description": "A simple desktop application that creates a Neo4j DB",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-neo4j-java-simple.git"
+        }
+    },
+    {
+        "displayName": "Derby",
+        "category": "Samples - Hello World",
+        "description": "A simple desktop application that creates a Derby DB",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-derby-java-simple.git"
+        }
+    },
+    {
+        "displayName": "HSQLDB",
+        "category": "Samples - Hello World",
+        "description": "A simple desktop application that creates HSQLDB DB",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-hsqldb-java-simple.git"
+        }
+    },
+    {
+        "displayName": "H2 Database",
+        "category": "Samples - Hello World",
+        "description": "A simple desktop application that creates H2 DB",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-h2-java-simple.git"
+        }
+    },
+    {
+        "displayName": "Couchbase",
+        "category": "Samples - Hello World",
+        "description": "A simple desktop application that creates Couchbase DB",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-couchbase-java-simple.git"
+        }
+    },
+    {
+        "displayName": "Riak",
+        "category": "Samples - Hello World",
+        "description": "A simple desktop application that creates Riak DB",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-riak-java-simple.git"
+        }
+    },
+    {
         "displayName": "Scala",
         "category": "Samples - Hello World",
         "description": "A simple Scala example.",
