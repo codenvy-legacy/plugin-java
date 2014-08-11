@@ -218,9 +218,9 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>com.codenvy.ide</groupId>
+                        <groupId>com.codenvy.plugin-java</groupId>
                         <artifactId>codenvy-ext-java</artifactId>
-                        <version>${codenvy.ide.version}</version>
+                        <version>${codenvy.plugin-java.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
