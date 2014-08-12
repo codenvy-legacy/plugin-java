@@ -25,7 +25,9 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -64,5 +66,12 @@ public class MavenProjectTypeExtension implements ProjectTypeExtension {
             LOG.error("Unable to load external templates for project type: {}", getProjectType().getId());
         }
         return list;
+    }
+
+    @Override
+    public Map<String, String> getIconRegistry() {
+        Map<String, String> iconRegistry = new HashMap<>();
+        iconRegistry.put("big.project.icon.svg", "maven/icons/maven.svg");
+        return iconRegistry;
     }
 }

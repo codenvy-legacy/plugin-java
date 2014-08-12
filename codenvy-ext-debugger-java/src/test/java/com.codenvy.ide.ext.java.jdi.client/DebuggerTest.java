@@ -10,11 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client;
 
+import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
 import com.codenvy.ide.api.notification.Notification;
-import com.codenvy.ide.api.resources.model.File;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.workspace.PartStackType;
+import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.debug.Breakpoint;
 import com.codenvy.ide.debug.BreakpointGutterManager;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
@@ -57,7 +57,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Artem Zatsarynnyy
  */
-public class DebuggerTest extends BaseTest {
+public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     private static final String DEBUG_HOST = "localhost";
     private static final int    DEBUG_PORT = 8000;
     private static final String VM_NAME    = "vm_name";
@@ -78,13 +78,13 @@ public class DebuggerTest extends BaseTest {
     @Mock
     private BreakpointGutterManager      gutterManager;
     @Mock
-    private File                         file;
+    private ItemReference                file;
     @Mock
     private FqnResolverFactory           resolverFactory;
     @Mock
     private AsyncCallback<Breakpoint>    asyncCallbackBreakpoint;
     @Mock
-    private Project                      project;
+    private ProjectDescriptor            project;
     @Mock
     private AsyncCallback<Void>          asyncCallbackVoid;
 
@@ -93,7 +93,7 @@ public class DebuggerTest extends BaseTest {
         super.setUp();
         when(applicationProcessDescriptor.getDebugHost()).thenReturn(DEBUG_HOST);
         when(applicationProcessDescriptor.getDebugPort()).thenReturn(DEBUG_PORT);
-        when(file.getMimeType()).thenReturn(MIME_TYPE);
+        when(file.getMediaType()).thenReturn(MIME_TYPE);
         when(dtoFactory.createDto(Location.class)).thenReturn(mock(Location.class));
         when(dtoFactory.createDto(BreakPoint.class)).thenReturn(mock(BreakPoint.class));
         when(resolverFactory.getResolver(anyString())).thenReturn(mock(FqnResolver.class));

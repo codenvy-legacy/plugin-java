@@ -10,11 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.action;
 
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.api.action.Action;
+import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.api.ui.action.Action;
-import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.newresource.NewJavaResourcePresenter;
@@ -49,17 +48,17 @@ public class NewJavaClassAction extends Action {
 
     @Override
     public void update(ActionEvent e) {
-        boolean visible = false;
-        Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null) {
-            if (selection.getFirstElement() instanceof Resource) {
-                Resource resource = (Resource)selection.getFirstElement();
-                if (resource.isFile()) {
-                    resource = resource.getParent();
-                }
-                visible = resource instanceof com.codenvy.ide.ext.java.client.projectmodel.Package || resource instanceof SourceFolder;
-            }
-        }
-        e.getPresentation().setEnabledAndVisible(visible);
+//        boolean visible = false;
+//        Selection<?> selection = selectionAgent.getSelection();
+//        if (selection != null) {
+//            if (selection.getFirstElement() instanceof Resource) {
+//                Resource resource = (Resource)selection.getFirstElement();
+//                if (resource.isFile()) {
+//                    resource = resource.getParent();
+//                }
+//                visible = resource instanceof com.codenvy.ide.ext.java.client.projectmodel.Package || resource instanceof SourceFolder;
+//            }
+//        }
+//        e.getPresentation().setEnabledAndVisible(visible);
     }
 }
