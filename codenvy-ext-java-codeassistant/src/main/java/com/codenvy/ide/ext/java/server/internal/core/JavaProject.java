@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core;
 
-import com.codenvy.api.project.server.ProjectProperties;
+import com.codenvy.api.project.server.ProjectJson;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
@@ -147,13 +147,17 @@ public class JavaProject extends Openable implements IJavaProject {
 
     private void addSources(File projectDir, List<IClasspathEntry> paths) throws IOException {
         File codenvy = new File(projectDir, com.codenvy.api.project.server.Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
-        final ProjectProperties properties;
+        final ProjectJson projectJson;
         try (FileInputStream in = new FileInputStream(codenvy)) {
-            properties = ProjectProperties.load(in);
+            projectJson = ProjectJson.load(in);
         }
-        final String builderName = properties.getPropertyValue("builder.name");
+        String builder = projectJson.getBuilder();
+        // TODO: Remove. Added temporary, for back compatibility after change format of .codenvy/project.json file
+        if (builder == null) {
+            projectJson.getPropertyValue("builder.name");
+        }
         List<File> sources = new LinkedList<>();
-        if ("maven".equals(builderName)) {
+        if ("maven".equals(builder)) {
             File pom = new File(projectDir, "pom.xml");
             if (pom.exists()) {
                 for (String src : MavenUtils.getSourceDirectories(pom)) {
