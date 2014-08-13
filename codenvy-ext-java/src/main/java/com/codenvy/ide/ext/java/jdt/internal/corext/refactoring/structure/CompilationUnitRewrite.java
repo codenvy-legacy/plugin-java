@@ -23,10 +23,10 @@ import com.codenvy.ide.ext.java.jdt.refactoring.GroupCategorySet;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.edits.MultiTextEdit;
-import com.codenvy.ide.text.edits.TextEdit;
-import com.codenvy.ide.text.edits.TextEditGroup;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
+import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 import java.util.ArrayList;
 import java.util.Iterator;

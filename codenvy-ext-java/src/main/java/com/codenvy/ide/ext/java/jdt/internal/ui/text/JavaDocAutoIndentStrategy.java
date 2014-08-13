@@ -10,16 +10,15 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
-
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.DocumentCommand;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.RegionImpl;
-import com.codenvy.ide.text.TextUtilities;
-import com.codenvy.ide.text.TypedRegion;
-import com.codenvy.ide.texteditor.api.DefaultIndentLineAutoEditStrategy;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.DocumentCommand;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.RegionImpl;
+import com.codenvy.ide.api.text.TextUtilities;
+import com.codenvy.ide.api.text.TypedRegion;
+import com.codenvy.ide.api.texteditor.DefaultIndentLineAutoEditStrategy;
 
 /** Auto indent strategy for Javadoc comments. */
 public class JavaDocAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {

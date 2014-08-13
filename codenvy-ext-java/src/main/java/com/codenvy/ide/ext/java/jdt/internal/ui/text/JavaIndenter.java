@@ -10,15 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
-
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProject;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
 import com.codenvy.ide.util.StringUtils;
 import com.codenvy.ide.util.loging.Log;
 
@@ -64,8 +62,6 @@ public final class JavaIndenter {
         final boolean prefHasGenerics;
         final String  prefTabChar;
 
-        private final JavaProject fProject;
-
         /**
          * Returns <code>true</code> if the class is used outside the workbench,
          * <code>false</code> in normal mode
@@ -90,8 +86,7 @@ public final class JavaIndenter {
 //            return fProject.getOption(key, true);
         }
 
-        CorePrefs(JavaProject project) {
-            fProject = project;
+        CorePrefs() {
             if (isStandalone()) {
                 prefUseTabs = true;
                 prefTabSize = 4;
@@ -392,33 +387,17 @@ public final class JavaIndenter {
      * @param document
      *         the document to scan
      * @param scanner
-     *         the {@link JavaHeuristicScanner} to be used for scanning
-     *         the document. It must be installed on the same <code>IDocument</code>.
-     */
-    public JavaIndenter(Document document, JavaHeuristicScanner scanner) {
-        this(document, scanner, null);
-    }
-
-    /**
-     * Creates a new instance.
-     *
-     * @param document
-     *         the document to scan
-     * @param scanner
      *         the {@link JavaHeuristicScanner}to be used for scanning
      *         the document. It must be installed on the same
      *         <code>IDocument</code>.
-     * @param project
-     *         the java project to get the formatter preferences from, or
-     *         <code>null</code> to use the workspace settings
      * @since 3.1
      */
-    public JavaIndenter(Document document, JavaHeuristicScanner scanner, JavaProject project) {
+    public JavaIndenter(Document document, JavaHeuristicScanner scanner) {
         Assert.isNotNull(document);
         Assert.isNotNull(scanner);
         fDocument = document;
         fScanner = scanner;
-        fPrefs = new CorePrefs(project);
+        fPrefs = new CorePrefs();
     }
 
     /**

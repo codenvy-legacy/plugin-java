@@ -18,11 +18,11 @@ import com.codenvy.ide.api.editor.DocumentProvider;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorProvider;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.texteditor.ContentFormatter;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
-import com.codenvy.ide.text.DocumentFactory;
-import com.codenvy.ide.texteditor.api.ContentFormatter;
+import com.codenvy.ide.api.text.DocumentFactory;
 import com.codenvy.ide.util.executor.UserActivityManager;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -31,7 +31,6 @@ import com.google.web.bindery.event.shared.EventBus;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
  */
 @Singleton
 public class JavaEditorProvider implements EditorProvider {
@@ -42,8 +41,8 @@ public class JavaEditorProvider implements EditorProvider {
     private       JavaParserWorker            worker;
     private       FileSaveWatcher             watcher;
     private       AnalyticsEventLogger        eventLogger;
-    private JavaLocalizationConstant localizationConstant;
-    private ContentFormatter contentFormatter;
+    private       JavaLocalizationConstant    localizationConstant;
+    private       ContentFormatter            contentFormatter;
 
     /**
      * @param resources

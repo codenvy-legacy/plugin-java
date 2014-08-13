@@ -44,11 +44,11 @@ import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.TextUtilities;
-import com.codenvy.ide.text.edits.MalformedTreeException;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.TextUtilities;
+import com.codenvy.ide.api.text.edits.MalformedTreeException;
 
 import java.util.ArrayList;
 import java.util.List;

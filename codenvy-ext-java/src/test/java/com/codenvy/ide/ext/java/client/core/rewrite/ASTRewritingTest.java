@@ -32,9 +32,9 @@ import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterOptions;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 
 import org.junit.Before;
 

@@ -16,25 +16,23 @@ import com.codenvy.ide.api.editor.EditorWithErrors;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.annotation.AnnotationModel;
+import com.codenvy.ide.api.texteditor.outline.OutlineModel;
+import com.codenvy.ide.api.texteditor.reconciler.DirtyRegion;
+import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.editor.outline.OutlineUpdater;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.annotation.AnnotationModel;
-import com.codenvy.ide.texteditor.api.outline.OutlineModel;
-import com.codenvy.ide.texteditor.api.reconciler.DirtyRegion;
-import com.codenvy.ide.texteditor.api.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.util.loging.Log;
 
 import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
 
-
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
  */
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 

@@ -12,14 +12,10 @@ package com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite;
 
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ITrackedNodePosition;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.edits.TextEdit;
-import com.codenvy.ide.text.edits.TextEditGroup;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.edits.TextEdit;
+import com.codenvy.ide.api.text.edits.TextEditGroup;
 
-
-/**
- *
- */
 public class TrackedNodePosition implements ITrackedNodePosition {
 
     private final TextEditGroup group;

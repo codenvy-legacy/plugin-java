@@ -13,33 +13,35 @@ package com.codenvy.ide.ext.java.client.editor;
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.texteditor.AutoEditStrategy;
+import com.codenvy.ide.api.texteditor.ContentFormatter;
+import com.codenvy.ide.api.texteditor.TextEditorConfiguration;
+import com.codenvy.ide.api.texteditor.TextEditorPartView;
+import com.codenvy.ide.api.texteditor.codeassistant.CodeAssistProcessor;
+import com.codenvy.ide.api.texteditor.outline.OutlineModel;
+import com.codenvy.ide.api.texteditor.parser.BasicTokenFactory;
+import com.codenvy.ide.api.texteditor.parser.CmParser;
+import com.codenvy.ide.api.texteditor.parser.Parser;
+import com.codenvy.ide.api.texteditor.quickassist.QuickAssistProcessor;
+import com.codenvy.ide.api.texteditor.reconciler.Reconciler;
+import com.codenvy.ide.api.texteditor.reconciler.ReconcilerImpl;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.editor.outline.JavaNodeRenderer;
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProject;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
-import com.codenvy.ide.ext.java.jdt.internal.ui.text.*;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.ext.java.jdt.internal.ui.text.BracketInserter;
+import com.codenvy.ide.ext.java.jdt.internal.ui.text.JavaAutoEditStrategy;
+import com.codenvy.ide.ext.java.jdt.internal.ui.text.JavaDocAutoIndentStrategy;
+import com.codenvy.ide.ext.java.jdt.internal.ui.text.JavaStringAutoIndentStrategy;
+import com.codenvy.ide.ext.java.jdt.internal.ui.text.SmartSemicolonAutoEditStrategy;
 import com.codenvy.ide.texteditor.TextEditorViewImpl;
-import com.codenvy.ide.texteditor.api.AutoEditStrategy;
-import com.codenvy.ide.texteditor.api.ContentFormatter;
-import com.codenvy.ide.texteditor.api.TextEditorConfiguration;
-import com.codenvy.ide.texteditor.api.TextEditorPartView;
-import com.codenvy.ide.texteditor.api.codeassistant.CodeAssistProcessor;
-import com.codenvy.ide.texteditor.api.outline.OutlineModel;
-import com.codenvy.ide.texteditor.api.parser.BasicTokenFactory;
-import com.codenvy.ide.texteditor.api.parser.CmParser;
-import com.codenvy.ide.texteditor.api.parser.Parser;
-import com.codenvy.ide.texteditor.api.quickassist.QuickAssistProcessor;
-import com.codenvy.ide.texteditor.api.reconciler.Reconciler;
-import com.codenvy.ide.texteditor.api.reconciler.ReconcilerImpl;
 import com.codenvy.ide.util.executor.BasicIncrementalScheduler;
 import com.codenvy.ide.util.executor.UserActivityManager;
 
 import javax.validation.constraints.NotNull;
-
 
 /**
  * Java specific configuration of the editor
@@ -48,19 +50,17 @@ import javax.validation.constraints.NotNull;
  */
 public class JavaEditorConfiguration extends TextEditorConfiguration {
 
-    private UserActivityManager     manager;
-    private TextEditorPartPresenter javaEditor;
-    private JavaCodeAssistProcessor codeAssistProcessor;
-    private JavaReconcilerStrategy  reconcilerStrategy;
-    private OutlineModel            outlineModel;
-    private String                  documentPartitioning;
-    private JavaParserWorker        worker;
-    private JavaResources           javaResources;
-    private AnalyticsEventLogger    eventLogger;
+    private UserActivityManager      manager;
+    private TextEditorPartPresenter  javaEditor;
+    private JavaCodeAssistProcessor  codeAssistProcessor;
+    private JavaReconcilerStrategy   reconcilerStrategy;
+    private OutlineModel             outlineModel;
+    private String                   documentPartitioning;
+    private JavaParserWorker         worker;
+    private JavaResources            javaResources;
+    private AnalyticsEventLogger     eventLogger;
     private JavaLocalizationConstant localizationConstant;
-    private JavaProject      project;
-    private ContentFormatter contentFormatter;
-
+    private ContentFormatter         contentFormatter;
 
     public JavaEditorConfiguration(UserActivityManager manager,
                                    JavaResources resources,
@@ -80,7 +80,8 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
         this.localizationConstant = localizationConstant;
         outlineModel = new OutlineModel(new JavaNodeRenderer(resources));
         codeAssistProcessor = new JavaCodeAssistProcessor(javaEditor, worker, javaResources, eventLogger);
-        reconcilerStrategy = new JavaReconcilerStrategy(javaEditor, worker, outlineModel, notificationManager, codeAssistProcessor, localizationConstant);
+        reconcilerStrategy = new JavaReconcilerStrategy(javaEditor, worker, outlineModel, notificationManager, codeAssistProcessor,
+                                                        localizationConstant);
         this.contentFormatter = contentFormatter;
 
 
@@ -148,10 +149,10 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
             return new AutoEditStrategy[]{new SmartSemicolonAutoEditStrategy(partitioning), new JavaStringAutoIndentStrategy(partitioning)};
         else if (JavaPartitions.JAVA_CHARACTER.equals(contentType) || Document.DEFAULT_CONTENT_TYPE.equals(contentType))
             return new AutoEditStrategy[]{new SmartSemicolonAutoEditStrategy(partitioning),
-                                          new JavaAutoEditStrategy(partitioning, getProject()),
+                                          new JavaAutoEditStrategy(partitioning),
                                           new BracketInserter(view)};
         else
-            return new AutoEditStrategy[]{new JavaAutoEditStrategy(partitioning, getProject())};
+            return new AutoEditStrategy[]{new JavaAutoEditStrategy(partitioning)};
     }
 
     @Override
@@ -159,10 +160,6 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
         if (documentPartitioning != null)
             return documentPartitioning;
         return super.getConfiguredDocumentPartitioning(view);
-    }
-
-    public JavaProject getProject() {
-        return project;
     }
 
     @Override

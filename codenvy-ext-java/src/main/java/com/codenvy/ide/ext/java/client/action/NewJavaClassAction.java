@@ -17,7 +17,6 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.newresource.NewJavaResourcePresenter;
-import com.codenvy.ide.ext.java.client.projectmodel.SourceFolder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

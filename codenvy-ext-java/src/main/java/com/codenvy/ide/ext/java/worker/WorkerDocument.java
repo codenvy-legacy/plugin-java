@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.worker;
 
+import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.text.AbstractDocument;
-import com.codenvy.ide.text.BadLocationException;
 import com.codenvy.ide.text.ConfigurableLineTracker;
 import com.codenvy.ide.text.CopyOnWriteTextStore;
 import com.codenvy.ide.text.GapTextStore;

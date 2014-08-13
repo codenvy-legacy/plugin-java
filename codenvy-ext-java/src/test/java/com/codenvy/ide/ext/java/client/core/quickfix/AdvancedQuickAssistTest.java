@@ -24,7 +24,7 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.text.DocumentImpl;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 

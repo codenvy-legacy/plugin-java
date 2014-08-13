@@ -25,16 +25,14 @@ import com.codenvy.commons.lang.Pair;
 import com.codenvy.commons.user.UserImpl;
 
 import org.apache.commons.codec.binary.Base64;
-import org.everrest.core.RequestHandler;
 import org.everrest.core.ResourceBinder;
 import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.ApplicationProviderBinder;
 import org.everrest.core.impl.ApplicationPublisher;
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.impl.EverrestConfiguration;
+import org.everrest.core.impl.EverrestProcessor;
 import org.everrest.core.impl.ProviderBinder;
-import org.everrest.core.impl.RequestDispatcher;
-import org.everrest.core.impl.RequestHandlerImpl;
 import org.everrest.core.impl.ResourceBinderImpl;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 import org.everrest.core.tools.DependencySupplierImpl;
@@ -144,10 +142,9 @@ public abstract class LocalFileSystemTest {
         dependencies.addComponent(EventService.class, mountPoint.getEventService());
         ResourceBinder resources = new ResourceBinderImpl();
         ProviderBinder providers = new ApplicationProviderBinder();
-        RequestHandler requestHandler =
-                new RequestHandlerImpl(new RequestDispatcher(resources), providers, dependencies, new EverrestConfiguration());
+        EverrestProcessor processor = new EverrestProcessor(resources, providers, dependencies, new EverrestConfiguration(), null);
+        launcher = new ResourceLauncher(processor);
         ApplicationContextImpl.setCurrent(new ApplicationContextImpl(null, null, ProviderBinder.getInstance()));
-        launcher = new ResourceLauncher(requestHandler);
 
         ApplicationPublisher deployer = new ApplicationPublisher(resources, providers);
         deployer.publish(new VirtualFileSystemApplication());

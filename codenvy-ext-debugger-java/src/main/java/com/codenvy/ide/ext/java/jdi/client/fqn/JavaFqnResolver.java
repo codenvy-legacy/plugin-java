@@ -12,7 +12,6 @@ package com.codenvy.ide.ext.java.jdi.client.fqn;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProject;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;

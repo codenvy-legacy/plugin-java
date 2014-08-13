@@ -10,49 +10,35 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProject;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.DocumentCommand;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.RegionImpl;
+import com.codenvy.ide.api.text.TextUtilities;
+import com.codenvy.ide.api.text.TypedRegion;
+import com.codenvy.ide.api.text.rules.FastPartitioner;
+import com.codenvy.ide.api.texteditor.DefaultIndentLineAutoEditStrategy;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.ToolFactory;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
-import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IScanner;
 import com.codenvy.ide.ext.java.jdt.core.compiler.ITerminalSymbols;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
-import com.codenvy.ide.ext.java.jdt.core.dom.AST;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
-import com.codenvy.ide.ext.java.jdt.core.dom.ASTParser;
-import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
-import com.codenvy.ide.ext.java.jdt.core.dom.DoStatement;
-import com.codenvy.ide.ext.java.jdt.core.dom.Expression;
-import com.codenvy.ide.ext.java.jdt.core.dom.ForStatement;
-import com.codenvy.ide.ext.java.jdt.core.dom.IfStatement;
-import com.codenvy.ide.ext.java.jdt.core.dom.NodeFinder;
-import com.codenvy.ide.ext.java.jdt.core.dom.Statement;
-import com.codenvy.ide.ext.java.jdt.core.dom.WhileStatement;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.DocumentCommand;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.RegionImpl;
-import com.codenvy.ide.text.TextUtilities;
-import com.codenvy.ide.text.TypedRegion;
-import com.codenvy.ide.text.rules.FastPartitioner;
-import com.codenvy.ide.texteditor.api.DefaultIndentLineAutoEditStrategy;
 import com.codenvy.ide.util.loging.Log;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
  */
 public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
     /** The line comment introducer. Value is "{@value}" */
     private static final String   LINE_COMMENT = "//"; //$NON-NLS-1$
     private static       IScanner fgScanner    = ToolFactory.createScanner(false, false, false, false);
-    private final JavaProject fProject;
     private       boolean     fCloseBrace;
     private       boolean     fIsSmartMode;
     private       boolean     fIsSmartTab;
@@ -64,12 +50,9 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
      *
      * @param partitioning
      *         the document partitioning
-     * @param project
-     *         the project to get formatting preferences from, or null to use default preferences
      */
-    public JavaAutoEditStrategy(String partitioning, JavaProject project) {
+    public JavaAutoEditStrategy(String partitioning) {
         fPartitioning = partitioning;
-        fProject = project;
     }
 
     /**
@@ -322,18 +305,13 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
      * Returns the possibly <code>project</code>-specific core preference defined under
      * <code>key</code>.
      *
-     * @param project
-     *         the project to get the preference from, or <code>null</code> to get the global
-     *         preference
      * @param key
      *         the key of the preference
      * @return the value of the preference
      * @since 3.5
      */
-    private static String getCoreOption(JavaProject project, String key) {
-//        if (project == null)
+    private static String getCoreOption(String key) {
         return JavaCore.getOption(key);
-//        return project.getOption(key, true);
     }
 
     /**
@@ -577,7 +555,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
             int whiteend = findEndOfWhiteSpace(d, start, c.offset);
 
             JavaHeuristicScanner scanner = new JavaHeuristicScanner(d);
-            JavaIndenter indenter = new JavaIndenter(d, scanner, fProject);
+            JavaIndenter indenter = new JavaIndenter(d, scanner);
 
             // shift only when line does not contain any text up to the closing bracket
             if (whiteend == c.offset) {
@@ -627,7 +605,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
             // only shift if the last java line is further up and is a braceless block candidate
             if (lastLine < line) {
 
-                JavaIndenter indenter = new JavaIndenter(d, scanner, fProject);
+                JavaIndenter indenter = new JavaIndenter(d, scanner);
                 StringBuffer indent = indenter.computeIndentation(p, true);
                 String toDelete = d.get(lineOffset, c.offset - lineOffset);
                 if (indent != null && !indent.toString().equals(toDelete)) {
@@ -645,7 +623,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
 
     private void smartIndentAfterNewLine(Document d, DocumentCommand c) {
         JavaHeuristicScanner scanner = new JavaHeuristicScanner(d);
-        JavaIndenter indenter = new JavaIndenter(d, scanner, fProject);
+        JavaIndenter indenter = new JavaIndenter(d, scanner);
         StringBuffer indent = indenter.computeIndentation(c.offset);
         if (indent == null)
             indent = new StringBuffer();
@@ -826,7 +804,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
 
         try {
             JavaHeuristicScanner scanner = new JavaHeuristicScanner(document);
-            JavaIndenter indenter = new JavaIndenter(document, scanner, fProject);
+            JavaIndenter indenter = new JavaIndenter(document, scanner);
             int offset = newOffset;
 
             // reference position to get the indent from
@@ -856,7 +834,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
             Document temp = new WorkerDocument(prefix + newText);
 //            DocumentRewriteSession session= temp.startRewriteSession(DocumentRewriteSessionType.STRICTLY_SEQUENTIAL);
             scanner = new JavaHeuristicScanner(temp);
-            indenter = new JavaIndenter(temp, scanner, fProject);
+            indenter = new JavaIndenter(temp, scanner);
             installJavaStuff(temp);
 
             // indent the first and second line
@@ -1187,7 +1165,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
                     break; // keep searching
                 case Symbols.TokenCASE:
                 case Symbols.TokenDEFAULT:
-                    JavaIndenter indenter = new JavaIndenter(document, dScanner, fProject);
+                    JavaIndenter indenter = new JavaIndenter(document, dScanner);
                     peer = indenter.findReferencePosition(dPos, false, false, false, true);
                     if (peer == JavaHeuristicScanner.NOT_FOUND)
                         return firstPeer;
@@ -1250,7 +1228,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
                 // only shift if the last java line is further up and is a braceless block candidate
                 if (lastLine < line) {
 
-                    JavaIndenter indenter = new JavaIndenter(d, scanner, fProject);
+                    JavaIndenter indenter = new JavaIndenter(d, scanner);
                     int ref = indenter.findReferencePosition(p, true, false, false, false);
                     if (ref == JavaHeuristicScanner.NOT_FOUND)
                         return;
@@ -1288,7 +1266,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
                 // only shift if the last java line is further up and is a braceless block candidate
                 if (lastLine < line) {
 
-                    JavaIndenter indenter = new JavaIndenter(d, scanner, fProject);
+                    JavaIndenter indenter = new JavaIndenter(d, scanner);
                     int ref = indenter.findReferencePosition(p, false, false, false, true);
                     if (ref == JavaHeuristicScanner.NOT_FOUND)
                         return;

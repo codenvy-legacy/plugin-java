@@ -13,8 +13,8 @@ package com.codenvy.ide.ext.java.client.editor;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
-import com.codenvy.ide.api.ui.workspace.PartPresenter;
-import com.codenvy.ide.api.ui.workspace.PropertyListener;
+import com.codenvy.ide.api.parts.PartPresenter;
+import com.codenvy.ide.api.parts.PropertyListener;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
