@@ -13,7 +13,7 @@ package com.codenvy.ide.extension.maven.client.wizard;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectReference;
-import com.codenvy.ide.api.event.ProjectActionEvent_2;
+import com.codenvy.ide.api.event.OpenProjectEvent;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.api.wizard.Wizard;
@@ -179,7 +179,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 ProjectReference projectToOpen = dtoFactory.createDto(ProjectReference.class).withName(result.getName());
-                eventBus.fireEvent(ProjectActionEvent_2.createOpenProjectEvent(projectToOpen));
+                eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
                 wizardContext.putData(ProjectWizard.PROJECT, result);
                 callback.onSuccess();
             }
@@ -200,7 +200,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                                    protected void onSuccess(ProjectDescriptor result) {
                                        ProjectReference projectToOpen =
                                                dtoFactory.createDto(ProjectReference.class).withName(result.getName());
-                                       eventBus.fireEvent(ProjectActionEvent_2.createOpenProjectEvent(projectToOpen));
+                                       eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
                                        wizardContext.putData(ProjectWizard.PROJECT, result);
                                        callback.onSuccess();
                                    }
