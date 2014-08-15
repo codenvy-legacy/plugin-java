@@ -333,6 +333,15 @@
         }
     },
     {
+        "displayName": "C++",
+        "category": "Samples - Hello World",
+        "description": "A simple C++ Hello World that uses Makefile build instructions.",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-c-plus-plus-basic.git"
+        }
+    },
+    {
         "displayName": "Scala",
         "category": "Samples - Hello World",
         "description": "A simple Scala example.",
