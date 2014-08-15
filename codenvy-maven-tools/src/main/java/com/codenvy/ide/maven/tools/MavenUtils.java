@@ -218,7 +218,7 @@ public class MavenUtils {
     public static void writeModel(Model model, VirtualFile output) throws IOException, ForbiddenException, ServerException {
         final ByteArrayOutputStream bout = new ByteArrayOutputStream();
         pomWriter.write(bout, model);
-        output.updateContent(output.getMediaType(), new ByteArrayInputStream(bout.toByteArray()), null);
+        output.updateContent(new ByteArrayInputStream(bout.toByteArray()), null);
     }
 
     /**
