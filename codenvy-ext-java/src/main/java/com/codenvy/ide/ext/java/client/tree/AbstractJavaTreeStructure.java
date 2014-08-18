@@ -12,17 +12,16 @@ package com.codenvy.ide.ext.java.client.tree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
+import com.codenvy.ide.api.projecttree.generic.ProjectRootNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.rest.Unmarshallable;
-import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -31,18 +30,11 @@ import com.google.web.bindery.event.shared.EventBus;
  *
  * @author Artem Zatsarynnyy
  */
-public abstract class AbstractJavaTreeStructure extends AbstractTreeStructure {
-    private EventBus               eventBus;
-    private AppContext             appContext;
-    private ProjectServiceClient   projectServiceClient;
-    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+public abstract class AbstractJavaTreeStructure extends GenericTreeStructure {
 
-    protected AbstractJavaTreeStructure(EventBus eventBus, AppContext appContext, ProjectServiceClient projectServiceClient,
-                                        DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        this.eventBus = eventBus;
-        this.appContext = appContext;
-        this.projectServiceClient = projectServiceClient;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+    public AbstractJavaTreeStructure(EventBus eventBus, AppContext appContext, ProjectServiceClient projectServiceClient,
+                                     DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        super(eventBus, appContext, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     /** {@inheritDoc} */
@@ -53,81 +45,8 @@ public abstract class AbstractJavaTreeStructure extends AbstractTreeStructure {
         callback.onSuccess(roots);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void refreshChildren(final AbstractTreeNode<?> node, final AsyncCallback<AbstractTreeNode<?>> callback) {
-        if (node instanceof ProjectRootNode) {
-            final String path = ((ProjectRootNode)node).getData().getPath();
-            refresh(node, path, callback);
-        } else if (isFolder(node)) {
-            final String path = ((ItemNode)node).getData().getPath();
-            refresh(node, path, callback);
-        } else {
-            Log.warn(AbstractJavaTreeStructure.class, "Unsupported node to refresh children.");
-            callback.onFailure(new Exception("Unsupported node type."));
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void processNodeAction(AbstractTreeNode<?> node) {
-        if (isFile(node)) {
-            eventBus.fireEvent(new FileEvent(((ItemNode)node).getData(), FileEvent.FileOperation.OPEN));
-        }
-    }
-
-    private boolean isFile(AbstractTreeNode<?> node) {
-        return node instanceof ItemNode && "file".equals(((ItemNode)node).getData().getType());
-    }
-
-    private boolean isFolder(AbstractTreeNode<?> node) {
-        return node instanceof ItemNode && "folder".equals(((ItemNode)node).getData().getType());
-    }
-
-    private void refresh(final AbstractTreeNode<?> parentNode, String path, final AsyncCallback<AbstractTreeNode<?>> callback) {
-        final boolean isShowHiddenItems = getSettings().isShowHiddenItems();
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(path, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
-            @Override
-            protected void onSuccess(Array<ItemReference> result) {
-                Array<AbstractTreeNode<?>> array = Collections.createArray();
-                parentNode.setChildren(array);
-                for (ItemReference itemReference : result.asIterable()) {
-                    if (isShowHiddenItems || !itemReference.getName().startsWith(".")) {
-                        array.add(new ItemNode(parentNode, itemReference));
-                    }
-                }
-                callback.onSuccess(parentNode);
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
-    }
-
-    /** Node that represents root item of opened project. */
-    private static class ProjectRootNode extends AbstractTreeNode<ProjectDescriptor> {
-        ProjectRootNode(AbstractTreeNode parent, ProjectDescriptor data) {
-            super(parent, data);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return data.getName();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean isLeaf() {
-            return false;
-        }
-    }
-
     private static class ExternalLibrariesNode extends AbstractTreeNode<String> {
-        ExternalLibrariesNode() {
+        protected ExternalLibrariesNode() {
             super(null, "External Libraries");
         }
 
@@ -140,13 +59,27 @@ public abstract class AbstractJavaTreeStructure extends AbstractTreeStructure {
         /** {@inheritDoc} */
         @Override
         public boolean isLeaf() {
-            return true;
+            return false;
         }
     }
 
-    /** Node that represents item (folder or file). */
-    private static class ItemNode extends AbstractTreeNode<ItemReference> {
-        ItemNode(AbstractTreeNode parent, ItemReference data) {
+    private static class ClassNode extends FileNode {
+
+        public ClassNode(AbstractTreeNode parent, ItemReference data) {
+            super(parent, data);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getName() {
+            final String name = data.getName();
+            return name.substring(0, name.length() - "java".length());
+        }
+    }
+
+    private static class SourceFolderNode extends FolderNode {
+
+        public SourceFolderNode(AbstractTreeNode parent, ItemReference data) {
             super(parent, data);
         }
 
@@ -155,11 +88,19 @@ public abstract class AbstractJavaTreeStructure extends AbstractTreeStructure {
         public String getName() {
             return data.getName();
         }
+    }
+
+    private static class PackageNode extends FolderNode {
+
+        public PackageNode(AbstractTreeNode parent, ItemReference data) {
+            super(parent, data);
+        }
 
         /** {@inheritDoc} */
         @Override
-        public boolean isLeaf() {
-            return "file".equals(data.getType());
+        public String getName() {
+            // TODO
+            return data.getName();
         }
     }
 }
