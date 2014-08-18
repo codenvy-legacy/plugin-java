@@ -116,6 +116,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                     }
                 });
             }
+        wizardContext.putData(ProjectWizard.BUILDER_NAME, "maven");
         }
     }
 
@@ -142,6 +143,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         boolean visibility = wizardContext.getData(ProjectWizard.PROJECT_VISIBILITY);
         projectDescriptor.setVisibility(visibility ? "public" : "private");
         projectDescriptor.setDescription(wizardContext.getData(ProjectWizard.PROJECT_DESCRIPTION));
+        projectDescriptor.setBuilder("maven");
         final String name = wizardContext.getData(ProjectWizard.PROJECT_NAME);
         final Project project = wizardContext.getData(ProjectWizard.PROJECT);
         if (project != null) {
