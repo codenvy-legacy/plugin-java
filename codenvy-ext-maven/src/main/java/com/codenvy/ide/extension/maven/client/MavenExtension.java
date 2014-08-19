@@ -10,13 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client;
 
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.Anchor;
 import com.codenvy.ide.api.action.Constraints;
 import com.codenvy.ide.api.action.DefaultActionGroup;
-import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.extension.Extension;
+import com.codenvy.ide.api.icon.Icon;
+import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
@@ -27,11 +27,9 @@ import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
 import com.codenvy.ide.extension.maven.client.tree.MavenProjectTreeStructureProvider;
 import com.codenvy.ide.extension.maven.client.wizard.MavenPagePresenter;
 import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
-import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD;
 
@@ -46,6 +44,7 @@ public class MavenExtension {
     /** Create extension. */
     @Inject
     public MavenExtension(MavenLocalizationConstant localizationConstants,
+                          MavenResources resources,
                           BuilderLocalizationConstant builderLocalizationConstant,
                           ActionManager actionManager,
                           CustomBuildAction customBuildAction,
@@ -54,11 +53,11 @@ public class MavenExtension {
                           ProjectTypeWizardRegistry wizardRegistry,
                           NotificationManager notificationManager,
                           TreeStructureProviderRegistry treeStructureProviderRegistry,
-                          EventBus eventBus,
-                          AppContext appContext,
-                          ProjectServiceClient projectServiceClient,
-                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                          MavenProjectTreeStructureProvider mavenProjectTreeStructureProvider,
+                          IconRegistry iconRegistry) {
         actionManager.registerAction(localizationConstants.buildProjectControlId(), customBuildAction);
+
+        iconRegistry.registerIcon(new Icon("maven.module", resources.module()));
 
         DefaultActionGroup buildMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_BUILD);
         buildMenuActionGroup.add(customBuildAction, new Constraints(Anchor.AFTER, builderLocalizationConstant.buildProjectControlId()));
@@ -68,10 +67,6 @@ public class MavenExtension {
         wizard.addPage(runnerPagePresenter);
         wizardRegistry.addWizard(Constants.MAVEN_ID, wizard);
 
-        treeStructureProviderRegistry.registerTreeStructureProvider(Constants.MAVEN_ID,
-                                                                    new MavenProjectTreeStructureProvider(eventBus,
-                                                                                                          appContext,
-                                                                                                          projectServiceClient,
-                                                                                                          dtoUnmarshallerFactory));
+        treeStructureProviderRegistry.registerTreeStructureProvider(Constants.MAVEN_ID, mavenProjectTreeStructureProvider);
     }
 }

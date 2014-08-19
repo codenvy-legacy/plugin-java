@@ -56,8 +56,8 @@ public class NewJavaResourcePresenter implements NewJavaResourceView.ActionDeleg
 
     @Override
     public void onOkClicked() {
-//        view.close();
-//        final String resourceName = view.getName();
+        view.close();
+        final String resourceName = view.getName();
 //        ensureParent(resourceName, new AsyncCallback<Folder>() {
 //            @Override
 //            public void onSuccess(Folder result) {
@@ -103,7 +103,7 @@ public class NewJavaResourcePresenter implements NewJavaResourceView.ActionDeleg
 //        createFile(resourceName, parent, activeProject, content.toString());
 //    }
 
-//    private void createFile(@NotNull String name, @NotNull Folder parent, @NotNull Project project, @NotNull String content) {
+//    private void createFile(@Nonnull String name, @Nonnull Folder parent, @Nonnull Project project, @Nonnull String content) {
 //        ((JavaProject)project).createCompilationUnit(parent, name + ".java", content, new AsyncCallback<CompilationUnit>() {
 //            @Override
 //            public void onSuccess(CompilationUnit result) {
@@ -120,7 +120,7 @@ public class NewJavaResourcePresenter implements NewJavaResourceView.ActionDeleg
 //    }
 
     /** Returns package declaration string. */
-//    private String getPackageDeclaration(@NotNull Folder parent, @NotNull Array<SourceFolder> sourceFolders) {
+//    private String getPackageDeclaration(@Nonnull Folder parent, @Nonnull Array<SourceFolder> sourceFolders) {
 //        if (parent instanceof SourceFolder) {
 //            return "\n";
 //        }
