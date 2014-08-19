@@ -342,6 +342,15 @@
         }
     },
     {
+        "displayName": "NuoDB",
+        "category": "Samples - Hello World",
+        "description": "A simple application that starts a NuoDB database",
+        "source": {
+            "type": "git-less",
+            "location": "https://github.com/codenvy-templates/desktop-nuodb-java-simple.git"
+        }
+    },
+    {
         "displayName": "Scala",
         "category": "Samples - Hello World",
         "description": "A simple Scala example.",
