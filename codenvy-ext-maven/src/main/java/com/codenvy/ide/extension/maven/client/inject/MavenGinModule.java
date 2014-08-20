@@ -11,17 +11,23 @@
 package com.codenvy.ide.extension.maven.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
+import com.codenvy.ide.api.projecttree.TreeStructureProvider;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildView;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildViewImpl;
+import com.codenvy.ide.extension.maven.client.tree.MavenProjectTreeStructureProvider;
 import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;
 
-/** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
+/** @author Andrey Plotnikov */
 @ExtensionGinModule
 public class MavenGinModule extends AbstractGinModule {
     /** {@inheritDoc} */
     @Override
     protected void configure() {
+        GinMultibinder<TreeStructureProvider> treeStructureBinder = GinMultibinder.newSetBinder(binder(), TreeStructureProvider.class);
+        treeStructureBinder.addBinding().to(MavenProjectTreeStructureProvider.class);
+
         bind(MavenBuildView.class).to(MavenBuildViewImpl.class).in(Singleton.class);
     }
 }

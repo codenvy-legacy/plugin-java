@@ -20,7 +20,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  * @author Ann Shumilova
  */
 public interface MavenResources extends ClientBundle {
-    @Source("module.svg")
+    @Source("maven-multimodule.svg")
     SVGResource module();
 
     @Source("build.svg")

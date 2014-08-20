@@ -17,11 +17,14 @@ import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.TreeStructureProvider;
+import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 /** @author Artem Zatsarynnyy */
+@Singleton
 public class MavenProjectTreeStructureProvider implements TreeStructureProvider {
     private EventBus               eventBus;
     private AppContext             appContext;
@@ -30,11 +33,8 @@ public class MavenProjectTreeStructureProvider implements TreeStructureProvider 
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
 
     @Inject
-    public MavenProjectTreeStructureProvider(EventBus eventBus,
-                                             AppContext appContext,
-                                             IconRegistry iconRegistry,
-                                             ProjectServiceClient projectServiceClient,
-                                             DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    public MavenProjectTreeStructureProvider(EventBus eventBus, AppContext appContext, IconRegistry iconRegistry,
+                                             ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.eventBus = eventBus;
         this.appContext = appContext;
         this.iconRegistry = iconRegistry;
@@ -43,7 +43,12 @@ public class MavenProjectTreeStructureProvider implements TreeStructureProvider 
     }
 
     @Override
-    public AbstractTreeStructure getTreeStructure(ProjectDescriptor project) {
+    public String getProjectTypeId() {
+        return Constants.MAVEN_ID;
+    }
+
+    @Override
+    public AbstractTreeStructure newTreeStructure(ProjectDescriptor project) {
         return new MavenProjectTreeStructure(TreeSettings.DEFAULT, project, eventBus, appContext, projectServiceClient,
                                              dtoUnmarshallerFactory, iconRegistry);
     }

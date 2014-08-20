@@ -43,7 +43,6 @@ public class ModuleNode extends FolderNode {
         this.module = module;
         this.iconRegistry = iconRegistry;
 
-        getPresentation().setDisplayName('[' + module.getName() + ']');
         getPresentation().setSvgIcon(iconRegistry.getIcon("maven.module").getSVGImage());
     }
 

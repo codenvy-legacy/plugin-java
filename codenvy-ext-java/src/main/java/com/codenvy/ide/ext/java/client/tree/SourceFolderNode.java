@@ -38,6 +38,8 @@ public class SourceFolderNode extends FolderNode {
                             IconRegistry iconRegistry) {
         super(parent, data, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         this.iconRegistry = iconRegistry;
+
+        getPresentation().setSvgIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
     }
 
     /** {@inheritDoc} */

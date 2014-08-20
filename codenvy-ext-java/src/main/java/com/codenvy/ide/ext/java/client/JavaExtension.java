@@ -78,7 +78,6 @@ public class JavaExtension {
                          @Named("workspaceId") String workspaceId,
                          ActionManager actionManager,
                          AsyncRequestFactory asyncRequestFactory,
-                         IconRegistry iconRegistry,
                          EditorAgent editorAgent,
                          AnalyticsEventLogger eventLogger,
                          JavaResources resources,
@@ -96,23 +95,6 @@ public class JavaExtension {
         this.localizationConstant = localizationConstant;
         this.parserWorker = parserWorker;
         this.buildContext = buildContext;
-
-        iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
-
-        iconRegistry.registerIcon(new Icon("maven.projecttype.big.icon", "java-extension/jar_64.png"));
-
-        iconRegistry.registerIcon(new Icon("maven/java.file.small.icon", resources.javaFile()));
-        iconRegistry.registerIcon(new Icon("maven/xml.file.small.icon", resources.xmlFile()));
-        iconRegistry.registerIcon(new Icon("maven/css.file.small.icon", resources.cssFile()));
-        iconRegistry.registerIcon(new Icon("maven/js.file.small.icon", resources.jsFile()));
-        iconRegistry.registerIcon(new Icon("maven/json.file.small.icon", resources.jsonFile()));
-        iconRegistry.registerIcon(new Icon("maven/html.file.small.icon", resources.htmlFile()));
-        iconRegistry.registerIcon(new Icon("maven/jsp.file.small.icon", resources.jspFile()));
-        iconRegistry.registerIcon(new Icon("maven/gif.file.small.icon", resources.imageIcon()));
-        iconRegistry.registerIcon(new Icon("maven/jpg.file.small.icon", resources.imageIcon()));
-        iconRegistry.registerIcon(new Icon("maven/png.file.small.icon", resources.imageIcon()));
-
-        iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
 
         editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
         fileTypeRegistry.registerFileType(javaFile);
@@ -162,6 +144,28 @@ public class JavaExtension {
                 }
             }
         });
+    }
+
+    @Inject
+    private void registerIcons(IconRegistry iconRegistry, JavaResources resources) {
+        // icons for project tree nodes
+        iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
+        iconRegistry.registerIcon(new Icon("java.sourceFolder", resources.sourceFolder()));
+        // icons for project types
+        iconRegistry.registerIcon(new Icon("maven.projecttype.big.icon", "java-extension/jar_64.png"));
+        // icons for file extensions
+        iconRegistry.registerIcon(new Icon("maven/java.file.small.icon", resources.javaFile()));
+        iconRegistry.registerIcon(new Icon("maven/xml.file.small.icon", resources.xmlFile()));
+        iconRegistry.registerIcon(new Icon("maven/css.file.small.icon", resources.cssFile()));
+        iconRegistry.registerIcon(new Icon("maven/js.file.small.icon", resources.jsFile()));
+        iconRegistry.registerIcon(new Icon("maven/json.file.small.icon", resources.jsonFile()));
+        iconRegistry.registerIcon(new Icon("maven/html.file.small.icon", resources.htmlFile()));
+        iconRegistry.registerIcon(new Icon("maven/jsp.file.small.icon", resources.jspFile()));
+        iconRegistry.registerIcon(new Icon("maven/gif.file.small.icon", resources.imageIcon()));
+        iconRegistry.registerIcon(new Icon("maven/jpg.file.small.icon", resources.imageIcon()));
+        iconRegistry.registerIcon(new Icon("maven/png.file.small.icon", resources.imageIcon()));
+        // icons for file names
+        iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
     }
 
     /** For test use only. */

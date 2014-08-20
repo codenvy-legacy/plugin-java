@@ -42,8 +42,8 @@ public class MavenProjectTreeStructure extends JavaTreeStructure {
     /** {@inheritDoc} */
     @Override
     public void getRoots(AsyncCallback<Array<AbstractTreeNode<?>>> callback) {
-        Array<AbstractTreeNode<?>> roots = Collections.<AbstractTreeNode<?>>createArray(
-                new MavenProjectNode(project, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory, iconRegistry));
-        callback.onSuccess(roots);
+        AbstractTreeNode projectRoot =
+                new MavenProjectNode(project, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory, iconRegistry);
+        callback.onSuccess(Collections.<AbstractTreeNode<?>>createArray(projectRoot));
     }
 }

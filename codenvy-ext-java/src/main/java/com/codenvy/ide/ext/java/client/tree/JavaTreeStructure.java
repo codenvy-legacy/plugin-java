@@ -29,17 +29,15 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class JavaTreeStructure extends GenericTreeStructure {
 
-    public JavaTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, AppContext appContext,
-                             ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    protected JavaTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, AppContext appContext,
+                                ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(settings, project, eventBus, appContext, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void getRoots(AsyncCallback<Array<AbstractTreeNode<?>>> callback) {
-        Array<AbstractTreeNode<?>> roots = Collections.<AbstractTreeNode<?>>createArray(
-                new JavaProjectNode(project, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory));
-        callback.onSuccess(roots);
+        AbstractTreeNode projectRoot = new JavaProjectNode(project, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        callback.onSuccess(Collections.<AbstractTreeNode<?>>createArray(projectRoot));
     }
-
 }
