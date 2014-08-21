@@ -93,6 +93,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     /** Channel identifier to receive event when debugger will disconnected. */
     private       String                                 debuggerDisconnectedChannel;
     private       DebuggerView                           view;
+    private       EventBus                               eventBus;
     private       RunnerController                       runnerController;
     private       DebuggerClientService                  service;
     private       JavaRuntimeLocalizationConstant        constant;
@@ -133,6 +134,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
                              ProjectServiceClient projectServiceClient) {
         this.view = view;
+        this.eventBus = eventBus;
         this.runnerController = runnerController;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -326,7 +328,8 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                                             dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class)) {
                                         @Override
                                         protected void onSuccess(Array<ItemReference> result) {
-//                                            editorAgent.openEditor(result.get(0));
+                                            FileNode file = new FileNode(null, result.get(0), eventBus, projectServiceClient);
+                                            editorAgent.openEditor(file);
                                             callback.onSuccess(result.get(0));
                                         }
 
