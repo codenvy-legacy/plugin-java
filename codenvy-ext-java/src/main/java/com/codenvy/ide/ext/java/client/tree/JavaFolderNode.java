@@ -54,7 +54,7 @@ public class JavaFolderNode extends FolderNode {
                 for (ItemReference item : children.asIterable()) {
                     if (isShowHiddenItems || !item.getName().startsWith(".")) {
                         if (isFile(item)) {
-                            newChildren.add(new FileNode(JavaFolderNode.this, item, eventBus));
+                            newChildren.add(new FileNode(JavaFolderNode.this, item, eventBus, projectServiceClient));
                         } else if (isFolder(item)) {
                             if (isSourceFolder(item)) {
                                 newChildren.add(new SourceFolderNode(JavaFolderNode.this, item, settings, eventBus, projectServiceClient,

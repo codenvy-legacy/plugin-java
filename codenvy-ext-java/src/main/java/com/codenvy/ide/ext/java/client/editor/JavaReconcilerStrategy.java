@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorWithErrors;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.annotation.AnnotationModel;
@@ -43,7 +43,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private       NotificationManager      notificationManager;
     private       JavaCodeAssistProcessor  codeAssistProcessor;
     private       JavaLocalizationConstant localizationConstant;
-    private       ItemReference            file;
+    private       FileNode                 file;
     private       EditorWithErrors         editorWithErrors;
     private boolean first = true;
     private Notification notification;
@@ -113,7 +113,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     }
 
     /** @return the file */
-    public ItemReference getFile() {
+    public FileNode getFile() {
         return file;
     }
 

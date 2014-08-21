@@ -10,8 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.fqn;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;
@@ -24,7 +23,7 @@ public class JavaFqnResolver implements FqnResolver {
     /** {@inheritDoc} */
     @NotNull
     @Override
-    public String resolveFqn(@NotNull final ItemReference file) {
+    public String resolveFqn(@NotNull final FileNode file) {
 //        final JavaProject project = (JavaProject)file.getProject();
 //        Array<String> sourceFolders = project.getDescription().getSourceFolders().getKeys();
 //

@@ -15,7 +15,6 @@ import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
-import com.codenvy.ide.api.projecttree.generic.ItemNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
@@ -24,7 +23,6 @@ import com.codenvy.ide.ext.java.client.tree.PackageNode;
 import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 import com.codenvy.ide.newresource.DefaultNewResourceAction;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.codenvy.ide.ui.dialogs.info.Info;
@@ -47,7 +45,6 @@ public class NewPackageAction extends DefaultNewResourceAction {
                             SelectionAgent selectionAgent,
                             EditorAgent editorAgent,
                             ProjectServiceClient projectServiceClient,
-                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             EventBus eventBus) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
@@ -57,7 +54,6 @@ public class NewPackageAction extends DefaultNewResourceAction {
               selectionAgent,
               editorAgent,
               projectServiceClient,
-              dtoUnmarshallerFactory,
               eventBus);
     }
 
@@ -87,10 +83,7 @@ public class NewPackageAction extends DefaultNewResourceAction {
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            if (selection.getFirstElement() instanceof ItemNode) {
-                ItemNode selectedNode = (ItemNode)selection.getFirstElement();
-                enabled = selectedNode instanceof PackageNode || selectedNode instanceof SourceFolderNode;
-            }
+            enabled = selection.getFirstElement() instanceof PackageNode || selection.getFirstElement() instanceof SourceFolderNode;
         }
         e.getPresentation().setEnabledAndVisible(enabled);
     }

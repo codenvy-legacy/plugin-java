@@ -56,9 +56,9 @@ public class SourceFolderNode extends FolderNode {
                     if (isShowHiddenItems || !item.getName().startsWith(".")) {
                         if (isFile(item)) {
                             if (item.getName().endsWith(".java")) {
-                                newChildren.add(new SourceFileNode(SourceFolderNode.this, item, eventBus));
+                                newChildren.add(new SourceFileNode(SourceFolderNode.this, item, eventBus, projectServiceClient));
                             } else {
-                                newChildren.add(new FileNode(SourceFolderNode.this, item, eventBus));
+                                newChildren.add(new FileNode(SourceFolderNode.this, item, eventBus, projectServiceClient));
                             }
                         } else if (isFolder(item)) {
                             newChildren.add(new PackageNode(SourceFolderNode.this, item, settings, eventBus, projectServiceClient,

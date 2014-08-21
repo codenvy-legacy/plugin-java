@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.fqn;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,5 +19,5 @@ import javax.validation.constraints.NotNull;
  */
 public interface FqnResolver {
     @NotNull
-    String resolveFqn(@NotNull ItemReference file);
+    String resolveFqn(@NotNull FileNode file);
 }

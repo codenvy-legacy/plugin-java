@@ -12,18 +12,15 @@ package com.codenvy.ide.ext.java.client.action;
 
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
-import com.codenvy.ide.api.projecttree.generic.ItemNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.newresource.NewJavaResourcePresenter;
+import com.codenvy.ide.ext.java.client.tree.PackageNode;
+import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import com.codenvy.ide.ext.java.client.tree.PackageNode;
-
-import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 
 /**
  * Action to create new Java file (e.g. class, enum, etc.).
@@ -55,10 +52,7 @@ public class NewJavaClassAction extends Action {
         boolean visible = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            if (selection.getFirstElement() instanceof ItemNode) {
-                ItemNode selectedNode = (ItemNode)selection.getFirstElement();
-                visible = selectedNode instanceof PackageNode || selectedNode instanceof SourceFolderNode;
-            }
+            visible = selection.getFirstElement() instanceof PackageNode || selection.getFirstElement() instanceof SourceFolderNode;
         }
         e.getPresentation().setEnabledAndVisible(visible);
     }

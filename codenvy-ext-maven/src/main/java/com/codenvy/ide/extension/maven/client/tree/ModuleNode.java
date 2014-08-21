@@ -66,7 +66,7 @@ public class ModuleNode extends FolderNode {
                                     newChildren.add(new ModuleNode(ModuleNode.this, item, module, settings, eventBus, projectServiceClient,
                                                                    dtoUnmarshallerFactory, iconRegistry));
                                 } else if (isFile(item)) {
-                                    newChildren.add(new FileNode(ModuleNode.this, item, eventBus));
+                                    newChildren.add(new FileNode(ModuleNode.this, item, eventBus, projectServiceClient));
                                 } else if (isFolder(item)) {
                                     if (isSourceFolder(item)) {
                                         newChildren.add(new SourceFolderNode(ModuleNode.this, item, settings, eventBus,

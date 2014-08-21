@@ -15,6 +15,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.parts.PartStackType;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.debug.Breakpoint;
 import com.codenvy.ide.debug.BreakpointGutterManager;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
@@ -78,7 +79,9 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Mock
     private BreakpointGutterManager      gutterManager;
     @Mock
-    private ItemReference                file;
+    private FileNode                     file;
+    @Mock
+    private ItemReference                fileReference;
     @Mock
     private FqnResolverFactory           resolverFactory;
     @Mock
@@ -93,7 +96,8 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
         super.setUp();
         when(applicationProcessDescriptor.getDebugHost()).thenReturn(DEBUG_HOST);
         when(applicationProcessDescriptor.getDebugPort()).thenReturn(DEBUG_PORT);
-        when(file.getMediaType()).thenReturn(MIME_TYPE);
+        when(file.getData()).thenReturn(fileReference);
+        when(fileReference.getMediaType()).thenReturn(MIME_TYPE);
         when(dtoFactory.createDto(Location.class)).thenReturn(mock(Location.class));
         when(dtoFactory.createDto(BreakPoint.class)).thenReturn(mock(BreakPoint.class));
         when(resolverFactory.getResolver(anyString())).thenReturn(mock(FqnResolver.class));

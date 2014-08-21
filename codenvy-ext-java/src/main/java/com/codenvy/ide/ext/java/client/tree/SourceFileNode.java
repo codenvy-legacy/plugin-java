@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.tree;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
@@ -21,8 +22,8 @@ import com.google.web.bindery.event.shared.EventBus;
  * @author Artem Zatsarynnyy
  */
 public class SourceFileNode extends FileNode {
-    public SourceFileNode(AbstractTreeNode parent, ItemReference data, EventBus eventBus) {
-        super(parent, data, eventBus);
+    public SourceFileNode(AbstractTreeNode parent, ItemReference data, EventBus eventBus, ProjectServiceClient projectServiceClient) {
+        super(parent, data, eventBus, projectServiceClient);
 
         final String name = data.getName();
         // display name without '.java' extension

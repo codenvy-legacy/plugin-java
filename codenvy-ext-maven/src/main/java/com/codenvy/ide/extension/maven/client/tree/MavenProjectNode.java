@@ -62,7 +62,7 @@ public class MavenProjectNode extends JavaProjectNode {
                                     newChildren.add(new ModuleNode(MavenProjectNode.this, item, module, settings, eventBus,
                                                                    projectServiceClient, dtoUnmarshallerFactory, iconRegistry));
                                 } else if (isFile(item)) {
-                                    newChildren.add(new FileNode(MavenProjectNode.this, item, eventBus));
+                                    newChildren.add(new FileNode(MavenProjectNode.this, item, eventBus, projectServiceClient));
                                 } else if (isFolder(item)) {
                                     if (isSourceFolder(item)) {
                                         newChildren.add(new SourceFolderNode(MavenProjectNode.this, item, settings, eventBus,

@@ -13,8 +13,8 @@ package com.codenvy.ide.ext.java.client.editor;
 import elemental.dom.Element;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.editor.EditorInput;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.DocumentFactory;
 import com.codenvy.ide.api.text.Position;
@@ -65,7 +65,7 @@ public class CompilationUnitDocumentProvider extends ResourceDocumentProvider {
     };
 
     private TextEditorViewImpl.Css css;
-    private Map<ItemReference, AnnotationModel> modelStringMap = new HashMap<>();
+    private Map<FileNode, AnnotationModel> modelStringMap = new HashMap<>();
     private JavaCss javaCss;
 
     /**
@@ -85,7 +85,7 @@ public class CompilationUnitDocumentProvider extends ResourceDocumentProvider {
     /** {@inheritDoc} */
     @Override
     public AnnotationModel getAnnotationModel(@Nullable EditorInput input) {
-        ItemReference file = input.getFile();
+        FileNode file = input.getFile();
         if (!modelStringMap.containsKey(file)) {
             modelStringMap.put(file, new JavaAnnotationModel());
         }
