@@ -220,7 +220,7 @@
                     <dependency>
                         <groupId>com.codenvy.plugin-java</groupId>
                         <artifactId>codenvy-ext-java</artifactId>
-                        <version>${codenvy.plugin-java.version}</version>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
