@@ -120,6 +120,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                     }
                 });
             }
+            wizardContext.putData(ProjectWizard.BUILDER_NAME, "maven");
         }
     }
 
@@ -146,6 +147,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         boolean visibility = wizardContext.getData(ProjectWizard.PROJECT_VISIBILITY);
         projectDescriptorToUpdate.setVisibility(visibility ? "public" : "private");
         projectDescriptorToUpdate.setDescription(wizardContext.getData(ProjectWizard.PROJECT_DESCRIPTION));
+        projectDescriptorToUpdate.setBuilder("maven");
         final String name = wizardContext.getData(ProjectWizard.PROJECT_NAME);
         final ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
         if (project != null) {
@@ -175,20 +177,21 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     private void updateProject(final ProjectDescriptor project, ProjectDescriptor projectDescriptorToUpdate,
                                final CommitCallback callback) {
         Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.updateProject(project.getPath(), projectDescriptorToUpdate, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
-            @Override
-            protected void onSuccess(ProjectDescriptor result) {
-                ProjectReference projectToOpen = dtoFactory.createDto(ProjectReference.class).withName(result.getName());
-                eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
-                wizardContext.putData(ProjectWizard.PROJECT, result);
-                callback.onSuccess();
-            }
+        projectServiceClient
+                .updateProject(project.getPath(), projectDescriptorToUpdate, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+                    @Override
+                    protected void onSuccess(ProjectDescriptor result) {
+                        ProjectReference projectToOpen = dtoFactory.createDto(ProjectReference.class).withName(result.getName());
+                        eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
+                        wizardContext.putData(ProjectWizard.PROJECT, result);
+                        callback.onSuccess();
+                    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
     }
 
     private void createProject(final CommitCallback callback, ProjectDescriptor projectDescriptor, final String name) {

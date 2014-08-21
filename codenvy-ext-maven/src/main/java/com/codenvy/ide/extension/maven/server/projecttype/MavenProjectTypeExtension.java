@@ -40,7 +40,7 @@ public class MavenProjectTypeExtension implements ProjectTypeExtension {
     public MavenProjectTypeExtension(ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader,
                                      ProjectTypeDescriptionRegistry registry) {
         this.projectTemplateDescriptionLoader = projectTemplateDescriptionLoader;
-        projectType = new ProjectType(Constants.MAVEN_ID, Constants.MAVEN_NAME, Constants.JAVA_CATEGORY);
+        projectType = new ProjectType(Constants.MAVEN_ID, Constants.MAVEN_NAME, Constants.JAVA_CATEGORY, "maven", null);
         registry.registerProjectType(this);
     }
 
@@ -53,7 +53,6 @@ public class MavenProjectTypeExtension implements ProjectTypeExtension {
     public List<Attribute> getPredefinedAttributes() {
         final List<Attribute> list = new ArrayList<>(2);
         list.add(new Attribute(Constants.LANGUAGE, "java"));
-        list.add(new Attribute(Constants.BUILDER_NAME, "maven"));
         return list;
     }
 
