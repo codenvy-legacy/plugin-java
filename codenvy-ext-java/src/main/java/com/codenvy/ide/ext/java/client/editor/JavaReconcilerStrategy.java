@@ -101,7 +101,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
             first = false;
         }
         String[] path = file.getPath().substring(1).split("/");
-        final String projectPath = path[0];
+        final String projectPath = "/" + path[0];
         final String parentName = path[path.length - 2];
         worker.parse(document.get(), file.getName(), file.getPath(), parentName, projectPath, this);
     }
