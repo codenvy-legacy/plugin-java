@@ -10,10 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
-
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
 
 /**
  * An <code>Document</code> based implementation of

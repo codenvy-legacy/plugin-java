@@ -24,16 +24,16 @@ import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants
 import com.codenvy.ide.ext.java.jdt.core.formatter.IndentManipulation;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.BadPositionCategoryException;
-import com.codenvy.ide.text.DefaultPositionUpdater;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Position;
-import com.codenvy.ide.text.edits.DeleteEdit;
-import com.codenvy.ide.text.edits.InsertEdit;
-import com.codenvy.ide.text.edits.MultiTextEdit;
-import com.codenvy.ide.text.edits.ReplaceEdit;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.BadPositionCategoryException;
+import com.codenvy.ide.api.text.DefaultPositionUpdater;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Position;
+import com.codenvy.ide.api.text.edits.DeleteEdit;
+import com.codenvy.ide.api.text.edits.InsertEdit;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 
 import java.util.ArrayList;
 import java.util.Collection;

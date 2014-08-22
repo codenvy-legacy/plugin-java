@@ -29,7 +29,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.Selection;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.RefactoringCoreMessages;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.util.CodeAnalyzer;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 
 import java.util.List;
 

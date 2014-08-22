@@ -14,8 +14,8 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.templates.api.GlobalTemplateVariables;
 import com.codenvy.ide.ext.java.jdt.templates.api.SimpleTemplateVariableResolver;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContext;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Position;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Position;
 
 
 /** The context type for templates inside Javadoc. */

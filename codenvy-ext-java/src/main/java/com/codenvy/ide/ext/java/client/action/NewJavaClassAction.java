@@ -10,20 +10,20 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.action;
 
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.api.action.Action;
+import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.api.ui.action.Action;
-import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.newresource.NewJavaResourcePresenter;
-import com.codenvy.ide.ext.java.client.projectmodel.SourceFolder;
+import com.codenvy.ide.ext.java.client.tree.PackageNode;
+import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * Action to create new Java file (e.g. class, enum, ...).
+ * Action to create new Java file (e.g. class, enum, etc.).
  *
  * @author Artem Zatsarynnyy
  */
@@ -52,13 +52,7 @@ public class NewJavaClassAction extends Action {
         boolean visible = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            if (selection.getFirstElement() instanceof Resource) {
-                Resource resource = (Resource)selection.getFirstElement();
-                if (resource.isFile()) {
-                    resource = resource.getParent();
-                }
-                visible = resource instanceof com.codenvy.ide.ext.java.client.projectmodel.Package || resource instanceof SourceFolder;
-            }
+            visible = selection.getFirstElement() instanceof PackageNode || selection.getFirstElement() instanceof SourceFolderNode;
         }
         e.getPresentation().setEnabledAndVisible(visible);
     }

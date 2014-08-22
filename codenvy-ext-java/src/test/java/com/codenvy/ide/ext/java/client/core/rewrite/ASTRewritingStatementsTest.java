@@ -56,9 +56,9 @@ import com.codenvy.ide.ext.java.jdt.core.dom.WhileStatement;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 
 import org.junit.Ignore;
 import org.junit.Test;

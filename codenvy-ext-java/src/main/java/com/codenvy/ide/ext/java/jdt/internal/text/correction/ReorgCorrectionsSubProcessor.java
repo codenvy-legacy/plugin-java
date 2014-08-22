@@ -29,7 +29,7 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.ChangeCor
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.FixCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 
 import java.util.Collection;
 import java.util.HashMap;

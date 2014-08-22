@@ -10,20 +10,20 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.RegionImpl;
+import com.codenvy.ide.api.text.edits.MalformedTreeException;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
+import com.codenvy.ide.api.text.edits.TextEditCopier;
+import com.codenvy.ide.api.text.edits.TextEditGroup;
+import com.codenvy.ide.api.text.edits.TextEditProcessor;
+import com.codenvy.ide.api.text.edits.UndoEdit;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.RegionImpl;
-import com.codenvy.ide.text.edits.MalformedTreeException;
-import com.codenvy.ide.text.edits.MultiTextEdit;
-import com.codenvy.ide.text.edits.TextEdit;
-import com.codenvy.ide.text.edits.TextEditCopier;
-import com.codenvy.ide.text.edits.TextEditGroup;
-import com.codenvy.ide.text.edits.TextEditProcessor;
-import com.codenvy.ide.text.edits.UndoEdit;
 
 import java.util.ArrayList;
 import java.util.Arrays;

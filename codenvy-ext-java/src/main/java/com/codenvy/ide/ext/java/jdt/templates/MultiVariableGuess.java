@@ -13,11 +13,11 @@ package com.codenvy.ide.ext.java.jdt.templates;
 import com.codenvy.ide.ext.java.jdt.Images;
 import com.codenvy.ide.ext.java.jdt.codeassistant.api.CompletionProposal;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.DocumentEvent;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.RegionImpl;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.DocumentEvent;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.RegionImpl;
 
 import java.util.HashMap;
 import java.util.HashSet;

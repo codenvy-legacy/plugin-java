@@ -17,9 +17,9 @@ import com.codenvy.ide.ext.java.jdt.templates.api.TemplateBuffer;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContextType;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateException;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateTranslator;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Position;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Position;
 
 
 /** A context for javadoc. */

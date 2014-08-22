@@ -17,10 +17,10 @@ import com.codenvy.ide.ext.java.messages.ApplyProposalMessage;
 import com.codenvy.ide.ext.java.messages.Change;
 import com.codenvy.ide.ext.java.messages.RoutingTypes;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.DocumentEvent;
-import com.codenvy.ide.text.DocumentListener;
-import com.codenvy.ide.text.Region;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.DocumentEvent;
+import com.codenvy.ide.api.text.DocumentListener;
+import com.codenvy.ide.api.text.Region;
 import com.google.gwt.webworker.client.messages.MessageFilter;
 
 public class WorkerProposalApplier {

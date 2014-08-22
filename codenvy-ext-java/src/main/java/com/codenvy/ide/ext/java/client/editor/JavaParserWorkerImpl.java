@@ -12,7 +12,6 @@ package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
-import com.codenvy.ide.api.resources.ResourceProvider;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.Jso;
@@ -32,17 +31,17 @@ import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
 import com.codenvy.ide.ext.java.messages.impl.OutlineUpdateMessage;
 import com.codenvy.ide.ext.java.messages.impl.WorkerCodeBlock;
-import com.codenvy.ide.text.edits.CopySourceEdit;
-import com.codenvy.ide.text.edits.CopyTargetEdit;
-import com.codenvy.ide.text.edits.CopyingRangeMarker;
-import com.codenvy.ide.text.edits.DeleteEdit;
-import com.codenvy.ide.text.edits.InsertEdit;
-import com.codenvy.ide.text.edits.MoveSourceEdit;
-import com.codenvy.ide.text.edits.MoveTargetEdit;
-import com.codenvy.ide.text.edits.MultiTextEdit;
-import com.codenvy.ide.text.edits.RangeMarker;
-import com.codenvy.ide.text.edits.ReplaceEdit;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.edits.CopySourceEdit;
+import com.codenvy.ide.api.text.edits.CopyTargetEdit;
+import com.codenvy.ide.api.text.edits.CopyingRangeMarker;
+import com.codenvy.ide.api.text.edits.DeleteEdit;
+import com.codenvy.ide.api.text.edits.InsertEdit;
+import com.codenvy.ide.api.text.edits.MoveSourceEdit;
+import com.codenvy.ide.api.text.edits.MoveTargetEdit;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.RangeMarker;
+import com.codenvy.ide.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.util.UUID;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.core.client.GWT;
@@ -59,8 +58,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 /**
  * The type Java parser worker impl.
- * @author  <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id :
+ *
+ * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  */
 public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHandler, MessageFilter.MessageRecipient<ProblemsMessage> {
 
@@ -68,7 +67,6 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     private final String        workspaceId;
     private String javaCAPath;
     private Worker                       worker;
-    private ResourceProvider             resourceProvider;
     private String                       restContext;
     private StringMap<WorkerCallback<?>> callbacks;
     private StringMap<ApplyCallback>                   applyCallback        = Collections.createStringMap();
@@ -76,9 +74,8 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     private StringMap<FormatResultCallback>            formatResultCallback = Collections.createStringMap();
 
     @Inject
-    public JavaParserWorkerImpl(ResourceProvider resourceProvider, EventBus eventBus, @Named("restContext") String restContext,
+    public JavaParserWorkerImpl(EventBus eventBus, @Named("restContext") String restContext,
                                 @Named("workspaceId") String workspaceId, @Named("javaCA") String javaCAPath) {
-        this.resourceProvider = resourceProvider;
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.javaCAPath = javaCAPath;
@@ -341,7 +338,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         try {
 
             //TODO check project type, create worker only if project is Java
-//        worker = Worker.create("http://localhost:8080/ws/_app/javaParserWorker/javaParserWorker.nocache.js");
+//        worker = Worker.create("http://localhost:8080/ide/_app/javaParserWorker/javaParserWorker.nocache.js");
             worker = Worker.create(GWT.getModuleBaseURL() + "javaParserWorker/javaParserWorker.nocache.js");
             worker.setOnMessage(new MessageHandler() {
                 @Override
@@ -375,10 +372,6 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
             worker.terminate();
             worker = null;
         }
-    }
-
-    @Override
-    public void onProjectDescriptionChanged(ProjectActionEvent event) {
     }
 
     @Override

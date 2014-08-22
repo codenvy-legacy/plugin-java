@@ -10,15 +10,15 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor.outline;
 
-import elemental.html.DivElement;
 import elemental.dom.Element;
+import elemental.html.DivElement;
 import elemental.html.SpanElement;
 
+import com.codenvy.ide.api.texteditor.outline.CodeBlock;
 import com.codenvy.ide.ext.java.client.JavaCss;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.jdt.core.dom.Modifier;
 import com.codenvy.ide.ext.java.messages.BlockTypes;
-import com.codenvy.ide.texteditor.api.outline.CodeBlock;
 import com.codenvy.ide.ui.tree.NodeRenderer;
 import com.codenvy.ide.ui.tree.TreeNodeElement;
 import com.codenvy.ide.util.dom.Elements;
@@ -27,7 +27,6 @@ import com.google.gwt.user.client.ui.UIObject;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
  */
 public class JavaNodeRenderer implements NodeRenderer<CodeBlock> {
 

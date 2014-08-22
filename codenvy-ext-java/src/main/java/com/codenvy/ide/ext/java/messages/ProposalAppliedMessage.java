@@ -16,7 +16,6 @@ import com.google.gwt.webworker.client.messages.Message;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
  */
 @RoutingType(type = RoutingTypes.CA_PROPOSAL_APPLIED)
 public interface ProposalAppliedMessage extends Message {

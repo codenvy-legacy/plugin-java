@@ -10,11 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.edits.TextEdit;
-import com.codenvy.ide.texteditor.api.ContentFormatter;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.edits.TextEdit;
+import com.codenvy.ide.api.texteditor.ContentFormatter;
 import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 
@@ -26,10 +26,10 @@ import com.google.inject.Inject;
 public class JavaFormatter implements ContentFormatter, JavaParserWorker.FormatResultCallback {
 
     private JavaParserWorker javaParserWorker;
-    private Document document;
+    private Document         document;
 
     @Inject
-    public JavaFormatter(JavaParserWorker javaParserWorker){
+    public JavaFormatter(JavaParserWorker javaParserWorker) {
         this.javaParserWorker = javaParserWorker;
     }
 
