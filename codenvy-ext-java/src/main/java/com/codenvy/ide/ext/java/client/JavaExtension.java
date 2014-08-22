@@ -106,7 +106,7 @@ public class JavaExtension {
         actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaClassAction);
         DefaultActionGroup newGroup = (DefaultActionGroup)actionManager.getAction(GROUP_FILE_NEW);
         newGroup.addSeparator();
-        newGroup.add(newJavaClassAction);
+//        newGroup.add(newJavaClassAction);
         newGroup.add(newPackageAction);
 
         // add actions in context menu
