@@ -166,6 +166,41 @@ public class MavenUtils {
     }
 
     /**
+     * Get description of maven project and all its modules if any as plain list.
+     *
+     * @param sources
+     *         maven project directory. Note: Must contains pom.xml file.
+     * @return description of maven project
+     * @throws IOException
+     *         if an i/o error occurs
+     */
+    public static List<Model> getModules(java.io.File sources) throws IOException {
+        return getModules(getModel(sources));
+    }
+
+    public static List<Model> getModules(Model model) throws IOException {
+        final List<Model> l = new LinkedList<>();
+        addModules(model, l);
+        return l;
+    }
+
+    private static void addModules(Model model, List<Model> l) throws IOException {
+        if (model.getPackaging().equals("pom")) {
+            for (String module : model.getModules()) {
+                final java.io.File pom = new java.io.File(new java.io.File(model.getProjectDirectory(), module), "pom.xml");
+                if (pom.exists()) {
+                    final Model child = readModel(pom);
+                    final Parent parent = newParent(model.getGroupId(), model.getArtifactId(), model.getVersion());
+                    parent.setRelativePath(child.getProjectDirectory().toPath().relativize(model.getPomFile().toPath()).toString());
+                    child.setParent(parent);
+                    l.add(child);
+                    addModules(child, l);
+                }
+            }
+        }
+    }
+
+    /**
      * Writes a specified {@link Model} to the path from which this model has been read.
      *
      * @param model
@@ -626,7 +661,7 @@ public class MavenUtils {
         return isCodenvyExtensionProject(MavenUtils.getModel(workDir));
     }
 
-    public static boolean isCodenvyExtensionProject(Model pom) throws IOException {
+    public static boolean isCodenvyExtensionProject(Model pom) {
         for (Dependency dependency : pom.getDependencies()) {
             if ("codenvy-ide-api".equals(dependency.getArtifactId())) {
                 return true;

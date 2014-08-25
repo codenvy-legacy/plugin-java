@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** @author andrew00x */
@@ -183,5 +184,42 @@ public class MavenUtilTest {
         Assert.assertEquals("z", xpath.evaluate("dependency/version", node, XPathConstants.STRING));
         // there is no 'scope' in this case
         Assert.assertEquals("", xpath.evaluate("dependency/scope", node, XPathConstants.STRING));
+    }
+
+    @Test
+    public void testGetModules() throws Exception {
+        URL project = Thread.currentThread().getContextClassLoader().getResource("multi-module");
+        Assert.assertNotNull(project);
+        List<Model> modules = MavenUtils.getModules(new File(project.getFile()));
+        List<String> expected = Arrays.asList("parent:module1:jar:x.x.x",
+                                              "parent:module2:jar:x.x.x",
+                                              "project:project-modules-x:pom:x.x.x",
+                                              "project:module3:jar:x.x.x",
+                                              "project:module4:jar:x.x.x");
+        Assert.assertEquals(expected.size(), modules.size());
+        List<String> modulesStr = new ArrayList<>(modules.size());
+        for (Model model : modules) {
+            modulesStr.add(toString(model));
+        }
+        modulesStr.removeAll(expected);
+        Assert.assertTrue("Unexpected modules " + modules, modulesStr.isEmpty());
+    }
+
+    private String toString(Model model) {
+        String groupId = model.getGroupId();
+        if (groupId == null) {
+            Parent parent = model.getParent();
+            if (parent != null) {
+                groupId = parent.getGroupId();
+            }
+        }
+        String version = model.getVersion();
+        if (version == null) {
+            Parent parent = model.getParent();
+            if (parent != null) {
+                version = parent.getVersion();
+            }
+        }
+        return groupId + ":" + model.getArtifactId() + ":" + model.getPackaging() + ":" + version;
     }
 }
