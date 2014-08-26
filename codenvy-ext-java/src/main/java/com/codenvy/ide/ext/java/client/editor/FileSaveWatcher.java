@@ -11,7 +11,6 @@
 package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.ide.api.editor.EditorPartPresenter;
-import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PropertyListener;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
@@ -27,7 +26,7 @@ public class FileSaveWatcher {
     @Inject
     private JavaParserWorker worker;
 
-    void editorOpened(final TextEditorPartPresenter editor) {
+    public void editorOpened(final EditorPartPresenter editor) {
         final PropertyListener propertyListener = new PropertyListener() {
             @Override
             public void propertyChanged(PartPresenter source, int propId) {
