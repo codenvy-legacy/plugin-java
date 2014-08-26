@@ -269,13 +269,48 @@ public class MavenBuilder extends Builder {
         java.io.File[] files = null;
         switch (config.getTaskType()) {
             case DEFAULT:
-                final String fileExt;
+                final Model model;
                 try {
-                    final Model model = MavenUtils.getModel(workDir);
-                    String packaging = model.getPackaging();
-                    if (packaging == null) {
-                        packaging = "jar";
+                    model = MavenUtils.getModel(workDir);
+                } catch (IOException e) {
+                    throw new BuilderException(e);
+                }
+                String packaging = model.getPackaging();
+                if (packaging == null) {
+                    packaging = "jar";
+                }
+                if (packaging.equals("pom")) {
+                    final List<Model> modules;
+                    final List<java.io.File> results = new LinkedList<>();
+                    try {
+                        modules = MavenUtils.getModules(model);
+                    } catch (IOException e) {
+                        throw new BuilderException(e);
                     }
+                    for (Model child : modules) {
+                        String childPackaging = child.getPackaging();
+                        if (childPackaging == null) {
+                            childPackaging = "jar";
+                        }
+                        final String fileExt;
+                        String ext = MavenUtils.getFileExtensionByPackaging(childPackaging);
+                        if (ext == null) {
+                            ext = '.' + childPackaging;
+                        }
+                        fileExt = ext;
+                        final java.io.File[] a = new java.io.File(child.getProjectDirectory(), "target").listFiles(new FilenameFilter() {
+                            @Override
+                            public boolean accept(java.io.File dir, String name) {
+                                return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                            }
+                        });
+                        if (a != null && a.length > 0) {
+                            Collections.addAll(results, a);
+                        }
+                    }
+                    files = results.toArray(new java.io.File[results.size()]);
+                } else {
+                    final String fileExt;
                     String ext = MavenUtils.getFileExtensionByPackaging(packaging);
                     if (ext == null) {
                         ext = packaging.equals("jar")
@@ -283,16 +318,13 @@ public class MavenBuilder extends Builder {
                               && !MavenUtils.isCodenvyExtensionProject(model) ? ".zip" : ('.' + packaging);
                     }
                     fileExt = ext;
-                } catch (IOException e) {
-                    throw new BuilderException(e);
+                    files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(java.io.File dir, String name) {
+                            return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                        }
+                    });
                 }
-
-                files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(java.io.File dir, String name) {
-                        return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
-                    }
-                });
                 break;
             case LIST_DEPS:
                 files = workDir.listFiles(new FilenameFilter() {
