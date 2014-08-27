@@ -16,13 +16,13 @@ import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.tree.PackageNode;
+import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -49,9 +49,10 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class NewJavaSourceFilePresenterTest {
-    private static String FILE_NAME    = "TestClass";
-    private static String PARENT_PATH  = "/project/src/main/java/com/codenvy";
-    private static String PACKAGE_NAME = "com.codenvy";
+    private static String FILE_NAME            = "TestClass";
+    private static String SRC_FOLDER_PATH      = "/project/src/main/java";
+    private static String CODENVY_PACKAGE_PATH = "/project/src/main/java/com/codenvy";
+    private static String PACKAGE_NAME         = "com.codenvy";
     @Mock
     private NewJavaSourceFileView      view;
     @Mock
@@ -62,17 +63,20 @@ public class NewJavaSourceFilePresenterTest {
     private ProjectServiceClient       projectServiceClient;
     @InjectMocks
     private NewJavaSourceFilePresenter presenter;
+    @Mock
+    private SourceFolderNode           srcFolder;
+    @Mock
+    private PackageNode                codenvyPackage;
 
     @Before
     public void setUp() {
+        when(srcFolder.getPath()).thenReturn(SRC_FOLDER_PATH);
         PackageNode comPackage = mock(PackageNode.class);
-        PackageNode codenvyPackage = mock(PackageNode.class);
-        when(codenvyPackage.getPath()).thenReturn(PARENT_PATH);
         when(codenvyPackage.getParent()).thenReturn((AbstractTreeNode)comPackage);
-
-        Selection selection = mock(Selection.class);
-        when(selection.getFirstElement()).thenReturn(codenvyPackage);
-        when(selectionAgent.getSelection()).thenReturn(selection);
+        when(codenvyPackage.getName()).thenReturn("codenvy");
+        when(codenvyPackage.getPath()).thenReturn(CODENVY_PACKAGE_PATH);
+        when(comPackage.getParent()).thenReturn((AbstractTreeNode)srcFolder);
+        when(comPackage.getName()).thenReturn("com");
 
         doAnswer(new Answer() {
             @Override
@@ -90,7 +94,6 @@ public class NewJavaSourceFilePresenterTest {
     @Test
     public void shouldShowDialog() {
         presenter.showDialog();
-
         verify(view).setTypes(Matchers.<Array<JavaSourceFileType>>anyObject());
         verify(view).showDialog();
     }
@@ -98,45 +101,133 @@ public class NewJavaSourceFilePresenterTest {
     @Test
     public void shouldCloseDialogOnCancelClicked() throws Exception {
         presenter.onCancelClicked();
-
         verify(view).close();
     }
 
     @Test
-    public void testCreateClass() throws Exception {
+    public void shouldShowHintWhenNameIsInvalid() throws Exception {
+        when(view.getName()).thenReturn('#' + FILE_NAME);
+        presenter.onNameChanged();
+        verify(view).showErrorHint(anyString());
+    }
+
+    @Test
+    public void shouldHideHintWhenNameIsValid() throws Exception {
+        when(view.getName()).thenReturn(FILE_NAME);
+        presenter.onNameChanged();
+        verify(view).hideErrorHint();
+    }
+
+    @Test
+    public void shouldCreateClassInsideSourceFolder() throws Exception {
+        Selection selection = mock(Selection.class);
+        when(selection.getFirstElement()).thenReturn(srcFolder);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "\npublic class " + FILE_NAME + " {\n}\n";
+
         when(view.getName()).thenReturn(FILE_NAME);
         when(view.getSelectedType()).thenReturn(JavaSourceFileType.CLASS);
 
         presenter.onOkClicked();
 
-        verify(projectServiceClient).createFile(eq(PARENT_PATH), eq(FILE_NAME + ".java"), anyString(), anyString(),
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<Void>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
-    @Ignore
     @Test
-    public void testCreateInterface() throws Exception {
-        String interfaceContent = "package " + PACKAGE_NAME + ";\n\npublic interface" + FILE_NAME + " {\n}\n";
+    public void shouldCreateClassInsidePackage() throws Exception {
+        Selection selection = mock(Selection.class);
+        when(selection.getFirstElement()).thenReturn(codenvyPackage);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic class " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(JavaSourceFileType.CLASS);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+    }
+
+    @Test
+    public void shouldCreateInterfaceInsideSourceFolder() throws Exception {
+        Selection selection = mock(Selection.class);
+        when(selection.getFirstElement()).thenReturn(srcFolder);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "\npublic interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
         when(view.getSelectedType()).thenReturn(JavaSourceFileType.INTERFACE);
 
         presenter.onOkClicked();
 
-        verify(projectServiceClient).createFile(eq(PARENT_PATH), eq(FILE_NAME + ".java"), eq(interfaceContent), anyString(),
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<Void>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
     @Test
-    public void testCreateEnum() throws Exception {
+    public void shouldCreateInterfaceInsidePackage() throws Exception {
+        Selection selection = mock(Selection.class);
+        when(selection.getFirstElement()).thenReturn(codenvyPackage);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic interface " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(JavaSourceFileType.INTERFACE);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+    }
+
+    @Test
+    public void shouldCreateEnumInsideSourceFolder() throws Exception {
+        Selection selection = mock(Selection.class);
+        when(selection.getFirstElement()).thenReturn(srcFolder);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "\npublic enum " + FILE_NAME + " {\n}\n";
+
         when(view.getName()).thenReturn(FILE_NAME);
         when(view.getSelectedType()).thenReturn(JavaSourceFileType.ENUM);
 
         presenter.onOkClicked();
 
-        verify(projectServiceClient).createFile(eq(PARENT_PATH), eq(FILE_NAME + ".java"), anyString(), anyString(),
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+    }
+
+    @Test
+    public void shouldCreateEnumInsidePackage() throws Exception {
+        Selection selection = mock(Selection.class);
+        when(selection.getFirstElement()).thenReturn(codenvyPackage);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic enum " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ENUM);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<Void>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
