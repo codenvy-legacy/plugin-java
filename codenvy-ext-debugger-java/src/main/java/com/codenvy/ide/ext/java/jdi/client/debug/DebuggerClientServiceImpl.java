@@ -19,8 +19,8 @@ import com.codenvy.ide.ext.java.jdi.shared.Value;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
+import com.codenvy.ide.rest.AsyncRequestLoader;
 import com.codenvy.ide.ui.loader.EmptyLoader;
-import com.codenvy.ide.ui.loader.Loader;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -41,7 +41,7 @@ import static com.codenvy.ide.rest.HTTPHeader.CONTENTTYPE;
 public class DebuggerClientServiceImpl implements DebuggerClientService {
     /** REST-service context. */
     private final String              baseUrl;
-    private final Loader              loader;
+    private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
 
     /**
@@ -54,7 +54,9 @@ public class DebuggerClientServiceImpl implements DebuggerClientService {
      * @param asyncRequestFactory
      */
     @Inject
-    protected DebuggerClientServiceImpl(@Named("restContext") String baseUrl, @Named("workspaceId") String workspaceId, Loader loader,
+    protected DebuggerClientServiceImpl(@Named("restContext") String baseUrl,
+                                        @Named("workspaceId") String workspaceId,
+                                        AsyncRequestLoader loader,
                                         AsyncRequestFactory asyncRequestFactory) {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
@@ -73,8 +75,7 @@ public class DebuggerClientServiceImpl implements DebuggerClientService {
     @Override
     public void disconnect(@NotNull String id, @NotNull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/disconnect/" + id;
-        loader.setMessage("Disconnecting... ");
-        asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
+        asyncRequestFactory.createGetRequest(requestUrl).loader(loader, "Disconnecting... ").send(callback);
     }
 
     /** {@inheritDoc} */
