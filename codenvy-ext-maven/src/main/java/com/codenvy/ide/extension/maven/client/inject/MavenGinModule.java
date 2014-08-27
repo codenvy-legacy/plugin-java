@@ -14,7 +14,7 @@ import com.codenvy.ide.api.extension.ExtensionGinModule;
 import com.codenvy.ide.api.projecttree.TreeStructureProvider;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildView;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildViewImpl;
-import com.codenvy.ide.extension.maven.client.tree.MavenProjectTreeStructureProvider;
+import com.codenvy.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;

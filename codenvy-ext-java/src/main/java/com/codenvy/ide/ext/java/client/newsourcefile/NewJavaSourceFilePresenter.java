@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.newresource;
+package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
@@ -18,8 +18,8 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.JavaUtils;
-import com.codenvy.ide.ext.java.client.tree.PackageNode;
-import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.ui.dialogs.info.Info;
 import com.google.inject.Inject;

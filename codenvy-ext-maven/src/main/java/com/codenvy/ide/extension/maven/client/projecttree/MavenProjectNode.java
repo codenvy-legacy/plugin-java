@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.client.tree;
+package com.codenvy.ide.extension.maven.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
@@ -19,9 +19,9 @@ import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.tree.JavaFolderNode;
-import com.codenvy.ide.ext.java.client.tree.JavaProjectNode;
-import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaProjectNode;
+import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;

@@ -8,36 +8,42 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.tree;
+package com.codenvy.ide.extension.maven.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
-import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
- * Tree structure for Java project.
+ * Tree structure for Maven project. It also respects multi-module projects.
  *
  * @author Artem Zatsarynnyy
  */
-public class JavaTreeStructure extends GenericTreeStructure {
+public class MavenProjectTreeStructure extends JavaTreeStructure {
 
-    protected JavaTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, AppContext appContext,
-                                ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    private IconRegistry iconRegistry;
+
+    protected MavenProjectTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, AppContext appContext,
+                                        ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                        IconRegistry iconRegistry) {
         super(settings, project, eventBus, appContext, projectServiceClient, dtoUnmarshallerFactory);
+        this.iconRegistry = iconRegistry;
     }
 
     /** {@inheritDoc} */
     @Override
     public void getRoots(AsyncCallback<Array<AbstractTreeNode<?>>> callback) {
-        AbstractTreeNode projectRoot = new JavaProjectNode(project, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        AbstractTreeNode projectRoot =
+                new MavenProjectNode(project, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory, iconRegistry);
         callback.onSuccess(Collections.<AbstractTreeNode<?>>createArray(projectRoot));
     }
 }

@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.tree;
+package com.codenvy.ide.ext.java.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
@@ -26,19 +26,20 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
- * {@link FolderNode} that may contains {@link SourceFolderNode}s.
+ * Node that represents a source folder.
  *
  * @author Artem Zatsarynnyy
  */
-public class JavaFolderNode extends FolderNode {
-
+public class SourceFolderNode extends FolderNode {
     private IconRegistry iconRegistry;
 
-    public JavaFolderNode(AbstractTreeNode parent, ItemReference data, TreeSettings settings, EventBus eventBus,
-                          ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                          IconRegistry iconRegistry) {
+    public SourceFolderNode(AbstractTreeNode parent, ItemReference data, TreeSettings settings, EventBus eventBus,
+                            ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                            IconRegistry iconRegistry) {
         super(parent, data, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         this.iconRegistry = iconRegistry;
+
+        getPresentation().setSvgIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
     }
 
     /** {@inheritDoc} */
@@ -54,19 +55,18 @@ public class JavaFolderNode extends FolderNode {
                 for (ItemReference item : children.asIterable()) {
                     if (isShowHiddenItems || !item.getName().startsWith(".")) {
                         if (isFile(item)) {
-                            newChildren.add(new FileNode(JavaFolderNode.this, item, eventBus, projectServiceClient));
-                        } else if (isFolder(item)) {
-                            if (isSourceFolder(item)) {
-                                newChildren.add(new SourceFolderNode(JavaFolderNode.this, item, settings, eventBus, projectServiceClient,
-                                                                     dtoUnmarshallerFactory, iconRegistry));
+                            if (item.getName().endsWith(".java")) {
+                                newChildren.add(new SourceFileNode(SourceFolderNode.this, item, eventBus, projectServiceClient));
                             } else {
-                                newChildren.add(new JavaFolderNode(JavaFolderNode.this, item, settings, eventBus, projectServiceClient,
-                                                                   dtoUnmarshallerFactory, iconRegistry));
+                                newChildren.add(new FileNode(SourceFolderNode.this, item, eventBus, projectServiceClient));
                             }
+                        } else if (isFolder(item)) {
+                            newChildren.add(new PackageNode(SourceFolderNode.this, item, settings, eventBus, projectServiceClient,
+                                                            dtoUnmarshallerFactory, iconRegistry));
                         }
                     }
                 }
-                callback.onSuccess(JavaFolderNode.this);
+                callback.onSuccess(SourceFolderNode.this);
             }
 
             @Override
@@ -74,11 +74,5 @@ public class JavaFolderNode extends FolderNode {
                 callback.onFailure(exception);
             }
         });
-    }
-
-    /** Tests if the specified item is a source folder. */
-    protected static boolean isSourceFolder(ItemReference item) {
-        // TODO: read source folders from project/module attributes
-        return isFolder(item) && (item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java"));
     }
 }

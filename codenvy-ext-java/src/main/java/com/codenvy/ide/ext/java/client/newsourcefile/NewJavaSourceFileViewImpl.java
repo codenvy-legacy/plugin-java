@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.newresource;
+package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
