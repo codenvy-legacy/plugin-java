@@ -12,7 +12,6 @@ package com.codenvy.ide.extension.maven.client.wizard;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.api.project.shared.dto.ProjectReference;
 import com.codenvy.ide.api.event.OpenProjectEvent;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
@@ -181,8 +180,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                 .updateProject(project.getPath(), projectDescriptorToUpdate, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
                     @Override
                     protected void onSuccess(ProjectDescriptor result) {
-                        ProjectReference projectToOpen = dtoFactory.createDto(ProjectReference.class).withName(result.getName());
-                        eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
+                        eventBus.fireEvent(new OpenProjectEvent(result.getName()));
                         wizardContext.putData(ProjectWizard.PROJECT, result);
                         callback.onSuccess();
                     }
@@ -201,9 +199,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                                        dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
                                    @Override
                                    protected void onSuccess(ProjectDescriptor result) {
-                                       ProjectReference projectToOpen =
-                                               dtoFactory.createDto(ProjectReference.class).withName(result.getName());
-                                       eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
+                                       eventBus.fireEvent(new OpenProjectEvent(result.getName()));
                                        wizardContext.putData(ProjectWizard.PROJECT, result);
                                        callback.onSuccess();
                                    }
