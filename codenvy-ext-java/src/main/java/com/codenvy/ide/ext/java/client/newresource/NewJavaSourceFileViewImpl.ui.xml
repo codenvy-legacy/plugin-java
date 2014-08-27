@@ -21,12 +21,18 @@
         .topBorder {
             margin-top: 6px;
         }
+
+        .errorHint {
+            color: red;
+            height: 12px;
+        }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="350px" height="100px" addStyleNames="{style.border}">
+    <g:DockLayoutPanel unit="PX" width="350px" height="115px" addStyleNames="{style.border}">
         <g:center>
             <g:FlowPanel>
                 <g:Label text="Name:" width="100%"/>
-                <g:TextBox ui:field="nameField" width="100%"/>
+                <g:TextBox ui:field="nameField" width="98%"/>
+                <g:Label ui:field="errorHintField" addStyleNames="{style.errorHint}"/>
                 <g:Label text="Type:" width="100%" addStyleNames="{style.topBorder}"/>
                 <g:ListBox ui:field="typeField" width="100%"/>
             </g:FlowPanel>

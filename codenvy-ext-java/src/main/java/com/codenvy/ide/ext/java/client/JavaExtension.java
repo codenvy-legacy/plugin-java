@@ -35,7 +35,7 @@ import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.texteditor.reconciler.Reconciler;
 import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.StringMap;
-import com.codenvy.ide.ext.java.client.action.NewJavaClassAction;
+import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
 import com.codenvy.ide.ext.java.client.action.UpdateDependencyAction;
 import com.codenvy.ide.ext.java.client.editor.JavaEditorProvider;
@@ -83,7 +83,7 @@ public class JavaExtension {
                          JavaResources resources,
                          JavaLocalizationConstant localizationConstant,
                          NewPackageAction newPackageAction,
-                         NewJavaClassAction newJavaClassAction,
+                         NewJavaSourceFileAction newJavaSourceFileAction,
                          JavaParserWorker parserWorker,
                          @Named("JavaFileType") FileType javaFile,
                          BuildContext buildContext,
@@ -101,12 +101,12 @@ public class JavaExtension {
 
         JavaResources.INSTANCE.css().ensureInjected();
 
-        // add actions to New group
+        // add actions in File -> New group
         actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
-        actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaClassAction);
+        actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
         DefaultActionGroup newGroup = (DefaultActionGroup)actionManager.getAction(GROUP_FILE_NEW);
         newGroup.addSeparator();
-//        newGroup.add(newJavaClassAction);
+        newGroup.add(newJavaSourceFileAction);
         newGroup.add(newPackageAction);
 
         // add actions in context menu
@@ -146,6 +146,19 @@ public class JavaExtension {
         });
     }
 
+    /** For test use only. */
+    public JavaExtension() {
+    }
+
+    public static native String getJavaCAPath() /*-{
+        try {
+            return $wnd.IDE.config.javaCodeAssistant;
+        } catch (e) {
+            return null;
+        }
+
+    }-*/;
+
     @Inject
     private void registerIcons(IconRegistry iconRegistry, JavaResources resources) {
         // icons for project tree nodes
@@ -167,19 +180,6 @@ public class JavaExtension {
         // icons for file names
         iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
     }
-
-    /** For test use only. */
-    public JavaExtension() {
-    }
-
-    public static native String getJavaCAPath() /*-{
-        try {
-            return $wnd.IDE.config.javaCodeAssistant;
-        } catch (e) {
-            return null;
-        }
-
-    }-*/;
 
     public void updateDependencies(final String projectPath) {
         if (updating) {

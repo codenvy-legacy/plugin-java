@@ -16,35 +16,35 @@ import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
-import com.codenvy.ide.ext.java.client.newresource.NewJavaResourcePresenter;
+import com.codenvy.ide.ext.java.client.newresource.NewJavaSourceFilePresenter;
 import com.codenvy.ide.ext.java.client.tree.PackageNode;
 import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * Action to create new Java file (e.g. class, enum, etc.).
+ * Action to create new Java source file.
  *
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class NewJavaClassAction extends Action {
-    private NewJavaResourcePresenter newJavaResourcePresenter;
-    private SelectionAgent           selectionAgent;
+public class NewJavaSourceFileAction extends Action {
+    private SelectionAgent             selectionAgent;
+    private NewJavaSourceFilePresenter newJavaSourceFilePresenter;
 
     @Inject
-    public NewJavaClassAction(NewJavaResourcePresenter newJavaResourcePresenter,
-                              SelectionAgent selectionAgent,
-                              JavaLocalizationConstant constant,
-                              JavaResources resources) {
+    public NewJavaSourceFileAction(SelectionAgent selectionAgent,
+                                   NewJavaSourceFilePresenter newJavaSourceFilePresenter,
+                                   JavaLocalizationConstant constant,
+                                   JavaResources resources) {
         super(constant.actionNewClassTitle(), constant.actionNewClassDescription(), resources.classItem());
-        this.newJavaResourcePresenter = newJavaResourcePresenter;
+        this.newJavaSourceFilePresenter = newJavaSourceFilePresenter;
         this.selectionAgent = selectionAgent;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        newJavaResourcePresenter.showDialog();
+        newJavaSourceFilePresenter.showDialog();
     }
 
     @Override

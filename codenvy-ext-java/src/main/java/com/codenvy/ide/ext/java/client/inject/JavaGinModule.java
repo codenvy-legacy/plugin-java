@@ -20,8 +20,8 @@ import com.codenvy.ide.ext.java.client.editor.JavaFormatter;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorkerImpl;
 import com.codenvy.ide.ext.java.client.format.FormatController;
-import com.codenvy.ide.ext.java.client.newresource.NewJavaResourceView;
-import com.codenvy.ide.ext.java.client.newresource.NewJavaResourceViewImpl;
+import com.codenvy.ide.ext.java.client.newresource.NewJavaSourceFileView;
+import com.codenvy.ide.ext.java.client.newresource.NewJavaSourceFileViewImpl;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -37,7 +37,7 @@ public class JavaGinModule extends AbstractGinModule {
         bind(JavaParserWorker.class).to(JavaParserWorkerImpl.class).in(Singleton.class);
         bind(ContentFormatter.class).to(JavaFormatter.class);
         bind(FormatController.class).asEagerSingleton();
-        bind(NewJavaResourceView.class).to(NewJavaResourceViewImpl.class).in(Singleton.class);
+        bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
     }
 
     @Provides

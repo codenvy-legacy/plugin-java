@@ -19,6 +19,7 @@ import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
+import com.codenvy.ide.ext.java.client.JavaUtils;
 import com.codenvy.ide.ext.java.client.tree.PackageNode;
 import com.codenvy.ide.ext.java.client.tree.SourceFolderNode;
 import com.codenvy.ide.newresource.DefaultNewResourceAction;
@@ -38,6 +39,8 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 @Singleton
 public class NewPackageAction extends DefaultNewResourceAction {
+    private JavaLocalizationConstant localizationConstant;
+
     @Inject
     public NewPackageAction(JavaResources javaResources,
                             JavaLocalizationConstant localizationConstant,
@@ -55,6 +58,7 @@ public class NewPackageAction extends DefaultNewResourceAction {
               editorAgent,
               projectServiceClient,
               eventBus);
+        this.localizationConstant = localizationConstant;
     }
 
     @Override
@@ -62,17 +66,22 @@ public class NewPackageAction extends DefaultNewResourceAction {
         new AskValueDialog("New " + title, "Name:", new AskValueCallback() {
             @Override
             public void onOk(String value) {
-                createPackage(value, new AsyncCallback<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        eventBus.fireEvent(new RefreshProjectTreeEvent());
-                    }
+                try {
+                    JavaUtils.checkPackageName(value);
+                    createPackage(value, new AsyncCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            eventBus.fireEvent(new RefreshProjectTreeEvent());
+                        }
 
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        new Info(caught.getMessage()).show();
-                    }
-                });
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            new Info(caught.getMessage()).show();
+                        }
+                    });
+                } catch (IllegalStateException ex) {
+                    new Info(localizationConstant.messagesNewPackageInvalidName(), ex.getMessage()).show();
+                }
             }
         }
         ).show();

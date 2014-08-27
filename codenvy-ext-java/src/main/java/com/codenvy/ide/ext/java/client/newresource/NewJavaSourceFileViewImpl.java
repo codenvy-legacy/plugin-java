@@ -23,34 +23,31 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 
 /**
- * Implementation of {@link NewJavaResourceView}.
+ * Implementation of {@link NewJavaSourceFileView}.
  *
  * @author Artem Zatsarynnyy
  */
-public class NewJavaResourceViewImpl extends Window implements NewJavaResourceView {
+public class NewJavaSourceFileViewImpl extends Window implements NewJavaSourceFileView {
+    final Button btnOk;
     @UiField
     TextBox nameField;
-
+    @UiField
+    Label   errorHintField;
     @UiField
     ListBox typeField;
-
-    final Button btnOk;
-
     private ActionDelegate delegate;
 
-    private Array<ResourceTypes> projectTypes = Collections.createArray();
-
-    interface AddToIndexViewImplUiBinder extends UiBinder<Widget, NewJavaResourceViewImpl> {
-    }
+    private Array<JavaSourceFileType> sourceFileTypes = Collections.createArray();
 
     @Inject
-    public NewJavaResourceViewImpl(AddToIndexViewImplUiBinder uiBinder, JavaLocalizationConstant constant) {
+    public NewJavaSourceFileViewImpl(AddToIndexViewImplUiBinder uiBinder, JavaLocalizationConstant constant) {
         setTitle(constant.title());
 
         Button btnCancel = createButton(constant.buttonCancel(), "newJavaClass-dialog-cancel", new ClickHandler() {
@@ -75,23 +72,22 @@ public class NewJavaResourceViewImpl extends Window implements NewJavaResourceVi
         nameField.addKeyUpHandler(new KeyUpHandler() {
             @Override
             public void onKeyUp(KeyUpEvent event) {
-                boolean isNameEmpty = nameField.getText().trim().isEmpty();
+                delegate.onNameChanged();
+                final boolean isNameEmpty = nameField.getText().trim().isEmpty();
                 btnOk.setEnabled(!isNameEmpty);
-                if (!isNameEmpty) {
-                    if (KeyCodes.KEY_ENTER == event.getNativeKeyCode()) {
-                        delegate.onOkClicked();
-                    }
+                if (!isNameEmpty && KeyCodes.KEY_ENTER == event.getNativeKeyCode()) {
+                    delegate.onOkClicked();
                 }
             }
         });
     }
 
     @Override
-    public void setTypes(Array<ResourceTypes> types) {
-        projectTypes.clear();
+    public void setTypes(Array<JavaSourceFileType> types) {
+        sourceFileTypes.clear();
         typeField.clear();
-        projectTypes.addAll(types);
-        for (ResourceTypes type : projectTypes.asIterable()) {
+        sourceFileTypes.addAll(types);
+        for (JavaSourceFileType type : sourceFileTypes.asIterable()) {
             typeField.addItem(type.toString());
         }
     }
@@ -102,8 +98,8 @@ public class NewJavaResourceViewImpl extends Window implements NewJavaResourceVi
     }
 
     @Override
-    public ResourceTypes getSelectedType() {
-        return projectTypes.get(typeField.getSelectedIndex());
+    public JavaSourceFileType getSelectedType() {
+        return sourceFileTypes.get(typeField.getSelectedIndex());
     }
 
     @Override
@@ -112,8 +108,19 @@ public class NewJavaResourceViewImpl extends Window implements NewJavaResourceVi
     }
 
     @Override
+    public void showErrorHint(String text) {
+        errorHintField.setText(text);
+    }
+
+    @Override
+    public void hideErrorHint() {
+        errorHintField.setText("");
+    }
+
+    @Override
     public void showDialog() {
         nameField.setText("");
+        hideErrorHint();
         show();
         btnOk.setEnabled(false);
         new Timer() {
@@ -131,5 +138,8 @@ public class NewJavaResourceViewImpl extends Window implements NewJavaResourceVi
 
     @Override
     protected void onClose() {
+    }
+
+    interface AddToIndexViewImplUiBinder extends UiBinder<Widget, NewJavaSourceFileViewImpl> {
     }
 }

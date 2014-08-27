@@ -11,18 +11,18 @@
 package com.codenvy.ide.ext.java.client.newresource;
 
 /**
- * Types of Java files for {@link NewJavaResourcePresenter}.
+ * Type of Java source file.
  *
  * @author Artem Zatsarynnyy
  */
-enum ResourceTypes {
+enum JavaSourceFileType {
     CLASS("Class"),
     INTERFACE("Interface"),
     ENUM("Enum");
 
     private final String value;
 
-    private ResourceTypes(String value) {
+    private JavaSourceFileType(String value) {
         this.value = value;
     }
 
