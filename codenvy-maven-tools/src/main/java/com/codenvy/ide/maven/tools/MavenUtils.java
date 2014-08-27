@@ -26,6 +26,8 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,6 +43,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A smattering of useful methods to work with the Maven POM.
@@ -49,6 +53,28 @@ import java.util.Map;
  * @author andrew00x
  */
 public class MavenUtils {
+    public static final Pattern MAVEN_LOGGER_PREFIX_REMOVER = Pattern.compile("(\\[INFO\\]|\\[WARNING\\]|\\[DEBUG\\]|\\[ERROR\\])\\s+(.*)");
+
+    public static String removeLoggerPrefix(String origin) {
+        final Matcher matcher = MAVEN_LOGGER_PREFIX_REMOVER.matcher(origin);
+        if (matcher.matches()) {
+            return origin.substring(matcher.start(2));
+        }
+        return origin;
+    }
+
+    @Inject
+    @Named("packaging2file-extension")
+    private static Map<String, String> packagingToFileExtensionMapping;
+
+    /** Get file extension of artifact by packaging, e.g. <packaging>play</packaging>*/
+    public static String getFileExtensionByPackaging(String packaging) {
+        if (packagingToFileExtensionMapping == null) {
+            return null;
+        }
+        return packagingToFileExtensionMapping.get(packaging);
+    }
+
     /** Internal Maven POM reader. */
     private static MavenXpp3Reader pomReader = new MavenXpp3Reader();
     /** Internal Maven POM writer. */
@@ -136,6 +162,41 @@ public class MavenUtils {
             return pomReader.read(stream, true);
         } catch (XmlPullParserException e) {
             throw new IOException(e);
+        }
+    }
+
+    /**
+     * Get description of maven project and all its modules if any as plain list.
+     *
+     * @param sources
+     *         maven project directory. Note: Must contains pom.xml file.
+     * @return description of maven project
+     * @throws IOException
+     *         if an i/o error occurs
+     */
+    public static List<Model> getModules(java.io.File sources) throws IOException {
+        return getModules(getModel(sources));
+    }
+
+    public static List<Model> getModules(Model model) throws IOException {
+        final List<Model> l = new LinkedList<>();
+        addModules(model, l);
+        return l;
+    }
+
+    private static void addModules(Model model, List<Model> l) throws IOException {
+        if (model.getPackaging().equals("pom")) {
+            for (String module : model.getModules()) {
+                final java.io.File pom = new java.io.File(new java.io.File(model.getProjectDirectory(), module), "pom.xml");
+                if (pom.exists()) {
+                    final Model child = readModel(pom);
+                    final Parent parent = newParent(model.getGroupId(), model.getArtifactId(), model.getVersion());
+                    parent.setRelativePath(child.getProjectDirectory().toPath().relativize(model.getPomFile().toPath()).toString());
+                    child.setParent(parent);
+                    l.add(child);
+                    addModules(child, l);
+                }
+            }
         }
     }
 
@@ -354,6 +415,39 @@ public class MavenUtils {
     }
 
     /**
+     * Parses lines of maven output of command 'mvn dependency:list', e.g. com.codenvy.platform-api:codenvy-api-factory:jar:0.26.0:compile.
+     * Maven dependency plugin sources: org.apache.maven.plugin.dependency.utils.DependencyStatusSets.getOutput(boolean, boolean, boolean)
+     *
+     * @param line
+     *         raw line. Line may contain prefix '[INFO]'
+     * @return parsed dependency model
+     */
+    public static MavenArtifact parseMavenArtifact(String line) {
+        if (line != null) {
+            final String[] segments = removeLoggerPrefix(line).split(":");
+            if (segments.length >= 5) {
+                final String groupId = segments[0];
+                final String artifactId = segments[1];
+                final String type = segments[2];
+                final String classifier;
+                final String version;
+                final String scope;
+                if (segments.length == 5) {
+                    version = segments[3];
+                    classifier = null;
+                    scope = segments[4];
+                } else {
+                    version = segments[4];
+                    classifier = segments[3];
+                    scope = segments[5];
+                }
+                return new MavenArtifact(groupId, artifactId, type, classifier, version, scope);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns an execution command to launch Maven. If Maven home
      * environment variable isn't set then 'mvn' will be returned
      * since it's assumed that 'mvn' should be in PATH variable.
@@ -560,5 +654,19 @@ public class MavenUtils {
         final ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).redirectErrorStream(true);
         final Process process = processBuilder.start();
         ProcessUtil.process(process, cmdOutput, LineConsumer.DEV_NULL);
+    }
+
+    /** Checks is specified project is codenvy extension.*/
+    public static boolean isCodenvyExtensionProject(java.io.File workDir) throws IOException {
+        return isCodenvyExtensionProject(MavenUtils.getModel(workDir));
+    }
+
+    public static boolean isCodenvyExtensionProject(Model pom) {
+        for (Dependency dependency : pom.getDependencies()) {
+            if ("codenvy-ide-api".equals(dependency.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

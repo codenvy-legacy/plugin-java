@@ -8,19 +8,29 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.builder.maven;
+package com.codenvy.ide.maven.tools;
 
-import com.codenvy.api.builder.internal.Builder;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.Multibinder;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
-/** @author andrew00x */
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author andrew00x
+ */
 @DynaModule
-public class MavenBuilderModule extends AbstractModule {
+public class MavenUtilsModule extends AbstractModule {
     @Override
     protected void configure() {
-        Multibinder<Builder> multiBinder = Multibinder.newSetBinder(binder(), Builder.class);
-        multiBinder.addBinding().to(MavenBuilder.class);
+        Map<String, String> pluginPackaging = new HashMap<>();
+        pluginPackaging.put("play", ".zip");
+        pluginPackaging.put("play2", ".war");
+        pluginPackaging.put("grails-app", ".war");
+        bind(new TypeLiteral<Map<String, String>>() {
+        }).annotatedWith(Names.named("packaging2file-extension")).toInstance(pluginPackaging);
+        requestStaticInjection(MavenUtils.class);
     }
 }
