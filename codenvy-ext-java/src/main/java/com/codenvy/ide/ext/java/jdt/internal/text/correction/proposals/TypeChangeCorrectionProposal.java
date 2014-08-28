@@ -46,7 +46,7 @@ import com.codenvy.ide.ext.java.jdt.internal.ui.BindingLabelProvider;
 import com.codenvy.ide.ext.java.jdt.internal.ui.JavaElementLabels;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 
 import java.util.Arrays;
 import java.util.Comparator;

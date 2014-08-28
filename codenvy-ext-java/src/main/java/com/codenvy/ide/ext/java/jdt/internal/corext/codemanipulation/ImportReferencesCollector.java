@@ -43,7 +43,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.ThisExpression;
 import com.codenvy.ide.ext.java.jdt.core.dom.TypeDeclaration;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.GenericVisitor;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ScopeAnalyzer;
-import com.codenvy.ide.text.Region;
+import com.codenvy.ide.api.text.Region;
 
 import java.util.Collection;
 import java.util.Iterator;

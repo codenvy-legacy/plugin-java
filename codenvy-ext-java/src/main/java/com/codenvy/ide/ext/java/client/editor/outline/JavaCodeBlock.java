@@ -10,9 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor.outline;
 
+import com.codenvy.ide.api.texteditor.outline.CodeBlock;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Jso;
-import com.codenvy.ide.texteditor.api.outline.CodeBlock;
 
 
 /**

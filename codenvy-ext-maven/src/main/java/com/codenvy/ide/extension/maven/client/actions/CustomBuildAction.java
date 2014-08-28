@@ -11,11 +11,11 @@
 package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.ide.api.action.Action;
+import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.action.Action;
-import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.MavenResources;
 import com.codenvy.ide.extension.maven.client.build.MavenBuilderPresenter;
@@ -30,21 +30,22 @@ import com.google.inject.Singleton;
 @Singleton
 public class CustomBuildAction extends Action {
 
-    private final ResourceProvider      resourceProvider;
+    private final AppContext            appContext;
     private final MavenBuilderPresenter presenter;
     private final AnalyticsEventLogger  eventLogger;
-    private BuildContext buildContext;
+    private       BuildContext          buildContext;
 
     @Inject
     public CustomBuildAction(MavenBuilderPresenter presenter,
                              MavenResources resources,
                              MavenLocalizationConstant localizationConstant,
-                             ResourceProvider resourceProvider, AnalyticsEventLogger eventLogger,
+                             AppContext appContext,
+                             AnalyticsEventLogger eventLogger,
                              BuildContext buildContext) {
         super(localizationConstant.buildProjectControlTitle(),
               localizationConstant.buildProjectControlDescription(), null, resources.build());
         this.presenter = presenter;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.buildContext = buildContext;
     }
@@ -59,7 +60,7 @@ public class CustomBuildAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        Project activeProject = resourceProvider.getActiveProject();
+        CurrentProject activeProject = appContext.getCurrentProject();
         if (activeProject != null) {
             final String builder = activeProject.getAttributeValue("builder.name");
             if ("maven".equals(builder)) {

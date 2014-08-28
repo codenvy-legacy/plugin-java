@@ -213,47 +213,21 @@ public class AntBuilder extends Builder {
                         }
                     }
                 }
+                final FileFilter filter = new FileFilter() {
+                    final FileFilter system = AntUtils.newSystemFileFilter();
+
+                    @Override
+                    public boolean accept(java.io.File pathname) {
+                        return system.accept(pathname) && !BUILD_LISTENER_CLASS_PATH.equals(pathname.getAbsolutePath());
+                    }
+                };
                 if (isJar && config.getRequest().isIncludeDependencies()) {
                     result.getResults().clear();
                     // Get all needed dependencies from classpath. Do that only for jar files. We need to have single jar that contains all
                     // dependencies of project otherwise we won't be able to run application on runner side.
-                    java.io.File withDependencies = new java.io.File(workDir, DEFAULT_JAR_WITH_DEPENDENCIES_NAME);
-                    final FileFilter filter = newSystemFileFilter();
-                    final UniqueNameChecker uniqueNameChecker = new UniqueNameChecker();
+                    final java.io.File withDependencies = new java.io.File(workDir, DEFAULT_JAR_WITH_DEPENDENCIES_NAME);
                     try {
-                        FileOutputStream fOut = null;
-                        ZipOutputStream zipOut = null;
-                        try {
-                            fOut = new FileOutputStream(withDependencies);
-                            zipOut = new ZipOutputStream(fOut);
-
-                            for (AntEvent event : server.receiver.events) {
-                                if (event.isPack()) {
-                                    zipOut.putNextEntry(new ZipEntry("application.jar"));
-                                    Files.copy(event.getPack().toPath(), zipOut);
-                                    zipOut.closeEntry();
-                                }
-                                if (event.isClasspath()) {
-                                    for (java.io.File item : event.getClasspath()) {
-                                        if (!item.isFile()) {
-                                            continue;
-                                        }
-                                        if (item.exists() && filter.accept(item)) {
-                                            zipOut.putNextEntry(new ZipEntry("lib/" + uniqueNameChecker.maybeAddIndex(item.getName())));
-                                            Files.copy(item.toPath(), zipOut);
-                                            zipOut.closeEntry();
-                                        }
-                                    }
-                                }
-                            }
-                        } finally {
-                            if (zipOut != null) {
-                                zipOut.close();
-                            }
-                            if (fOut != null) {
-                                fOut.close();
-                            }
-                        }
+                        writeJarWithDependencies(withDependencies, server.receiver.events, filter);
                     } catch (IOException e) {
                         throw new BuilderException(e);
                     }
@@ -264,7 +238,14 @@ public class AntBuilder extends Builder {
                 // Status may be unsuccessful we are not care about it, we just need to get classpath.
                 final BuildResult result = new BuildResult(true);
                 final Set<java.io.File> classpath = new LinkedHashSet<>();
-                final FileFilter filter = newSystemFileFilter();
+                final FileFilter filter = new FileFilter() {
+                    final FileFilter system = AntUtils.newSystemFileFilter();
+
+                    @Override
+                    public boolean accept(java.io.File pathname) {
+                        return system.accept(pathname) && !BUILD_LISTENER_CLASS_PATH.equals(pathname.getAbsolutePath());
+                    }
+                };
                 for (AntEvent event : server.receiver.events) {
                     if (event.isClasspath()) {
                         for (java.io.File item : event.getClasspath()) {
@@ -323,65 +304,42 @@ public class AntBuilder extends Builder {
         return port;
     }
 
-    /* Ant may add two tools.jar in classpath. It uses two JavaHome locations. One from java system property and one from OS environment
-    variable. Ant sources: org.apache.tools.ant.launch.Locator.getToolsJar */
+    private void writeJarWithDependencies(java.io.File withDependencies, List<AntEvent> events, java.io.FileFilter filter)
+            throws IOException {
+        final UniqueNameChecker uniqueNameChecker = new UniqueNameChecker();
+        FileOutputStream fOut = null;
+        ZipOutputStream zipOut = null;
+        try {
+            fOut = new FileOutputStream(withDependencies);
+            zipOut = new ZipOutputStream(fOut);
 
-    private java.io.File getJavaHome() {
-        final String javaHomeEnv = System.getenv("JAVA_HOME");
-        if (javaHomeEnv == null) {
-            return null;
-        }
-        java.io.File javaHome = new java.io.File(javaHomeEnv);
-        return javaHome.exists() ? javaHome : null;
-    }
-
-    private java.io.File getJavaHome2() {
-        String javaHomeSys = System.getProperty("java.home");
-        if (javaHomeSys == null) {
-            return null;
-        }
-        java.io.File javaHome = new java.io.File(javaHomeSys);
-        if (!javaHome.exists()) {
-            return null;
-        }
-        final String toolsJar = "lib" + java.io.File.separatorChar + "tools.jar";
-        if (new java.io.File(javaHome, toolsJar).exists()) {
-            return javaHome;
-        }
-        if (javaHomeSys.endsWith("jre")) {
-            javaHomeSys = javaHomeSys.substring(0, javaHomeSys.length() - 4); // remove "/jre"
-        }
-        javaHome = new java.io.File(javaHomeSys);
-        if (!javaHome.exists()) {
-            return null;
-        }
-        if (new java.io.File(javaHome, toolsJar).exists()) {
-            return javaHome;
-        }
-        return null;
-    }
-
-    /* ~ */
-
-    private FileFilter newSystemFileFilter() {
-        final java.io.File antHome = AntUtils.getAntHome();
-        final java.io.File javaHome = getJavaHome();
-        final java.io.File javaHome2 = getJavaHome2();
-        final Path antHomePath = antHome == null ? null : antHome.toPath();
-        final Path javaHomePath = javaHome == null ? null : javaHome.toPath();
-        final Path javaHomePath2 = javaHome2 == null ? null : javaHome2.toPath();
-        final Path myToolsPath = new java.io.File(BUILD_LISTENER_CLASS_PATH).toPath();
-        return new FileFilter() {
-            @Override
-            public boolean accept(java.io.File file) {
-                final Path path = file.toPath();
-                // Skip ant and system jars
-                return !(javaHomePath != null && path.startsWith(javaHomePath)
-                         || javaHomePath2 != null && path.startsWith(javaHomePath2)
-                         || antHomePath != null && path.startsWith(antHomePath)
-                         || path.equals(myToolsPath));
+            for (AntEvent event : events) {
+                if (event.isPack()) {
+                    zipOut.putNextEntry(new ZipEntry("application.jar"));
+                    Files.copy(event.getPack().toPath(), zipOut);
+                    zipOut.closeEntry();
+                }
+                if (event.isClasspath()) {
+                    for (java.io.File item : event.getClasspath()) {
+                        if (!item.isFile()) {
+                            continue;
+                        }
+                        if (item.exists() && filter.accept(item)) {
+                            zipOut.putNextEntry(new ZipEntry("lib/" + uniqueNameChecker.maybeAddIndex(item.getName())));
+                            Files.copy(item.toPath(), zipOut);
+                            zipOut.closeEntry();
+                        }
+                    }
+                }
             }
-        };
+        } finally {
+            if (zipOut != null) {
+                zipOut.close();
+            }
+            if (fOut != null) {
+                fOut.close();
+            }
+        }
     }
 
     private void writeDependenciesJson(Set<java.io.File> classpath, java.io.File workDir, java.io.File jsonFile) throws IOException {

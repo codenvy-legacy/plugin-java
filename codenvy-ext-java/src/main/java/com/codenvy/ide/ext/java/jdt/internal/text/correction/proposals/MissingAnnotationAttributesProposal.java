@@ -32,7 +32,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ContextSens
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.CorrectionMessages;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.Document;
+import com.codenvy.ide.api.text.Document;
 
 import java.util.HashSet;
 import java.util.List;

@@ -24,11 +24,11 @@ import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite.ImportRewrite
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.edits.MalformedTreeException;
-import com.codenvy.ide.text.edits.MultiTextEdit;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.MalformedTreeException;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 
 
 /**

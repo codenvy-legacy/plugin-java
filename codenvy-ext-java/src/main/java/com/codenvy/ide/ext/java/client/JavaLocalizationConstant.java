@@ -48,6 +48,9 @@ public interface JavaLocalizationConstant extends Messages {
     @Key("action.newPackage.description")
     String actionNewPackageDescription();
 
+    @Key("messages.newPackage.invalidName")
+    String messagesNewPackageInvalidName();
+
     @Key("messages.file.successfully.parsed")
     String fileFuccessfullyParsed();
 
@@ -59,5 +62,4 @@ public interface JavaLocalizationConstant extends Messages {
 
     @Key("messages.dependencies.updating.dependencies")
     String updatingDependencies();
-
 }

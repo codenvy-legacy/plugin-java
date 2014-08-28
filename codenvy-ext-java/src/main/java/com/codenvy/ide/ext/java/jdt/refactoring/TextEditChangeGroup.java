@@ -10,7 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
-import com.codenvy.ide.text.edits.TextEditGroup;
+
+import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 /**
  * This class is a wrapper around a {@link TextEditGroup TextEditGroup}

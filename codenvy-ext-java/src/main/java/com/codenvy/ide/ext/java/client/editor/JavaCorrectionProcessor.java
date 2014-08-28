@@ -11,7 +11,15 @@
 package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
-import com.codenvy.ide.api.ui.Icon;
+import com.codenvy.ide.api.icon.Icon;
+import com.codenvy.ide.api.text.Position;
+import com.codenvy.ide.api.text.annotation.Annotation;
+import com.codenvy.ide.api.text.annotation.AnnotationModel;
+import com.codenvy.ide.api.texteditor.CodeAssistCallback;
+import com.codenvy.ide.api.texteditor.TextEditorPartView;
+import com.codenvy.ide.api.texteditor.codeassistant.CompletionProposal;
+import com.codenvy.ide.api.texteditor.quickassist.QuickAssistInvocationContext;
+import com.codenvy.ide.api.texteditor.quickassist.QuickAssistProcessor;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.js.JsoArray;
 import com.codenvy.ide.ext.java.client.JavaResources;
@@ -20,19 +28,11 @@ import com.codenvy.ide.ext.java.jdt.core.IJavaModelMarker;
 import com.codenvy.ide.ext.java.messages.ProblemLocationMessage;
 import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
-import com.codenvy.ide.text.Position;
-import com.codenvy.ide.text.annotation.Annotation;
-import com.codenvy.ide.text.annotation.AnnotationModel;
-import com.codenvy.ide.texteditor.api.CodeAssistCallback;
-import com.codenvy.ide.texteditor.api.TextEditorPartView;
-import com.codenvy.ide.texteditor.api.codeassistant.CompletionProposal;
-import com.codenvy.ide.texteditor.api.quickassist.QuickAssistInvocationContext;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
  */
-public class JavaCorrectionProcessor implements com.codenvy.ide.texteditor.api.quickassist.QuickAssistProcessor {
+public class JavaCorrectionProcessor implements QuickAssistProcessor {
 
     private final JavaCorrectionAssistant assistant;
     private       JavaParserWorker        worker;

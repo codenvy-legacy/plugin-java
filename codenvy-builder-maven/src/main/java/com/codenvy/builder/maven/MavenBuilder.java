@@ -13,7 +13,6 @@ package com.codenvy.builder.maven;
 import com.codenvy.api.builder.BuilderException;
 import com.codenvy.api.builder.dto.BuildRequest;
 import com.codenvy.api.builder.dto.BuilderEnvironment;
-import com.codenvy.api.builder.dto.Dependency;
 import com.codenvy.api.builder.internal.BuildLogger;
 import com.codenvy.api.builder.internal.BuildResult;
 import com.codenvy.api.builder.internal.Builder;
@@ -21,14 +20,14 @@ import com.codenvy.api.builder.internal.BuilderConfiguration;
 import com.codenvy.api.builder.internal.BuilderTaskType;
 import com.codenvy.api.builder.internal.Constants;
 import com.codenvy.api.builder.internal.DelegateBuildLogger;
-import com.codenvy.api.builder.internal.DependencyCollector;
 import com.codenvy.api.builder.internal.SourceManagerEvent;
 import com.codenvy.api.builder.internal.SourceManagerListener;
 import com.codenvy.api.builder.internal.SourcesManager;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.util.CommandLine;
-import com.codenvy.builder.maven.dto.MavenDependency;
+import com.codenvy.commons.json.JsonHelper;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.maven.tools.MavenArtifact;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.apache.maven.model.Model;
@@ -41,13 +40,14 @@ import javax.inject.Singleton;
 import java.io.BufferedReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Builder based on Maven.
@@ -60,48 +60,47 @@ public class MavenBuilder extends Builder {
     private static final Logger LOG = LoggerFactory.getLogger(MavenBuilder.class);
 
     /** Rules for builder assembly plugin. Use it for create jar with included dependencies */
-    private static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES      = "<assembly>\n" +
-                                                                                     "  <id>jar-with-dependencies</id>\n" +
-                                                                                     "  <formats>\n" +
-                                                                                     "    <format>zip</format>\n" +
-                                                                                     "  </formats>\n" +
-                                                                                     "  <includeBaseDirectory>false</includeBaseDirectory>\n" +
-                                                                                     "  <dependencySets>\n" +
-                                                                                     "    <dependencySet>\n" +
-                                                                                     "      <outputDirectory>/lib</outputDirectory>\n" +
-                                                                                     "      <unpack>false</unpack>\n" +
-                                                                                     "      <useProjectArtifact>false</useProjectArtifact>\n" +
-                                                                                     "    </dependencySet>\n" +
-                                                                                     "  </dependencySets>\n" +
-                                                                                     "  <files>\n" +
-                                                                                     "    <file>\n" +
-                                                                                     "      <source>${project.build.directory}/${project.build.finalName}.jar</source>\n" +
-                                                                                     "      <outputDirectory>/</outputDirectory>\n" +
-                                                                                     "      <destName>application.jar</destName>\n" +
-                                                                                     "    </file>\n" +
-                                                                                     "  </files>\n" +
-                                                                                     "</assembly>\n";
+    public static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES = "<assembly>\n" +
+                                                                               "  <id>jar-with-dependencies</id>\n" +
+                                                                               "  <formats>\n" +
+                                                                               "    <format>zip</format>\n" +
+                                                                               "  </formats>\n" +
+                                                                               "  <includeBaseDirectory>false</includeBaseDirectory>\n" +
+                                                                               "  <dependencySets>\n" +
+                                                                               "    <dependencySet>\n" +
+                                                                               "      <outputDirectory>/lib</outputDirectory>\n" +
+                                                                               "      <unpack>false</unpack>\n" +
+                                                                               "      <useProjectArtifact>false</useProjectArtifact>\n" +
+                                                                               "    </dependencySet>\n" +
+                                                                               "  </dependencySets>\n" +
+                                                                               "  <files>\n" +
+                                                                               "    <file>\n" +
+                                                                               "      <source>${project.build.directory}/${project.build.finalName}.jar</source>\n" +
+                                                                               "      <outputDirectory>/</outputDirectory>\n" +
+                                                                               "      <destName>application.jar</destName>\n" +
+                                                                               "    </file>\n" +
+                                                                               "  </files>\n" +
+                                                                               "</assembly>\n";
+
     private static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE = "jar-with-dependencies-assembly-descriptor.xml";
 
     /** Rules for builder assembly plugin. Use it for create zip of all project dependencies. */
-    private static final String assemblyDescriptor          = "<assembly>\n" +
-                                                              "  <id>dependencies</id>\n" +
-                                                              "  <formats>\n" +
-                                                              "    <format>zip</format>\n" +
-                                                              "  </formats>\n" +
-                                                              "  <includeBaseDirectory>false</includeBaseDirectory>\n" +
-                                                              "  <fileSets>\n" +
-                                                              "    <fileSet>\n" +
-                                                              "      <directory>target/dependency</directory>\n" +
-                                                              "      <outputDirectory>/</outputDirectory>\n" +
-                                                              "    </fileSet>\n" +
-                                                              "  </fileSets>\n" +
-                                                              "</assembly>";
-    private static final String DEPENDENCIES_JSON_FILE      = "dependencies.json";
-    private static final String ASSEMBLY_DESCRIPTOR_FILE    = "dependencies-zip-assembly-descriptor.xml";
-    private static final String CODENVY_IDE_API_ARTIFACT_ID = "codenvy-ide-api";
+    public static final String assemblyDescriptor = "<assembly>\n" +
+                                                    "  <id>dependencies</id>\n" +
+                                                    "  <formats>\n" +
+                                                    "    <format>zip</format>\n" +
+                                                    "  </formats>\n" +
+                                                    "  <includeBaseDirectory>false</includeBaseDirectory>\n" +
+                                                    "  <fileSets>\n" +
+                                                    "    <fileSet>\n" +
+                                                    "      <directory>target/dependency</directory>\n" +
+                                                    "      <outputDirectory>/</outputDirectory>\n" +
+                                                    "    </fileSet>\n" +
+                                                    "  </fileSets>\n" +
+                                                    "</assembly>";
 
-    private final Map<String, String> pluginPackaging;
+    private static final String DEPENDENCIES_JSON_FILE   = "dependencies.json";
+    private static final String ASSEMBLY_DESCRIPTOR_FILE = "dependencies-zip-assembly-descriptor.xml";
 
     private final Map<String, String> mavenProperties;
 
@@ -110,10 +109,8 @@ public class MavenBuilder extends Builder {
                         @Named(Constants.NUMBER_OF_WORKERS) int numberOfWorkers,
                         @Named(Constants.QUEUE_SIZE) int queueSize,
                         @Named(Constants.KEEP_RESULT_TIME) int cleanupTime,
-                        @Named("PLUGIN_PACKAGING") Map<String, String> pluginPackaging,
                         EventService eventService) {
         super(rootDirectory, numberOfWorkers, queueSize, cleanupTime, eventService);
-        this.pluginPackaging = pluginPackaging;
 
         Map<String, String> myMavenProperties = null;
         try {
@@ -169,18 +166,17 @@ public class MavenBuilder extends Builder {
                     commandLine.add("-Dmaven.test.skip");
                 }
                 if (config.getRequest().isIncludeDependencies()) {
+                    // Project sources isn't available yet. Postpone parsing of pom.xml file until sources becomes available.
                     final SourcesManager sourcesManager = getSourcesManager();
                     final SourceManagerListener sourceListener = new SourceManagerListener() {
                         @Override
                         public void afterDownload(SourceManagerEvent event) {
                             if (workDir.equals(event.getWorkDir())) {
                                 try {
-                                    final String packaging = MavenUtils.getModel(workDir).getPackaging();
-                                    if ((packaging == null || "jar".equals(packaging)) && !isCodenvyExtensionProject(workDir)) {
-                                        Files.write(new java.io.File(workDir, ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE).toPath(),
-                                                    ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES.getBytes());
-                                        commandLine.add("assembly:single");
-                                        commandLine.addPair("-Ddescriptor", ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE);
+                                    final Model model = MavenUtils.getModel(workDir);
+                                    final String packaging = model.getPackaging();
+                                    if ((packaging == null || "jar".equals(packaging)) && !MavenUtils.isCodenvyExtensionProject(model)) {
+                                        addJarWithDependenciesAssemblyDescriptor(workDir, commandLine);
                                     }
                                 } catch (Exception e) {
                                     throw new IllegalStateException(e);
@@ -205,18 +201,28 @@ public class MavenBuilder extends Builder {
                 }
                 // Prepare file for assembly plugin. Plugin create zip archive of all dependencies.
                 try {
-                    Files.write(new java.io.File(workDir, ASSEMBLY_DESCRIPTOR_FILE).toPath(),
-                                assemblyDescriptor.getBytes());
+                    addCopyDependenciesAssemblyDescriptor(workDir, commandLine);
                 } catch (IOException e) {
                     throw new BuilderException(e);
                 }
-                commandLine.add("clean", "dependency:copy-dependencies", "assembly:single");
-                commandLine.addPair("-Ddescriptor", ASSEMBLY_DESCRIPTOR_FILE);
-                commandLine.addPair("-Dmdep.failOnMissingClassifierArtifact", "false");
                 break;
         }
         commandLine.add(config.getOptions());
         return commandLine;
+    }
+
+    private void addJarWithDependenciesAssemblyDescriptor(java.io.File workDir, CommandLine commandLine) throws IOException {
+        Files.write(new java.io.File(workDir, ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE).toPath(),
+                    ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES.getBytes());
+        commandLine.add("assembly:single");
+        commandLine.addPair("-Ddescriptor", ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE);
+    }
+
+    private void addCopyDependenciesAssemblyDescriptor(java.io.File workDir, CommandLine commandLine) throws IOException {
+        Files.write(new java.io.File(workDir, ASSEMBLY_DESCRIPTOR_FILE).toPath(), assemblyDescriptor.getBytes());
+        commandLine.add("clean", "dependency:copy-dependencies", "assembly:single");
+        commandLine.addPair("-Ddescriptor", ASSEMBLY_DESCRIPTOR_FILE);
+        commandLine.addPair("-Dmdep.failOnMissingClassifierArtifact", "false");
     }
 
     @Override
@@ -234,7 +240,7 @@ public class MavenBuilder extends Builder {
             logReader = new BufferedReader(task.getBuildLogger().getReader());
             String line;
             while ((line = logReader.readLine()) != null) {
-                line = removeLoggerPrefix(line);
+                line = MavenUtils.removeLoggerPrefix(line);
                 if ("BUILD SUCCESS".equals(line)
                     // Maven assembly plugin fails, consider it as project hasn't any dependencies, e.g. java web application that has only jsp ans static content.
                     || line.contains(
@@ -263,33 +269,62 @@ public class MavenBuilder extends Builder {
         java.io.File[] files = null;
         switch (config.getTaskType()) {
             case DEFAULT:
-                final Model mavenModel;
+                final Model model;
                 try {
-                    mavenModel = MavenUtils.getModel(workDir);
+                    model = MavenUtils.getModel(workDir);
                 } catch (IOException e) {
                     throw new BuilderException(e);
                 }
-                final String packaging = mavenModel.getPackaging();
-
-                // TODO Make detecting result of maven plugin building without initialization in code
-                final String fileExt;
-                if (pluginPackaging.containsKey(packaging)) {
-                    fileExt = '.' + pluginPackaging.get(packaging);
-                } else {
-                    fileExt = (packaging == null || packaging.equals("jar")) && config.getRequest().isIncludeDependencies() &&
-                              !isCodenvyExtensionProject(workDir)
-                              ? ".zip"
-                              : packaging != null
-                                ? '.' + packaging
-                                : ".jar";
+                String packaging = model.getPackaging();
+                if (packaging == null) {
+                    packaging = "jar";
                 }
-
-                files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(java.io.File dir, String name) {
-                        return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                if (packaging.equals("pom")) {
+                    final List<Model> modules;
+                    final List<java.io.File> results = new LinkedList<>();
+                    try {
+                        modules = MavenUtils.getModules(model);
+                    } catch (IOException e) {
+                        throw new BuilderException(e);
                     }
-                });
+                    for (Model child : modules) {
+                        String childPackaging = child.getPackaging();
+                        if (childPackaging == null) {
+                            childPackaging = "jar";
+                        }
+                        final String fileExt;
+                        String ext = MavenUtils.getFileExtensionByPackaging(childPackaging);
+                        if (ext == null) {
+                            ext = '.' + childPackaging;
+                        }
+                        fileExt = ext;
+                        final java.io.File[] a = new java.io.File(child.getProjectDirectory(), "target").listFiles(new FilenameFilter() {
+                            @Override
+                            public boolean accept(java.io.File dir, String name) {
+                                return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                            }
+                        });
+                        if (a != null && a.length > 0) {
+                            Collections.addAll(results, a);
+                        }
+                    }
+                    files = results.toArray(new java.io.File[results.size()]);
+                } else {
+                    final String fileExt;
+                    String ext = MavenUtils.getFileExtensionByPackaging(packaging);
+                    if (ext == null) {
+                        ext = packaging.equals("jar")
+                              && config.getRequest().isIncludeDependencies()
+                              && !MavenUtils.isCodenvyExtensionProject(model) ? ".zip" : ('.' + packaging);
+                    }
+                    fileExt = ext;
+                    files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(java.io.File dir, String name) {
+                            return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                        }
+                    });
+                }
                 break;
             case LIST_DEPS:
                 files = workDir.listFiles(new FilenameFilter() {
@@ -310,9 +345,7 @@ public class MavenBuilder extends Builder {
         }
 
         if (files != null && files.length > 0) {
-            for (java.io.File file : files) {
-                result.getResults().add(file);
-            }
+            Collections.addAll(result.getResults(), files);
         }
 
         return result;
@@ -338,82 +371,36 @@ public class MavenBuilder extends Builder {
                                          new java.io.File(configuration.getWorkDir(), DEPENDENCIES_JSON_FILE));
     }
 
-    private static final Pattern LOGGER_PREFIX_REMOVER = Pattern.compile("(\\[INFO\\]|\\[WARNING\\]|\\[DEBUG\\])\\s+(.*)");
-
-    private static String removeLoggerPrefix(String origin) {
-        final Matcher matcher = LOGGER_PREFIX_REMOVER.matcher(origin);
-        if (matcher.matches()) {
-            return origin.substring(matcher.start(2));
-        }
-        return origin;
-    }
-
-    private boolean isCodenvyExtensionProject(java.io.File workDir) throws BuilderException {
-        try {
-            List<org.apache.maven.model.Dependency> dependencies = MavenUtils.getModel(workDir).getDependencies();
-            for (org.apache.maven.model.Dependency dependency : dependencies) {
-                if (CODENVY_IDE_API_ARTIFACT_ID.equals(dependency.getArtifactId())) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        }
-        return false;
-
-    }
-
     private static class DependencyBuildLogger extends DelegateBuildLogger {
         final java.io.File jsonFile;
 
         boolean             dependencyStarted;
-        DependencyCollector collector;
+        List<MavenArtifact> dependencies;
 
         DependencyBuildLogger(BuildLogger buildLogger, java.io.File jsonFile) {
             super(buildLogger);
             this.jsonFile = jsonFile;
+            this.dependencies = new LinkedList<>();
         }
 
         @Override
         public void writeLine(String line) throws IOException {
             if (line != null) {
-                final String trimmed = removeLoggerPrefix(line);
+                final String trimmed = MavenUtils.removeLoggerPrefix(line);
                 if (dependencyStarted) {
                     if (trimmed.isEmpty()) {
                         dependencyStarted = false;
-                        collector.writeJson(jsonFile);
+                        try (Writer writer = Files.newBufferedWriter(jsonFile.toPath(), Charset.forName("UTF-8"))) {
+                            writer.write(JsonHelper.toJson(dependencies));
+                        }
                     } else {
-                        final String[] segments = trimmed.split(":");
-                        if (segments.length >= 5) {
-                            final String groupId = segments[0];
-                            final String artifactId = segments[1];
-                            final String type = segments[2];
-                            final String classifier;
-                            final String version;
-                            final String scope;
-                            if (segments.length == 5) {
-                                version = segments[3];
-                                classifier = null;
-                                scope = segments[4];
-                            } else {
-                                version = segments[4];
-                                classifier = segments[3];
-                                scope = segments[5];
-                            }
-                            final Dependency dep = DtoFactory.getInstance().createDto(MavenDependency.class)
-                                                             .withGroupID(groupId)
-                                                             .withArtifactID(artifactId)
-                                                             .withType(type)
-                                                             .withVersion(version)
-                                                             .withClassifier(classifier)
-                                                             .withScope(scope)
-                                                             .withFullName(groupId + ':' + artifactId + ':' + version + ':' + type);
-                            collector.addDependency(dep);
+                        final MavenArtifact artifact = MavenUtils.parseMavenArtifact(line);
+                        if (artifact != null) {
+                            dependencies.add(artifact);
                         }
                     }
                 } else if ("The following files have been resolved:".equals(trimmed)) {
                     dependencyStarted = true;
-                    collector = new DependencyCollector();
                 }
             }
 

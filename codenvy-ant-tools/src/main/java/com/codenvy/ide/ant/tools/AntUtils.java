@@ -14,6 +14,7 @@ import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -46,6 +47,65 @@ public class AntUtils {
         }
         java.io.File antHome = new java.io.File(antHomeEnv);
         return antHome.exists() ? antHome : null;
+    }
+
+    private static java.io.File getJavaHome() {
+        final String javaHomeEnv = System.getenv("JAVA_HOME");
+        if (javaHomeEnv == null) {
+            return null;
+        }
+        java.io.File javaHome = new java.io.File(javaHomeEnv);
+        return javaHome.exists() ? javaHome : null;
+    }
+
+    private static java.io.File getJavaHome2() {
+        String javaHomeSys = System.getProperty("java.home");
+        if (javaHomeSys == null) {
+            return null;
+        }
+        java.io.File javaHome = new java.io.File(javaHomeSys);
+        if (!javaHome.exists()) {
+            return null;
+        }
+        final String toolsJar = "lib" + java.io.File.separatorChar + "tools.jar";
+        if (new java.io.File(javaHome, toolsJar).exists()) {
+            return javaHome;
+        }
+        if (javaHomeSys.endsWith("jre")) {
+            javaHomeSys = javaHomeSys.substring(0, javaHomeSys.length() - 4); // remove "/jre"
+        }
+        javaHome = new java.io.File(javaHomeSys);
+        if (!javaHome.exists()) {
+            return null;
+        }
+        if (new java.io.File(javaHome, toolsJar).exists()) {
+            return javaHome;
+        }
+        return null;
+    }
+
+    /**
+     * Creates FileFilter that helps filter system.
+     * Ant may add two tools.jar in classpath. It uses two JavaHome locations. One from java system property and one from OS environment
+     * variable. Ant sources: org.apache.tools.ant.launch.Locator.getToolsJar.
+     */
+    public static FileFilter newSystemFileFilter() {
+        final java.io.File antHome = AntUtils.getAntHome();
+        final java.io.File javaHome = getJavaHome();
+        final java.io.File javaHome2 = getJavaHome2();
+        final Path antHomePath = antHome == null ? null : antHome.toPath();
+        final Path javaHomePath = javaHome == null ? null : javaHome.toPath();
+        final Path javaHomePath2 = javaHome2 == null ? null : javaHome2.toPath();
+        return new FileFilter() {
+            @Override
+            public boolean accept(java.io.File file) {
+                final Path path = file.toPath();
+                // Skip ant and system jars
+                return !(javaHomePath != null && path.startsWith(javaHomePath)
+                         || javaHomePath2 != null && path.startsWith(javaHomePath2)
+                         || antHomePath != null && path.startsWith(antHomePath));
+            }
+        };
     }
 
     private static final Path   BUILD_FILE_PATH    = Paths.get(System.getProperty("java.io.tmpdir"), "codenvy_ant_properties.xml");

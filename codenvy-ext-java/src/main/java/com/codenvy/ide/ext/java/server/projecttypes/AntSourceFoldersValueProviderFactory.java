@@ -15,11 +15,7 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
-import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.shared.ValueProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -33,7 +29,6 @@ import java.util.List;
  */
 @Singleton
 public class AntSourceFoldersValueProviderFactory implements ValueProviderFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(AntSourceFoldersValueProviderFactory.class);
 
     @Override
     public String getName() {
@@ -46,13 +41,13 @@ public class AntSourceFoldersValueProviderFactory implements ValueProviderFactor
             @Override
             public List<String> getValues() {
                 final List<String> list = new LinkedList<>();
+                FileEntry buildDescriptor = null;
                 try {
-                    final VirtualFileEntry buildXml = project.getBaseFolder().getChild("build.xml");
-                    if (buildXml != null && buildXml.isFile()) {
-                        list.addAll(getAntSourceFolders((FileEntry)buildXml));
-                    }
-                } catch (ForbiddenException | ServerException e) {
-                    LOG.error(e.getMessage(), e);
+                    buildDescriptor = (FileEntry)project.getBaseFolder().getChild("build.xml");
+                } catch (ForbiddenException | ServerException ignored) {
+                }
+                if (buildDescriptor != null) {
+                    list.addAll(getAntSourceFolders(buildDescriptor));
                 }
                 return list;
             }

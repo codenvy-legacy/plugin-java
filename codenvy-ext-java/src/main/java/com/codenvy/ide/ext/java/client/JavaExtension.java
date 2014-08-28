@@ -11,54 +11,50 @@
 package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.action.ActionManager;
+import com.codenvy.ide.api.action.DefaultActionGroup;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.CodenvyTextEditor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorRegistry;
+import com.codenvy.ide.api.event.FileEvent;
+import com.codenvy.ide.api.event.FileEventHandler;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.filetypes.FileType;
 import com.codenvy.ide.api.filetypes.FileTypeRegistry;
+import com.codenvy.ide.api.icon.Icon;
+import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.FileEvent;
-import com.codenvy.ide.api.resources.FileEventHandler;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.Icon;
-import com.codenvy.ide.api.ui.IconRegistry;
-import com.codenvy.ide.api.ui.action.ActionManager;
-import com.codenvy.ide.api.ui.action.DefaultActionGroup;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.texteditor.reconciler.Reconciler;
+import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.StringMap;
-import com.codenvy.ide.ext.java.client.action.NewJavaClassAction;
+import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
 import com.codenvy.ide.ext.java.client.action.UpdateDependencyAction;
 import com.codenvy.ide.ext.java.client.editor.JavaEditorProvider;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaReconcilerStrategy;
-import com.codenvy.ide.ext.java.client.format.FormatController;
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProject;
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProjectModelProvider;
+import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
-import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.texteditor.api.reconciler.Reconciler;
-import com.codenvy.ide.texteditor.api.reconciler.ReconcilingStrategy;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD;
+import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD_CONTEXT_MENU;
+import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
 import static com.codenvy.ide.api.notification.Notification.Status.PROGRESS;
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
-import static com.codenvy.ide.api.ui.action.IdeActions.GROUP_BUILD;
-import static com.codenvy.ide.api.ui.action.IdeActions.GROUP_BUILD_CONTEXT_MENU;
-import static com.codenvy.ide.api.ui.action.IdeActions.GROUP_FILE_NEW;
 
 /** @author Evgen Vidolob */
 @Extension(title = "Java syntax highlighting and code autocompletion.", version = "3.0.0")
@@ -74,8 +70,7 @@ public class JavaExtension {
     private BuildContext             buildContext;
 
     @Inject
-    public JavaExtension(ResourceProvider resourceProvider,
-                         FileTypeRegistry fileTypeRegistry,
+    public JavaExtension(FileTypeRegistry fileTypeRegistry,
                          NotificationManager notificationManager,
                          EditorRegistry editorRegistry,
                          JavaEditorProvider javaEditorProvider,
@@ -83,21 +78,16 @@ public class JavaExtension {
                          @Named("workspaceId") String workspaceId,
                          ActionManager actionManager,
                          AsyncRequestFactory asyncRequestFactory,
-                         ProjectServiceClient projectServiceClient,
-                         IconRegistry iconRegistry,
-                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
                          EditorAgent editorAgent,
                          AnalyticsEventLogger eventLogger,
                          JavaResources resources,
                          JavaLocalizationConstant localizationConstant,
                          NewPackageAction newPackageAction,
-                         NewJavaClassAction newJavaClassAction,
+                         NewJavaSourceFileAction newJavaSourceFileAction,
                          JavaParserWorker parserWorker,
                          @Named("JavaFileType") FileType javaFile,
-                         /** Create an instance of the FormatController is used for the correct operation of the formatter. Do not
-                          * delete!. */
-                         FormatController formatController,
-                         BuildContext buildContext) {
+                         BuildContext buildContext,
+                         AppContext appContext) {
         this.notificationManager = notificationManager;
         this.workspaceId = workspaceId;
         this.asyncRequestFactory = asyncRequestFactory;
@@ -106,31 +96,23 @@ public class JavaExtension {
         this.parserWorker = parserWorker;
         this.buildContext = buildContext;
 
-        // register new Icons for java projecttype
-        iconRegistry.registerIcon(new Icon("java.samples.category.icon", resources.samplesCategoryJava()));
-        iconRegistry.registerIcon(new Icon("java.class", "java-extension/java-icon.png"));
-        iconRegistry.registerIcon(new Icon("java.package", "java-extension/package-icon.png"));
-
         editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
         fileTypeRegistry.registerFileType(javaFile);
 
-        resourceProvider.registerModelProvider("java", new JavaProjectModelProvider(eventBus, asyncRequestFactory, projectServiceClient,
-                                                                                    dtoUnmarshallerFactory));
-
         JavaResources.INSTANCE.css().ensureInjected();
 
-        // add actions to New group
+        // add actions in File -> New group
         actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
-        actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaClassAction);
+        actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
         DefaultActionGroup newGroup = (DefaultActionGroup)actionManager.getAction(GROUP_FILE_NEW);
         newGroup.addSeparator();
-        newGroup.add(newJavaClassAction);
+        newGroup.add(newJavaSourceFileAction);
         newGroup.add(newPackageAction);
 
         // add actions in context menu
         DefaultActionGroup buildContextMenuGroup = (DefaultActionGroup)actionManager.getAction(GROUP_BUILD_CONTEXT_MENU);
         buildContextMenuGroup.addSeparator();
-        UpdateDependencyAction dependencyAction = new UpdateDependencyAction(this, resourceProvider, eventLogger, resources, buildContext);
+        UpdateDependencyAction dependencyAction = new UpdateDependencyAction(this, appContext, eventLogger, resources, buildContext);
         actionManager.registerAction("updateDependency", dependencyAction);
         buildContextMenuGroup.addAction(dependencyAction);
 
@@ -140,18 +122,14 @@ public class JavaExtension {
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
-                Project project = event.getProject();
-                if (project instanceof JavaProject) {
-                    updateDependencies(project);
+                ProjectDescriptor project = event.getProject();
+                if ("java".equals(project.getAttributes().get(Constants.LANGUAGE).get(0))) {
+                    updateDependencies(project.getPath());
                 }
             }
 
             @Override
             public void onProjectClosed(ProjectActionEvent event) {
-            }
-
-            @Override
-            public void onProjectDescriptionChanged(ProjectActionEvent event) {
             }
         });
 
@@ -160,7 +138,9 @@ public class JavaExtension {
             public void onFileOperation(FileEvent event) {
                 String name = event.getFile().getName();
                 if (event.getOperationType() == FileEvent.FileOperation.SAVE && "pom.xml".equals(name)) {
-                    updateDependencies(event.getFile().getProject());
+                    final String filePath = event.getFile().getPath();
+                    final String projectPath = filePath.substring(0, filePath.indexOf('/', 1));
+                    updateDependencies(projectPath);
                 }
             }
         });
@@ -179,12 +159,33 @@ public class JavaExtension {
 
     }-*/;
 
-    public void updateDependencies(final Project project) {
+    @Inject
+    private void registerIcons(IconRegistry iconRegistry, JavaResources resources) {
+        // icons for project tree nodes
+        iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
+        iconRegistry.registerIcon(new Icon("java.sourceFolder", resources.sourceFolder()));
+        // icons for project types
+        iconRegistry.registerIcon(new Icon("maven.projecttype.big.icon", "java-extension/jar_64.png"));
+        // icons for file extensions
+        iconRegistry.registerIcon(new Icon("maven/java.file.small.icon", resources.javaFile()));
+        iconRegistry.registerIcon(new Icon("maven/xml.file.small.icon", resources.xmlFile()));
+        iconRegistry.registerIcon(new Icon("maven/css.file.small.icon", resources.cssFile()));
+        iconRegistry.registerIcon(new Icon("maven/js.file.small.icon", resources.jsFile()));
+        iconRegistry.registerIcon(new Icon("maven/json.file.small.icon", resources.jsonFile()));
+        iconRegistry.registerIcon(new Icon("maven/html.file.small.icon", resources.htmlFile()));
+        iconRegistry.registerIcon(new Icon("maven/jsp.file.small.icon", resources.jspFile()));
+        iconRegistry.registerIcon(new Icon("maven/gif.file.small.icon", resources.imageIcon()));
+        iconRegistry.registerIcon(new Icon("maven/jpg.file.small.icon", resources.imageIcon()));
+        iconRegistry.registerIcon(new Icon("maven/png.file.small.icon", resources.imageIcon()));
+        // icons for file names
+        iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
+    }
+
+    public void updateDependencies(final String projectPath) {
         if (updating) {
             needForUpdate = true;
             return;
         }
-        String projectPath = project.getPath();
         String url = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies?projectpath=" + projectPath;
 
         final Notification notification = new Notification(localizationConstant.updatingDependencies(), PROGRESS);
@@ -214,7 +215,7 @@ public class JavaExtension {
                         }
                         if (needForUpdate) {
                             needForUpdate = false;
-                            updateDependencies(project);
+                            updateDependencies(projectPath);
                         }
                     }
                 });

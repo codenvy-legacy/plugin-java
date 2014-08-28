@@ -26,8 +26,8 @@ import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.edits.TextEditGroup;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 
 public class CompilationUnitRewriteOperationsFix extends AbstractFix {

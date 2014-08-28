@@ -11,10 +11,9 @@
 package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.ide.api.editor.EditorPartPresenter;
-import com.codenvy.ide.api.editor.TextEditorPartPresenter;
-import com.codenvy.ide.api.ui.workspace.PartPresenter;
-import com.codenvy.ide.api.ui.workspace.PropertyListener;
-import com.codenvy.ide.api.resources.model.File;
+import com.codenvy.ide.api.parts.PartPresenter;
+import com.codenvy.ide.api.parts.PropertyListener;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -27,14 +26,16 @@ public class FileSaveWatcher {
     @Inject
     private JavaParserWorker worker;
 
-    void editorOpened(final TextEditorPartPresenter editor) {
+    public void editorOpened(final EditorPartPresenter editor) {
         final PropertyListener propertyListener = new PropertyListener() {
             @Override
             public void propertyChanged(PartPresenter source, int propId) {
                 if (propId == EditorPartPresenter.PROP_DIRTY) {
                     if (!editor.isDirty()) {
-                        File file = editor.getEditorInput().getFile();
-                        String fqn = file.getParent().getName() + '.' + file.getName().substring(0, file.getName().indexOf('.'));
+                        FileNode file = editor.getEditorInput().getFile();
+                        String[] path = file.getPath().substring(1).split("/");
+                        final String parentName = path[path.length - 2];
+                        String fqn = parentName + '.' + file.getName().substring(0, file.getName().indexOf('.'));
                         worker.removeFanFromCache(fqn);
                     }
                 }

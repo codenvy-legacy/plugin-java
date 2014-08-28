@@ -39,10 +39,10 @@ import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.OperationCanceledException;
 import com.codenvy.ide.runtime.Status;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.edits.MalformedTreeException;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.MalformedTreeException;
+import com.codenvy.ide.api.text.edits.TextEdit;
 
 import java.util.Arrays;
 import java.util.HashSet;

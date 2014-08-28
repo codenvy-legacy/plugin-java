@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor.outline;
 
+import com.codenvy.ide.api.texteditor.outline.CodeBlock;
+import com.codenvy.ide.api.texteditor.outline.OutlineModel;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.messages.impl.WorkerCodeBlock;
-import com.codenvy.ide.texteditor.api.outline.CodeBlock;
-import com.codenvy.ide.texteditor.api.outline.OutlineModel;
 
 /**
  * OutlineUpdater receive messages from worker and updates OutlineModel
@@ -24,7 +24,7 @@ import com.codenvy.ide.texteditor.api.outline.OutlineModel;
  */
 public class OutlineUpdater implements JavaParserWorker.WorkerCallback<WorkerCodeBlock> {
 
-    private final OutlineModel        outlineModel;
+    private final OutlineModel  outlineModel;
     private final JavaCodeBlock root;
 
     public OutlineUpdater(String filePath, OutlineModel outlineModel, JavaParserWorker worker) {

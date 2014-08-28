@@ -11,11 +11,11 @@
 package com.codenvy.ide.ext.java.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.ide.api.action.Action;
+import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.action.Action;
-import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.shared.Constants;
@@ -24,33 +24,34 @@ import com.codenvy.ide.ext.java.shared.Constants;
 public class UpdateDependencyAction extends Action {
 
     private final JavaExtension        javaExtension;
-    private final ResourceProvider     resourceProvider;
+    private final AppContext           appContext;
     private final AnalyticsEventLogger eventLogger;
-    private BuildContext buildContext;
+    private       BuildContext         buildContext;
 
-    public UpdateDependencyAction(JavaExtension javaExtension, ResourceProvider resourceProvider,
+    public UpdateDependencyAction(JavaExtension javaExtension, AppContext appContext,
                                   AnalyticsEventLogger eventLogger, JavaResources resources, BuildContext buildContext) {
         super("Update Dependencies", "Update Dependencies", null, resources.updateDependencies());
         this.javaExtension = javaExtension;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.buildContext = buildContext;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log("IDE: Update project dependencies");
-        javaExtension.updateDependencies(resourceProvider.getActiveProject());
+        javaExtension.updateDependencies(appContext.getCurrentProject().getProjectDescription().getPath());
     }
 
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        Project activeProject = resourceProvider.getActiveProject();
-        if(buildContext.isBuilding()) {
+        if (buildContext.isBuilding()) {
             e.getPresentation().setEnabled(false);
             return;
         }
+        CurrentProject activeProject = appContext.getCurrentProject();
         if (activeProject != null) {
             final String builder = activeProject.getAttributeValue(Constants.BUILDER_NAME);
             if ("maven".equals(builder)) {

@@ -15,26 +15,24 @@ import com.codenvy.ide.api.editor.EditorWithErrors;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.model.File;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.annotation.AnnotationModel;
+import com.codenvy.ide.api.texteditor.outline.OutlineModel;
+import com.codenvy.ide.api.texteditor.reconciler.DirtyRegion;
+import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.editor.outline.OutlineUpdater;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.annotation.AnnotationModel;
-import com.codenvy.ide.texteditor.api.outline.OutlineModel;
-import com.codenvy.ide.texteditor.api.reconciler.DirtyRegion;
-import com.codenvy.ide.texteditor.api.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.util.loging.Log;
 
 import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
 
-
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
  */
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 
@@ -45,7 +43,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private       NotificationManager      notificationManager;
     private       JavaCodeAssistProcessor  codeAssistProcessor;
     private       JavaLocalizationConstant localizationConstant;
-    private       File                     file;
+    private       FileNode                 file;
     private       EditorWithErrors         editorWithErrors;
     private boolean first = true;
     private Notification notification;
@@ -102,7 +100,10 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
             notificationManager.showNotification(notification);
             first = false;
         }
-        worker.parse(document.get(), file.getName(), file.getPath(), file.getParent().getName(), file.getProject().getPath(), this);
+        String[] path = file.getPath().substring(1).split("/");
+        final String projectPath = "/" + path[0];
+        final String parentName = path[path.length - 2];
+        worker.parse(document.get(), file.getName(), file.getPath(), parentName, projectPath, this);
     }
 
     /** {@inheritDoc} */
@@ -112,7 +113,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     }
 
     /** @return the file */
-    public File getFile() {
+    public FileNode getFile() {
         return file;
     }
 

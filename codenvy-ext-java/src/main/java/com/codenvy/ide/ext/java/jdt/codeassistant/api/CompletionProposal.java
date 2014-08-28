@@ -11,8 +11,8 @@
 package com.codenvy.ide.ext.java.jdt.codeassistant.api;
 
 import com.codenvy.ide.ext.java.jdt.Images;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
 
 
 /**

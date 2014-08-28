@@ -11,14 +11,14 @@
 package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Position;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.annotation.Annotation;
+import com.codenvy.ide.api.text.annotation.AnnotationModel;
+import com.codenvy.ide.api.texteditor.TextEditorPartView;
 import com.codenvy.ide.ext.java.client.JavaResources;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Position;
-import com.codenvy.ide.text.Region;
-import com.codenvy.ide.text.annotation.Annotation;
-import com.codenvy.ide.text.annotation.AnnotationModel;
-import com.codenvy.ide.texteditor.api.TextEditorPartView;
 import com.codenvy.ide.texteditor.codeassistant.QuickAssistAssistantImpl;
 import com.codenvy.ide.util.loging.Log;
 
@@ -27,7 +27,6 @@ import java.util.Iterator;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id:
  */
 public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
 

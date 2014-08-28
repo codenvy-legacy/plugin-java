@@ -12,7 +12,17 @@ package com.codenvy.ide.ext.java.client.editor;
 
 import elemental.dom.Element;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.editor.EditorInput;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.DocumentFactory;
+import com.codenvy.ide.api.text.Position;
+import com.codenvy.ide.api.text.annotation.Annotation;
+import com.codenvy.ide.api.text.annotation.AnnotationModel;
+import com.codenvy.ide.api.text.annotation.AnnotationModelImpl;
+import com.codenvy.ide.api.text.rules.FastPartitioner;
+import com.codenvy.ide.api.texteditor.quickassist.QuickFixableAnnotation;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.core.editor.ResourceDocumentProvider;
@@ -23,18 +33,9 @@ import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CategorizedProblem;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.ext.java.jdt.internal.ui.text.FastJavaPartitionScanner;
-import com.codenvy.ide.api.resources.model.File;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.DocumentFactory;
-import com.codenvy.ide.text.Position;
-import com.codenvy.ide.text.annotation.Annotation;
-import com.codenvy.ide.text.annotation.AnnotationModel;
-import com.codenvy.ide.text.annotation.AnnotationModelImpl;
-import com.codenvy.ide.text.rules.FastPartitioner;
 import com.codenvy.ide.texteditor.TextEditorViewImpl;
 import com.codenvy.ide.texteditor.TextEditorViewImpl.Css;
-import com.codenvy.ide.texteditor.api.quickassist.QuickFixableAnnotation;
 import com.codenvy.ide.util.dom.Elements;
 import com.google.gwt.user.client.ui.Image;
 import com.google.web.bindery.event.shared.EventBus;
@@ -64,16 +65,19 @@ public class CompilationUnitDocumentProvider extends ResourceDocumentProvider {
     };
 
     private TextEditorViewImpl.Css css;
-    private Map<File, AnnotationModel> modelStringMap = new HashMap<File, AnnotationModel>();
+    private Map<FileNode, AnnotationModel> modelStringMap = new HashMap<>();
     private JavaCss javaCss;
 
     /**
      * @param css
      * @param javaCss
      * @param documentFactory
+     * @param eventBus
+     * @param projectServiceClient
      */
-    public CompilationUnitDocumentProvider(Css css, JavaCss javaCss, DocumentFactory documentFactory, EventBus eventBus) {
-        super(documentFactory, eventBus);
+    public CompilationUnitDocumentProvider(Css css, JavaCss javaCss, DocumentFactory documentFactory, EventBus eventBus,
+                                           ProjectServiceClient projectServiceClient) {
+        super(documentFactory, eventBus, projectServiceClient);
         this.css = css;
         this.javaCss = javaCss;
     }
@@ -81,7 +85,7 @@ public class CompilationUnitDocumentProvider extends ResourceDocumentProvider {
     /** {@inheritDoc} */
     @Override
     public AnnotationModel getAnnotationModel(@Nullable EditorInput input) {
-        File file = input.getFile();
+        FileNode file = input.getFile();
         if (!modelStringMap.containsKey(file)) {
             modelStringMap.put(file, new JavaAnnotationModel());
         }

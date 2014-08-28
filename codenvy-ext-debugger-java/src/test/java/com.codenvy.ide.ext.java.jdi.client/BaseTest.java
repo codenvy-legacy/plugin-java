@@ -11,8 +11,8 @@
 package com.codenvy.ide.ext.java.jdi.client;
 
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.ui.workspace.PartStack;
-import com.codenvy.ide.api.ui.workspace.WorkspaceAgent;
+import com.codenvy.ide.api.parts.PartStack;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerClientService;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;

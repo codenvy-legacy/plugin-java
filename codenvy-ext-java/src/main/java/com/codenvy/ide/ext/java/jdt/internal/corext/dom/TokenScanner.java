@@ -18,9 +18,9 @@ import com.codenvy.ide.ext.java.jdt.core.compiler.ITerminalSymbols;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Region;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
 
 
 /** Wraps a scanner and offers convenient methods for finding tokens */

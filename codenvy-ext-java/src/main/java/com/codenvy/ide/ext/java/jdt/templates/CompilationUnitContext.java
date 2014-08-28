@@ -13,8 +13,8 @@ package com.codenvy.ide.ext.java.jdt.templates;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.templates.api.DocumentTemplateContext;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContextType;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.Position;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Position;
 
 
 /** A compilation unit context. */

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.templates.api;
 
-import com.codenvy.ide.text.BadLocationException;
+import com.codenvy.ide.api.text.BadLocationException;
 
 import java.util.HashMap;
 import java.util.Map;

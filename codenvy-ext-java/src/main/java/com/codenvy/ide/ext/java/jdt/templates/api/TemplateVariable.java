@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.jdt.templates.api;
 
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.TextUtilities;
+import com.codenvy.ide.api.text.TextUtilities;
 
 
 /**

@@ -10,24 +10,27 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.action;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
-import com.codenvy.ide.ext.java.client.projectmodel.JavaProject;
-import com.codenvy.ide.ext.java.client.projectmodel.Package;
-import com.codenvy.ide.ext.java.client.projectmodel.SourceFolder;
+import com.codenvy.ide.ext.java.client.JavaUtils;
+import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.newresource.DefaultNewResourceAction;
+import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.codenvy.ide.ui.dialogs.info.Info;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 /**
  * Action to create new Java package.
@@ -36,19 +39,26 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class NewPackageAction extends DefaultNewResourceAction {
+    private JavaLocalizationConstant localizationConstant;
+
     @Inject
     public NewPackageAction(JavaResources javaResources,
                             JavaLocalizationConstant localizationConstant,
-                            ResourceProvider resourceProvider,
+                            AppContext appContext,
                             SelectionAgent selectionAgent,
-                            EditorAgent editorAgent) {
+                            EditorAgent editorAgent,
+                            ProjectServiceClient projectServiceClient,
+                            EventBus eventBus) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
               null,
               javaResources.packageIcon(),
-              resourceProvider,
+              appContext,
               selectionAgent,
-              editorAgent);
+              editorAgent,
+              projectServiceClient,
+              eventBus);
+        this.localizationConstant = localizationConstant;
     }
 
     @Override
@@ -56,17 +66,22 @@ public class NewPackageAction extends DefaultNewResourceAction {
         new AskValueDialog("New " + title, "Name:", new AskValueCallback() {
             @Override
             public void onOk(String value) {
-                JavaProject activeProject = (JavaProject)resourceProvider.getActiveProject();
-                activeProject.createPackage(getParent(), value, new AsyncCallback<Package>() {
-                    @Override
-                    public void onSuccess(Package result) {
-                    }
+                try {
+                    JavaUtils.checkPackageName(value);
+                    createPackage(value, new AsyncCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            eventBus.fireEvent(new RefreshProjectTreeEvent());
+                        }
 
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        new Info(caught.getMessage()).show();
-                    }
-                });
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            new Info(caught.getMessage()).show();
+                        }
+                    });
+                } catch (IllegalStateException ex) {
+                    new Info(localizationConstant.messagesNewPackageInvalidName(), ex.getMessage()).show();
+                }
             }
         }
         ).show();
@@ -77,14 +92,22 @@ public class NewPackageAction extends DefaultNewResourceAction {
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            if (selection.getFirstElement() instanceof Resource) {
-                Resource resource = (Resource)selection.getFirstElement();
-                if (resource.isFile()) {
-                    resource = resource.getParent();
-                }
-                enabled = resource instanceof com.codenvy.ide.ext.java.client.projectmodel.Package || resource instanceof SourceFolder;
-            }
+            enabled = selection.getFirstElement() instanceof PackageNode || selection.getFirstElement() instanceof SourceFolderNode;
         }
         e.getPresentation().setEnabledAndVisible(enabled);
+    }
+
+    private void createPackage(String name, final AsyncCallback<Void> callback) {
+        projectServiceClient.createFolder(getParentPath() + '/' + name.replace('.', '/'), new AsyncRequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
     }
 }

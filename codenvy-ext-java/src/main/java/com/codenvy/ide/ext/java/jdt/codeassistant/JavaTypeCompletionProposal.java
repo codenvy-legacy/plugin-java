@@ -17,9 +17,9 @@ import com.codenvy.ide.ext.java.jdt.core.dom.AbstractTypeDeclaration;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.text.BadLocationException;
-import com.codenvy.ide.text.Document;
-import com.codenvy.ide.text.edits.TextEdit;
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.TextEdit;
 
 import java.util.List;
 

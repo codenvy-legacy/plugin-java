@@ -13,10 +13,10 @@ package com.codenvy.ide.ext.java.jdt.internal.corext.util;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.formatter.IndentManipulation;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.text.BadLocationException;
+import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.text.DefaultLineTracker;
-import com.codenvy.ide.text.LineTracker;
-import com.codenvy.ide.text.Region;
+import com.codenvy.ide.api.text.LineTracker;
+import com.codenvy.ide.api.text.Region;
 
 
 /**
