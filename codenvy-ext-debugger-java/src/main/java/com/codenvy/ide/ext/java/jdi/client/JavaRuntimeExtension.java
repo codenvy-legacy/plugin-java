@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.jdi.client;
 
 import com.codenvy.ide.api.action.ActionManager;
-import com.codenvy.ide.api.action.Constraints;
+import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.debug.DebuggerManager;
@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import static com.codenvy.ide.MimeType.APPLICATION_JAVA;
-import static com.codenvy.ide.api.action.Anchor.AFTER;
+import static com.codenvy.ide.api.constraints.Anchor.AFTER;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN_CONTEXT_MENU;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN_TOOLBAR;
