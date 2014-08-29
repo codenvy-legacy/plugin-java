@@ -11,8 +11,8 @@
 package com.codenvy.ide.extension.maven.client;
 
 import com.codenvy.ide.api.action.ActionManager;
-import com.codenvy.ide.api.action.Anchor;
-import com.codenvy.ide.api.action.Constraints;
+import com.codenvy.ide.api.constraints.Anchor;
+import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.icon.Icon;
