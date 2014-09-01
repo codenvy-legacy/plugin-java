@@ -11,18 +11,20 @@
 package com.codenvy.ide.extension.maven.client;
 
 import com.codenvy.ide.api.action.ActionManager;
+import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.constraints.Anchor;
 import com.codenvy.ide.api.constraints.Constraints;
-import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.builder.client.BuilderLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
+import com.codenvy.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
 import com.codenvy.ide.extension.maven.client.wizard.MavenPagePresenter;
 import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
 import com.google.inject.Inject;
@@ -50,7 +52,9 @@ public class MavenExtension {
                           Provider<SelectRunnerPagePresenter> runnerPagePresenter,
                           ProjectTypeWizardRegistry wizardRegistry,
                           NotificationManager notificationManager,
-                          IconRegistry iconRegistry) {
+                          IconRegistry iconRegistry,
+                          TreeStructureProviderRegistry treeStructureProviderRegistry,
+                          MavenProjectTreeStructureProvider mavenProjectTreeStructureProvider) {
         actionManager.registerAction(localizationConstants.buildProjectControlId(), customBuildAction);
 
         iconRegistry.registerIcon(new Icon("maven.module", resources.module()));
@@ -62,5 +66,7 @@ public class MavenExtension {
         wizard.addPage(mavenPagePresenter);
         wizard.addPage(runnerPagePresenter);
         wizardRegistry.addWizard(Constants.MAVEN_ID, wizard);
+
+        treeStructureProviderRegistry.registerProvider(Constants.MAVEN_ID, mavenProjectTreeStructureProvider);
     }
 }

@@ -12,10 +12,10 @@ package com.codenvy.ide.ext.java.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
@@ -31,13 +31,11 @@ import com.google.web.bindery.event.shared.EventBus;
  * @author Artem Zatsarynnyy
  */
 public class PackageNode extends FolderNode {
-    private IconRegistry iconRegistry;
 
-    public PackageNode(AbstractTreeNode parent, ItemReference data, TreeSettings settings, EventBus eventBus,
-                       ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                       IconRegistry iconRegistry) {
-        super(parent, data, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        this.iconRegistry = iconRegistry;
+    public PackageNode(AbstractTreeNode parent, ItemReference data, JavaTreeStructure treeStructure, TreeSettings settings,
+                       EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
+                       DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
+        super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
 
         getPresentation().setSvgIcon(iconRegistry.getIcon("java.package").getSVGImage());
     }
@@ -56,13 +54,12 @@ public class PackageNode extends FolderNode {
                     if (isShowHiddenItems || !item.getName().startsWith(".")) {
                         if (isFile(item)) {
                             if (item.getName().endsWith(".java")) {
-                                newChildren.add(new SourceFileNode(PackageNode.this, item, eventBus, projectServiceClient));
+                                newChildren.add(((JavaTreeStructure)treeStructure).newSourceFileNode(PackageNode.this, item));
                             } else {
-                                newChildren.add(new FileNode(PackageNode.this, item, eventBus, projectServiceClient));
+                                newChildren.add(treeStructure.newFileNode(PackageNode.this, item));
                             }
                         } else if (isFolder(item)) {
-                            newChildren.add(new PackageNode(PackageNode.this, item, settings, eventBus, projectServiceClient,
-                                                            dtoUnmarshallerFactory, iconRegistry));
+                            newChildren.add(((JavaTreeStructure)treeStructure).newPackageNode(PackageNode.this, item));
                         }
                     }
                 }
@@ -74,5 +71,13 @@ public class PackageNode extends FolderNode {
                 callback.onFailure(exception);
             }
         });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isRenemable() {
+        // Do not allow to rename Java package as simple folder.
+        // Need to implement rename refactoring for this type of node.
+        return false;
     }
 }
