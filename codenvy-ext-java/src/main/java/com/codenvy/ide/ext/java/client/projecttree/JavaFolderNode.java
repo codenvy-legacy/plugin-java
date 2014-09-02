@@ -40,7 +40,7 @@ public class JavaFolderNode extends FolderNode {
     /** Tests if the specified item is a source folder. */
     protected static boolean isSourceFolder(ItemReference item) {
         // TODO: read source folders from project/module attributes
-        return isFolder(item) && (item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java"));
+        return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */

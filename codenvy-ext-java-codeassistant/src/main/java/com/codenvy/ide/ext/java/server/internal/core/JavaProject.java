@@ -92,7 +92,7 @@ public class JavaProject extends Openable implements IJavaProject {
                 addSources(projectDir, paths);
             } else {
                 // module of project - add this module and all modules in parent projects
-                index = projectPath.indexOf(1, '/');
+                index = projectPath.indexOf('/', 1);
                 File parent = new File(root, projectPath.substring(1, index));
                 LinkedList<File> q = new LinkedList<>();
                 q.add(parent);

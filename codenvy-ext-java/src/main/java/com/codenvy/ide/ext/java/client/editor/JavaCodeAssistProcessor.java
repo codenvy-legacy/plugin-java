@@ -13,7 +13,6 @@ package com.codenvy.ide.ext.java.client.editor;
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.icon.Icon;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.texteditor.CodeAssistCallback;
 import com.codenvy.ide.api.texteditor.TextEditorPartView;
 import com.codenvy.ide.api.texteditor.codeassistant.CodeAssistProcessor;
@@ -156,9 +155,8 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
             return;
         }
         eventLogger.log("Autocompleting");
-        final FileNode file = editor.getEditorInput().getFile();
-        final String projectPath = file.getPath().substring(1).split("/")[0];
-        worker.computeCAProposals(view.getDocument().get(), offset, file.getName(), projectPath,
+        worker.computeCAProposals(view.getDocument().get(), offset, editor.getEditorInput().getFile().getName(),
+                                  editor.getEditorInput().getFile().getProject().getPath(),
                                   new JavaParserWorker.WorkerCallback<WorkerProposal>() {
                                       @Override
                                       public void onResult(Array<WorkerProposal> problems) {

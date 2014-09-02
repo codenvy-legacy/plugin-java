@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.ProjectRootNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -23,8 +24,8 @@ import com.google.web.bindery.event.shared.EventBus;
  * @author Artem Zatsarynnyy
  */
 public class JavaProjectNode extends ProjectRootNode {
-    public JavaProjectNode(ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings, EventBus eventBus,
-                           ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    public JavaProjectNode(AbstractTreeNode<?> parent, ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings,
+                           EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 }

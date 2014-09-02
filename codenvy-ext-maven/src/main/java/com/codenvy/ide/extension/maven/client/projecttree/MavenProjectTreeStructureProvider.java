@@ -18,7 +18,6 @@ import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.TreeStructureProvider;
-import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -43,11 +42,6 @@ public class MavenProjectTreeStructureProvider implements TreeStructureProvider 
         this.iconRegistry = iconRegistry;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-    }
-
-    @Override
-    public String getProjectTypeId() {
-        return Constants.MAVEN_ID;
     }
 
     @Override

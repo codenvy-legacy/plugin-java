@@ -31,18 +31,16 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class MavenProjectNode extends JavaProjectNode {
 
-    public MavenProjectNode(ProjectDescriptor data, MavenProjectTreeStructure treeStructure, TreeSettings settings, EventBus eventBus,
-                            ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    public MavenProjectNode(AbstractTreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure,
+                            TreeSettings settings, EventBus eventBus, ProjectServiceClient projectServiceClient,
+                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     /** Tests if the specified item is a source folder. */
     protected static boolean isSourceFolder(ItemReference item) {
         // TODO: read source folders from project/module attributes
-        if ("folder".equals(item.getType())) {
-            return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
-        }
-        return false;
+        return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */
@@ -59,11 +57,11 @@ public class MavenProjectNode extends JavaProjectNode {
                         setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                                // some folders may represents modules
+                                // some folders may represent modules
                                 ProjectDescriptor module = getModule(item);
                                 if (module != null) {
                                     newChildren.add(((MavenProjectTreeStructure)treeStructure)
-                                                            .newModuleNode(MavenProjectNode.this, item, module));
+                                                            .newModuleNode(MavenProjectNode.this, module));
                                 } else if (isFile(item)) {
                                     newChildren.add(treeStructure.newFileNode(MavenProjectNode.this, item));
                                 } else if (isFolder(item)) {

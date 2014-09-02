@@ -40,6 +40,17 @@ public class PackageNode extends FolderNode {
         getPresentation().setSvgIcon(iconRegistry.getIcon("java.package").getSVGImage());
     }
 
+    /**
+     * Returns the full-qualified name of the package.
+     *
+     * @return the full-qualified name, or an empty string for the default package
+     */
+    public String getQualifiedName() {
+        // TODO: read source folders from project/module attributes
+        final String p = getProject().getPath() + "/src/main/java/";
+        return getPath().replaceFirst(p, "").replaceAll("/", ".");
+    }
+
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<AbstractTreeNode<?>> callback) {

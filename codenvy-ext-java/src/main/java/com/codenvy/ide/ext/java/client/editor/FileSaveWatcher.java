@@ -14,6 +14,7 @@ import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PropertyListener;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -33,9 +34,8 @@ public class FileSaveWatcher {
                 if (propId == EditorPartPresenter.PROP_DIRTY) {
                     if (!editor.isDirty()) {
                         FileNode file = editor.getEditorInput().getFile();
-                        String[] path = file.getPath().substring(1).split("/");
-                        final String parentName = path[path.length - 2];
-                        String fqn = parentName + '.' + file.getName().substring(0, file.getName().indexOf('.'));
+                        // file's parent always should be PackageNode
+                        String fqn = ((PackageNode)file.getParent()).getQualifiedName() + '.' + file.getName().substring(0, file.getName().indexOf('.'));
                         worker.removeFanFromCache(fqn);
                     }
                 }
@@ -43,6 +43,4 @@ public class FileSaveWatcher {
         };
         editor.addPropertyListener(propertyListener);
     }
-
-
 }
