@@ -49,6 +49,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -226,9 +227,9 @@ public class RestNameEnvironment {
 
     /** Get list of all package names in project */
     @GET
-    @javax.ws.rs.Path("/update-dependencies")
+    @javax.ws.rs.Path("/update-dependencies-launch-task")
     @Produces(MediaType.APPLICATION_JSON)
-    public void updateDependency(@QueryParam("projectpath") String projectPath, @Context UriInfo uriInfo) throws Exception {
+    public BuildTaskDescriptor updateDependency(@QueryParam("projectpath") String projectPath, @Context UriInfo uriInfo) throws Exception {
 //        com.codenvy.api.project.server.Project project = projectManager.getProject(wsId, projectPath);
         File workspace = fsMountStrategy.getMountPath(wsId);
         File project = new File(workspace, projectPath);
@@ -242,13 +243,21 @@ public class RestNameEnvironment {
             throw new CodeAssistantException(500, "Project doesn't have pom.xml file");
         }
 
-
-
         String url = apiUrl +  "/builder/" + wsId + "/dependencies";
-        BuildTaskDescriptor buildStatus = getDependencies(url, projectPath, "copy");
+        return getDependencies(url, projectPath, "copy");
+    }
 
-        if (buildStatus.getStatus() == BuildStatus.FAILED) {
-            buildFailed(buildStatus);
+    /** Get list of all package names in project */
+    @POST
+    @javax.ws.rs.Path("/update-dependencies-wait-build-end")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void waitUpdateDependencyBuildEnd(@QueryParam("projectpath") String projectPath,
+                                             BuildTaskDescriptor descriptor,
+                                             @Context UriInfo uriInfo) throws Exception {
+        // call to wait-for-build-finish method
+        BuildTaskDescriptor finishedBuildStatus = waitTaskFinish(descriptor);
+        if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
+            buildFailed(finishedBuildStatus);
         }
         File projectDepDir = new File(temp, projectPath);
         if (projectDepDir.exists()) {
@@ -257,7 +266,7 @@ public class RestNameEnvironment {
 
         projectDepDir.mkdirs();
         projectDepDir.deleteOnExit();
-        Link downloadLink = findLink("download result", buildStatus.getLinks());
+        Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
         if (downloadLink != null) {
             InputStream stream = doDownload(downloadLink.getHref());
             ZipUtils.unzip(stream, projectDepDir);
@@ -327,7 +336,7 @@ public class RestNameEnvironment {
     @NotNull
     private BuildTaskDescriptor waitTaskFinish(@NotNull BuildTaskDescriptor buildDescription) throws Exception {
         BuildTaskDescriptor request = buildDescription;
-        final int sleepTime = 2000;
+        final int sleepTime = 500;
 
         Link statusLink = findLink("get status", buildDescription.getLinks());
 
@@ -351,7 +360,7 @@ public class RestNameEnvironment {
         Pair<String, String> projectParam = Pair.of("project", projectName);
         Pair<String, String> typeParam = Pair.of("type", analyzeType);
         BuildTaskDescriptor buildStatus = HttpJsonHelper.request(BuildTaskDescriptor.class, url, "POST", null, projectParam, typeParam);
-        buildStatus = waitTaskFinish(buildStatus);
+        //buildStatus = waitTaskFinish(buildStatus);
         return buildStatus;
     }
 
