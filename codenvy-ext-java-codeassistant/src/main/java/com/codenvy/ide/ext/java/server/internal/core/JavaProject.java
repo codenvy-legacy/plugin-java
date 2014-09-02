@@ -152,10 +152,6 @@ public class JavaProject extends Openable implements IJavaProject {
             projectJson = ProjectJson.load(in);
         }
         String builder = projectJson.getBuilder();
-        // TODO: Remove. Added temporary, for back compatibility after change format of .codenvy/project.json file
-        if (builder == null) {
-            projectJson.getPropertyValue("builder.name");
-        }
         List<File> sources = new LinkedList<>();
         if ("maven".equals(builder)) {
             File pom = new File(projectDir, "pom.xml");

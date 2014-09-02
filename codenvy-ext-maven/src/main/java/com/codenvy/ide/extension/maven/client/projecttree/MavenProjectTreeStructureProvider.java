@@ -13,6 +13,7 @@ package com.codenvy.ide.extension.maven.client.projecttree;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
 import com.codenvy.ide.api.projecttree.TreeSettings;
@@ -27,15 +28,17 @@ import com.google.web.bindery.event.shared.EventBus;
 @Singleton
 public class MavenProjectTreeStructureProvider implements TreeStructureProvider {
     private EventBus               eventBus;
+    private EditorAgent            editorAgent;
     private AppContext             appContext;
     private IconRegistry           iconRegistry;
     private ProjectServiceClient   projectServiceClient;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
 
     @Inject
-    public MavenProjectTreeStructureProvider(EventBus eventBus, AppContext appContext, IconRegistry iconRegistry,
+    public MavenProjectTreeStructureProvider(EventBus eventBus, EditorAgent editorAgent, AppContext appContext, IconRegistry iconRegistry,
                                              ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.eventBus = eventBus;
+        this.editorAgent = editorAgent;
         this.appContext = appContext;
         this.iconRegistry = iconRegistry;
         this.projectServiceClient = projectServiceClient;
@@ -49,7 +52,7 @@ public class MavenProjectTreeStructureProvider implements TreeStructureProvider 
 
     @Override
     public AbstractTreeStructure newTreeStructure(ProjectDescriptor project) {
-        return new MavenProjectTreeStructure(TreeSettings.DEFAULT, project, eventBus, appContext, projectServiceClient,
+        return new MavenProjectTreeStructure(TreeSettings.DEFAULT, project, eventBus, editorAgent, appContext, projectServiceClient,
                                              dtoUnmarshallerFactory, iconRegistry);
     }
 }

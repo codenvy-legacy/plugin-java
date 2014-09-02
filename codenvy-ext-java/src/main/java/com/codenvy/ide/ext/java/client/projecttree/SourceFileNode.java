@@ -29,4 +29,11 @@ public class SourceFileNode extends FileNode {
         // display name without '.java' extension
         getPresentation().setDisplayName(name.substring(0, name.length() - "java".length() - 1));
     }
+
+    @Override
+    public boolean isRenemable() {
+        // Do not allow to rename Java source file as simple file.
+        // Need to implement rename refactoring for this type of node.
+        return false;
+    }
 }

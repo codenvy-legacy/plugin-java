@@ -69,10 +69,10 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                     createProjectsOnModules(model, project.getBaseFolder(), project.getWorkspace(), projectType);
                     break;
                 case "war":
-                    description.setRunner("JavaWeb");
+                    description.setRunner("java-webapp-default");
                     break;
                 case "jar":
-                    description.setRunner("JavaStandalone");
+                    description.setRunner("java-standalone-default");
                     break;
             }
         } catch (ForbiddenException | IOException | ConflictException e) {
@@ -107,10 +107,10 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                         createProjectsOnModules(moduleModel, project.getBaseFolder(), project.getWorkspace(), projectType);
                         break;
                     case "war":
-                        description.setRunner("JavaWeb");
+                        description.setRunner("java-webapp-default");
                         break;
                     case "jar":
-                        description.setRunner("JavaStandalone");
+                        description.setRunner("java-standalone-default");
                         break;
                 }
                 project.updateDescription(description);

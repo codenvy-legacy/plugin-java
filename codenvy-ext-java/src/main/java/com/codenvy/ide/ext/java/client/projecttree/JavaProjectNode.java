@@ -23,8 +23,8 @@ import com.google.web.bindery.event.shared.EventBus;
  * @author Artem Zatsarynnyy
  */
 public class JavaProjectNode extends ProjectRootNode {
-    public JavaProjectNode(ProjectDescriptor data, TreeSettings settings, EventBus eventBus,
+    public JavaProjectNode(ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings, EventBus eventBus,
                            ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(data, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        super(data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 }

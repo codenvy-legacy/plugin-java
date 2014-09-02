@@ -13,15 +13,13 @@ package com.codenvy.ide.extension.maven.client.projecttree;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
@@ -35,15 +33,23 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class ModuleNode extends FolderNode {
     protected ProjectDescriptor module;
-    protected IconRegistry      iconRegistry;
 
-    public ModuleNode(AbstractTreeNode parent, ItemReference data, ProjectDescriptor module, TreeSettings settings, EventBus eventBus,
-                      ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    public ModuleNode(AbstractTreeNode parent, ItemReference data, ProjectDescriptor module, MavenProjectTreeStructure treeStructure,
+                      TreeSettings settings, EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
+                      DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
+        super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
         this.module = module;
-        this.iconRegistry = iconRegistry;
 
         getPresentation().setSvgIcon(iconRegistry.getIcon("maven.module").getSVGImage());
+    }
+
+    /** Tests if the specified item is a source folder. */
+    protected static boolean isSourceFolder(ItemReference item) {
+        // TODO: read source folders from project/module attributes
+        if ("folder".equals(item.getType())) {
+            return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
+        }
+        return false;
     }
 
     /** {@inheritDoc} */
@@ -60,20 +66,17 @@ public class ModuleNode extends FolderNode {
                         setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                                // some folders may represents modules
+                                // some folders may represent modules
                                 ProjectDescriptor module = getModule(item);
                                 if (module != null) {
-                                    newChildren.add(new ModuleNode(ModuleNode.this, item, module, settings, eventBus, projectServiceClient,
-                                                                   dtoUnmarshallerFactory, iconRegistry));
+                                    newChildren.add(((MavenProjectTreeStructure)treeStructure).newModuleNode(ModuleNode.this, item, module));
                                 } else if (isFile(item)) {
-                                    newChildren.add(new FileNode(ModuleNode.this, item, eventBus, projectServiceClient));
+                                    newChildren.add(treeStructure.newFileNode(ModuleNode.this, item));
                                 } else if (isFolder(item)) {
                                     if (isSourceFolder(item)) {
-                                        newChildren.add(new SourceFolderNode(ModuleNode.this, item, settings, eventBus,
-                                                                             projectServiceClient, dtoUnmarshallerFactory, iconRegistry));
+                                        newChildren.add(((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(ModuleNode.this, item));
                                     } else {
-                                        newChildren.add(new JavaFolderNode(ModuleNode.this, item, settings, eventBus, projectServiceClient,
-                                                                           dtoUnmarshallerFactory, iconRegistry));
+                                        newChildren.add(((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(ModuleNode.this, item));
                                     }
                                 }
                             }
@@ -136,14 +139,5 @@ public class ModuleNode extends FolderNode {
                 callback.onFailure(exception);
             }
         });
-    }
-
-    /** Tests if the specified item is a source folder. */
-    protected static boolean isSourceFolder(ItemReference item) {
-        // TODO: read source folders from project/module attributes
-        if ("folder".equals(item.getType())) {
-            return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
-        }
-        return false;
     }
 }
