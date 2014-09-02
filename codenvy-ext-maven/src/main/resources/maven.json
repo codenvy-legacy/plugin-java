@@ -39,7 +39,10 @@
         "description": "A basic JAR project built with Maven.",
         "source": {
             "type": "git-less",
-            "location": "https://github.com/codenvy-templates/desktop-jar-java.git"
+            "location": "https://github.com/codenvy-templates/desktop-jar-java.git",
+            "parameters": {
+                 "vcsbranch" : "3.1.0"
+            }
         },
         "defaultRunnerEnvironment": "default",
         "runnerEnvironmentConfigurations": {
