@@ -106,7 +106,9 @@ public class MavenProjectNode extends JavaProjectNode {
     }
 
     /**
-     * Creates node for the specified item.
+     * Creates node for the specified item. Method called for every child item in {@link #refreshChildren(AsyncCallback)} method.
+     * <p/>
+     * May be overridden in order to provide a way to create a node for the specified by.
      *
      * @param item
      *         {@link com.codenvy.api.project.shared.dto.ItemReference} for which need to create node
