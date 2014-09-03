@@ -138,9 +138,7 @@ public class JavaExtension {
             public void onFileOperation(FileEvent event) {
                 String name = event.getFile().getName();
                 if (event.getOperationType() == FileEvent.FileOperation.SAVE && "pom.xml".equals(name)) {
-                    final String filePath = event.getFile().getPath();
-                    final String projectPath = filePath.substring(0, filePath.indexOf('/', 1));
-                    updateDependencies(projectPath);
+                    updateDependencies(event.getFile().getProject().getPath());
                 }
             }
         });
