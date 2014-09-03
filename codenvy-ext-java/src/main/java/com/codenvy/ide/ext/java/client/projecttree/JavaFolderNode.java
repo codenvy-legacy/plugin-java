@@ -16,12 +16,7 @@ import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
-import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.rest.Unmarshallable;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -40,39 +35,18 @@ public class JavaFolderNode extends FolderNode {
     /** Tests if the specified item is a source folder. */
     protected static boolean isSourceFolder(ItemReference item) {
         // TODO: read source folders from project/module attributes
-        return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
+        return isFolder(item) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */
     @Override
-    public void refreshChildren(final AsyncCallback<AbstractTreeNode<?>> callback) {
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(data.getPath(), new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
-            @Override
-            protected void onSuccess(Array<ItemReference> children) {
-                final boolean isShowHiddenItems = settings.isShowHiddenItems();
-                Array<AbstractTreeNode<?>> newChildren = Collections.createArray();
-                setChildren(newChildren);
-                for (ItemReference item : children.asIterable()) {
-                    if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                        if (isFile(item)) {
-                            newChildren.add(treeStructure.newFileNode(JavaFolderNode.this, item));
-                        } else if (isFolder(item)) {
-                            if (isSourceFolder(item)) {
-                                newChildren.add(((JavaTreeStructure)treeStructure).newSourceFolderNode(JavaFolderNode.this, item));
-                            } else {
-                                newChildren.add(((JavaTreeStructure)treeStructure).newJavaFolderNode(JavaFolderNode.this, item));
-                            }
-                        }
-                    }
-                }
-                callback.onSuccess(JavaFolderNode.this);
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
+    protected AbstractTreeNode<?> createNode(ItemReference item) {
+        if (isSourceFolder(item)) {
+            return ((JavaTreeStructure)treeStructure).newSourceFolderNode(this, item);
+        } else if (isFolder(item)) {
+            return ((JavaTreeStructure)treeStructure).newJavaFolderNode(this, item);
+        } else {
+            return super.createNode(item);
+        }
     }
 }

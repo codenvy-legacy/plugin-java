@@ -17,16 +17,11 @@ import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
-import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.rest.Unmarshallable;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
- * Node that represents a source folder.
+ * Node that represents a source folder (folder that contains Java source files and packages directly).
  *
  * @author Artem Zatsarynnyy
  */
@@ -42,35 +37,14 @@ public class SourceFolderNode extends FolderNode {
 
     /** {@inheritDoc} */
     @Override
-    public void refreshChildren(final AsyncCallback<AbstractTreeNode<?>> callback) {
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(data.getPath(), new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
-            @Override
-            protected void onSuccess(Array<ItemReference> children) {
-                final boolean isShowHiddenItems = settings.isShowHiddenItems();
-                Array<AbstractTreeNode<?>> newChildren = Collections.createArray();
-                setChildren(newChildren);
-                for (ItemReference item : children.asIterable()) {
-                    if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                        if (isFile(item)) {
-                            if (item.getName().endsWith(".java")) {
-                                newChildren.add(((JavaTreeStructure)treeStructure).newSourceFileNode(SourceFolderNode.this, item));
-                            } else {
-                                newChildren.add(treeStructure.newFileNode(SourceFolderNode.this, item));
-                            }
-                        } else if (isFolder(item)) {
-                            newChildren.add(((JavaTreeStructure)treeStructure).newPackageNode(SourceFolderNode.this, item));
-                        }
-                    }
-                }
-                callback.onSuccess(SourceFolderNode.this);
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
+    protected AbstractTreeNode<?> createNode(ItemReference item) {
+        if (isFile(item) && item.getName().endsWith(".java")) {
+            return ((JavaTreeStructure)treeStructure).newSourceFileNode(this, item);
+        } else if (isFolder(item)) {
+            return ((JavaTreeStructure)treeStructure).newPackageNode(this, item);
+        } else {
+            return super.createNode(item);
+        }
     }
 
     /** {@inheritDoc} */
