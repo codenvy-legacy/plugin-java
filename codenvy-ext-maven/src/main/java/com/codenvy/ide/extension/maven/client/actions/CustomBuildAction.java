@@ -62,7 +62,7 @@ public class CustomBuildAction extends Action {
     public void update(ActionEvent e) {
         CurrentProject activeProject = appContext.getCurrentProject();
         if (activeProject != null) {
-            final String builder = activeProject.getAttributeValue("builder.name");
+            final String builder = activeProject.getBuilder();
             if ("maven".equals(builder)) {
                 e.getPresentation().setEnabledAndVisible(true);
             } else {

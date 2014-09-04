@@ -64,10 +64,10 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 @Extension(title = "Java syntax highlighting and code autocompletion.", version = "3.0.0")
 public class JavaExtension {
 
-    public static final String       BUILD_OUTPUT_CHANNEL = "builder:output:";
+    public static final String BUILD_OUTPUT_CHANNEL = "builder:output:";
 
-    boolean                          updating             = false;
-    boolean                          needForUpdate        = false;
+    boolean updating      = false;
+    boolean needForUpdate = false;
     private NotificationManager      notificationManager;
     private String                   workspaceId;
     private AsyncRequestFactory      asyncRequestFactory;
@@ -75,8 +75,9 @@ public class JavaExtension {
     private JavaLocalizationConstant localizationConstant;
     private JavaParserWorker         parserWorker;
     private BuildContext             buildContext;
-    private BuildProjectPresenter    presenter;
-    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private AppContext               appContext;
+    private BuildProjectPresenter presenter;
+    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
 
     @Inject
     public JavaExtension(FileTypeRegistry fileTypeRegistry,
@@ -96,7 +97,7 @@ public class JavaExtension {
                          JavaParserWorker parserWorker,
                          @Named("JavaFileType") FileType javaFile,
                          BuildContext buildContext,
-                         AppContext appContext,
+                         final AppContext appContext,
                          BuildProjectPresenter presenter,
                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.notificationManager = notificationManager;
@@ -106,6 +107,7 @@ public class JavaExtension {
         this.localizationConstant = localizationConstant;
         this.parserWorker = parserWorker;
         this.buildContext = buildContext;
+        this.appContext = appContext;
         this.presenter = presenter;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
 
@@ -135,9 +137,8 @@ public class JavaExtension {
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
-                ProjectDescriptor project = event.getProject();
-                if ("java".equals(project.getAttributes().get(Constants.LANGUAGE).get(0))) {
-                    updateDependencies(project.getPath());
+                if ("java".equals(appContext.getCurrentProject().getAttributeValue(Constants.LANGUAGE))) {
+                    updateDependencies(appContext.getCurrentProject().getProjectDescription().getPath());
                 }
             }
 
