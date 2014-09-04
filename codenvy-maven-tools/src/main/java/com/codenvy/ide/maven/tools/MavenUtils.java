@@ -230,7 +230,7 @@ public class MavenUtils {
      */
     public static void writeModel(Model model, java.io.File pom) throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            pomWriter.write(writer, model);
+            writeModel(model, writer);
         }
     }
 
@@ -278,7 +278,7 @@ public class MavenUtils {
      */
     public static void writeModel(Model model, VirtualFile output) throws IOException, ForbiddenException, ServerException {
         final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        pomWriter.write(bout, model);
+        writeModel(model, bout);
         output.updateContent(new ByteArrayInputStream(bout.toByteArray()), null);
     }
 
@@ -310,7 +310,7 @@ public class MavenUtils {
         final Model model = doReadModel(pom);
         model.getDependencies().add(dependency);
         try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            pomWriter.write(writer, model);
+            writeModel(model, writer);
         }
     }
 
@@ -348,7 +348,7 @@ public class MavenUtils {
         final Model model = doReadModel(pom);
         model.getDependencies().addAll(Arrays.asList(dependencies));
         try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            pomWriter.write(writer, model);
+            writeModel(model, writer);
         }
     }
 

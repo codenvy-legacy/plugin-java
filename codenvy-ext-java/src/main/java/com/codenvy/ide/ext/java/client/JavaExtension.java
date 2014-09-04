@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
@@ -42,9 +43,12 @@ import com.codenvy.ide.ext.java.client.editor.JavaEditorProvider;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaReconcilerStrategy;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.builder.client.build.BuildProjectPresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
+import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
@@ -59,8 +63,11 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 /** @author Evgen Vidolob */
 @Extension(title = "Java syntax highlighting and code autocompletion.", version = "3.0.0")
 public class JavaExtension {
-    boolean updating      = false;
-    boolean needForUpdate = false;
+
+    public static final String       BUILD_OUTPUT_CHANNEL = "builder:output:";
+
+    boolean                          updating             = false;
+    boolean                          needForUpdate        = false;
     private NotificationManager      notificationManager;
     private String                   workspaceId;
     private AsyncRequestFactory      asyncRequestFactory;
@@ -68,6 +75,8 @@ public class JavaExtension {
     private JavaLocalizationConstant localizationConstant;
     private JavaParserWorker         parserWorker;
     private BuildContext             buildContext;
+    private BuildProjectPresenter    presenter;
+    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
 
     @Inject
     public JavaExtension(FileTypeRegistry fileTypeRegistry,
@@ -87,7 +96,9 @@ public class JavaExtension {
                          JavaParserWorker parserWorker,
                          @Named("JavaFileType") FileType javaFile,
                          BuildContext buildContext,
-                         AppContext appContext) {
+                         AppContext appContext,
+                         BuildProjectPresenter presenter,
+                         DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.notificationManager = notificationManager;
         this.workspaceId = workspaceId;
         this.asyncRequestFactory = asyncRequestFactory;
@@ -95,6 +106,8 @@ public class JavaExtension {
         this.localizationConstant = localizationConstant;
         this.parserWorker = parserWorker;
         this.buildContext = buildContext;
+        this.presenter = presenter;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
 
         editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
         fileTypeRegistry.registerFileType(javaFile);
@@ -138,9 +151,7 @@ public class JavaExtension {
             public void onFileOperation(FileEvent event) {
                 String name = event.getFile().getName();
                 if (event.getOperationType() == FileEvent.FileOperation.SAVE && "pom.xml".equals(name)) {
-                    final String filePath = event.getFile().getPath();
-                    final String projectPath = filePath.substring(0, filePath.indexOf('/', 1));
-                    updateDependencies(projectPath);
+                    updateDependencies(event.getFile().getProject().getPath());
                 }
             }
         });
@@ -186,49 +197,67 @@ public class JavaExtension {
             needForUpdate = true;
             return;
         }
-        String url = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies?projectpath=" + projectPath;
 
         final Notification notification = new Notification(localizationConstant.updatingDependencies(), PROGRESS);
         notificationManager.showNotification(notification);
+
         buildContext.setBuilding(true);
         updating = true;
-        asyncRequestFactory.createGetRequest(url, true).send(new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+
+        // send a first request to launch build process and return build task descriptor
+        String urlLaunch = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-launch-task?projectpath=" + projectPath;
+        asyncRequestFactory.createGetRequest(urlLaunch, false).send(new AsyncRequestCallback<BuildTaskDescriptor>(
+            dtoUnmarshallerFactory.newUnmarshaller(BuildTaskDescriptor.class)) {
             @Override
-            protected void onSuccess(String result) {
-                updating = false;
-                notification.setMessage(localizationConstant.dependenciesSuccessfullyUpdated());
-                notification.setStatus(FINISHED);
-                buildContext.setBuilding(false);
-                parserWorker.dependenciesUpdated();
-                editorAgent.getOpenedEditors().iterate(new StringMap.IterationCallback<EditorPartPresenter>() {
+            protected void onSuccess(BuildTaskDescriptor descriptor) {
+                presenter.showRunningBuild(descriptor, "[INFO] Update Dependencies started...");
+
+                String urlWaitEnd = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-wait-build-end?projectpath=" + projectPath;
+                // send a second request to be notified when dependencies update is finished
+                asyncRequestFactory.createPostRequest(urlWaitEnd, descriptor, true).send(new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                     @Override
-                    public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
-                        if (editorPartPresenter instanceof CodenvyTextEditor) {
-                            CodenvyTextEditor editor = (CodenvyTextEditor)editorPartPresenter;
-                            Reconciler reconciler = editor.getConfiguration().getReconciler(editor.getView());
-                            if (reconciler != null) {
-                                ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(Document.DEFAULT_CONTENT_TYPE);
-                                if (strategy != null && strategy instanceof JavaReconcilerStrategy) {
-                                    ((JavaReconcilerStrategy)strategy).parse();
+                    protected void onSuccess(String result) {
+                        updating = false;
+                        notification.setMessage(localizationConstant.dependenciesSuccessfullyUpdated());
+                        notification.setStatus(FINISHED);
+                        buildContext.setBuilding(false);
+                        parserWorker.dependenciesUpdated();
+                        editorAgent.getOpenedEditors().iterate(new StringMap.IterationCallback<EditorPartPresenter>() {
+                            @Override
+                            public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
+                                if (editorPartPresenter instanceof CodenvyTextEditor) {
+                                    CodenvyTextEditor editor = (CodenvyTextEditor)editorPartPresenter;
+                                    Reconciler reconciler = editor.getConfiguration().getReconciler(editor.getView());
+                                    if (reconciler != null) {
+                                        ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(Document.DEFAULT_CONTENT_TYPE);
+                                        if (strategy != null && strategy instanceof JavaReconcilerStrategy) {
+                                            ((JavaReconcilerStrategy)strategy).parse();
+                                        }
+                                    }
+                                }
+                                if (needForUpdate) {
+                                    needForUpdate = false;
+                                    updateDependencies(projectPath);
                                 }
                             }
-                        }
-                        if (needForUpdate) {
-                            needForUpdate = false;
-                            updateDependencies(projectPath);
-                        }
+                        });
+                    }
+
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        updating = false;
+                        needForUpdate = false;
+                        notification.setMessage(exception.getMessage());
+                        notification.setType(ERROR);
+                        notification.setStatus(FINISHED);
+                        buildContext.setBuilding(false);
                     }
                 });
             }
 
             @Override
             protected void onFailure(Throwable exception) {
-                updating = false;
-                needForUpdate = false;
-                notification.setMessage(exception.getMessage());
-                notification.setType(ERROR);
-                notification.setStatus(FINISHED);
-                buildContext.setBuilding(false);
+                Log.warn(JavaExtension.class, "failed to launch build process and get build task descriptor for " + projectPath);
             }
         });
     }

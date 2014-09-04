@@ -24,6 +24,8 @@ import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nullable;
+
 /**
  * Node that represents Maven project.
  *
@@ -40,13 +42,13 @@ public class MavenProjectNode extends JavaProjectNode {
     /** Tests if the specified item is a source folder. */
     protected static boolean isSourceFolder(ItemReference item) {
         // TODO: read source folders from project/module attributes
-        return item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
+        return isFolder(item) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<AbstractTreeNode<?>> callback) {
-        getModules(data.getPath(), new AsyncCallback<Array<ProjectDescriptor>>() {
+        getModules(data, new AsyncCallback<Array<ProjectDescriptor>>() {
             @Override
             public void onSuccess(final Array<ProjectDescriptor> modules) {
                 getChildren(data.getPath(), new AsyncCallback<Array<ItemReference>>() {
@@ -57,38 +59,13 @@ public class MavenProjectNode extends JavaProjectNode {
                         setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                                // some folders may represent modules
-                                ProjectDescriptor module = getModule(item);
-                                if (module != null) {
-                                    newChildren.add(((MavenProjectTreeStructure)treeStructure)
-                                                            .newModuleNode(MavenProjectNode.this, module));
-                                } else if (isFile(item)) {
-                                    newChildren.add(treeStructure.newFileNode(MavenProjectNode.this, item));
-                                } else if (isFolder(item)) {
-                                    if (isSourceFolder(item)) {
-                                        newChildren.add(((MavenProjectTreeStructure)treeStructure)
-                                                                .newSourceFolderNode(MavenProjectNode.this, item));
-                                    } else {
-                                        newChildren.add(((MavenProjectTreeStructure)treeStructure)
-                                                                .newJavaFolderNode(MavenProjectNode.this, item));
-                                    }
+                                AbstractTreeNode node = createNode(item, modules);
+                                if (node != null) {
+                                    newChildren.add(node);
                                 }
                             }
                         }
                         callback.onSuccess(MavenProjectNode.this);
-                    }
-
-                    /** Returns the module corresponding to the specified item
-                     * or null if the directory does not correspond to any package. */
-                    private ProjectDescriptor getModule(ItemReference item) {
-                        if (isFolder(item)) {
-                            for (ProjectDescriptor module : modules.asIterable()) {
-                                if (item.getName().equals(module.getName())) {
-                                    return module;
-                                }
-                            }
-                        }
-                        return null;
                     }
 
                     @Override
@@ -105,9 +82,17 @@ public class MavenProjectNode extends JavaProjectNode {
         });
     }
 
-    private void getModules(String path, final AsyncCallback<Array<ProjectDescriptor>> callback) {
+    /**
+     * Method helps to retrieve modules of the specified project using Codenvy Project API.
+     *
+     * @param project
+     *         project to retrieve its modules
+     * @param callback
+     *         callback to return retrieved modules
+     */
+    protected void getModules(ProjectDescriptor project, final AsyncCallback<Array<ProjectDescriptor>> callback) {
         final Unmarshallable<Array<ProjectDescriptor>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.getModules(path, new AsyncRequestCallback<Array<ProjectDescriptor>>(unmarshaller) {
+        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<Array<ProjectDescriptor>>(unmarshaller) {
             @Override
             protected void onSuccess(Array<ProjectDescriptor> result) {
                 callback.onSuccess(result);
@@ -120,18 +105,44 @@ public class MavenProjectNode extends JavaProjectNode {
         });
     }
 
-    private void getChildren(String path, final AsyncCallback<Array<ItemReference>> callback) {
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(path, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
-            @Override
-            protected void onSuccess(Array<ItemReference> result) {
-                callback.onSuccess(result);
-            }
+    /**
+     * Creates node for the specified item. Method called for every child item in {@link #refreshChildren(AsyncCallback)} method.
+     * <p/>
+     * May be overridden in order to provide a way to create a node for the specified by.
+     *
+     * @param item
+     *         {@link com.codenvy.api.project.shared.dto.ItemReference} for which need to create node
+     * @param modules
+     *         modules list to identify specified item as project's module
+     * @return new node instance or <code>null</code> if the specified item is not supported
+     */
+    @Nullable
+    protected AbstractTreeNode<?> createNode(ItemReference item, Array<ProjectDescriptor> modules) {
+        ProjectDescriptor module = getModule(item, modules);
+        if (module != null) {
+            return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, module);
+        } else if (isSourceFolder(item)) {
+            return ((MavenProjectTreeStructure)treeStructure).newSourceFolderNode(MavenProjectNode.this, item);
+        } else if (isFolder(item)) {
+            return ((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(MavenProjectNode.this, item);
+        } else {
+            return super.createNode(item);
+        }
+    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
+    /**
+     * Returns the module descriptor that corresponds to the specified folderItem
+     * or null if the folderItem does not correspond to any module from the specified list.
+     */
+    @Nullable
+    private ProjectDescriptor getModule(ItemReference folderItem, Array<ProjectDescriptor> modules) {
+        if (isFolder(folderItem)) {
+            for (ProjectDescriptor module : modules.asIterable()) {
+                if (folderItem.getName().equals(module.getName())) {
+                    return module;
+                }
             }
-        });
+        }
+        return null;
     }
 }

@@ -17,7 +17,7 @@ import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
- * Node that represents a java source file (class, interface, enum).
+ * Node that represents a Java source file (class, interface, enum, etc.).
  *
  * @author Artem Zatsarynnyy
  */
@@ -33,7 +33,7 @@ public class SourceFileNode extends FileNode {
     @Override
     public boolean isRenemable() {
         // Do not allow to rename Java source file as simple file.
-        // Need to implement rename refactoring for this type of node.
+        // This type of node needs to implement rename refactoring.
         return false;
     }
 }
