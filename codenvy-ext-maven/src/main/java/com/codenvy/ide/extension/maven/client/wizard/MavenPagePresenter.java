@@ -43,9 +43,9 @@ import java.util.Map;
 @Singleton
 public class MavenPagePresenter extends AbstractWizardPage implements MavenPageView.ActionDelegate {
 
-    private MavenPageView          view;
+    protected MavenPageView          view;
     private ProjectServiceClient   projectServiceClient;
-    private EventBus               eventBus;
+    protected EventBus               eventBus;
     private DtoFactory             dtoFactory;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private MavenPomReaderClient   pomReaderClient;

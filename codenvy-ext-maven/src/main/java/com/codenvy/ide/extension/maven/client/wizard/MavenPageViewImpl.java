@@ -93,6 +93,11 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
+    public void enablePackaging(boolean enabled) {
+        packagingField.setEnabled(enabled);
+    }
+
+    @Override
     public void setPackaging(String packaging) {
         for (int i = 0; i < packagingField.getItemCount(); i++) {
             if (packaging.equals(packagingField.getValue(i))) {
@@ -106,6 +111,8 @@ public class MavenPageViewImpl implements MavenPageView {
     public String getGroupId() {
         return groupId.getText();
     }
+
+
 
     @UiHandler({"versionField", "groupId", "artifactId"})
     void onKeyUp(KeyUpEvent event) {
