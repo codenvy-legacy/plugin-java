@@ -16,6 +16,7 @@ import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.vfs.server.VirtualFile;
+import com.google.common.io.ByteStreams;
 
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
@@ -42,8 +43,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -314,8 +313,9 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static void addDependency(java.io.File pom, Dependency dependency) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
         try {
-            addDependencies(pom.toPath(), dependency);
+            com.google.common.io.Files.write(addDependencies(pomBytes, dependency), pom);
         } catch (XMLStreamException xmlEx) {
             throw new IOException(xmlEx);
         }
@@ -350,8 +350,9 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static void addDependencies(java.io.File pom, Dependency... dependencies) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
         try {
-            addDependencies(pom.toPath(), dependencies);
+            com.google.common.io.Files.write(addDependencies(pomBytes, dependencies), pom);
         } catch (XMLStreamException xmlEx) {
             throw new IOException(xmlEx);
         }
@@ -371,10 +372,13 @@ public class MavenUtils {
      * @throws ServerException
      *         if other error occurs
      */
-    public static void addDependencies(VirtualFile pom, Dependency... dependencies)
-            throws IOException, ForbiddenException, ServerException {
+    public static void addDependencies(VirtualFile pom, Dependency... dependencies) throws IOException,
+                                                                                           ForbiddenException,
+                                                                                           ServerException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            addDependencies(Paths.get(pom.getPath()), dependencies);
+            pom.updateContent(new ByteArrayInputStream(addDependencies(content, dependencies)), null);
         } catch (XMLStreamException xmlEx) {
             throw new IOException(xmlEx);
         }
@@ -677,47 +681,107 @@ public class MavenUtils {
         return false;
     }
 
-    public static void setArtifactId(java.io.File pom, String artifactId) throws IOException {
+    /**
+     * Set artifactId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setArtifactId(VirtualFile pom, String artifactId) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            setContent(pom.toPath(), "artifactId", artifactId, new String[]{"project"});
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/artifactId", artifactId)), null);
         } catch (XMLStreamException xmlEx) {
             throw new IOException(xmlEx);
         }
     }
 
+    /**
+     * Set artifactId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setArtifactId(java.io.File pom, String artifactId) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/artifactId", artifactId), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Get artifactId of artifact
+     */
     public static String getArtifactId(java.io.File pom) throws IOException {
         return readModel(pom).getArtifactId();
     }
 
-    public static void setGroupId(java.io.File pom, String groupId) throws IOException {
+    /**
+     * Set groupId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setGroupId(VirtualFile pom, String groupId) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            setContent(pom.toPath(), "groupId", groupId, new String[]{"project"});
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/groupId", groupId)), null);
         } catch (XMLStreamException xmlEx) {
             throw new IOException(xmlEx);
         }
     }
 
+    /**
+     * Set groupId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setGroupId(java.io.File pom, String groupId) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/groupId", groupId), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Get groupId of artifact. If artifact doesn't have groupId this method checks parent artifact for groupId.
+     */
     public static String getGroupId(java.io.File pom) throws IOException {
         return getGroupId(readModel(pom));
     }
 
-    public static void setVersion(java.io.File pom, String version) throws IOException {
+
+    /**
+     * Set version to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setVersion(VirtualFile pom, String version) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            setContent(pom.toPath(), "version", version, new String[]{"project"});
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/version", version)), null);
         } catch (XMLStreamException xmlEx) {
             throw new IOException(xmlEx);
         }
     }
 
+    /**
+     * Set version to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setVersion(java.io.File pom, String version) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/version", version), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Get artifact version
+     */
     public static String getVersion(java.io.File pom) throws IOException {
         return getVersion(readModel(pom));
     }
 
-    private static void addDependencies(Path pom, Dependency... dependencies) throws IOException, XMLStreamException {
+    private static byte[] addDependencies(byte[] source, Dependency... dependencies) throws IOException, XMLStreamException {
         if (dependencies.length == 0) {
             throw new IllegalArgumentException("At least one dependency required");
         }
-        final byte[] source = Files.readAllBytes(pom);
         final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
         final String[] dependenciesPath = new String[]{"project", "dependencies"};
         final String[] currentPath = new String[dependenciesPath.length];
@@ -748,11 +812,11 @@ public class MavenUtils {
                         applied = true;
                     } else if (level == 1 && currentPath[0].equals("project")) {
                         result.write(source, 0, instructionEnd);
-                        result.write("\n\t<dependencies>".getBytes());
+                        result.write("\n    <dependencies>".getBytes());
                         for (Dependency dependency : dependencies) {
                             result.write(toString(dependency).getBytes());
                         }
-                        result.write("\n\t</dependencies>".getBytes());
+                        result.write("\n    </dependencies>".getBytes());
                         result.write(source, instructionEnd, source.length - instructionEnd);
                         applied = true;
                     }
@@ -761,18 +825,17 @@ public class MavenUtils {
                     break;
             }
         }
-        try (OutputStream os = Files.newOutputStream(pom)) {
-            result.writeTo(os);
-        }
+        return result.toByteArray();
     }
 
-    private static void setContent(Path pom,
-                                   String targetTag,
-                                   String newContent,
-                                   String[] parentPath) throws IOException, XMLStreamException {
-        final byte[] source = Files.readAllBytes(pom);
-        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
+    private static byte[] setContent(byte[] source,
+                                     String tagPath,
+                                     String newContent) throws IOException, XMLStreamException {
+        final String[] path = tagPath.split("/");
+        final String[] parentPath = Arrays.copyOf(path, path.length - 1);
         final String[] currentPath = new String[parentPath.length];
+        final String targetTag = path[path.length - 1];
+        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
         final ByteArrayOutputStream result = new ByteArrayOutputStream();
         boolean found = false;
         boolean applied = false;
@@ -806,8 +869,8 @@ public class MavenUtils {
                         applied = true;
                     } else if (level == parentPath.length && Arrays.equals(parentPath, currentPath)) {
                         result.write(source, 0, instructionEnd);
-                        for (int i = 0; i < level; ++i) {
-                            result.write('\t');
+                        for (int i = 0; i < level * 4; ++i) {
+                            result.write(' ');
                         }
                         result.write(wrapInTag(targetTag, newContent).getBytes());
                         result.write('\n');
@@ -819,9 +882,7 @@ public class MavenUtils {
                     break;
             }
         }
-        try (OutputStream out = Files.newOutputStream(pom)) {
-            result.writeTo(out);
-        }
+        return result.toByteArray();
     }
 
     private static String wrapInTag(String tagName, String content) {
@@ -830,20 +891,20 @@ public class MavenUtils {
 
     private static String toString(Dependency dependency) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("\n\t\t<dependency>");
+        sb.append("\n        <dependency>");
         if (dependency.getArtifactId() != null) {
-            sb.append("\n\t\t\t<artifactId>").append(dependency.getArtifactId()).append("</artifactId>");
+            sb.append("\n            <artifactId>").append(dependency.getArtifactId()).append("</artifactId>");
         }
         if (dependency.getGroupId() != null) {
-            sb.append("\n\t\t\t<groupId>").append(dependency.getGroupId()).append("</groupId>");
+            sb.append("\n            <groupId>").append(dependency.getGroupId()).append("</groupId>");
         }
         if (dependency.getVersion() != null) {
-            sb.append("\n\t\t\t<version>").append(dependency.getVersion()).append("</version>");
+            sb.append("\n            <version>").append(dependency.getVersion()).append("</version>");
         }
         if (dependency.getScope() != null) {
-            sb.append("\n\t\t\t<scope>").append(dependency.getScope()).append("</scope>");
+            sb.append("\n            <scope>").append(dependency.getScope()).append("</scope>");
         }
-        sb.append("\n\t\t</dependency>");
+        sb.append("\n        </dependency>");
         return sb.toString();
     }
 }
