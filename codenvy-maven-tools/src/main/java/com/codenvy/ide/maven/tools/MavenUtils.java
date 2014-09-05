@@ -28,6 +28,10 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +42,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -51,6 +57,7 @@ import java.util.regex.Pattern;
  *
  * @author Artem Zatsarynnyy
  * @author andrew00x
+ * @author Eugene Voevodin
  */
 public class MavenUtils {
     public static final Pattern MAVEN_LOGGER_PREFIX_REMOVER = Pattern.compile("(\\[INFO\\]|\\[WARNING\\]|\\[DEBUG\\]|\\[ERROR\\])\\s+(.*)");
@@ -67,7 +74,7 @@ public class MavenUtils {
     @Named("packaging2file-extension")
     private static Map<String, String> packagingToFileExtensionMapping;
 
-    /** Get file extension of artifact by packaging, e.g. <packaging>play</packaging>*/
+    /** Get file extension of artifact by packaging, e.g. <packaging>play</packaging> */
     public static String getFileExtensionByPackaging(String packaging) {
         if (packagingToFileExtensionMapping == null) {
             return null;
@@ -307,10 +314,10 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static void addDependency(java.io.File pom, Dependency dependency) throws IOException {
-        final Model model = doReadModel(pom);
-        model.getDependencies().add(dependency);
-        try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            writeModel(model, writer);
+        try {
+            addDependencies(pom.toPath(), dependency);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
         }
     }
 
@@ -329,9 +336,7 @@ public class MavenUtils {
      *         if other error occurs
      */
     public static void addDependency(VirtualFile pom, Dependency dependency) throws IOException, ForbiddenException, ServerException {
-        final Model model = readModel(pom);
-        model.getDependencies().add(dependency);
-        writeModel(model, pom);
+        addDependency(new java.io.File(pom.getPath()), dependency);
     }
 
     /**
@@ -345,10 +350,10 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static void addDependencies(java.io.File pom, Dependency... dependencies) throws IOException {
-        final Model model = doReadModel(pom);
-        model.getDependencies().addAll(Arrays.asList(dependencies));
-        try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            writeModel(model, writer);
+        try {
+            addDependencies(pom.toPath(), dependencies);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
         }
     }
 
@@ -368,9 +373,11 @@ public class MavenUtils {
      */
     public static void addDependencies(VirtualFile pom, Dependency... dependencies)
             throws IOException, ForbiddenException, ServerException {
-        final Model model = readModel(pom);
-        model.getDependencies().addAll(Arrays.asList(dependencies));
-        writeModel(model, pom);
+        try {
+            addDependencies(Paths.get(pom.getPath()), dependencies);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
     }
 
     /**
@@ -656,7 +663,7 @@ public class MavenUtils {
         ProcessUtil.process(process, cmdOutput, LineConsumer.DEV_NULL);
     }
 
-    /** Checks is specified project is codenvy extension.*/
+    /** Checks is specified project is codenvy extension. */
     public static boolean isCodenvyExtensionProject(java.io.File workDir) throws IOException {
         return isCodenvyExtensionProject(MavenUtils.getModel(workDir));
     }
@@ -668,5 +675,175 @@ public class MavenUtils {
             }
         }
         return false;
+    }
+
+    public static void setArtifactId(java.io.File pom, String artifactId) throws IOException {
+        try {
+            setContent(pom.toPath(), "artifactId", artifactId, new String[]{"project"});
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    public static String getArtifactId(java.io.File pom) throws IOException {
+        return readModel(pom).getArtifactId();
+    }
+
+    public static void setGroupId(java.io.File pom, String groupId) throws IOException {
+        try {
+            setContent(pom.toPath(), "groupId", groupId, new String[]{"project"});
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    public static String getGroupId(java.io.File pom) throws IOException {
+        return getGroupId(readModel(pom));
+    }
+
+    public static void setVersion(java.io.File pom, String version) throws IOException {
+        try {
+            setContent(pom.toPath(), "version", version, new String[]{"project"});
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    public static String getVersion(java.io.File pom) throws IOException {
+        return getVersion(readModel(pom));
+    }
+
+    private static void addDependencies(Path pom, Dependency... dependencies) throws IOException, XMLStreamException {
+        if (dependencies.length == 0) {
+            throw new IllegalArgumentException("At least one dependency required");
+        }
+        final byte[] source = Files.readAllBytes(pom);
+        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
+        final String[] dependenciesPath = new String[]{"project", "dependencies"};
+        final String[] currentPath = new String[dependenciesPath.length];
+        final ByteArrayOutputStream result = new ByteArrayOutputStream();
+        boolean found = false;
+        boolean applied = false;
+        int level = 0;
+        int instructionEnd = 0;
+        while (!applied && reader.hasNext()) {
+            switch (reader.next()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    if (level < currentPath.length) {
+                        currentPath[level] = reader.getLocalName();
+                    }
+                    ++level;
+                    if (level == dependenciesPath.length && Arrays.equals(dependenciesPath, currentPath)) {
+                        found = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    if (found && level == dependenciesPath.length && Arrays.equals(currentPath, dependenciesPath)) {
+                        result.write(source, 0, instructionEnd);
+                        for (Dependency dependency : dependencies) {
+                            result.write(toString(dependency).getBytes());
+                        }
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    } else if (level == 1 && currentPath[0].equals("project")) {
+                        result.write(source, 0, instructionEnd);
+                        result.write("\n\t<dependencies>".getBytes());
+                        for (Dependency dependency : dependencies) {
+                            result.write(toString(dependency).getBytes());
+                        }
+                        result.write("\n\t</dependencies>".getBytes());
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    --level;
+                    break;
+            }
+        }
+        try (OutputStream os = Files.newOutputStream(pom)) {
+            result.writeTo(os);
+        }
+    }
+
+    private static void setContent(Path pom,
+                                   String targetTag,
+                                   String newContent,
+                                   String[] parentPath) throws IOException, XMLStreamException {
+        final byte[] source = Files.readAllBytes(pom);
+        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
+        final String[] currentPath = new String[parentPath.length];
+        final ByteArrayOutputStream result = new ByteArrayOutputStream();
+        boolean found = false;
+        boolean applied = false;
+        int level = 0;
+        int instructionEnd = 0;
+        int textLength = 0;
+        while (!applied && reader.hasNext()) {
+            switch (reader.next()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    if (level == parentPath.length && targetTag.equals(reader.getLocalName()) && Arrays.equals(parentPath, currentPath)) {
+                        found = true;
+                    } else if (level < currentPath.length) {
+                        currentPath[level] = reader.getLocalName();
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    ++level;
+                    break;
+                case XMLStreamConstants.CHARACTERS:
+                    if (!found) {
+                        instructionEnd += reader.getTextLength();
+                    } else {
+                        textLength = reader.getTextLength();
+                    }
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    if (found) {
+                        result.write(source, 0, instructionEnd);
+                        result.write(newContent.getBytes());
+                        final int offset = instructionEnd + textLength;
+                        result.write(source, offset, source.length - offset);
+                        applied = true;
+                    } else if (level == parentPath.length && Arrays.equals(parentPath, currentPath)) {
+                        result.write(source, 0, instructionEnd);
+                        for (int i = 0; i < level; ++i) {
+                            result.write('\t');
+                        }
+                        result.write(wrapInTag(targetTag, newContent).getBytes());
+                        result.write('\n');
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    --level;
+                    break;
+            }
+        }
+        try (OutputStream out = Files.newOutputStream(pom)) {
+            result.writeTo(out);
+        }
+    }
+
+    private static String wrapInTag(String tagName, String content) {
+        return '<' + tagName + '>' + content + "</" + tagName + '>';
+    }
+
+    private static String toString(Dependency dependency) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("\n\t\t<dependency>");
+        if (dependency.getArtifactId() != null) {
+            sb.append("\n\t\t\t<artifactId>").append(dependency.getArtifactId()).append("</artifactId>");
+        }
+        if (dependency.getGroupId() != null) {
+            sb.append("\n\t\t\t<groupId>").append(dependency.getGroupId()).append("</groupId>");
+        }
+        if (dependency.getVersion() != null) {
+            sb.append("\n\t\t\t<version>").append(dependency.getVersion()).append("</version>");
+        }
+        if (dependency.getScope() != null) {
+            sb.append("\n\t\t\t<scope>").append(dependency.getScope()).append("</scope>");
+        }
+        sb.append("\n\t\t</dependency>");
+        return sb.toString();
     }
 }
