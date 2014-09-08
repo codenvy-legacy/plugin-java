@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.builder.BuildStatus;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.action.ActionManager;
