@@ -62,15 +62,20 @@ public class MavenSourceFoldersValueProviderFactory implements ValueProviderFact
     }
 
     private List<String> getSourceFolders(FileEntry pomXml) throws IOException, ServerException {
-        final String defaultSourceDirectoryPath = "src/main/java";
-        final String defaultTestSourceDirectoryPath = "src/test/java";
 
         final Model model = MavenUtils.readModel(pomXml.getInputStream());
-        final List<String> list = MavenUtils.getSourceDirectories(model);
-        if (list.isEmpty()) {
-            list.add(defaultSourceDirectoryPath);
-            list.add(defaultTestSourceDirectoryPath);
-        }
-        return list;
+        return MavenUtils.getSourceDirectories(model);
+
+
+//        final String defaultSourceDirectoryPath = "src/main/java";
+//        final String defaultTestSourceDirectoryPath = "src/test/java";
+//
+//        final Model model = MavenUtils.readModel(pomXml.getInputStream());
+//        final List<String> list = MavenUtils.getSourceDirectories(model);
+//        if (list.isEmpty()) {
+//            list.add(defaultSourceDirectoryPath);
+//            list.add(defaultTestSourceDirectoryPath);
+//        }
+//        return list;
     }
 }

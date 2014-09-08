@@ -18,11 +18,14 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +36,101 @@ import java.util.List;
 
 /** @author andrew00x */
 public class MavenUtilTest {
+
+    @Test
+    public void testGetArtifactId() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testGetGroupId-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        Assert.assertEquals("fake-artifact", MavenUtils.getArtifactId(pom));
+    }
+
+    @Test
+    public void testGetGroupId() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testGetGroupId-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        Assert.assertEquals("fake-group", MavenUtils.getGroupId(pom));
+    }
+
+    @Test
+    public void testGetVersion() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testGetVersion-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        Assert.assertEquals("fake-version", MavenUtils.getVersion(pom));
+    }
+
+    @Test
+    public void testChangeArtifactId() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testChangeArtifactId-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        MavenUtils.setArtifactId(pom, "new-artifact-id");
+        Assert.assertEquals("new-artifact-id", MavenUtils.readModel(pom).getArtifactId());
+    }
+
+    @Test
+    public void testChangeGroupId() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testChangeGroupId-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        MavenUtils.setGroupId(pom, "new-group-id");
+        Assert.assertEquals("new-group-id", MavenUtils.readModel(pom).getGroupId());
+    }
+
+    @Test
+    public void testChangeVersion() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testChangeVersion-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        MavenUtils.setVersion(pom, "new-version");
+        Assert.assertEquals("new-version", MavenUtils.readModel(pom).getVersion());
+    }
+
+    @Test
+    public void testSetGroupId() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testSetGroupId-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        MavenUtils.setGroupId(pom, "new-group-id");
+        Assert.assertEquals("new-group-id", MavenUtils.readModel(pom).getGroupId());
+    }
+
     @Test
     public void testReadPom() throws IOException {
         URL pom = Thread.currentThread().getContextClassLoader().getResource("test-pom.xml");
@@ -152,6 +250,42 @@ public class MavenUtilTest {
         Assert.assertEquals("y", xpath.evaluate("dependency/artifactId", node, XPathConstants.STRING));
         Assert.assertEquals("z", xpath.evaluate("dependency/version", node, XPathConstants.STRING));
         Assert.assertEquals("test", xpath.evaluate("dependency/scope", node, XPathConstants.STRING));
+    }
+
+    @Test
+    public void testAddDependencies() throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testAddDependencies-pom.xml");
+        Model model = new Model();
+        model.setGroupId("a");
+        model.setArtifactId("b");
+        model.setVersion("c");
+        model.setDescription("test pom");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        Dependency dependency1 = new Dependency();
+        dependency1.setArtifactId("a1");
+        dependency1.setGroupId("g1");
+        dependency1.setVersion("v1");
+        Dependency dependency2 = new Dependency();
+        dependency2.setArtifactId("a2");
+        dependency2.setGroupId("g2");
+        dependency2.setVersion("v2");
+        MavenUtils.addDependencies(pom, dependency1, dependency2);
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = documentBuilder.parse(pom);
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        NodeList depsNodeList = (NodeList)xpath.evaluate("/project/dependencies/dependency", dom, XPathConstants.NODESET);
+        Assert.assertEquals(2, depsNodeList.getLength());
+        Node dep1Node = depsNodeList.item(0);
+        Assert.assertEquals("a1", xpath.evaluate("artifactId", dep1Node, XPathConstants.STRING));
+        Assert.assertEquals("g1", xpath.evaluate("groupId", dep1Node, XPathConstants.STRING));
+        Assert.assertEquals("v1", xpath.evaluate("version", dep1Node, XPathConstants.STRING));
+        Node dep2Node = depsNodeList.item(1);
+        Assert.assertEquals("a2", xpath.evaluate("artifactId", dep2Node, XPathConstants.STRING));
+        Assert.assertEquals("g2", xpath.evaluate("groupId", dep2Node, XPathConstants.STRING));
+        Assert.assertEquals("v2", xpath.evaluate("version", dep2Node, XPathConstants.STRING));
     }
 
     @Test

@@ -16,6 +16,7 @@ import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.vfs.server.VirtualFile;
+import com.google.common.io.ByteStreams;
 
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
@@ -28,6 +29,10 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,6 +56,7 @@ import java.util.regex.Pattern;
  *
  * @author Artem Zatsarynnyy
  * @author andrew00x
+ * @author Eugene Voevodin
  */
 public class MavenUtils {
     public static final Pattern MAVEN_LOGGER_PREFIX_REMOVER = Pattern.compile("(\\[INFO\\]|\\[WARNING\\]|\\[DEBUG\\]|\\[ERROR\\])\\s+(.*)");
@@ -67,7 +73,7 @@ public class MavenUtils {
     @Named("packaging2file-extension")
     private static Map<String, String> packagingToFileExtensionMapping;
 
-    /** Get file extension of artifact by packaging, e.g. <packaging>play</packaging>*/
+    /** Get file extension of artifact by packaging, e.g. <packaging>play</packaging> */
     public static String getFileExtensionByPackaging(String packaging) {
         if (packagingToFileExtensionMapping == null) {
             return null;
@@ -307,10 +313,11 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static void addDependency(java.io.File pom, Dependency dependency) throws IOException {
-        final Model model = doReadModel(pom);
-        model.getDependencies().add(dependency);
-        try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            writeModel(model, writer);
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(addDependencies(pomBytes, dependency), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
         }
     }
 
@@ -329,9 +336,7 @@ public class MavenUtils {
      *         if other error occurs
      */
     public static void addDependency(VirtualFile pom, Dependency dependency) throws IOException, ForbiddenException, ServerException {
-        final Model model = readModel(pom);
-        model.getDependencies().add(dependency);
-        writeModel(model, pom);
+        addDependency(new java.io.File(pom.getPath()), dependency);
     }
 
     /**
@@ -345,10 +350,11 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static void addDependencies(java.io.File pom, Dependency... dependencies) throws IOException {
-        final Model model = doReadModel(pom);
-        model.getDependencies().addAll(Arrays.asList(dependencies));
-        try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            writeModel(model, writer);
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(addDependencies(pomBytes, dependencies), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
         }
     }
 
@@ -366,11 +372,16 @@ public class MavenUtils {
      * @throws ServerException
      *         if other error occurs
      */
-    public static void addDependencies(VirtualFile pom, Dependency... dependencies)
-            throws IOException, ForbiddenException, ServerException {
-        final Model model = readModel(pom);
-        model.getDependencies().addAll(Arrays.asList(dependencies));
-        writeModel(model, pom);
+    public static void addDependencies(VirtualFile pom, Dependency... dependencies) throws IOException,
+                                                                                           ForbiddenException,
+                                                                                           ServerException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(addDependencies(content, dependencies)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
     }
 
     /**
@@ -656,7 +667,7 @@ public class MavenUtils {
         ProcessUtil.process(process, cmdOutput, LineConsumer.DEV_NULL);
     }
 
-    /** Checks is specified project is codenvy extension.*/
+    /** Checks is specified project is codenvy extension. */
     public static boolean isCodenvyExtensionProject(java.io.File workDir) throws IOException {
         return isCodenvyExtensionProject(MavenUtils.getModel(workDir));
     }
@@ -668,5 +679,232 @@ public class MavenUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Set artifactId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setArtifactId(VirtualFile pom, String artifactId) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/artifactId", artifactId)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set artifactId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setArtifactId(java.io.File pom, String artifactId) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/artifactId", artifactId), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Get artifactId of artifact
+     */
+    public static String getArtifactId(java.io.File pom) throws IOException {
+        return readModel(pom).getArtifactId();
+    }
+
+    /**
+     * Set groupId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setGroupId(VirtualFile pom, String groupId) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/groupId", groupId)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set groupId to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setGroupId(java.io.File pom, String groupId) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/groupId", groupId), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Get groupId of artifact. If artifact doesn't have groupId this method checks parent artifact for groupId.
+     */
+    public static String getGroupId(java.io.File pom) throws IOException {
+        return getGroupId(readModel(pom));
+    }
+
+
+    /**
+     * Set version to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setVersion(VirtualFile pom, String version) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/version", version)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set version to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setVersion(java.io.File pom, String version) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/version", version), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Get artifact version
+     */
+    public static String getVersion(java.io.File pom) throws IOException {
+        return getVersion(readModel(pom));
+    }
+
+    private static byte[] addDependencies(byte[] source, Dependency... dependencies) throws IOException, XMLStreamException {
+        if (dependencies.length == 0) {
+            throw new IllegalArgumentException("At least one dependency required");
+        }
+        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
+        final String[] dependenciesPath = new String[]{"project", "dependencies"};
+        final String[] currentPath = new String[dependenciesPath.length];
+        final ByteArrayOutputStream result = new ByteArrayOutputStream();
+        boolean found = false;
+        boolean applied = false;
+        int level = 0;
+        int instructionEnd = 0;
+        while (!applied && reader.hasNext()) {
+            switch (reader.next()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    if (level < currentPath.length) {
+                        currentPath[level] = reader.getLocalName();
+                    }
+                    ++level;
+                    if (level == dependenciesPath.length && Arrays.equals(dependenciesPath, currentPath)) {
+                        found = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    if (found && level == dependenciesPath.length && Arrays.equals(currentPath, dependenciesPath)) {
+                        result.write(source, 0, instructionEnd);
+                        for (Dependency dependency : dependencies) {
+                            result.write(toString(dependency).getBytes());
+                        }
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    } else if (level == 1 && currentPath[0].equals("project")) {
+                        result.write(source, 0, instructionEnd);
+                        result.write("\n    <dependencies>".getBytes());
+                        for (Dependency dependency : dependencies) {
+                            result.write(toString(dependency).getBytes());
+                        }
+                        result.write("\n    </dependencies>".getBytes());
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    --level;
+                    break;
+            }
+        }
+        return result.toByteArray();
+    }
+
+    private static byte[] setContent(byte[] source,
+                                     String tagPath,
+                                     String newContent) throws IOException, XMLStreamException {
+        final String[] path = tagPath.split("/");
+        final String[] parentPath = Arrays.copyOf(path, path.length - 1);
+        final String[] currentPath = new String[parentPath.length];
+        final String targetTag = path[path.length - 1];
+        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
+        final ByteArrayOutputStream result = new ByteArrayOutputStream();
+        boolean found = false;
+        boolean applied = false;
+        int level = 0;
+        int instructionEnd = 0;
+        int textLength = 0;
+        while (!applied && reader.hasNext()) {
+            switch (reader.next()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    if (level == parentPath.length && targetTag.equals(reader.getLocalName()) && Arrays.equals(parentPath, currentPath)) {
+                        found = true;
+                    } else if (level < currentPath.length) {
+                        currentPath[level] = reader.getLocalName();
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    ++level;
+                    break;
+                case XMLStreamConstants.CHARACTERS:
+                    if (!found) {
+                        instructionEnd += reader.getTextLength();
+                    } else {
+                        textLength = reader.getTextLength();
+                    }
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    if (found) {
+                        result.write(source, 0, instructionEnd);
+                        result.write(newContent.getBytes());
+                        final int offset = instructionEnd + textLength;
+                        result.write(source, offset, source.length - offset);
+                        applied = true;
+                    } else if (level == parentPath.length && Arrays.equals(parentPath, currentPath)) {
+                        result.write(source, 0, instructionEnd);
+                        for (int i = 0; i < level * 4; ++i) {
+                            result.write(' ');
+                        }
+                        result.write(wrapInTag(targetTag, newContent).getBytes());
+                        result.write('\n');
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    --level;
+                    break;
+            }
+        }
+        return result.toByteArray();
+    }
+
+    private static String wrapInTag(String tagName, String content) {
+        return '<' + tagName + '>' + content + "</" + tagName + '>';
+    }
+
+    private static String toString(Dependency dependency) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("\n        <dependency>");
+        if (dependency.getArtifactId() != null) {
+            sb.append("\n            <artifactId>").append(dependency.getArtifactId()).append("</artifactId>");
+        }
+        if (dependency.getGroupId() != null) {
+            sb.append("\n            <groupId>").append(dependency.getGroupId()).append("</groupId>");
+        }
+        if (dependency.getVersion() != null) {
+            sb.append("\n            <version>").append(dependency.getVersion()).append("</version>");
+        }
+        if (dependency.getScope() != null) {
+            sb.append("\n            <scope>").append(dependency.getScope()).append("</scope>");
+        }
+        sb.append("\n        </dependency>");
+        return sb.toString();
     }
 }
