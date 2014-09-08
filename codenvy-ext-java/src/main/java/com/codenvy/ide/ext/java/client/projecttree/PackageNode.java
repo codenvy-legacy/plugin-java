@@ -48,13 +48,13 @@ public class PackageNode extends FolderNode {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractTreeNode<?> createNode(ItemReference item) {
+    protected AbstractTreeNode<?> createChildNode(ItemReference item) {
         if (isFile(item) && item.getName().endsWith(".java")) {
             return ((JavaTreeStructure)treeStructure).newSourceFileNode(this, item);
         } else if (isFolder(item)) {
             return ((JavaTreeStructure)treeStructure).newPackageNode(this, item);
         } else {
-            return super.createNode(item);
+            return super.createChildNode(item);
         }
     }
 

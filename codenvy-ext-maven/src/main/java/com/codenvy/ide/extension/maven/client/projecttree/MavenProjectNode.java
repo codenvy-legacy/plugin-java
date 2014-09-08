@@ -59,7 +59,7 @@ public class MavenProjectNode extends JavaProjectNode {
                         setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                                AbstractTreeNode node = createNode(item, modules);
+                                AbstractTreeNode node = createChildNode(item, modules);
                                 if (node != null) {
                                     newChildren.add(node);
                                 }
@@ -117,7 +117,7 @@ public class MavenProjectNode extends JavaProjectNode {
      * @return new node instance or <code>null</code> if the specified item is not supported
      */
     @Nullable
-    protected AbstractTreeNode<?> createNode(ItemReference item, Array<ProjectDescriptor> modules) {
+    protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
         ProjectDescriptor module = getModule(item, modules);
         if (module != null) {
             return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, module);
@@ -126,7 +126,7 @@ public class MavenProjectNode extends JavaProjectNode {
         } else if (isFolder(item)) {
             return ((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(MavenProjectNode.this, item);
         } else {
-            return super.createNode(item);
+            return super.createChildNode(item);
         }
     }
 
