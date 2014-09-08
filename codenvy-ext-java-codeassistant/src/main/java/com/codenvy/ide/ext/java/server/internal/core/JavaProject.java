@@ -87,7 +87,7 @@ public class JavaProject extends Openable implements IJavaProject {
         this.options = options;
         List<IClasspathEntry> paths = new LinkedList<>();
         try {
-            if (index == 0) {
+            if (index <= 0) {
                 // project in root folder
                 addSources(projectDir, paths);
             } else {
