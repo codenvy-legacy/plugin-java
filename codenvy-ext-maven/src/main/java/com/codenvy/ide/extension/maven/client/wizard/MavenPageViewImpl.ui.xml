@@ -26,6 +26,12 @@
         .mainDoc{
             margin: 15px;
         }
+
+        .inputError {
+            border-color: #ffe400;
+            box-shadow: 0 0 5px #ffe400;
+        }
+
     </ui:style>
     <g:DockLayoutPanel unit="PX" debugId="mavenPageView-mainPanel" addStyleNames="{style.mainDoc}">
         <g:north size="50">
