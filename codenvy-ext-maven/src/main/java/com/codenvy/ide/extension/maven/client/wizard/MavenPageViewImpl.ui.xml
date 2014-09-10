@@ -12,7 +12,20 @@
 -->
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
-    <ui:style>
+    <ui:style src="com/codenvy/ide/api/ui/style.css" type="com.codenvy.ide.extension.maven.client.wizard.MavenPageViewImpl.Style">
+        @eval InputBackgroundColor com.codenvy.ide.api.theme.Style.getInputBackground();
+        @eval borderColor com.codenvy.ide.api.theme.Style.getTabBorderColor();
+        .field {
+            background-color: InputBackgroundColor;
+            color: #dbdbdb;
+            border: 1px solid #191c1e;
+            border-radius: 1px;
+            box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.19) inset, 0px 1px 0px 0px rgba(223, 223, 223, 0.4);
+            font-size: 12px;
+            padding-left: 8px;
+            height: 20px;
+        }
+
         .projectNamePosition {
             position: relative;
             line-height: 29px;
@@ -26,6 +39,12 @@
         .mainDoc{
             margin: 15px;
         }
+
+        .inputError {
+            border-color: #ffe400;
+            box-shadow: 0 0 5px #ffe400;
+        }
+
     </ui:style>
     <g:DockLayoutPanel unit="PX" debugId="mavenPageView-mainPanel" addStyleNames="{style.mainDoc}">
         <g:north size="50">
@@ -38,7 +57,7 @@
                 <g:center>
                     <g:SimplePanel addStyleNames="{style.spaceRight}">
                         <g:SimplePanel>
-                            <g:TextBox width="390px" height="29px" ui:field="artifactId" debugId="mavenPageView-artifactId"/>
+                            <g:TextBox width="390px" ui:field="artifactId" debugId="mavenPageView-artifactId" addStyleNames="{style.field}"/>
                         </g:SimplePanel>
                     </g:SimplePanel>
                 </g:center>
@@ -54,7 +73,7 @@
                 <g:center>
                     <g:SimplePanel addStyleNames="{style.spaceRight}">
                         <g:SimplePanel>
-                            <g:TextBox width="390px" height="29px" ui:field="groupId" debugId="mavenPageView-groupId"/>
+                            <g:TextBox width="390px" ui:field="groupId" debugId="mavenPageView-groupId" addStyleNames="{style.field}"/>
                         </g:SimplePanel>
                     </g:SimplePanel>
                 </g:center>
@@ -69,7 +88,7 @@
                 </g:west>
                 <g:center>
                     <g:SimplePanel addStyleNames="{style.spaceRight}">
-                            <g:TextBox width="390px" height="29px" ui:field="versionField" debugId="mavenPageView-version">1.0-SNAPSHOT</g:TextBox>
+                            <g:TextBox width="390px" ui:field="versionField" debugId="mavenPageView-version" addStyleNames="{style.field}">1.0-SNAPSHOT</g:TextBox>
                     </g:SimplePanel>
                 </g:center>
             </g:DockLayoutPanel>
@@ -86,7 +105,7 @@
                     <g:SimplePanel addStyleNames="{style.spaceRight}">
                         <g:SimplePanel>
                             <g:ListBox ui:field="packagingField" multipleSelect="false" visibleItemCount="1" selectedIndex="0"
-                                       debugId="mavenPageView-packagingField" width="396px" height="29px">
+                                       debugId="mavenPageView-packagingField" width="396px" height="29px" addStyleNames="{style.field}">
                                 <g:item value="jar">
                                     JAR
                                 </g:item>

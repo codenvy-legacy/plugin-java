@@ -13,6 +13,7 @@ package com.codenvy.ide.extension.maven.client.wizard;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -29,6 +30,10 @@ public class MavenPageViewImpl implements MavenPageView {
     private static MavenPageViewImplUiBinder ourUiBinder = GWT.create(MavenPageViewImplUiBinder.class);
     private final DockLayoutPanel rootElement;
     private       ActionDelegate  delegate;
+
+    @UiField
+    Style       style;
+
     @UiField
     TextBox versionField;
     @UiField
@@ -86,6 +91,7 @@ public class MavenPageViewImpl implements MavenPageView {
     @Override
     public void reset() {
         artifactId.setText("");
+        artifactId.setFocus(true);
         groupId.setText("");
         versionField.setText("1.0-SNAPSHOT");
         packagingField.setSelectedIndex(0);
@@ -124,7 +130,38 @@ public class MavenPageViewImpl implements MavenPageView {
         delegate.setPackaging(getPackaging());
     }
 
+    @Override
+    public void showArtifactIdMissingIndicator(boolean doShow) {
+        if (doShow) {
+            artifactId.addStyleName(style.inputError());
+        } else {
+            artifactId.removeStyleName(style.inputError());
+        }
+    }
+
+    @Override
+    public void showGroupIdMissingIndicator(boolean doShow) {
+        if (doShow) {
+            groupId.addStyleName(style.inputError());
+        } else {
+            groupId.removeStyleName(style.inputError());
+        }
+    }
+
+    @Override
+    public void showVersionMissingIndicator(boolean doShow) {
+        if (doShow) {
+            versionField.addStyleName(style.inputError());
+        } else {
+            versionField.removeStyleName(style.inputError());
+        }
+    }
+
     interface MavenPageViewImplUiBinder
             extends UiBinder<DockLayoutPanel, MavenPageViewImpl> {
+    }
+
+    interface Style extends CssResource {
+        String inputError();
     }
 }

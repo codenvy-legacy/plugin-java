@@ -44,4 +44,10 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
     String getVersion();
 
     void enablePackaging(boolean enabled);
+
+    void showArtifactIdMissingIndicator(boolean doShow);
+
+    void showGroupIdMissingIndicator(boolean doShow);
+
+    void showVersionMissingIndicator(boolean doShow);
 }
