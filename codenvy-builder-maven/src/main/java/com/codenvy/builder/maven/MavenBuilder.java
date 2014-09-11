@@ -26,6 +26,8 @@ import com.codenvy.api.builder.internal.SourcesManager;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.commons.json.JsonHelper;
+import com.codenvy.commons.lang.IoUtil;
+import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.maven.tools.MavenArtifact;
 import com.codenvy.ide.maven.tools.MavenUtils;
@@ -83,24 +85,7 @@ public class MavenBuilder extends Builder {
                                                                                "</assembly>\n";
 
     private static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE = "jar-with-dependencies-assembly-descriptor.xml";
-
-    /** Rules for builder assembly plugin. Use it for create zip of all project dependencies. */
-    public static final String assemblyDescriptor = "<assembly>\n" +
-                                                    "  <id>dependencies</id>\n" +
-                                                    "  <formats>\n" +
-                                                    "    <format>zip</format>\n" +
-                                                    "  </formats>\n" +
-                                                    "  <includeBaseDirectory>false</includeBaseDirectory>\n" +
-                                                    "  <fileSets>\n" +
-                                                    "    <fileSet>\n" +
-                                                    "      <directory>target/dependency</directory>\n" +
-                                                    "      <outputDirectory>/</outputDirectory>\n" +
-                                                    "    </fileSet>\n" +
-                                                    "  </fileSets>\n" +
-                                                    "</assembly>";
-
-    private static final String DEPENDENCIES_JSON_FILE   = "dependencies.json";
-    private static final String ASSEMBLY_DESCRIPTOR_FILE = "dependencies-zip-assembly-descriptor.xml";
+    private static final String DEPENDENCIES_JSON_FILE                             = "dependencies.json";
 
     private final Map<String, String> mavenProperties;
 
@@ -137,7 +122,7 @@ public class MavenBuilder extends Builder {
 
     @Override
     public Map<String, BuilderEnvironment> getEnvironments() {
-        final Map<String, BuilderEnvironment> envs = new HashMap<>(4);
+        final Map<String, BuilderEnvironment> env = new HashMap<>(4);
         final Map<String, String> properties = new HashMap<>(mavenProperties);
         properties.remove("Maven home");
         properties.remove("Java home");
@@ -146,8 +131,8 @@ public class MavenBuilder extends Builder {
                                                  .withIsDefault(true)
                                                  .withDisplayName(properties.get("Maven version"))
                                                  .withProperties(properties);
-        envs.put(def.getId(), def);
-        return envs;
+        env.put(def.getId(), def);
+        return env;
     }
 
     @Override
@@ -199,12 +184,7 @@ public class MavenBuilder extends Builder {
                 if (!targets.isEmpty()) {
                     LOG.warn("Targets {} ignored when copy dependencies", targets);
                 }
-                // Prepare file for assembly plugin. Plugin create zip archive of all dependencies.
-                try {
-                    addCopyDependenciesAssemblyDescriptor(workDir, commandLine);
-                } catch (IOException e) {
-                    throw new BuilderException(e);
-                }
+                commandLine.add("clean", "dependency:copy-dependencies").addPair("-Dmdep.failOnMissingClassifierArtifact", "false");
                 break;
         }
         commandLine.add(config.getOptions());
@@ -216,13 +196,6 @@ public class MavenBuilder extends Builder {
                     ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES.getBytes());
         commandLine.add("assembly:single");
         commandLine.addPair("-Ddescriptor", ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE);
-    }
-
-    private void addCopyDependenciesAssemblyDescriptor(java.io.File workDir, CommandLine commandLine) throws IOException {
-        Files.write(new java.io.File(workDir, ASSEMBLY_DESCRIPTOR_FILE).toPath(), assemblyDescriptor.getBytes());
-        commandLine.add("clean", "dependency:copy-dependencies", "assembly:single");
-        commandLine.addPair("-Ddescriptor", ASSEMBLY_DESCRIPTOR_FILE);
-        commandLine.addPair("-Dmdep.failOnMissingClassifierArtifact", "false");
     }
 
     @Override
@@ -241,10 +214,7 @@ public class MavenBuilder extends Builder {
             String line;
             while ((line = logReader.readLine()) != null) {
                 line = MavenUtils.removeLoggerPrefix(line);
-                if ("BUILD SUCCESS".equals(line)
-                    // Maven assembly plugin fails, consider it as project hasn't any dependencies, e.g. java web application that has only jsp ans static content.
-                    || line.contains(
-                        "Failed to create assembly: Error creating assembly archive dependencies: You must set at least one file")) {
+                if ("BUILD SUCCESS".equals(line)) {
                     mavenSuccess = true;
                     break;
                 }
@@ -335,12 +305,17 @@ public class MavenBuilder extends Builder {
                 });
                 break;
             case COPY_DEPS:
-                files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(java.io.File dir, String name) {
-                        return name.endsWith("-dependencies.zip");
+                final java.io.File target = new java.io.File(workDir, "target");
+                final java.io.File dependencies = new java.io.File(target, "dependency");
+                if (dependencies.isDirectory() && dependencies.list().length > 0) {
+                    final java.io.File zip = new java.io.File(target, "dependencies.zip");
+                    try {
+                        ZipUtils.zipDir(dependencies.getAbsolutePath(), dependencies, zip, IoUtil.ANY_FILTER);
+                    } catch (IOException e) {
+                        throw new BuilderException(e);
                     }
-                });
+                    files = new java.io.File[]{zip};
+                }
                 break;
         }
 
