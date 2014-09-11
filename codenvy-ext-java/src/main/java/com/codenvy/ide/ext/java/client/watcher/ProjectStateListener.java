@@ -31,7 +31,6 @@ public class ProjectStateListener {
 
     @Inject
     public ProjectStateListener(EventBus eventBus, final ProjectWatcherService service) {
-        Log.error(getClass(), "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {

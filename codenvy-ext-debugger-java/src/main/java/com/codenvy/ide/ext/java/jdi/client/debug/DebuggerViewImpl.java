@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.jdi.client.debug;
 
 import elemental.dom.Element;
+import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 import elemental.html.TableCellElement;
 import elemental.html.TableElement;
@@ -216,6 +217,11 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
             @Override
             public void onRootDragDrop(MouseEvent event) {
+                //do nothing
+            }
+            
+            @Override
+            public void onKeyboard(KeyboardEvent event) {
                 //do nothing
             }
         });
