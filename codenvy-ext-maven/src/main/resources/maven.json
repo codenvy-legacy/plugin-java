@@ -7,7 +7,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-jsp-java-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -15,7 +15,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -29,7 +28,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-spring-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -37,7 +36,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -51,7 +49,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-jar-java.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -59,7 +57,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "builderName": "maven"
@@ -72,7 +69,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-console-java.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -80,7 +77,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -94,7 +90,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-swing-java-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "gui",
@@ -102,7 +98,6 @@
             "gui": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -116,7 +111,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-gwt-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -124,7 +119,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -138,7 +132,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-play1-java-simple",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -146,7 +140,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-play1",
@@ -160,7 +153,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-play2-java-simple",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -168,7 +161,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -182,7 +174,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-grails-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -190,7 +182,6 @@
             "default": {
                 "recommendedMemorySize": 1024
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -204,7 +195,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-jsf-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -212,7 +203,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -226,7 +216,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-lift-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -234,7 +224,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -248,7 +237,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-struts-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -256,7 +245,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -270,7 +258,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-vaadin-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -278,7 +266,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -292,7 +279,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/mobile-android-java-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -300,7 +287,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-mobile-android",
@@ -314,7 +300,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-tapestry-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -322,7 +308,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -336,7 +321,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-wicket-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -344,7 +329,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -358,7 +342,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-groovy-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -366,7 +350,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -380,7 +363,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-clojure-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -388,7 +371,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-defaultt",
@@ -402,7 +384,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-jruby-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -410,7 +392,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -424,7 +405,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-jruby-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -432,7 +413,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -446,7 +426,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-jython-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -454,7 +434,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -468,7 +447,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-jython-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -476,7 +455,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -490,7 +468,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-shale-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -498,7 +476,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -512,7 +489,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-rhino-java-simple",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -520,7 +497,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -534,7 +510,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-kotlin-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -542,7 +518,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -556,7 +531,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-velocity-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -564,7 +539,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -578,7 +552,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/web-thymeleaf-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -586,7 +560,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -600,7 +573,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-mongodb-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -608,7 +581,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-mongodb",
@@ -622,7 +594,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-mysql-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -630,7 +602,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-mysql",
@@ -644,7 +615,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-postgresql-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -652,7 +623,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-postgresql",
@@ -666,7 +636,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-cassandra-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -674,7 +644,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-cassandra",
@@ -688,7 +657,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-neo4j-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -696,7 +665,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-neo4j",
@@ -710,7 +678,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-derby-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -718,7 +686,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -732,7 +699,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-hsqldb-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -740,7 +707,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -754,7 +720,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-h2-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -762,7 +728,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -776,7 +741,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-couchbase-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -784,7 +749,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-couchbase",
@@ -798,7 +762,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-riak-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -806,7 +770,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-riak",
@@ -820,7 +783,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-c-plus-plus-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -828,7 +791,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "cpp-standalone-default"
@@ -841,7 +803,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-nuodb-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -849,7 +811,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-nuodb",
@@ -863,7 +824,7 @@
             "type": "git-less",
             "location": "https://github.com/codenvy-templates/desktop-scala-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0"
             }
         },
         "defaultRunnerEnvironment": "default",
