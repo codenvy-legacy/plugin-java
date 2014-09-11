@@ -138,6 +138,7 @@ public class MavenBuilder extends Builder {
     @Override
     protected CommandLine createCommandLine(BuilderConfiguration config) throws BuilderException {
         final CommandLine commandLine = new CommandLine(MavenUtils.getMavenExecCommand());
+        commandLine.add("--batch-mode");
         final List<String> targets = config.getTargets();
         final java.io.File workDir = config.getWorkDir();
         switch (config.getTaskType()) {
@@ -200,10 +201,7 @@ public class MavenBuilder extends Builder {
 
     @Override
     protected BuildResult getTaskResult(FutureBuildTask task, boolean successful) throws BuilderException {
-        final BuilderConfiguration config = task.getConfiguration();
-        if (!(successful || config.getTaskType() == BuilderTaskType.COPY_DEPS)) {
-            // It's ok to have unsuccessful status for copy-dependencies task (create zipball of all dependencies of project).
-            // Error might be caused by assembly plugin if project hasn't any dependencies.
+        if (!successful) {
             return new BuildResult(false, getBuildReport(task));
         }
 
@@ -234,6 +232,7 @@ public class MavenBuilder extends Builder {
             return new BuildResult(false, getBuildReport(task));
         }
 
+        final BuilderConfiguration config = task.getConfiguration();
         final java.io.File workDir = config.getWorkDir();
         final BuildResult result = new BuildResult(true, getBuildReport(task));
         java.io.File[] files = null;
@@ -342,8 +341,12 @@ public class MavenBuilder extends Builder {
 
     @Override
     protected BuildLogger createBuildLogger(BuilderConfiguration configuration, java.io.File logFile) throws BuilderException {
-        return new DependencyBuildLogger(super.createBuildLogger(configuration, logFile),
-                                         new java.io.File(configuration.getWorkDir(), DEPENDENCIES_JSON_FILE));
+        final BuildLogger buildLogger = super.createBuildLogger(configuration, logFile);
+        if (configuration.getTaskType() == BuilderTaskType.LIST_DEPS) {
+            // collect dependencies in json file
+            return new DependencyBuildLogger(buildLogger, new java.io.File(configuration.getWorkDir(), DEPENDENCIES_JSON_FILE));
+        }
+        return buildLogger;
     }
 
     private static class DependencyBuildLogger extends DelegateBuildLogger {
