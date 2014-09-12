@@ -29,7 +29,6 @@ public class ModuleNode extends MavenProjectNode {
                       EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       IconRegistry iconRegistry) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-
-        getPresentation().setSvgIcon(iconRegistry.getIcon("maven.module").getSVGImage());
+        setDisplayIcon(iconRegistry.getIcon("maven.module").getSVGImage());
     }
 }

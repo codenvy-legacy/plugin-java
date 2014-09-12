@@ -31,8 +31,7 @@ public class PackageNode extends FolderNode {
                        EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
                        DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
         super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
-
-        getPresentation().setSvgIcon(iconRegistry.getIcon("java.package").getSVGImage());
+        setDisplayIcon(iconRegistry.getIcon("java.package").getSVGImage());
     }
 
     /**

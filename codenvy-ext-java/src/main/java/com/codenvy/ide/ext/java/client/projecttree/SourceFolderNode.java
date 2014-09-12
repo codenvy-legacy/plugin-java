@@ -31,8 +31,7 @@ public class SourceFolderNode extends FolderNode {
                             EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
         super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
-
-        getPresentation().setSvgIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
+        setDisplayIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
     }
 
     /** {@inheritDoc} */
