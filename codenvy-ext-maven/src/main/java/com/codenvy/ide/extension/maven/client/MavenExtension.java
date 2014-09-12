@@ -19,6 +19,7 @@ import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
+import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.ext.java.shared.Constants;
@@ -54,7 +55,8 @@ public class MavenExtension {
                           NotificationManager notificationManager,
                           IconRegistry iconRegistry,
                           TreeStructureProviderRegistry treeStructureProviderRegistry,
-                          MavenProjectTreeStructureProvider mavenProjectTreeStructureProvider) {
+                          MavenProjectTreeStructureProvider mavenProjectTreeStructureProvider,
+                          PreSelectedProjectTypeManager preSelectedProjectManager) {
         actionManager.registerAction(localizationConstants.buildProjectControlId(), customBuildAction);
 
         iconRegistry.registerIcon(new Icon("maven.module", resources.module()));
@@ -68,5 +70,7 @@ public class MavenExtension {
         wizardRegistry.addWizard(Constants.MAVEN_ID, wizard);
 
         treeStructureProviderRegistry.registerProvider(Constants.MAVEN_ID, mavenProjectTreeStructureProvider);
+
+        preSelectedProjectManager.setProjectTypeIdToPreselect(Constants.MAVEN_ID, 100);
     }
 }
