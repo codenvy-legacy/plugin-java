@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
+import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.selection.SelectionAgent;
@@ -114,11 +114,11 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
         createSourceFile(name, parent, getPackageName(parent) + "public enum " + name + DEFAULT_CONTENT);
     }
 
-    private void createSourceFile(String name, FolderNode parent, String content) {
+    private void createSourceFile(String name, final FolderNode parent, String content) {
         projectServiceClient.createFile(parent.getPath(), name + ".java", content, null, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
-                eventBus.fireEvent(new RefreshProjectTreeEvent());
+                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
             }
 
             @Override

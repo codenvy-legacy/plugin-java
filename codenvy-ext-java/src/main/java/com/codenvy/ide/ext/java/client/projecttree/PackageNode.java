@@ -60,7 +60,7 @@ public class PackageNode extends FolderNode {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isRenemable() {
+    public boolean isRenamable() {
         // Do not allow to rename Java package as simple folder.
         // This type of node needs to implement rename refactoring.
         return false;

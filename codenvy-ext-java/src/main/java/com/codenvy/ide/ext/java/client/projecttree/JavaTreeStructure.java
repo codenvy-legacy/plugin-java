@@ -64,6 +64,6 @@ public class JavaTreeStructure extends GenericTreeStructure {
     }
 
     public SourceFileNode newSourceFileNode(AbstractTreeNode parent, ItemReference data) {
-        return new SourceFileNode(parent, data, eventBus, projectServiceClient);
+        return new SourceFileNode(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 }

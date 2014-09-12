@@ -14,7 +14,10 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.web.bindery.event.shared.EventBus;
+
+import javax.annotation.Nonnull;
 
 /**
  * Node that represents a Java source file (class, interface, enum, etc.).
@@ -22,16 +25,21 @@ import com.google.web.bindery.event.shared.EventBus;
  * @author Artem Zatsarynnyy
  */
 public class SourceFileNode extends FileNode {
-    public SourceFileNode(AbstractTreeNode parent, ItemReference data, EventBus eventBus, ProjectServiceClient projectServiceClient) {
-        super(parent, data, eventBus, projectServiceClient);
+    public SourceFileNode(AbstractTreeNode parent, ItemReference data, EventBus eventBus, ProjectServiceClient projectServiceClient,
+                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        super(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    }
 
+    @Nonnull
+    @Override
+    public String getDisplayName() {
         final String name = data.getName();
         // display name without '.java' extension
-        getPresentation().setDisplayName(name.substring(0, name.length() - "java".length() - 1));
+        return name.substring(0, name.length() - "java".length() - 1);
     }
 
     @Override
-    public boolean isRenemable() {
+    public boolean isRenamable() {
         // Do not allow to rename Java source file as simple file.
         // This type of node needs to implement rename refactoring.
         return false;

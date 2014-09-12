@@ -49,7 +49,7 @@ public class SourceFolderNode extends FolderNode {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isRenemable() {
+    public boolean isRenamable() {
         // Do not allow to rename Maven source folder as simple folder.
         return false;
     }
