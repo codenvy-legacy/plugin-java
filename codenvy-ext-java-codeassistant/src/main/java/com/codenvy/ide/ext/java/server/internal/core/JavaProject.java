@@ -115,7 +115,7 @@ public class JavaProject extends Openable implements IJavaProject {
 
         paths.add(JavaCore.newContainerEntry(new Path("codenvy:Jre")));
         try {
-            File depDir = new File(tempDir, projectPath);
+            File depDir = new File(tempDir, wsId + projectPath);
             if (depDir.exists()) {
                 DirectoryStream<java.nio.file.Path> deps =
                         Files.newDirectoryStream(depDir.toPath(), new DirectoryStream.Filter<java.nio.file.Path>() {
@@ -134,7 +134,7 @@ public class JavaProject extends Openable implements IJavaProject {
             LOG.error("Can't find jar dependency's: ", e);
         }
 
-        indexManager = new IndexManager(tempDir + "/" + ws + projectPath + "/");
+        indexManager = new IndexManager(tempDir + "/indexes/" + ws + projectPath + "/");
         indexManager.reset();
         indexManager.indexAll(this);
         indexManager.saveIndexes();
@@ -866,6 +866,7 @@ public class JavaProject extends Openable implements IJavaProject {
     @Override
     public void close() throws JavaModelException {
         indexManager.shutdown();
+        indexManager.deleteIndexFiles();
         nameEnvironment.cleanup();
     }
 

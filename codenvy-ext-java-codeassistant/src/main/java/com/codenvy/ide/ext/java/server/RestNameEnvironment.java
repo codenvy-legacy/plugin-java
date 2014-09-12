@@ -16,10 +16,10 @@ import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.core.rest.HttpJsonHelper;
 import com.codenvy.api.core.rest.shared.dto.Link;
 import com.codenvy.commons.env.EnvironmentContext;
-import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.commons.lang.Pair;
 import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.commons.user.User;
+import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
 import com.google.inject.name.Named;
@@ -225,12 +225,17 @@ public class RestNameEnvironment {
         return searchRequester.toJsonString();
     }
 
-    /** Get list of all package names in project */
     @GET
     @javax.ws.rs.Path("/update-dependencies-launch-task")
     @Produces(MediaType.APPLICATION_JSON)
-    public BuildTaskDescriptor updateDependency(@QueryParam("projectpath") String projectPath, @Context UriInfo uriInfo) throws Exception {
-//        com.codenvy.api.project.server.Project project = projectManager.getProject(wsId, projectPath);
+    public BuildTaskDescriptor updateDependency(@QueryParam("projectpath") String projectPath,@QueryParam("force") boolean force, @Context UriInfo uriInfo) throws Exception {
+
+        //project already has updated dependency's, so skip build
+        if(javaProjectService.isProjectDependencyExist(wsId, projectPath) && !force) {
+            BuildTaskDescriptor descriptor = DtoFactory.getInstance().createDto(BuildTaskDescriptor.class);
+            descriptor.setStatus(BuildStatus.SUCCESSFUL);
+            return descriptor;
+        }
         File workspace = fsMountStrategy.getMountPath(wsId);
         File project = new File(workspace, projectPath);
         if (!project.exists()) {
@@ -259,18 +264,16 @@ public class RestNameEnvironment {
         if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
             buildFailed(finishedBuildStatus);
         }
-        File projectDepDir = new File(temp, projectPath);
-        if (projectDepDir.exists()) {
-            IoUtil.deleteRecursive(projectDepDir);
-        }
+        javaProjectService.removeProject(wsId, projectPath);
 
+        File projectDepDir = new File(temp, wsId + projectPath);
         projectDepDir.mkdirs();
         projectDepDir.deleteOnExit();
+
         Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
         if (downloadLink != null) {
             InputStream stream = doDownload(downloadLink.getHref());
             ZipUtils.unzip(stream, projectDepDir);
-            javaProjectService.removeProject(wsId, projectPath);
         }
     }
 
@@ -308,7 +311,6 @@ public class RestNameEnvironment {
 
     private boolean hasPom(File project) {
         return new File(project, "pom.xml").exists();
-//        return project.getBaseFolder().getChild("pom.xml") != null;
     }
 
     private void buildFailed(@Nullable BuildTaskDescriptor buildStatus) throws BuilderException {

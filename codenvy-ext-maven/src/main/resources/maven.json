@@ -1,13 +1,14 @@
 [
     {
-        "displayName": "JSP Simple Form",
+        "displayName": "JSP",
         "category": "Samples - Hello World",
         "description": "A simple JSP application that returns user's input.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-jsp-java-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -15,21 +16,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Spring Simple Form",
+        "displayName": "Spring",
         "category": "Samples - Hello World",
         "description": "A basic example using Spring servlets. The app returns values entered into a submit form.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-spring-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -37,21 +38,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Maven JAR Basic",
+        "displayName": "Maven JAR",
         "category": "Samples - Hello World",
         "description": "A basic JAR project built with Maven.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-jar-java.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -59,7 +60,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "builderName": "maven"
@@ -69,10 +69,11 @@
         "category": "Samples - Hello World",
         "description": "A simple JAR project.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-console-java.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -80,21 +81,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Swing Basic GUI Components",
+        "displayName": "Swing",
         "category": "Samples - Hello World",
         "description": "A simple Java Swing application.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-swing-java-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "gui",
@@ -102,21 +103,21 @@
             "gui": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "GWT User Info",
+        "displayName": "GWT",
         "category": "Samples - Hello World",
         "description": "A GWT 2.6.1 application that returns user's input and information on application server and user agent.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-gwt-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -124,21 +125,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Play v1 Default",
+        "displayName": "Play 1.0",
         "category": "Samples - Hello World",
         "description": "Play 1.2.7 start-up application which is a part of the Play distribution.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-play1-java-simple",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -146,21 +147,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-play1",
         "builderName": "maven"
     },
     {
-        "displayName": "Play v2 Say Hello",
+        "displayName": "Play 2.0",
         "category": "Samples - Hello World",
         "description": "Play 2.10 application with basic functionality. Returns user's input with simple preferences.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-play2-java-simple",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -168,21 +169,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Grails User Info",
+        "displayName": "Grails",
         "category": "Samples - Hello World",
         "description": "Default Grails application welcoming a user and providing information on application status and installed plug-ins.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-grails-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -190,21 +191,21 @@
             "default": {
                 "recommendedMemorySize": 1024
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "JSF Simple Form",
+        "displayName": "JSF",
         "category": "Samples - Hello World",
         "description": "A basic 'What's Your Name' application that returns user's input.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-jsf-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -212,21 +213,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Lift Web Account",
+        "displayName": "Lift",
         "category": "Samples - Hello World",
         "description": "Application demonstrating a simple user account, login, edit account, password recovery and logout procedures.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-lift-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -234,21 +235,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Struts Simple Form",
+        "displayName": "Struts",
         "category": "Samples - Hello World",
         "description": "A simple Struts app with a simple 'What's Your Name?' box that returns user's input.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-struts-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -256,21 +257,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Vaadin Online Address Book",
+        "displayName": "Vaadin",
         "category": "Samples - Hello World",
         "description": "An online address book built with Vaadin.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-vaadin-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -278,7 +279,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -289,10 +289,11 @@
         "category": "Samples - Hello World",
         "description": "A simple Android application natively laucnhed in an emulator.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/mobile-android-java-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -300,7 +301,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-mobile-android",
@@ -311,10 +311,11 @@
         "category": "Samples - Hello World",
         "description": "A simple application demonstrating the Tapestry web framework.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-tapestry-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -322,21 +323,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Wicket Default",
+        "displayName": "Wicket",
         "category": "Samples - Hello World",
         "description": "Quick Start Wicket web application which is a part of the Wicket bundle.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-wicket-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -344,21 +345,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Groovy Scripting Console",
+        "displayName": "Groovy",
         "category": "Samples - Hello World",
         "description": "A basic scripting console to run JavaScript.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-groovy-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -366,7 +367,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
@@ -377,10 +377,11 @@
         "category": "Samples - Hello World",
         "description": "A basic example of using Clojure.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-clojure-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -388,21 +389,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-defaultt",
         "builderName": "maven"
     },
     {
-        "displayName": "JRuby Hello World",
+        "displayName": "JRuby",
         "category": "Samples - Hello World",
         "description": "A basic JRuby application compiled into JAR with JRuby Maven plugin. Outputs a simple message into a console.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-jruby-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -410,21 +411,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "JRuby Spring Hello World",
+        "displayName": "JRuby Spring",
         "category": "Samples - Hello World",
         "description": "A basic JRuby application compiled into WAR with JRuby Maven plugin and run in an application server.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-jruby-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -432,21 +433,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Jython HttpServlet",
+        "displayName": "Jython Servlet",
         "category": "Samples - Hello World",
         "description": "A simple Jython web application packaged with Maven",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-jython-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -454,21 +455,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Jython Console",
+        "displayName": "Jython",
         "category": "Samples - Hello World",
         "description": "A basic Jython app that writes Hello World to a console.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-jython-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -476,21 +477,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Shale Simple Form",
+        "displayName": "Shale",
         "category": "Samples - Hello World",
         "description": "An application using Shale web framework. Returns user's input",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-shale-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -498,21 +499,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Rhino Arithmetic Function",
+        "displayName": "Rhino",
         "category": "Samples - Hello World",
         "description": "A basic Rhino application that does arithmetic calculations.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-rhino-java-simple",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -520,21 +521,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Kotlin Hello World",
+        "displayName": "Kotlin",
         "category": "Samples - Hello World",
         "description": "A console Kotlin app that outputs Hello World to a console.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-kotlin-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -542,21 +543,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Velocity Spring MVC",
+        "displayName": "Velocity",
         "category": "Samples - Hello World",
         "description": "A simple web application using Velocity Framework.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-velocity-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -564,21 +565,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Thymeleaf Online Address Book",
+        "displayName": "Thymeleaf",
         "category": "Samples - Hello World",
         "description": "A basic web application that uses Thymeleaf engine.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/web-thymeleaf-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -586,21 +587,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-webapp-default",
         "builderName": "maven"
     },
     {
-        "displayName": "Desktop MongoDB",
+        "displayName": "MongoDB",
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates a DB and updates it in the runtime.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-mongodb-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -608,21 +609,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-mongodb",
         "builderName": "maven"
     },
     {
-        "displayName": "Desktop MySQL",
+        "displayName": "MySQL",
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates a MySQL DB and updates it in the runtime.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-mysql-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -630,21 +631,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-mysql",
         "builderName": "maven"
     },
     {
-        "displayName": "Desktop PostgreSQL",
+        "displayName": "PostgreSQL",
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates a PostgreSQL DB and updates it in the runtime.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-postgresql-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -652,21 +653,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-postgresql",
         "builderName": "maven"
     },
     {
-        "displayName": "Desktop Cassandra",
+        "displayName": "Cassandra",
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates a Cassandra DB and updates it in the runtime.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-cassandra-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -674,7 +675,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-cassandra",
@@ -685,10 +685,11 @@
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates a Neo4j DB.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-neo4j-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -696,7 +697,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-neo4j",
@@ -707,10 +707,11 @@
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates a Derby DB",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-derby-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -718,7 +719,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -729,10 +729,11 @@
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates HSQLDB DB.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-hsqldb-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -740,21 +741,21 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
         "builderName": "maven"
     },
     {
-        "displayName": "H2 Database",
+        "displayName": "H2",
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates H2 DB.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-h2-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -762,7 +763,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-default",
@@ -773,10 +773,11 @@
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates Couchbase DB.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-couchbase-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -784,7 +785,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-couchbase",
@@ -795,10 +795,11 @@
         "category": "Samples - Hello World",
         "description": "A simple desktop application that creates Riak DB.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-riak-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -806,7 +807,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-riak",
@@ -817,10 +817,11 @@
         "category": "Samples - Hello World",
         "description": "A simple C++ Hello World that uses Makefile build instructions.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-c-plus-plus-basic.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -828,7 +829,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "cpp-standalone-default"
@@ -838,10 +838,11 @@
         "category": "Samples - Hello World",
         "description": "A simple application that starts a NuoDB database",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-nuodb-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -849,7 +850,6 @@
             "default": {
                 "recommendedMemorySize": 256
             }
-
         },
         "defaultBuilderEnvironment": "default",
         "runnerName": "java-standalone-nuodb",
@@ -860,10 +860,11 @@
         "category": "Samples - Hello World",
         "description": "A simple Scala example.",
         "source": {
-            "type": "git-less",
+            "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-scala-java-simple.git",
             "parameters": {
-                "vcsbranch": "3.1.0"
+                "branch": "3.1.0",
+                "cleanVcs": "true"
             }
         },
         "defaultRunnerEnvironment": "default",

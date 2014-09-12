@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.builder.BuildStatus;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.action.ActionManager;
@@ -137,8 +138,9 @@ public class JavaExtension {
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
-                if ("java".equals(appContext.getCurrentProject().getAttributeValue(Constants.LANGUAGE))) {
-                    updateDependencies(appContext.getCurrentProject().getProjectDescription().getPath());
+                ProjectDescriptor project = event.getProject();
+                if ("java".equals(project.getAttributes().get(Constants.LANGUAGE).get(0))) {
+                    updateDependencies(project.getPath(), false);
                 }
             }
 
@@ -152,7 +154,7 @@ public class JavaExtension {
             public void onFileOperation(FileEvent event) {
                 String name = event.getFile().getName();
                 if (event.getOperationType() == FileEvent.FileOperation.SAVE && "pom.xml".equals(name)) {
-                    updateDependencies(event.getFile().getProject().getPath());
+                    updateDependencies(event.getFile().getProject().getPath(), true);
                 }
             }
         });
@@ -193,7 +195,7 @@ public class JavaExtension {
         iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
     }
 
-    public void updateDependencies(final String projectPath) {
+    public void updateDependencies(final String projectPath, final boolean force) {
         if (updating) {
             needForUpdate = true;
             return;
@@ -206,11 +208,17 @@ public class JavaExtension {
         updating = true;
 
         // send a first request to launch build process and return build task descriptor
-        String urlLaunch = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-launch-task?projectpath=" + projectPath;
+        String urlLaunch = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-launch-task?projectpath=" + projectPath + "&force=" + force;
         asyncRequestFactory.createGetRequest(urlLaunch, false).send(new AsyncRequestCallback<BuildTaskDescriptor>(
             dtoUnmarshallerFactory.newUnmarshaller(BuildTaskDescriptor.class)) {
             @Override
             protected void onSuccess(BuildTaskDescriptor descriptor) {
+                if(descriptor.getStatus() == BuildStatus.SUCCESSFUL){
+                    notification.setMessage(localizationConstant.dependenciesSuccessfullyUpdated());
+                    notification.setStatus(FINISHED);
+                    needForUpdate = false;
+                    return;
+                }
                 presenter.showRunningBuild(descriptor, "[INFO] Update Dependencies started...");
 
                 String urlWaitEnd = getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-wait-build-end?projectpath=" + projectPath;
@@ -238,7 +246,7 @@ public class JavaExtension {
                                 }
                                 if (needForUpdate) {
                                     needForUpdate = false;
-                                    updateDependencies(projectPath);
+                                    updateDependencies(projectPath, force);
                                 }
                             }
                         });

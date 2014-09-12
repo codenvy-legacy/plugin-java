@@ -95,6 +95,14 @@ public class JavaProjectService {
         return javaProject;
     }
 
+    public boolean isProjectDependencyExist(String wsId, String projectPath) {
+        if(cache.containsKey(wsId + projectPath)){
+            return true;
+        }
+        File projectDepDir = new File(tempDir, wsId + projectPath);
+        return projectDepDir.exists();
+    }
+
     public void removeProject(String wsId, String projectPath) {
         JavaProject javaProject = cache.remove(wsId + projectPath);
         if (projectInWs.containsKey(wsId)) {
@@ -104,13 +112,21 @@ public class JavaProjectService {
             try {
                 javaProject.close();
             } catch (JavaModelException e) {
-                e.printStackTrace();
+                LOG.error("Error when trying close project.", e);
             }
+        }
+        File projectDepDir = new File(tempDir, wsId + projectPath);
+        if (projectDepDir.exists()) {
+            IoUtil.deleteRecursive(projectDepDir);
         }
     }
 
     public Map<String, String> getOptions() {
         return options;
+    }
+
+    public void openProject(String wsId, String path) {
+
     }
 
     private class VirtualFileEventSubscriber implements EventSubscriber<VirtualFileEvent> {
