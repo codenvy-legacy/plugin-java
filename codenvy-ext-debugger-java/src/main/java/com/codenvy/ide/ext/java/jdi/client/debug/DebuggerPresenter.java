@@ -15,6 +15,8 @@ import com.codenvy.api.project.gwt.client.QueryExpression;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
+import com.codenvy.api.runner.dto.DebugMode;
+import com.codenvy.api.runner.dto.RunOptions;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.ProjectActionEvent;
@@ -49,6 +51,7 @@ import com.codenvy.ide.ext.java.jdi.shared.StackFrameDump;
 import com.codenvy.ide.ext.java.jdi.shared.StepEvent;
 import com.codenvy.ide.ext.java.jdi.shared.Value;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
+import com.codenvy.ide.extension.runner.client.ProjectRunCallback;
 import com.codenvy.ide.extension.runner.client.run.RunnerController;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -567,6 +570,21 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         view.setEnableRemoveAllBreakpointsButton(false);
         view.setEnableDisconnectButton(false);
         workspaceAgent.removePart(this);
+    }
+
+    /**
+     * Debug active project.
+     *
+     * @param isUserAction
+     *         points whether the build is started directly by user interaction
+     * @param callback
+     *         callback that will be notified when project will be run
+     */
+    public void debug(final boolean isUserAction, final ProjectRunCallback callback) {
+        RunOptions runOptions = dtoFactory.createDto(RunOptions.class);
+        runOptions.setDebugMode(dtoFactory.createDto(DebugMode.class).withMode("default"));
+
+        runnerController.runActiveProject(runOptions, callback, isUserAction);
     }
 
     /**

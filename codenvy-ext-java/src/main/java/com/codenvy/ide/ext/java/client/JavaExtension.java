@@ -54,6 +54,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import java.util.List;
+import java.util.Map;
+
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD_CONTEXT_MENU;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
@@ -139,7 +142,9 @@ public class JavaExtension {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 ProjectDescriptor project = event.getProject();
-                if ("java".equals(project.getAttributes().get(Constants.LANGUAGE).get(0))) {
+                Map<String, List<String>> attributes = project.getAttributes();
+                if (!attributes.isEmpty() && attributes.containsKey(Constants.LANGUAGE) &&
+                    "java".equals(attributes.get(Constants.LANGUAGE).get(0))) {
                     updateDependencies(project.getPath(), false);
                 }
             }
