@@ -15,6 +15,7 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -27,12 +28,11 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class SourceFolderNode extends FolderNode {
 
-    public SourceFolderNode(AbstractTreeNode parent, ItemReference data, JavaTreeStructure treeStructure, TreeSettings settings,
+    public SourceFolderNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure, TreeSettings settings,
                             EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
         super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
-
-        getPresentation().setSvgIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
+        setDisplayIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
     }
 
     /** {@inheritDoc} */
@@ -49,7 +49,7 @@ public class SourceFolderNode extends FolderNode {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isRenemable() {
+    public boolean isRenamable() {
         // Do not allow to rename Maven source folder as simple folder.
         return false;
     }

@@ -331,7 +331,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                                             dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class)) {
                                         @Override
                                         protected void onSuccess(Array<ItemReference> result) {
-                                            FileNode file = new FileNode(null, result.get(0), eventBus, projectServiceClient);
+                                            FileNode file = new FileNode(null, result.get(0), eventBus, projectServiceClient, null);
                                             editorAgent.openEditor(file);
                                             callback.onSuccess(result.get(0));
                                         }

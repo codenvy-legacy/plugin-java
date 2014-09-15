@@ -14,7 +14,9 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
-import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
+import com.codenvy.ide.api.event.NodeChangedEvent;
+import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
@@ -68,10 +70,11 @@ public class NewPackageAction extends DefaultNewResourceAction {
             public void onOk(String value) {
                 try {
                     JavaUtils.checkPackageName(value);
-                    createPackage(value, new AsyncCallback<Void>() {
+                    final StorableNode parent = getParent();
+                    createPackage(parent, value, new AsyncCallback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
-                            eventBus.fireEvent(new RefreshProjectTreeEvent());
+                            eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent((AbstractTreeNode<?>)parent));
                         }
 
                         @Override
@@ -97,8 +100,8 @@ public class NewPackageAction extends DefaultNewResourceAction {
         e.getPresentation().setEnabledAndVisible(enabled);
     }
 
-    private void createPackage(String name, final AsyncCallback<Void> callback) {
-        projectServiceClient.createFolder(getParentPath() + '/' + name.replace('.', '/'), new AsyncRequestCallback<Void>() {
+    private void createPackage(StorableNode parent, String name, final AsyncCallback<Void> callback) {
+        projectServiceClient.createFolder(parent.getPath() + '/' + name.replace('.', '/'), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 callback.onSuccess(result);

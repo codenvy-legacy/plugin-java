@@ -17,6 +17,7 @@ import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
 import com.codenvy.ide.collections.Array;
@@ -43,10 +44,10 @@ public class JavaTreeStructure extends GenericTreeStructure {
 
     /** {@inheritDoc} */
     @Override
-    public void getRoots(AsyncCallback<Array<AbstractTreeNode<?>>> callback) {
+    public void getRoots(AsyncCallback<Array<TreeNode<?>>> callback) {
         AbstractTreeNode projectRoot =
                 new JavaProjectNode(null, project, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        callback.onSuccess(Collections.<AbstractTreeNode<?>>createArray(projectRoot));
+        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
     }
 
     public JavaFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {
@@ -64,6 +65,6 @@ public class JavaTreeStructure extends GenericTreeStructure {
     }
 
     public SourceFileNode newSourceFileNode(AbstractTreeNode parent, ItemReference data) {
-        return new SourceFileNode(parent, data, eventBus, projectServiceClient);
+        return new SourceFileNode(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 }
