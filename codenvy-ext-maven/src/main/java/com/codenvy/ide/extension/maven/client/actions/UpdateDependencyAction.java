@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.action;
+package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.Action;
@@ -16,19 +16,19 @@ import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.maven.client.MavenExtension;
 
 /** @author Evgen Vidolob */
 public class UpdateDependencyAction extends Action {
 
-    private final JavaExtension        javaExtension;
+    private final MavenExtension        javaExtension;
     private final AppContext           appContext;
     private final AnalyticsEventLogger eventLogger;
     private       BuildContext         buildContext;
 
-    public UpdateDependencyAction(JavaExtension javaExtension, AppContext appContext,
+    public UpdateDependencyAction(MavenExtension javaExtension, AppContext appContext,
                                   AnalyticsEventLogger eventLogger, JavaResources resources, BuildContext buildContext) {
         super("Update Dependencies", "Update Dependencies", null, resources.updateDependencies());
         this.javaExtension = javaExtension;
@@ -41,7 +41,7 @@ public class UpdateDependencyAction extends Action {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log("IDE: Update project dependencies");
-        javaExtension.updateDependencies(appContext.getCurrentProject().getProjectDescription().getPath(), true);
+        javaExtension.updateDependencies(appContext.getCurrentProject().getProjectDescription(), true);
     }
 
     /** {@inheritDoc} */

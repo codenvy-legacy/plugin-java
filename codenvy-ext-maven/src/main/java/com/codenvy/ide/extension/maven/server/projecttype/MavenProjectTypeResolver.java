@@ -70,7 +70,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
             if (moduleEntry != null && moduleEntry.getVirtualFile().getChild("pom.xml") != null) {
                 Project project = projectManager.getProject(ws, baseFolder.getPath() + "/" + module);
                 if (project == null) {
-                    project = new Project(ws, (FolderEntry)baseFolder.getChild(module), projectManager);
+                    project = new Project(ws, (FolderEntry)moduleEntry, projectManager);
                 }
                 ProjectDescription description = project.getDescription();
                 description.setProjectType(projectType);

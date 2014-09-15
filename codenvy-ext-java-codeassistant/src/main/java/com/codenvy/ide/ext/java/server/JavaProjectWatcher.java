@@ -55,7 +55,6 @@ public class JavaProjectWatcher {
         Pair<String, String> pair = Pair.of(wsId, path);
         if (!openedProjects.containsKey(pair)) {
             openedProjects.putIfAbsent(pair, new CopyOnWriteArraySet<String>());
-            projectService.openProject(wsId, path);
         }
         openedProjects.get(pair).add(sessionId);
     }

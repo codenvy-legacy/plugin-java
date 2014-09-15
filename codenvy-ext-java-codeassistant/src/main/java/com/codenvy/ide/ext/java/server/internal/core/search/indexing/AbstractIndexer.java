@@ -20,7 +20,6 @@ import com.codenvy.ide.ext.java.server.internal.core.search.matching.TypeDeclara
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.search.indexing.IIndexConstants;
 
 
@@ -198,11 +197,11 @@ public abstract class AbstractIndexer implements IIndexConstants {
 	}
 	protected void addTypeDeclaration(int modifiers, char[] packageName, char[] name, char[][] enclosingTypeNames, boolean secondary) {
 		char[] indexKey = TypeDeclarationPattern.createIndexKey(modifiers, name, packageName, enclosingTypeNames, secondary);
-		if (secondary)
-			JavaModelManager.getJavaModelManager().secondaryTypeAdding(
-				this.document.getPath(),
-				name == null ? CharOperation.NO_CHAR : name,
-				packageName == null ? CharOperation.NO_CHAR : packageName);
+//		if (secondary)
+//			JavaModelManager.getJavaModelManager().secondaryTypeAdding(
+//				this.document.getPath(),
+//				name == null ? CharOperation.NO_CHAR : name,
+//				packageName == null ? CharOperation.NO_CHAR : packageName);
 
 		addIndexEntry(TYPE_DECL, indexKey);
 	}

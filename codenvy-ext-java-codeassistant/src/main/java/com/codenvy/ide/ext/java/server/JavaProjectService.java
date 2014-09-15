@@ -96,7 +96,7 @@ public class JavaProjectService {
     }
 
     public boolean isProjectDependencyExist(String wsId, String projectPath) {
-        if(cache.containsKey(wsId + projectPath)){
+        if (cache.containsKey(wsId + projectPath)) {
             return true;
         }
         File projectDepDir = new File(tempDir, wsId + projectPath);
@@ -115,18 +115,18 @@ public class JavaProjectService {
                 LOG.error("Error when trying close project.", e);
             }
         }
-        File projectDepDir = new File(tempDir, wsId + projectPath);
-        if (projectDepDir.exists()) {
-            IoUtil.deleteRecursive(projectDepDir);
-        }
+        deleteDependencyDirectory(wsId, projectPath);
     }
 
     public Map<String, String> getOptions() {
         return options;
     }
 
-    public void openProject(String wsId, String path) {
-
+    private void deleteDependencyDirectory(String wsId, String projectPath) {
+        File projectDepDir = new File(tempDir, wsId + projectPath);
+        if (projectDepDir.exists()) {
+            IoUtil.deleteRecursive(projectDepDir);
+        }
     }
 
     private class VirtualFileEventSubscriber implements EventSubscriber<VirtualFileEvent> {
@@ -137,19 +137,18 @@ public class JavaProjectService {
             final String eventWorkspace = event.getWorkspaceId();
             final String eventPath = event.getPath();
 
-            if (cache.containsKey(eventWorkspace + eventPath)) {
+            if (eventType == VirtualFileEvent.ChangeType.DELETED) {
                 JavaProject javaProject = cache.remove(eventWorkspace + eventPath);
                 if (javaProject != null) {
-                    if (eventType == VirtualFileEvent.ChangeType.DELETED) {
-                        javaProject.getIndexManager().deleteIndexFiles();
-                        javaProject.getIndexManager().shutdown();
-                        String vfsId = javaProject.getVfsId();
-                        if (vfsId != null) {
-                            File projectDepDir = new File(tempDir, vfsId);
-                            if (projectDepDir.exists()) {
-                                IoUtil.deleteRecursive(projectDepDir);
-                            }
-                        }
+                    try {
+                        javaProject.close();
+                    } catch (JavaModelException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                    deleteDependencyDirectory(eventWorkspace, eventPath);
+                } else if (event.isFolder()) {
+                    if (isProjectDependencyExist(eventWorkspace, eventPath)) {
+                        deleteDependencyDirectory(eventWorkspace, eventPath);
                     }
                 }
             } else {
