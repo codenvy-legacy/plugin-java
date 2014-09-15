@@ -14,6 +14,7 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
@@ -33,7 +34,7 @@ import javax.annotation.Nullable;
  */
 public class MavenProjectNode extends JavaProjectNode {
 
-    public MavenProjectNode(AbstractTreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure,
+    public MavenProjectNode(TreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure,
                             TreeSettings settings, EventBus eventBus, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
@@ -47,7 +48,7 @@ public class MavenProjectNode extends JavaProjectNode {
 
     /** {@inheritDoc} */
     @Override
-    public void refreshChildren(final AsyncCallback<AbstractTreeNode<?>> callback) {
+    public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
         getModules(data, new AsyncCallback<Array<ProjectDescriptor>>() {
             @Override
             public void onSuccess(final Array<ProjectDescriptor> modules) {
@@ -55,7 +56,7 @@ public class MavenProjectNode extends JavaProjectNode {
                     @Override
                     public void onSuccess(Array<ItemReference> children) {
                         final boolean isShowHiddenItems = settings.isShowHiddenItems();
-                        Array<AbstractTreeNode<?>> newChildren = Collections.createArray();
+                        Array<TreeNode<?>> newChildren = Collections.createArray();
                         setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {

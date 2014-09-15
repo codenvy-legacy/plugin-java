@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.event.NodeChangedEvent;
-import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
@@ -134,7 +134,7 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
         }
 
         String packageName = parent.getName();
-        AbstractTreeNode<?> parentNode = parent.getParent();
+        TreeNode<?> parentNode = parent.getParent();
         while (parentNode instanceof PackageNode) {
             packageName = ((PackageNode)parentNode).getName() + '.' + packageName;
             parentNode = parentNode.getParent();

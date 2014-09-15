@@ -16,6 +16,7 @@ import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
@@ -42,10 +43,10 @@ public class MavenProjectTreeStructure extends JavaTreeStructure {
 
     /** {@inheritDoc} */
     @Override
-    public void getRoots(AsyncCallback<Array<AbstractTreeNode<?>>> callback) {
+    public void getRoots(AsyncCallback<Array<TreeNode<?>>> callback) {
         AbstractTreeNode projectRoot =
                 new MavenProjectNode(null, project, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        callback.onSuccess(Collections.<AbstractTreeNode<?>>createArray(projectRoot));
+        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
     }
 
     protected ModuleNode newModuleNode(AbstractTreeNode parent, ProjectDescriptor data) {

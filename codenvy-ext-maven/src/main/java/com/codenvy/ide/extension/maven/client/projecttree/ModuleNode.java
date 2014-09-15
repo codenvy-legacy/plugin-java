@@ -13,7 +13,7 @@ package com.codenvy.ide.extension.maven.client.projecttree;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.icon.IconRegistry;
-import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.web.bindery.event.shared.EventBus;
@@ -25,7 +25,7 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class ModuleNode extends MavenProjectNode {
 
-    public ModuleNode(AbstractTreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure, TreeSettings settings,
+    public ModuleNode(TreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure, TreeSettings settings,
                       EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       IconRegistry iconRegistry) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
