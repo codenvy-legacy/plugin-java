@@ -11,22 +11,12 @@
 package com.codenvy.ide.extension.maven.client.build;
 
 import com.codenvy.api.builder.dto.BuildOptions;
-import com.codenvy.api.builder.gwt.client.BuilderServiceClient;
-import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.api.editor.EditorAgent;
-import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.extension.builder.client.BuilderLocalizationConstant;
 import com.codenvy.ide.extension.builder.client.build.BuildProjectPresenter;
-import com.codenvy.ide.extension.builder.client.console.BuilderConsolePresenter;
-import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.websocket.MessageBus;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,31 +27,22 @@ import java.util.Map;
  * Presenter for customizing building Maven project.
  *
  * @author Artem Zatsarynnyy
+ * @author Oleksii Orel
  */
 @Singleton
-public class MavenBuilderPresenter extends BuildProjectPresenter implements MavenBuildView.ActionDelegate {
-    private MavenBuildView view;
+public class MavenBuilderPresenter implements MavenBuildView.ActionDelegate {
+    private final BuildProjectPresenter buildProjectPresenter;
+    private       MavenBuildView        view;
+    private       DtoFactory            dtoFactory;
 
     /** Create presenter. */
     @Inject
-    protected MavenBuilderPresenter(EventBus eventBus,
-                                    MavenBuildView view,
-                                    AppContext appContext,
-                                    BuilderConsolePresenter console,
-                                    BuilderServiceClient service,
-                                    BuilderLocalizationConstant constant,
-                                    WorkspaceAgent workspaceAgent,
-                                    MessageBus messageBus,
-                                    NotificationManager notificationManager,
-                                    DtoFactory dtoFactory,
-                                    EditorAgent editorAgent,
-                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                    BuildContext buildContext) {
-        super(eventBus, workspaceAgent, appContext, console, service, constant, notificationManager, dtoFactory, editorAgent,
-              dtoUnmarshallerFactory, messageBus, buildContext);
+    protected MavenBuilderPresenter(BuildProjectPresenter buildProjectPresenter, DtoFactory dtoFactory, MavenBuildView view) {
         this.view = view;
         this.view.setDelegate(this);
         this.view.setBuildCommand("clean install");
+        this.dtoFactory = dtoFactory;
+        this.buildProjectPresenter = buildProjectPresenter;
     }
 
     public void showDialog() {
@@ -70,7 +51,7 @@ public class MavenBuilderPresenter extends BuildProjectPresenter implements Mave
 
     @Override
     public void onStartBuildClicked() {
-        buildActiveProject(getBuildOptions(), true);
+        buildProjectPresenter.buildActiveProject(getBuildOptions(), true);
         view.close();
     }
 
