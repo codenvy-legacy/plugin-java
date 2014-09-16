@@ -13,12 +13,10 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.shared.ValueProvider;
+import com.codenvy.api.project.shared.ValueStorageException;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.apache.maven.model.Model;
 
@@ -29,7 +27,7 @@ import java.util.List;
 /**
  * @author Evgen Vidolob
  */
-public class MavenGroupIdValueProviderFactory implements ValueProviderFactory {
+public class MavenGroupIdValueProviderFactory extends AbstractMavenValueProviderFactory {
     @Override
     public String getName() {
         return MavenAttributes.MAVEN_GROUP_ID;
@@ -39,40 +37,31 @@ public class MavenGroupIdValueProviderFactory implements ValueProviderFactory {
     public ValueProvider newInstance(final Project project) {
         return new ValueProvider() {
             @Override
-            public List<String> getValues() {
+            public List<String> getValues() throws ValueStorageException {
                 final List<String> list = new LinkedList<>();
                 try {
-                    final FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
-                    final Model model = MavenUtils.readModel(pomFile.getInputStream());
+                    Model model = readModel(project);
                     list.add(model.getGroupId());
-                } catch (ForbiddenException | ServerException | IOException ignored) {
+                } catch (ServerException | ForbiddenException | IOException e) {
+                   throwReadException(e);
                 }
                 return list;
             }
 
             @Override
-            public void setValues(List<String> value) {
+            public void setValues(List<String> value) throws ValueStorageException {
                 if (value.isEmpty()) {
-                    throw new IllegalStateException("Maven GroupId can't be empty.");
+                    throw new ValueStorageException("Maven GroupId can't be empty.");
                 }
                 if (value.size() > 1) {
-                    throw new IllegalStateException("Maven GroupId must be only one value.");
+                    throw new ValueStorageException("Maven GroupId must be only one value.");
                 }
                 try {
-                    FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
-                    Model model;
-                    if (pomFile != null) {
-                        model = MavenUtils.readModel(pomFile.getInputStream());
-                    } else {
-                        model = new Model();
-                        model.setModelVersion("4.0.0");
-                        MavenProjectGenerator.generateProjectStructure(project.getBaseFolder());
-                        pomFile = project.getBaseFolder().createFile("pom.xml", new byte[0], "text/xml");
-                    }
+                    Model model = readOrCreateModel(project);
                     model.setGroupId(value.get(0));
-                    MavenUtils.writeModel(model, pomFile.getVirtualFile());
+                    writeModel(model, project);
                 } catch (ForbiddenException | ServerException | ConflictException | IOException e) {
-                    throw new IllegalStateException(e);
+                   throwWriteException(e);
                 }
             }
         };
