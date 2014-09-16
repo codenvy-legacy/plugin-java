@@ -34,8 +34,11 @@ public class FileSaveWatcher {
                 if (propId == EditorPartPresenter.PROP_DIRTY) {
                     if (!editor.isDirty()) {
                         FileNode file = editor.getEditorInput().getFile();
-                        // file's parent always should be PackageNode
-                        String fqn = ((PackageNode)file.getParent()).getQualifiedName() + '.' + file.getName().substring(0, file.getName().indexOf('.'));
+                        String packageName = "";
+                        if (file.getParent() instanceof PackageNode) {
+                            packageName = ((PackageNode)file.getParent()).getQualifiedName();
+                        }
+                        String fqn = packageName + '.' + file.getName().substring(0, file.getName().indexOf('.'));
                         worker.removeFanFromCache(fqn);
                     }
                 }
