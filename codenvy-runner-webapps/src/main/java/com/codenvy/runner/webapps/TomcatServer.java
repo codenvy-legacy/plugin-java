@@ -194,7 +194,7 @@ public class TomcatServer implements ApplicationServer {
          */
         return catalinaOpts +
                String.format("export JPDA_ADDRESS=%d%n", debugPort) +
-               String.format("export JPDA_TRANSPORT=%s%n", runnerConfiguration.getDebugTransport()) +
+               String.format("export JPDA_TRANSPORT=%s%n", "dt_socket") +
                String.format("export JPDA_SUSPEND=%s%n", runnerConfiguration.isDebugSuspend() ? "y" : "n");
     }
 

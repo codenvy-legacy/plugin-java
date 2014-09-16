@@ -14,7 +14,6 @@ import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.rest.shared.dto.Link;
 import com.codenvy.api.core.util.CustomPortService;
 import com.codenvy.api.runner.RunnerException;
-import com.codenvy.api.runner.dto.DebugMode;
 import com.codenvy.api.runner.dto.RunRequest;
 import com.codenvy.api.runner.dto.RunnerEnvironment;
 import com.codenvy.api.runner.internal.ApplicationProcess;
@@ -50,9 +49,8 @@ import java.util.Set;
 public class DeployToApplicationServerRunner extends Runner {
     private static final Logger LOG = LoggerFactory.getLogger(DeployToApplicationServerRunner.class);
 
-    public static final String DEFAULT_SERVER_NAME      = "Tomcat7";
-    public static final String DEBUG_TRANSPORT_PROTOCOL = "dt_socket";
-    public static final String HOST_NAME                = "runner.java_webapp.host_name";
+    public static final String DEFAULT_SERVER_NAME = "Tomcat7";
+    public static final String HOST_NAME           = "runner.java_webapp.host_name";
 
     private final Map<String, ApplicationServer> servers;
     private final Map<String, RunnerEnvironment> environments;
@@ -122,12 +120,9 @@ public class DeployToApplicationServerRunner extends Runner {
                 configuration.getLinks().add(DtoFactory.getInstance().createDto(Link.class)
                                                        .withRel(com.codenvy.api.runner.internal.Constants.LINK_REL_WEB_URL)
                                                        .withHref(String.format("http://%s:%d", hostName, httpPort)));
-                final DebugMode debugMode = request.getDebugMode();
-                if (debugMode != null && debugMode.getMode() != null) {
+                if (request.isInDebugMode()) {
                     configuration.setDebugHost(hostName);
                     configuration.setDebugPort(portService.acquire());
-                    configuration.setDebugTransport(DEBUG_TRANSPORT_PROTOCOL);
-                    configuration.setDebugSuspend("suspend".equals(debugMode.getMode()));
                 }
                 return configuration;
             }

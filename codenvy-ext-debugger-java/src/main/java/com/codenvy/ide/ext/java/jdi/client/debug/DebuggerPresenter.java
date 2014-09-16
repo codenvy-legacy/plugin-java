@@ -15,7 +15,6 @@ import com.codenvy.api.project.gwt.client.QueryExpression;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
-import com.codenvy.api.runner.dto.DebugMode;
 import com.codenvy.api.runner.dto.RunOptions;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
@@ -582,7 +581,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
      */
     public void debug(final boolean isUserAction, final ProjectRunCallback callback) {
         RunOptions runOptions = dtoFactory.createDto(RunOptions.class);
-        runOptions.setDebugMode(dtoFactory.createDto(DebugMode.class).withMode("default"));
+        runOptions.setInDebugMode(true);
 
         runnerController.runActiveProject(runOptions, callback, isUserAction);
     }
