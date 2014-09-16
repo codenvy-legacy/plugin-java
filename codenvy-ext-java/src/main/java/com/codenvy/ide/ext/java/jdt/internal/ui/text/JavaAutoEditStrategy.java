@@ -1183,7 +1183,7 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
     private boolean isLineDelimiter(Document document, String text) {
         String[] delimiters = document.getLegalLineDelimiters();
         if (delimiters != null)
-            return TextUtilities.equals(delimiters, text) > -1;
+            return TextUtilities.isEquals(delimiters, text) > -1;
         return false;
     }
 
