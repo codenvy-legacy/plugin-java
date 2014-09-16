@@ -12,9 +12,8 @@ package com.codenvy.ide.extension.maven.client.build;
 
 import com.codenvy.api.builder.dto.BuildOptions;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.extension.builder.client.build.BuildProjectPresenter;
+import com.codenvy.ide.extension.builder.client.build.BuildController;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -24,25 +23,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Presenter for customizing building Maven project.
+ * Presenter for customizing building of Maven project.
  *
  * @author Artem Zatsarynnyy
  * @author Oleksii Orel
  */
 @Singleton
-public class MavenBuilderPresenter implements MavenBuildView.ActionDelegate {
-    private final BuildProjectPresenter buildProjectPresenter;
-    private       MavenBuildView        view;
-    private       DtoFactory            dtoFactory;
+public class MavenBuildPresenter implements MavenBuildView.ActionDelegate {
+    private final BuildController buildController;
+    private       MavenBuildView  view;
+    private       DtoFactory      dtoFactory;
 
     /** Create presenter. */
     @Inject
-    protected MavenBuilderPresenter(BuildProjectPresenter buildProjectPresenter, DtoFactory dtoFactory, MavenBuildView view) {
+    protected MavenBuildPresenter(BuildController buildController, DtoFactory dtoFactory, MavenBuildView view) {
         this.view = view;
         this.view.setDelegate(this);
         this.view.setBuildCommand("clean install");
         this.dtoFactory = dtoFactory;
-        this.buildProjectPresenter = buildProjectPresenter;
+        this.buildController = buildController;
     }
 
     public void showDialog() {
@@ -51,7 +50,7 @@ public class MavenBuilderPresenter implements MavenBuildView.ActionDelegate {
 
     @Override
     public void onStartBuildClicked() {
-        buildProjectPresenter.buildActiveProject(getBuildOptions(), true);
+        buildController.buildActiveProject(getBuildOptions(), true);
         view.close();
     }
 

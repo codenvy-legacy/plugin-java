@@ -16,7 +16,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import javax.validation.constraints.NotNull;
 
 /**
- * The view of {@link MavenBuilderPresenter}.
+ * The view of {@link MavenBuildPresenter}.
  *
  * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
  */
