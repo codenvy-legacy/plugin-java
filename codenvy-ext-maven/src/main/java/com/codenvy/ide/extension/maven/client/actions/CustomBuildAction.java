@@ -18,7 +18,7 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.MavenResources;
-import com.codenvy.ide.extension.maven.client.build.MavenBuilderPresenter;
+import com.codenvy.ide.extension.maven.client.build.MavenBuildPresenter;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -30,13 +30,13 @@ import com.google.inject.Singleton;
 @Singleton
 public class CustomBuildAction extends Action {
 
-    private final AppContext            appContext;
-    private final MavenBuilderPresenter presenter;
-    private final AnalyticsEventLogger  eventLogger;
-    private       BuildContext          buildContext;
+    private final AppContext           appContext;
+    private final MavenBuildPresenter  presenter;
+    private final AnalyticsEventLogger eventLogger;
+    private       BuildContext         buildContext;
 
     @Inject
-    public CustomBuildAction(MavenBuilderPresenter presenter,
+    public CustomBuildAction(MavenBuildPresenter presenter,
                              MavenResources resources,
                              MavenLocalizationConstant localizationConstant,
                              AppContext appContext,

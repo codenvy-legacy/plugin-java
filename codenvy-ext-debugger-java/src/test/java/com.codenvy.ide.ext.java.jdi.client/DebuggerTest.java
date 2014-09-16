@@ -28,7 +28,7 @@ import com.codenvy.ide.ext.java.jdi.shared.BreakPoint;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
 import com.codenvy.ide.ext.java.jdi.shared.Location;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
-import com.codenvy.ide.extension.runner.client.run.RunnerController;
+import com.codenvy.ide.extension.runner.client.run.RunController;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -75,7 +75,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Mock
     private ApplicationProcessDescriptor applicationProcessDescriptor;
     @Mock
-    private RunnerController             runnerController;
+    private RunController                runController;
     @Mock
     private BreakpointGutterManager      gutterManager;
     @Mock
@@ -167,7 +167,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         verifySetEnableButtons(DISABLE_BUTTON);
 
-        verify(runnerController).stopActiveProject(false);
+        verify(runController).stopActiveProject(false);
         verify(gutterManager).unmarkCurrentBreakpoint();
         verify(gutterManager).removeAllBreakPoints();
         verify(view).setEnableRemoveAllBreakpointsButton(DISABLE_BUTTON);

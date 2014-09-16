@@ -22,7 +22,7 @@ public class ApplicationServerRunnerConfiguration extends RunnerConfiguration {
     private final String server;
     private final int    httpPort;
 
-    private String debugTransport;
+    private boolean debugSuspend;
 
     public ApplicationServerRunnerConfiguration(String server, int memory, int httpPort, RunRequest runRequest) {
         super(memory, runRequest);
@@ -38,12 +38,12 @@ public class ApplicationServerRunnerConfiguration extends RunnerConfiguration {
         return httpPort;
     }
 
-    public String getDebugTransport() {
-        return debugTransport;
+    public boolean isDebugSuspend() {
+        return debugSuspend;
     }
 
-    public void setDebugTransport(String debugTransport) {
-        this.debugTransport = debugTransport;
+    public void setDebugSuspend(boolean debugSuspend) {
+        this.debugSuspend = debugSuspend;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ApplicationServerRunnerConfiguration extends RunnerConfiguration {
                ", request=" + getRequest() +
                ", debugHost='" + getDebugHost() + '\'' +
                ", debugPort=" + getDebugPort() +
-               ", debugSuspend=" + isDebugSuspend() +
+               ", debugSuspend=" + debugSuspend +
                ", server='" + server + '\'' +
                '}';
     }

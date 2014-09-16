@@ -22,7 +22,7 @@ import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeResources;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.extension.runner.client.ProjectRunCallback;
-import com.codenvy.ide.extension.runner.client.run.RunnerController;
+import com.codenvy.ide.extension.runner.client.run.RunController;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -34,13 +34,13 @@ import com.google.inject.Singleton;
 @Singleton
 public class DebugAction extends Action {
 
-    private final RunnerController     runnerController;
+    private final RunController        runController;
     private final DebuggerPresenter    debuggerPresenter;
     private final AnalyticsEventLogger eventLogger;
     private       AppContext           appContext;
 
     @Inject
-    public DebugAction(RunnerController runnerController,
+    public DebugAction(RunController runController,
                        DebuggerPresenter debuggerPresenter,
                        JavaRuntimeResources resources,
                        JavaRuntimeLocalizationConstant localizationConstants,
@@ -48,7 +48,7 @@ public class DebugAction extends Action {
                        AppContext appContext) {
         super(localizationConstants.debugAppActionText(), localizationConstants.debugAppActionDescription(), null,
               resources.debug());
-        this.runnerController = runnerController;
+        this.runController = runController;
         this.debuggerPresenter = debuggerPresenter;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
@@ -75,7 +75,7 @@ public class DebugAction extends Action {
             String packaging = currentProject.getAttributeValue(MavenAttributes.MAVEN_PACKAGING);
             e.getPresentation().setVisible("war".equals(packaging)||
                                            projectTypeId.equals(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID));
-            e.getPresentation().setEnabled(currentProject.getIsRunningEnabled() && !runnerController.isAnyAppRunning());
+            e.getPresentation().setEnabled(currentProject.getIsRunningEnabled() && !runController.isAnyAppRunning());
         } else {
             e.getPresentation().setEnabledAndVisible(false);
         }

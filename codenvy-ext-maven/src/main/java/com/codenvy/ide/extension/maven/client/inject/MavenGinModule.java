@@ -11,17 +11,22 @@
 package com.codenvy.ide.extension.maven.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
+import com.codenvy.ide.extension.maven.client.DependenciesUpdater;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildView;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildViewImpl;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.inject.Singleton;
 
-/** @author Andrey Plotnikov */
+/**
+ * @author Andrey Plotnikov
+ * @author Artem Zatsarynnyy
+ */
 @ExtensionGinModule
 public class MavenGinModule extends AbstractGinModule {
     /** {@inheritDoc} */
     @Override
     protected void configure() {
         bind(MavenBuildView.class).to(MavenBuildViewImpl.class).in(Singleton.class);
+        bind(DependenciesUpdater.class).asEagerSingleton();
     }
 }

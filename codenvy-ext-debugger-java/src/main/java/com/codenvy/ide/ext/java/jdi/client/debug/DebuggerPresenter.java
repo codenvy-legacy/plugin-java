@@ -15,7 +15,6 @@ import com.codenvy.api.project.gwt.client.QueryExpression;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
-import com.codenvy.api.runner.dto.DebugMode;
 import com.codenvy.api.runner.dto.RunOptions;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
@@ -52,7 +51,7 @@ import com.codenvy.ide.ext.java.jdi.shared.StepEvent;
 import com.codenvy.ide.ext.java.jdi.shared.Value;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
 import com.codenvy.ide.extension.runner.client.ProjectRunCallback;
-import com.codenvy.ide.extension.runner.client.run.RunnerController;
+import com.codenvy.ide.extension.runner.client.run.RunController;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.HTTPStatus;
@@ -97,7 +96,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     private       String                                 debuggerDisconnectedChannel;
     private       DebuggerView                           view;
     private       EventBus                               eventBus;
-    private       RunnerController                       runnerController;
+    private       RunController                          runController;
     private       DebuggerClientService                  service;
     private       JavaRuntimeLocalizationConstant        constant;
     private       DebuggerInfo                           debuggerInfo;
@@ -132,13 +131,13 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                              final EvaluateExpressionPresenter evaluateExpressionPresenter,
                              ChangeValuePresenter changeValuePresenter,
                              final NotificationManager notificationManager,
-                             final RunnerController runnerController,
+                             final RunController runController,
                              final DtoFactory dtoFactory,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
                              ProjectServiceClient projectServiceClient) {
         this.view = view;
         this.eventBus = eventBus;
-        this.runnerController = runnerController;
+        this.runController = runController;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectServiceClient = projectServiceClient;
@@ -176,7 +175,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                             (com.codenvy.ide.websocket.rest.exceptions.ServerException)exception;
                     if (HTTPStatus.INTERNAL_ERROR == serverException.getHTTPStatus() && serverException.getMessage() != null
                         && serverException.getMessage().contains("not found")) {
-                        runnerController.stopActiveProject(false);
+                        runController.stopActiveProject(false);
                         onDebuggerDisconnected();
                         return;
                     }
@@ -582,9 +581,9 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
      */
     public void debug(final boolean isUserAction, final ProjectRunCallback callback) {
         RunOptions runOptions = dtoFactory.createDto(RunOptions.class);
-        runOptions.setDebugMode(dtoFactory.createDto(DebugMode.class).withMode("default"));
+        runOptions.setInDebugMode(true);
 
-        runnerController.runActiveProject(runOptions, callback, isUserAction);
+        runController.runActiveProject(runOptions, callback, isUserAction);
     }
 
     /**
@@ -626,7 +625,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                 @Override
                 protected void onSuccess(Void result) {
                     changeButtonsEnableState(false);
-                    runnerController.stopActiveProject(false);
+                    runController.stopActiveProject(false);
                     onDebuggerDisconnected();
                     closeView();
                 }

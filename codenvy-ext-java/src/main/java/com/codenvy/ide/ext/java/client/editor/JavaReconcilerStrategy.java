@@ -99,8 +99,11 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
             first = false;
         }
 
-        // file's parent always should be PackageNode
-        worker.parse(document.get(), file.getName(), file.getPath(), ((PackageNode)file.getParent()).getQualifiedName(), file.getProject().getPath(), this);
+        String packageName = "";
+        if (file.getParent() instanceof PackageNode) {
+            packageName = ((PackageNode)file.getParent()).getQualifiedName();
+        }
+        worker.parse(document.get(), file.getName(), file.getPath(), packageName, file.getProject().getPath(), this);
     }
 
     /** {@inheritDoc} */

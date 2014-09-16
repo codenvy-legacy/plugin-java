@@ -30,31 +30,15 @@ import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 @Extension(title = "Java syntax highlighting and code autocompletion.", version = "3.0.0")
 public class JavaExtension {
 
-    public static final String BUILD_OUTPUT_CHANNEL = "builder:output:";
-
     @Inject
     public JavaExtension(FileTypeRegistry fileTypeRegistry,
                          EditorRegistry editorRegistry,
                          JavaEditorProvider javaEditorProvider,
-                         ActionManager actionManager,
-                         JavaResources resources,
-                         JavaLocalizationConstant localizationConstant,
-                         NewPackageAction newPackageAction,
-                         NewJavaSourceFileAction newJavaSourceFileAction,
-                         @Named("JavaFileType") FileType javaFile
-                         ) {
-        editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
-        fileTypeRegistry.registerFileType(javaFile);
-
+                         @Named("JavaFileType") FileType javaFile) {
         JavaResources.INSTANCE.css().ensureInjected();
 
-        // add actions in File -> New group
-        actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
-        actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
-        DefaultActionGroup newGroup = (DefaultActionGroup)actionManager.getAction(GROUP_FILE_NEW);
-        newGroup.addSeparator();
-        newGroup.add(newJavaSourceFileAction);
-        newGroup.add(newPackageAction);
+        editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
+        fileTypeRegistry.registerFileType(javaFile);
     }
 
     /** For test use only. */
@@ -69,6 +53,20 @@ public class JavaExtension {
         }
 
     }-*/;
+
+    @Inject
+    private void prepareActions(JavaLocalizationConstant localizationConstant,
+                                NewPackageAction newPackageAction,
+                                NewJavaSourceFileAction newJavaSourceFileAction,
+                                ActionManager actionManager) {
+        // add actions in File -> New group
+        actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
+        actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
+        DefaultActionGroup newGroup = (DefaultActionGroup)actionManager.getAction(GROUP_FILE_NEW);
+        newGroup.addSeparator();
+        newGroup.add(newJavaSourceFileAction);
+        newGroup.add(newPackageAction);
+    }
 
     @Inject
     private void registerIcons(IconRegistry iconRegistry, JavaResources resources) {
@@ -91,6 +89,4 @@ public class JavaExtension {
         // icons for file names
         iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
     }
-
-
 }

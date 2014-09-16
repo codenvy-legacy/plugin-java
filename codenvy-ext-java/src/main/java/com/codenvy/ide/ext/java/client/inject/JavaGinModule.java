@@ -28,7 +28,10 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-/** @author Evgen Vidolob */
+/**
+ * @author Evgen Vidolob
+ * @author Artem Zatsarynnyy
+ */
 @ExtensionGinModule
 public class JavaGinModule extends AbstractGinModule {
 
@@ -44,7 +47,7 @@ public class JavaGinModule extends AbstractGinModule {
 
     @Provides
     @Named("javaCA")
-    protected String getJavaCAPath(){
+    protected String getJavaCAPath() {
         return JavaExtension.getJavaCAPath();
     }
 
@@ -52,6 +55,6 @@ public class JavaGinModule extends AbstractGinModule {
     @Singleton
     @Named("JavaFileType")
     protected FileType provideJavaFile() {
-        return  new FileType("Java", JavaResources.INSTANCE.javaFile(), MimeType.APPLICATION_JAVA, "java");
+        return new FileType("Java", JavaResources.INSTANCE.javaFile(), MimeType.APPLICATION_JAVA, "java");
     }
 }
