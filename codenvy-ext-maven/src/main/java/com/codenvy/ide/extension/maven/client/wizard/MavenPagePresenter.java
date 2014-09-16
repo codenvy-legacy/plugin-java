@@ -99,6 +99,14 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
         view.reset();
+
+        // setting project name from the main wizard page
+        String projectName = wizardContext.getData(ProjectWizard.PROJECT_NAME);
+        if (projectName != null) {
+            view.setArtifactId(projectName);
+            view.setGroupId(projectName);
+        }
+
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
         if (project != null) {
             Map<String, List<String>> attributes = project.getAttributes();
