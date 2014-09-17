@@ -39,14 +39,17 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
+import com.codenvy.ide.util.Pair;
 import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
 import static com.codenvy.ide.api.notification.Notification.Status.PROGRESS;
@@ -68,8 +71,8 @@ public class DependenciesUpdater {
     private DtoUnmarshallerFactory    dtoUnmarshallerFactory;
     private MavenLocalizationConstant mavenLocalizationConstant;
     private String                    workspaceId;
-    private boolean updating      = false;
-    private boolean needForUpdate = false;
+    private Queue<Pair<ProjectDescriptor, Boolean>> projects = new LinkedList<>();
+    private boolean                                 updating = false;
 
     @Inject
     public DependenciesUpdater(MavenLocalizationConstant mavenLocalizationConstants,
@@ -127,17 +130,18 @@ public class DependenciesUpdater {
     }
 
     public void updateDependencies(final ProjectDescriptor project, final boolean force) {
-        if (updating) {
-            needForUpdate = true;
-            return;
-        }
+
 
         Map<String, List<String>> attributes = project.getAttributes();
         if (attributes.containsKey(MavenAttributes.MAVEN_PACKAGING)) {
             if ("pom".equals(attributes.get(MavenAttributes.MAVEN_PACKAGING).get(0))) {
-                needForUpdate = false;
                 return;
             }
+        }
+
+        if (updating) {
+            projects.add(new Pair<>(project, force));
+            return;
         }
 
         final Notification notification = new Notification(mavenLocalizationConstant.updatingDependencies(), PROGRESS);
@@ -157,7 +161,6 @@ public class DependenciesUpdater {
                 if (descriptor.getStatus() == BuildStatus.SUCCESSFUL) {
                     notification.setMessage(mavenLocalizationConstant.dependenciesSuccessfullyUpdated());
                     notification.setStatus(FINISHED);
-                    needForUpdate = false;
                     return;
                 }
                 buildController.showRunningBuild(descriptor, "[INFO] Update Dependencies started...");
@@ -188,18 +191,21 @@ public class DependenciesUpdater {
                                                            }
                                                        }
                                                    }
-                                                   if (needForUpdate) {
-                                                       needForUpdate = false;
-                                                       updateDependencies(project, force);
-                                                   }
                                                }
                                            });
+                                           if (!projects.isEmpty()) {
+                                               Pair<ProjectDescriptor, Boolean> pair = projects.poll();
+                                               updateDependencies(pair.first, pair.second);
+                                           }
                                        }
 
                                        @Override
                                        protected void onFailure(Throwable exception) {
                                            updating = false;
-                                           needForUpdate = false;
+                                           if (!projects.isEmpty()) {
+                                               Pair<ProjectDescriptor, Boolean> pair = projects.poll();
+                                               updateDependencies(pair.first, pair.second);
+                                           }
                                            notification.setMessage(exception.getMessage());
                                            notification.setType(ERROR);
                                            notification.setStatus(FINISHED);
