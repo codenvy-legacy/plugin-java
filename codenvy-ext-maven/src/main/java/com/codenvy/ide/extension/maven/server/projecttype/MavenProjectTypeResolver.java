@@ -21,7 +21,6 @@ import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.shared.ProjectDescription;
 import com.codenvy.api.project.shared.ProjectType;
-import com.codenvy.api.project.shared.dto.ProjectUpdate;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.maven.tools.MavenUtils;
 import com.google.inject.Inject;
@@ -41,7 +40,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
     private ProjectManager projectManager;
 
     @Override
-    public boolean resolve(Project project, ProjectUpdate projectUpdate) throws ServerException {
+    public boolean resolve(Project project) throws ServerException {
         try {
             ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
             if (projectType == null) {
@@ -51,15 +50,13 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
             if (project.getBaseFolder().getChild("pom.xml") == null) {
                 return false;
             }
-
-            projectUpdate.setProjectTypeId(Constants.MAVEN_ID);
-            projectUpdate.setBuilder("maven");
-            selectPackagingAndRunner(projectType, project.getBaseFolder(), project, null, projectUpdate);
+            ProjectDescription description = project.getDescription();
+            fillMavenProject(projectType, project.getBaseFolder(), project, description);
+            project.updateDescription(description);
+            return true;
         } catch (ForbiddenException | IOException | ConflictException e) {
             throw new ServerException("An error occurred when trying to resolve maven project.", e);
         }
-
-        return true;
     }
 
     private void createProjectsOnModules(Model model, FolderEntry baseFolder, String ws, ProjectType projectType)
@@ -73,17 +70,17 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                     project = new Project(ws, (FolderEntry)moduleEntry, projectManager);
                 }
                 ProjectDescription description = project.getDescription();
-                description.setProjectType(projectType);
-                description.setBuilder("maven");
-                selectPackagingAndRunner(projectType, moduleEntry, project, description, null);
+                fillMavenProject(projectType, moduleEntry, project, description);
                 project.updateDescription(description);
             }
         }
     }
 
-    private void selectPackagingAndRunner(ProjectType projectType, VirtualFileEntry moduleEntry, Project project,
-                                          ProjectDescription description, ProjectUpdate projectUpdate)
+    private void fillMavenProject(ProjectType projectType, VirtualFileEntry moduleEntry, Project project,
+                                  ProjectDescription description)
             throws IOException, ForbiddenException, ServerException, ConflictException {
+        description.setProjectType(projectType);
+        description.setBuilder("maven");
         Model model = MavenUtils.readModel(moduleEntry.getVirtualFile().getChild("pom.xml"));
         String packaging = model.getPackaging();
         switch (packaging) {
@@ -91,16 +88,10 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                 createProjectsOnModules(model, project.getBaseFolder(), project.getWorkspace(), projectType);
                 break;
             case "war":
-                if (description == null)
-                    projectUpdate.setRunner("java-webapp-default");
-                else
-                    description.setRunner("java-webapp-default");
+                description.setRunner("java-webapp-default");
                 break;
             case "jar":
-                if (description == null)
-                    projectUpdate.setRunner("java-standalone-default");
-                else
-                    description.setRunner("java-standalone-default");
+                description.setRunner("java-standalone-default");
                 break;
         }
     }
