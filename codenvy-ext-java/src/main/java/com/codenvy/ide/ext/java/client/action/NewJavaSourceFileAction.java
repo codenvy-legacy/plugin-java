@@ -37,7 +37,7 @@ public class NewJavaSourceFileAction extends Action {
                                    NewJavaSourceFilePresenter newJavaSourceFilePresenter,
                                    JavaLocalizationConstant constant,
                                    JavaResources resources) {
-        super(constant.actionNewClassTitle(), constant.actionNewClassDescription(), resources.classItem());
+        super(constant.actionNewClassTitle(), constant.actionNewClassDescription(), null, resources.javaFile());
         this.newJavaSourceFilePresenter = newJavaSourceFilePresenter;
         this.selectionAgent = selectionAgent;
     }
