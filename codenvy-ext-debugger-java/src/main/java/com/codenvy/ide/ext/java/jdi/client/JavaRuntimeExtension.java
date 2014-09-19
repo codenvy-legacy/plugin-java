@@ -11,8 +11,8 @@
 package com.codenvy.ide.ext.java.jdi.client;
 
 import com.codenvy.ide.api.action.ActionManager;
-import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.action.DefaultActionGroup;
+import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.debug.DebuggerManager;
 import com.codenvy.ide.ext.java.jdi.client.actions.DebugAction;
@@ -25,10 +25,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import static com.codenvy.ide.MimeType.APPLICATION_JAVA;
-import static com.codenvy.ide.api.constraints.Anchor.AFTER;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN_CONTEXT_MENU;
-import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN_TOOLBAR;
+import static com.codenvy.ide.api.constraints.Anchor.AFTER;
 
 /**
  * Extension allows debug Java web applications.
@@ -59,11 +58,6 @@ public class JavaRuntimeExtension {
         // add actions in main menu
         DefaultActionGroup runMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN);
         runMenuActionGroup.add(debugAction, new Constraints(AFTER, runnerLocalizationConstants.customRunAppActionId()));
-
-        // add actions on main toolbar
-        DefaultActionGroup runToolbarGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN_TOOLBAR);
-        runToolbarGroup.add(debugAction);
-        runToolbarGroup.addSeparator();
 
         // add actions in context menu
         DefaultActionGroup runContextGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN_CONTEXT_MENU);
