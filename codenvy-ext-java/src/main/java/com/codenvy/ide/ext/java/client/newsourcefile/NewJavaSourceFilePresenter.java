@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
@@ -21,6 +22,8 @@ import com.codenvy.ide.ext.java.client.JavaUtils;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.ui.dialogs.info.Info;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -34,18 +37,20 @@ import com.google.web.bindery.event.shared.EventBus;
 @Singleton
 public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionDelegate {
     private static final String DEFAULT_CONTENT = " {\n}\n";
-    private NewJavaSourceFileView view;
-    private SelectionAgent        selectionAgent;
-    private ProjectServiceClient  projectServiceClient;
-    private EventBus              eventBus;
+    private NewJavaSourceFileView  view;
+    private SelectionAgent         selectionAgent;
+    private ProjectServiceClient   projectServiceClient;
+    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private EventBus               eventBus;
     private Array<JavaSourceFileType> sourceFileTypes = Collections.createArray();
 
     @Inject
     public NewJavaSourceFilePresenter(NewJavaSourceFileView view, SelectionAgent selectionAgent, ProjectServiceClient projectServiceClient,
-                                      EventBus eventBus) {
+                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus) {
         this.view = view;
         this.selectionAgent = selectionAgent;
         this.projectServiceClient = projectServiceClient;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.eventBus = eventBus;
 
         this.view.setDelegate(this);
@@ -115,17 +120,19 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
     }
 
     private void createSourceFile(String name, final FolderNode parent, String content) {
-        projectServiceClient.createFile(parent.getPath(), name + ".java", content, null, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
-            }
+        final Unmarshallable<ItemReference> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class);
+        projectServiceClient
+                .createFile(parent.getPath(), name + ".java", content, null, new AsyncRequestCallback<ItemReference>(unmarshaller) {
+                    @Override
+                    protected void onSuccess(ItemReference result) {
+                        eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
+                    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                new Info(exception.getMessage()).show();
-            }
-        });
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        new Info(exception.getMessage()).show();
+                    }
+                });
     }
 
     private String getPackageName(FolderNode parent) {

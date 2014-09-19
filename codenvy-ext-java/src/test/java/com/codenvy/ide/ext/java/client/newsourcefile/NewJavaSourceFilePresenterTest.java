@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
@@ -67,6 +68,8 @@ public class NewJavaSourceFilePresenterTest {
     private SourceFolderNode           srcFolder;
     @Mock
     private PackageNode                codenvyPackage;
+    @Mock
+    private ItemReference              createdFile;
 
     @Before
     public void setUp() {
@@ -82,13 +85,13 @@ public class NewJavaSourceFilePresenterTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[4];
+                AsyncRequestCallback<ItemReference> callback = (AsyncRequestCallback<ItemReference>)arguments[4];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, (Void)null);
+                onSuccess.invoke(callback, createdFile);
                 return callback;
             }
         }).when(projectServiceClient)
-          .createFile(anyString(), anyString(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
+          .createFile(anyString(), anyString(), anyString(), anyString(), (AsyncRequestCallback<ItemReference>)anyObject());
     }
 
     @Test
@@ -133,7 +136,7 @@ public class NewJavaSourceFilePresenterTest {
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
-                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+                                                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
@@ -152,7 +155,7 @@ public class NewJavaSourceFilePresenterTest {
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
-                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+                                                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
@@ -171,7 +174,7 @@ public class NewJavaSourceFilePresenterTest {
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
-                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+                                                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
@@ -190,7 +193,7 @@ public class NewJavaSourceFilePresenterTest {
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
-                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+                                                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
@@ -209,7 +212,7 @@ public class NewJavaSourceFilePresenterTest {
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
-                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+                                                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
@@ -228,7 +231,7 @@ public class NewJavaSourceFilePresenterTest {
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
-                                                Matchers.<AsyncRequestCallback<Void>>anyObject());
+                                                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 }

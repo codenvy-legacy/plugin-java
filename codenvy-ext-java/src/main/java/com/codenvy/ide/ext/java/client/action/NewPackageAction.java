@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client.action;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
@@ -26,6 +27,8 @@ import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.newresource.DefaultNewResourceAction;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.codenvy.ide.ui.dialogs.info.Info;
@@ -42,6 +45,7 @@ import com.google.web.bindery.event.shared.EventBus;
 @Singleton
 public class NewPackageAction extends DefaultNewResourceAction {
     private JavaLocalizationConstant localizationConstant;
+    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
 
     @Inject
     public NewPackageAction(JavaResources javaResources,
@@ -50,6 +54,7 @@ public class NewPackageAction extends DefaultNewResourceAction {
                             SelectionAgent selectionAgent,
                             EditorAgent editorAgent,
                             ProjectServiceClient projectServiceClient,
+                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             EventBus eventBus) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
@@ -61,6 +66,7 @@ public class NewPackageAction extends DefaultNewResourceAction {
               projectServiceClient,
               eventBus);
         this.localizationConstant = localizationConstant;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     @Override
@@ -71,9 +77,9 @@ public class NewPackageAction extends DefaultNewResourceAction {
                 try {
                     JavaUtils.checkPackageName(value);
                     final StorableNode parent = getParent();
-                    createPackage(parent, value, new AsyncCallback<Void>() {
+                    createPackage(parent, value, new AsyncCallback<ItemReference>() {
                         @Override
-                        public void onSuccess(Void result) {
+                        public void onSuccess(ItemReference result) {
                             eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent((AbstractTreeNode<?>)parent));
                         }
 
@@ -100,17 +106,19 @@ public class NewPackageAction extends DefaultNewResourceAction {
         e.getPresentation().setEnabledAndVisible(enabled);
     }
 
-    private void createPackage(StorableNode parent, String name, final AsyncCallback<Void> callback) {
-        projectServiceClient.createFolder(parent.getPath() + '/' + name.replace('.', '/'), new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                callback.onSuccess(result);
-            }
+    private void createPackage(StorableNode parent, String name, final AsyncCallback<ItemReference> callback) {
+        final Unmarshallable<ItemReference> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class);
+        projectServiceClient
+                .createFolder(parent.getPath() + '/' + name.replace('.', '/'), new AsyncRequestCallback<ItemReference>(unmarshaller) {
+                    @Override
+                    protected void onSuccess(ItemReference result) {
+                        callback.onSuccess(result);
+                    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
     }
 }
