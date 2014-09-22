@@ -46,6 +46,11 @@ public class MavenProjectNode extends JavaProjectNode {
         return isFolder(item) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
+    /** Tests if the specified item is a project (module). */
+    protected static boolean isModule(ItemReference item) {
+        return "project".equals(item.getType());
+    }
+
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
@@ -119,9 +124,8 @@ public class MavenProjectNode extends JavaProjectNode {
      */
     @Nullable
     protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
-        ProjectDescriptor module = getModule(item, modules);
-        if (module != null) {
-            return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, module);
+        if (isModule(item)) {
+            return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, getModule(item, modules));
         } else if (isSourceFolder(item)) {
             return ((MavenProjectTreeStructure)treeStructure).newSourceFolderNode(MavenProjectNode.this, item);
         } else if (isFolder(item)) {
@@ -137,7 +141,7 @@ public class MavenProjectNode extends JavaProjectNode {
      */
     @Nullable
     private ProjectDescriptor getModule(ItemReference folderItem, Array<ProjectDescriptor> modules) {
-        if (isFolder(folderItem)) {
+        if (isModule(folderItem)) {
             for (ProjectDescriptor module : modules.asIterable()) {
                 if (folderItem.getName().equals(module.getName())) {
                     return module;
