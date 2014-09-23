@@ -11,14 +11,12 @@
 package com.codenvy.ide.ext.java.messages;
 
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.dto.shared.RoutingType;
 import com.google.gwt.webworker.client.messages.Message;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  */
-@RoutingType(type = Message.NON_ROUTABLE_TYPE)
-public interface ProblemLocationMessage extends Message{
+public interface ProblemLocationMessage extends Message {
     /**
      * Returns the start offset of the problem.
      *

@@ -11,8 +11,6 @@
 package com.codenvy.ide.ext.java.messages;
 
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.dto.shared.RoutingType;
-import com.google.gwt.webworker.client.messages.CompactJsonMessage;
 import com.google.gwt.webworker.client.messages.Message;
 import com.google.gwt.webworker.client.messages.SerializationIndex;
 
@@ -20,8 +18,7 @@ import com.google.gwt.webworker.client.messages.SerializationIndex;
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  * @version $Id:
  */
-@RoutingType(type = Message.NON_ROUTABLE_TYPE)
-public interface Problem extends Message, CompactJsonMessage {
+public interface Problem extends Message {
 
     @SerializationIndex(1)
     String originatingFileName();

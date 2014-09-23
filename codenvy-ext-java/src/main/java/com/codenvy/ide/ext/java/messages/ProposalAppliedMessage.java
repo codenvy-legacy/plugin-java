@@ -11,13 +11,11 @@
 package com.codenvy.ide.ext.java.messages;
 
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.dto.shared.RoutingType;
 import com.google.gwt.webworker.client.messages.Message;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  */
-@RoutingType(type = RoutingTypes.CA_PROPOSAL_APPLIED)
 public interface ProposalAppliedMessage extends Message {
 
     Array<Change> changes();

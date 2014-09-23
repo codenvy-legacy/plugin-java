@@ -10,12 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.messages;
 
-import com.codenvy.ide.dto.shared.RoutingType;
 import com.google.gwt.webworker.client.messages.Message;
 
 /**
  * @author Evgen Vidolob
  */
-@RoutingType(type = RoutingTypes.DEPENDENCIES_UPDATED)
 public interface DependenciesUpdatedMessage extends Message {
 }

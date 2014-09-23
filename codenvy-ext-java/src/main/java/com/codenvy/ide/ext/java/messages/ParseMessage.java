@@ -10,14 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.messages;
 
-import com.codenvy.ide.dto.shared.RoutingType;
 import com.google.gwt.webworker.client.messages.Message;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  * @version $Id:
  */
-@RoutingType(type = RoutingTypes.PARSE)
 public interface ParseMessage extends Message {
     String source();
 
