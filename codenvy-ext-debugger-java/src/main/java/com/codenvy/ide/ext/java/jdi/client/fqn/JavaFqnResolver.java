@@ -11,9 +11,11 @@
 package com.codenvy.ide.ext.java.jdi.client.fqn;
 
 import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
@@ -24,19 +26,20 @@ public class JavaFqnResolver implements FqnResolver {
     @NotNull
     @Override
     public String resolveFqn(@NotNull final FileNode file) {
-//        final JavaProject project = (JavaProject)file.getProject();
-//        Array<String> sourceFolders = project.getDescription().getSourceFolders().getKeys();
-//
+        final ProjectNode project = file.getProject();
+        final String builderName = project.getData().getBuilder();
+        final List<String> sourceFolders = project.getAttributeValues("builder." + builderName + ".source_folders");
+
         String fqn = "";
-//        for (String sourceFolder : sourceFolders.asIterable()) {
-//            if (file.getPath().startsWith(project.getPath() + "/" + sourceFolder)) {
-//                fqn = file.getPath().substring((project.getPath() + "/" + sourceFolder + "/").length());
-//                break;
-//            }
-//        }
-//
-//        fqn = fqn.replaceAll("/", ".");
-//        fqn = fqn.substring(0, fqn.lastIndexOf('.'));
+        for (String sourceFolder : sourceFolders) {
+            if (file.getPath().startsWith(project.getPath() + "/" + sourceFolder)) {
+                fqn = file.getPath().substring((project.getPath() + "/" + sourceFolder + "/").length());
+                break;
+            }
+        }
+
+        fqn = fqn.replaceAll("/", ".");
+        fqn = fqn.substring(0, fqn.lastIndexOf('.'));
         return fqn;
     }
 }
