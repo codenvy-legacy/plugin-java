@@ -11,6 +11,7 @@
 package com.codenvy.ide.extension.maven.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
@@ -49,7 +50,12 @@ public class MavenProjectTreeStructure extends JavaTreeStructure {
         callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
     }
 
-    protected ModuleNode newModuleNode(AbstractTreeNode parent, ProjectDescriptor data) {
+    @Override
+    public MavenFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {
+        return new MavenFolderNode(parent, data, this, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+    }
+
+    public ModuleNode newModuleNode(AbstractTreeNode parent, ProjectDescriptor data) {
         return new ModuleNode(parent, data, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory, iconRegistry);
     }
 }
