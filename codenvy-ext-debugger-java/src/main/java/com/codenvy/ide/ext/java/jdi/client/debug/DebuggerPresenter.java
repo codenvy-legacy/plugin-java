@@ -727,7 +727,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     public void deleteBreakpoint(@NotNull FileNode file, int lineNumber, final AsyncCallback<Void> callback) {
         if (debuggerInfo != null) {
             Location location = dtoFactory.createDto(Location.class);
-            location.setLineNumber(lineNumber);
+            location.setLineNumber(lineNumber + 1);
             FqnResolver resolver = resolverFactory.getResolver(file.getData().getMediaType());
             if (resolver != null) {
                 location.setClassName(resolver.resolveFqn(file));
