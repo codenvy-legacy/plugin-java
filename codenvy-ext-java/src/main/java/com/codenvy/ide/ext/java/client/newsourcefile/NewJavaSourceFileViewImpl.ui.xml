@@ -27,14 +27,14 @@
             height: 12px;
         }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="350px" height="115px" addStyleNames="{style.border}">
+    <g:DockLayoutPanel unit="PX" width="350px" height="115px" addStyleNames="{style.border}" debugId="newJavaSourceFileView-mainForm">
         <g:center>
             <g:FlowPanel>
                 <g:Label text="Name:" width="100%"/>
-                <g:TextBox ui:field="nameField" width="98%"/>
+                <g:TextBox ui:field="nameField" width="98%" debugId="newJavaSourceFileView-nameField"/>
                 <g:Label ui:field="errorHintField" addStyleNames="{style.errorHint}"/>
                 <g:Label text="Type:" width="100%" addStyleNames="{style.topBorder}"/>
-                <g:ListBox ui:field="typeField" width="100%"/>
+                <g:ListBox ui:field="typeField" width="100%" debugId="newJavaSourceFileView-typeField"/>
             </g:FlowPanel>
         </g:center>
     </g:DockLayoutPanel>

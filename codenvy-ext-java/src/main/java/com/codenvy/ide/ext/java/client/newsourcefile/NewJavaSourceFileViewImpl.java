@@ -68,6 +68,7 @@ public class NewJavaSourceFileViewImpl extends Window implements NewJavaSourceFi
 
         Widget widget = uiBinder.createAndBindUi(this);
         this.setWidget(widget);
+        this.ensureDebugId("newJavaSourceFileView-window");
 
         nameField.addKeyUpHandler(new KeyUpHandler() {
             @Override
