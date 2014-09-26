@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.action;
 
+import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.action.ActionEvent;
@@ -55,7 +56,8 @@ public class NewPackageAction extends DefaultNewResourceAction {
                             EditorAgent editorAgent,
                             ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                            EventBus eventBus) {
+                            EventBus eventBus,
+                            AnalyticsEventLogger eventLogger) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
               null,
@@ -64,13 +66,16 @@ public class NewPackageAction extends DefaultNewResourceAction {
               selectionAgent,
               editorAgent,
               projectServiceClient,
-              eventBus);
+              eventBus,
+              eventLogger);
         this.localizationConstant = localizationConstant;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        eventLogger.log(this);
+
         new AskValueDialog("New " + title, "Name:", new AskValueCallback() {
             @Override
             public void onOk(String value) {

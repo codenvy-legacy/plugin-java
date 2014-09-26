@@ -57,7 +57,7 @@ public class DebugAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Debug application");
+        eventLogger.log(this);
         debuggerPresenter.debug(true, new ProjectRunCallback() {
             @Override
             public void onRun(ApplicationProcessDescriptor appDescriptor, ProjectDescriptor projectDescriptor) {

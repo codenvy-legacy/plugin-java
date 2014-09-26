@@ -53,7 +53,7 @@ public class CustomBuildAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Build project with Maven parameter");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 
