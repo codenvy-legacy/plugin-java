@@ -47,7 +47,7 @@ public class UpdateDependencyAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Update project dependencies");
+        eventLogger.log(this);
         dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getProjectDescription(), true);
     }
 

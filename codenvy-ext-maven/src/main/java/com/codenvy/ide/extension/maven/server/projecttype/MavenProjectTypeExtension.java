@@ -51,7 +51,7 @@ public class MavenProjectTypeExtension implements ProjectTypeExtension {
 
     @Override
     public List<Attribute> getPredefinedAttributes() {
-        final List<Attribute> list = new ArrayList<>(2);
+        final List<Attribute> list = new ArrayList<>(1);
         list.add(new Attribute(Constants.LANGUAGE, "java"));
         return list;
     }

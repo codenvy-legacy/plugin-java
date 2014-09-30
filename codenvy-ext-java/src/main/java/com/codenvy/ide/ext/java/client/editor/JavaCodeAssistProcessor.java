@@ -154,7 +154,7 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
         if(errorMessage != null){
             return;
         }
-        eventLogger.log("Autocompleting");
+        eventLogger.log(this, "Autocompleting");
         worker.computeCAProposals(view.getDocument().get(), offset, editor.getEditorInput().getFile().getName(),
                                   editor.getEditorInput().getFile().getProject().getPath(),
                                   new JavaParserWorker.WorkerCallback<WorkerProposal>() {

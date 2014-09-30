@@ -79,6 +79,7 @@ public class DeployToApplicationServerRunner extends Runner {
             final RunnerEnvironment runnerEnvironment = dtoFactory.createDto(RunnerEnvironment.class)
                                                                   .withId(server.getName())
                                                                   .withDescription(server.getDescription())
+                                                                  .withDisplayName(server.getName())
                                                                   .withIsDefault(DEFAULT_SERVER_NAME.equals(server.getName()));
             this.environments.put(runnerEnvironment.getId(), runnerEnvironment);
         }

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.action;
 
+import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.selection.Selection;
@@ -29,21 +30,25 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class NewJavaSourceFileAction extends Action {
-    private SelectionAgent             selectionAgent;
-    private NewJavaSourceFilePresenter newJavaSourceFilePresenter;
+    private       SelectionAgent             selectionAgent;
+    private       NewJavaSourceFilePresenter newJavaSourceFilePresenter;
+    private final AnalyticsEventLogger       eventLogger;
 
     @Inject
     public NewJavaSourceFileAction(SelectionAgent selectionAgent,
                                    NewJavaSourceFilePresenter newJavaSourceFilePresenter,
                                    JavaLocalizationConstant constant,
-                                   JavaResources resources) {
+                                   JavaResources resources,
+                                   AnalyticsEventLogger eventLogger) {
         super(constant.actionNewClassTitle(), constant.actionNewClassDescription(), null, resources.javaFile());
         this.newJavaSourceFilePresenter = newJavaSourceFilePresenter;
         this.selectionAgent = selectionAgent;
+        this.eventLogger = eventLogger;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        eventLogger.log(this);
         newJavaSourceFilePresenter.showDialog();
     }
 
