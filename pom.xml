@@ -24,6 +24,7 @@
     <packaging>pom</packaging>
     <name>Codenvy Plugin Java :: Parent</name>
     <modules>
+        <module>codenvy-jdt-core-repack</module>
         <module>codenvy-maven-tools</module>
         <module>codenvy-ant-tools</module>
         <module>codenvy-builder-maven</module>
