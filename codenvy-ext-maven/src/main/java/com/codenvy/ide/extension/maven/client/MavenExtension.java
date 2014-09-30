@@ -10,11 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client;
 
-import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
-import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.constraints.Anchor;
 import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.extension.Extension;
@@ -25,9 +22,9 @@ import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
 import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
-import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.builder.client.BuilderLocalizationConstant;
+import com.codenvy.ide.extension.maven.client.actions.CreateMavenModuleAction;
 import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
 import com.codenvy.ide.extension.maven.client.actions.UpdateDependencyAction;
 import com.codenvy.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
@@ -39,6 +36,7 @@ import com.google.inject.Singleton;
 
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD_CONTEXT_MENU;
+import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 
 /**
  * Maven extension entry point.
@@ -74,18 +72,19 @@ public class MavenExtension {
                                 UpdateDependencyAction updateDependencyAction,
                                 MavenLocalizationConstant mavenLocalizationConstants,
                                 BuilderLocalizationConstant builderLocalizationConstant,
-                                AppContext appContext,
-                                BuildContext buildContext,
-                                JavaResources javaResources,
-                                AnalyticsEventLogger eventLogger) {
+                                CreateMavenModuleAction createMavenModuleAction) {
         // register actions
         actionManager.registerAction(mavenLocalizationConstants.buildProjectControlId(), customBuildAction);
         actionManager.registerAction("updateDependency", updateDependencyAction);
+        actionManager.registerAction("createMavenModule", createMavenModuleAction);
 
         // add actions in main menu
         DefaultActionGroup buildMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_BUILD);
         buildMenuActionGroup.add(customBuildAction, new Constraints(Anchor.AFTER, builderLocalizationConstant.buildProjectControlId()));
         buildMenuActionGroup.add(updateDependencyAction);
+
+        DefaultActionGroup newGroup = (DefaultActionGroup)actionManager.getAction(GROUP_FILE_NEW);
+        newGroup.add(createMavenModuleAction, new Constraints(Anchor.AFTER, "newProject"));
 
         // add actions in context menu
         DefaultActionGroup buildContextMenuGroup = (DefaultActionGroup)actionManager.getAction(GROUP_BUILD_CONTEXT_MENU);

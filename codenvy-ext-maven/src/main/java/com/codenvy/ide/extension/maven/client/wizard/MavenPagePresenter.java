@@ -110,22 +110,22 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
         if (project != null) {
             Map<String, List<String>> attributes = project.getAttributes();
-            List<String> artifactIdAttr = attributes.get(MavenAttributes.MAVEN_ARTIFACT_ID);
+            List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
             if (artifactIdAttr != null) {
                 view.setArtifactId(artifactIdAttr.get(0));
-                view.setGroupId(attributes.get(MavenAttributes.MAVEN_GROUP_ID).get(0));
-                view.setVersion(attributes.get(MavenAttributes.MAVEN_VERSION).get(0));
-                view.setPackaging(attributes.get(MavenAttributes.MAVEN_PACKAGING).get(0));
+                view.setGroupId(attributes.get(MavenAttributes.GROUP_ID).get(0));
+                view.setVersion(attributes.get(MavenAttributes.VERSION).get(0));
+                view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
                 scheduleTextChanges();
             } else {
                 pomReaderClient.readPomAttributes(project.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                     @Override
                     protected void onSuccess(String result) {
                         Jso jso = Jso.deserialize(result);
-                        view.setArtifactId(jso.getStringField(MavenAttributes.MAVEN_ARTIFACT_ID));
-                        view.setGroupId(jso.getStringField(MavenAttributes.MAVEN_GROUP_ID));
-                        view.setVersion(jso.getStringField(MavenAttributes.MAVEN_VERSION));
-                        view.setPackaging(jso.getStringField(MavenAttributes.MAVEN_PACKAGING));
+                        view.setArtifactId(jso.getStringField(MavenAttributes.ARTIFACT_ID));
+                        view.setGroupId(jso.getStringField(MavenAttributes.GROUP_ID));
+                        view.setVersion(jso.getStringField(MavenAttributes.VERSION));
+                        view.setPackaging(jso.getStringField(MavenAttributes.PACKAGING));
                         scheduleTextChanges();
                     }
 
@@ -151,10 +151,10 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     @Override
     public void commit(@NotNull final CommitCallback callback) {
         Map<String, List<String>> options = new HashMap<>();
-        options.put(MavenAttributes.MAVEN_ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
-        options.put(MavenAttributes.MAVEN_GROUP_ID, Arrays.asList(view.getGroupId()));
-        options.put(MavenAttributes.MAVEN_VERSION, Arrays.asList(view.getVersion()));
-        options.put(MavenAttributes.MAVEN_PACKAGING, Arrays.asList(view.getPackaging()));
+        options.put(MavenAttributes.ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
+        options.put(MavenAttributes.GROUP_ID, Arrays.asList(view.getGroupId()));
+        options.put(MavenAttributes.VERSION, Arrays.asList(view.getVersion()));
+        options.put(MavenAttributes.PACKAGING, Arrays.asList(view.getPackaging()));
 
         final ProjectDescriptor projectDescriptorToUpdate = dtoFactory.createDto(ProjectDescriptor.class);
         projectDescriptorToUpdate.withProjectTypeId(wizardContext.getData(ProjectWizard.PROJECT_TYPE).getProjectTypeId());

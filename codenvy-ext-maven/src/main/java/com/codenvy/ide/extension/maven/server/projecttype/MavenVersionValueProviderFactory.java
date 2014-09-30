@@ -15,7 +15,6 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.shared.ValueProvider;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.MavenUtils;
@@ -23,31 +22,23 @@ import com.codenvy.ide.maven.tools.MavenUtils;
 import org.apache.maven.model.Model;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @author Evgen Vidolob
  */
-public class MavenVersionValueProviderFactory implements ValueProviderFactory {
+public class MavenVersionValueProviderFactory extends AbstractMavenValueProviderFactory {
     @Override
     public String getName() {
-        return MavenAttributes.MAVEN_VERSION;
+        return MavenAttributes.VERSION;
     }
 
     @Override
     public ValueProvider newInstance(final Project project) {
-        return new ValueProvider() {
+        return new MavenValueProvider(project) {
             @Override
-            public List<String> getValues() {
-                final List<String> list = new LinkedList<>();
-                try {
-                    final FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
-                    final Model model = MavenUtils.readModel(pomFile.getInputStream());
-                    list.add(model.getVersion());
-                } catch (ForbiddenException | ServerException | IOException ignored) {
-                }
-                return list;
+            protected String getValue(Model model) {
+                return model.getVersion();
             }
 
             @Override

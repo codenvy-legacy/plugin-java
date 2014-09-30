@@ -17,6 +17,9 @@ import com.codenvy.ide.extension.maven.server.MavenPomReaderService;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenArtifactIdValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenGroupIdValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenPackagingValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenParentArtifactIdValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenParentGroupIdValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenParentVersionValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeDescriptionsExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeResolver;
@@ -42,6 +45,9 @@ public class MavenModule extends AbstractModule {
         multiBinder.addBinding().to(MavenGroupIdValueProviderFactory.class);
         multiBinder.addBinding().to(MavenVersionValueProviderFactory.class);
         multiBinder.addBinding().to(MavenPackagingValueProviderFactory.class);
+        multiBinder.addBinding().to(MavenParentArtifactIdValueProviderFactory.class);
+        multiBinder.addBinding().to(MavenParentGroupIdValueProviderFactory.class);
+        multiBinder.addBinding().to(MavenParentVersionValueProviderFactory.class);
 
         Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(MavenProjectTypeResolver.class);
     }

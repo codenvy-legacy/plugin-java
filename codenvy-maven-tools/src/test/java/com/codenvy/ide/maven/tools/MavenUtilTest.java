@@ -339,6 +339,37 @@ public class MavenUtilTest {
         Assert.assertTrue("Unexpected modules " + modules, modulesStr.isEmpty());
     }
 
+    @Test
+    public void testSetPackaging() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testSetGroupId-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        MavenUtils.setPackaging(pom, "zip");
+        Assert.assertEquals("zip", MavenUtils.readModel(pom).getPackaging());
+    }
+
+    @Test
+    public void testSetParentVersion() throws IOException {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testWithParent-pom.xml");
+        Model model = new Model();
+        model.setArtifactId("fake-artifact");
+        model.setGroupId("fake-group");
+        model.setVersion("fake-version");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+        MavenUtils.setParentVersion(pom, "no-fake");
+
+        Model readModel = MavenUtils.readModel(pom);
+        Assert.assertNotNull(readModel.getParent());
+        Assert.assertEquals("no-fake", readModel.getParent().getVersion());
+    }
+
+
     private String toString(Model model) {
         String groupId = model.getGroupId();
         if (groupId == null) {

@@ -45,14 +45,18 @@ public class MavenProjectTypeDescriptionsExtension implements ProjectTypeDescrip
         final List<AttributeDescription> list = new ArrayList<>();
         list.add(new AttributeDescription(Constants.LANGUAGE));
         list.add(new AttributeDescription(Constants.BUILDER_NAME));
-        list.add(new AttributeDescription(MavenAttributes.MAVEN_GROUP_ID));
-        list.add(new AttributeDescription(MavenAttributes.MAVEN_ARTIFACT_ID));
-        list.add(new AttributeDescription(MavenAttributes.MAVEN_VERSION));
         list.add(new AttributeDescription(Constants.LANGUAGE_VERSION));
         list.add(new AttributeDescription(Constants.FRAMEWORK));
-        list.add(new AttributeDescription(Constants.BUILDER_MAVEN_SOURCE_FOLDERS));
         list.add(new AttributeDescription(Constants.RUNNER_NAME));
-        list.add(new AttributeDescription(MavenAttributes.MAVEN_PACKAGING));
+
+        list.add(new AttributeDescription(Constants.BUILDER_MAVEN_SOURCE_FOLDERS));
+        list.add(new AttributeDescription(MavenAttributes.GROUP_ID));
+        list.add(new AttributeDescription(MavenAttributes.ARTIFACT_ID));
+        list.add(new AttributeDescription(MavenAttributes.VERSION));
+        list.add(new AttributeDescription(MavenAttributes.PARENT_VERSION));
+        list.add(new AttributeDescription(MavenAttributes.PARENT_ARTIFACT_ID));
+        list.add(new AttributeDescription(MavenAttributes.PARENT_GROUP_ID));
+        list.add(new AttributeDescription(MavenAttributes.PACKAGING));
         return list;
     }
 }

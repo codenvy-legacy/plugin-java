@@ -18,12 +18,16 @@ import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.VirtualFileEntry;
+import com.codenvy.api.project.shared.ValueProvider;
 import com.codenvy.api.project.shared.ValueStorageException;
+import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.apache.maven.model.Model;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Evgen Vidolob
@@ -33,42 +37,68 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
 
     protected Model readModel(Project project) throws ValueStorageException, ServerException, ForbiddenException, IOException {
         FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
-        if(pomFile == null) {
+        if (pomFile == null) {
             throw new ValueStorageException("pom.xml does not exist.");
         }
         return MavenUtils.readModel(pomFile.getInputStream());
     }
 
-    protected Model readOrCreateModel(Project project) {
-        FileEntry pomFile;
+    protected VirtualFile getOrCreatePom(Project project) {
+        VirtualFileEntry pomFile;
         try {
-            pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
-            Model model;
-            if (pomFile != null) {
-                model = MavenUtils.readModel(pomFile.getInputStream());
-            } else {
-                model = new Model();
+            pomFile = project.getBaseFolder().getChild("pom.xml");
+            if (pomFile == null){
+                Model model = new Model();
                 model.setModelVersion("4.0.0");
+                pomFile = writeModel(model, project);
                 MavenProjectGenerator.generateProjectStructure(project.getBaseFolder());
             }
-            return model;
+            return pomFile.getVirtualFile();
         } catch (ForbiddenException | ServerException | ConflictException | IOException e) {
             return null;
         }
     }
 
-    protected void writeModel(Model model, Project project) throws ServerException, ForbiddenException, ConflictException, IOException {
+    protected VirtualFileEntry writeModel(Model model, Project project) throws ServerException, ForbiddenException, ConflictException, IOException {
         VirtualFileEntry pomFile = project.getBaseFolder().getChild("pom.xml");
-        if(pomFile == null) {
+        if (pomFile == null) {
             pomFile = project.getBaseFolder().createFile("pom.xml", new byte[0], "text/xml");
         }
         MavenUtils.writeModel(model, pomFile.getVirtualFile());
+        return  pomFile;
     }
 
     protected void throwReadException(Exception e) throws ValueStorageException {
         throw new ValueStorageException("Can't read pom.xml : " + e.getMessage());
     }
+
     protected void throwWriteException(Exception e) throws ValueStorageException {
         throw new ValueStorageException("Can't write pom.xml : " + e.getMessage());
+    }
+
+    protected abstract class MavenValueProvider implements ValueProvider {
+
+        protected Project project;
+
+        protected MavenValueProvider(Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public List<String> getValues() throws ValueStorageException {
+            try {
+                Model model = readModel(project);
+                String value = getValue(model);
+                if (value == null) {
+                    return null;
+                }
+                return Arrays.asList(value);
+            } catch (ServerException | ForbiddenException | IOException e) {
+                throwReadException(e);
+            }
+            return null;
+        }
+
+        protected abstract String getValue(Model model);
     }
 }

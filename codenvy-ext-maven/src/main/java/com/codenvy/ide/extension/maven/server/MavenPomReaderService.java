@@ -53,10 +53,10 @@ public class MavenPomReaderService {
         if (pomFile != null) {
             Model model = MavenUtils.readModel(pomFile);
             JsonObject object = new JsonObject();
-            object.addProperty(MavenAttributes.MAVEN_ARTIFACT_ID, model.getArtifactId());
-            object.addProperty(MavenAttributes.MAVEN_GROUP_ID, model.getGroupId());
-            object.addProperty(MavenAttributes.MAVEN_VERSION, model.getVersion());
-            object.addProperty(MavenAttributes.MAVEN_PACKAGING, model.getPackaging());
+            object.addProperty(MavenAttributes.ARTIFACT_ID, model.getArtifactId());
+            object.addProperty(MavenAttributes.GROUP_ID, model.getGroupId());
+            object.addProperty(MavenAttributes.VERSION, model.getVersion());
+            object.addProperty(MavenAttributes.PACKAGING, model.getPackaging());
             return gson.toJson(object);
         } else {
             throw new IllegalArgumentException("There is no pom.xml file in project: " + projectPath);

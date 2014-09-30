@@ -8,11 +8,13 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+
 package com.codenvy.ide.extension.maven.server.projecttype;
 
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Project;
+import com.codenvy.api.project.shared.InvalidValueException;
 import com.codenvy.api.project.shared.ValueProvider;
 import com.codenvy.api.project.shared.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
@@ -27,10 +29,10 @@ import java.util.List;
 /**
  * @author Evgen Vidolob
  */
-public class MavenPackagingValueProviderFactory extends AbstractMavenValueProviderFactory {
+public class MavenParentGroupIdValueProviderFactory extends AbstractMavenValueProviderFactory {
     @Override
     public String getName() {
-        return MavenAttributes.PACKAGING;
+        return MavenAttributes.PARENT_GROUP_ID;
     }
 
     @Override
@@ -38,21 +40,22 @@ public class MavenPackagingValueProviderFactory extends AbstractMavenValueProvid
         return new MavenValueProvider(project) {
             @Override
             protected String getValue(Model model) {
-                return model.getPackaging();
+                if (model.getParent() != null) {
+                    return model.getParent().getGroupId();
+                }
+                return null;
             }
 
             @Override
-            public void setValues(List<String> value) throws ValueStorageException {
-                if (value.isEmpty()) {
-                    throw new IllegalStateException("Maven Packaging can't be empty.");
+            public void setValues(List<String> value) throws ValueStorageException, InvalidValueException {
+                if (value == null || value.isEmpty()) {
+                    return;
                 }
-                if (value.size() > 1) {
-                    throw new IllegalStateException("Maven Packaging must be only one value.");
-                }
+
                 try {
                     VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setPackaging(pom, value.get(0));
-                } catch (ForbiddenException | ServerException | IOException e) {
+                    MavenUtils.setParentGroupId(pom, value.get(0));
+                } catch (ServerException | ForbiddenException | IOException e) {
                     throwWriteException(e);
                 }
             }

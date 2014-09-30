@@ -67,4 +67,10 @@ public interface MavenLocalizationConstant extends Messages {
 
     @Key("messages.dependencies.updating.dependencies")
     String updatingDependencies();
+
+    @Key("action.CreateMavenModule.text")
+    String actionCreateMavenModuleText();
+
+    @Key("action.CreateMavenModule.description")
+    String actionCreateMavenModuleDescription();
 }

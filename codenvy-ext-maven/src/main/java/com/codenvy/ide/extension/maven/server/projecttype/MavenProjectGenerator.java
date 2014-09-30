@@ -15,8 +15,6 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 
-import java.io.IOException;
-
 /**
  * @author Evgen Vidolob
  */
@@ -28,27 +26,6 @@ public class MavenProjectGenerator {
         FolderEntry mainJava = main.createFolder("java");
         FolderEntry test = src.createFolder("test");
         FolderEntry testJava = test.createFolder("java");
-//        Model model = new Model();
-//        model.setArtifactId(options.get("artifactId"));
-//        model.setGroupId(options.get("groupId"));
-//        model.setVersion(options.get("version"));
-//        model.setModelVersion("4.0.0");
-//        model.setPackaging("jar");
-//        model.setName(baseFolder.getName());
-//        File file = ((VirtualFileImpl)baseFolder.getVirtualFile()).getIoFile();
-//        File pom = new File(file, "pom.xml");
-//        MavenUtils.writeModel(model, pom);
-//
-//        String aPackage = options.get("package");
-//        if(!aPackage.isEmpty()){
-//            String name = aPackage.replaceAll("\\.", "/");
-//            mainJava.createFolder(name);
-//            testJava.createFolder(name);
-//        }
-//        FolderEntry folder = (FolderEntry)baseFolder.getChild(".codenvy");
-//        String properties =  "{\"type\":\"" +Constants.MAVEN_ID +"\",\"properties\":[{\"name\":\"builder.name\",\"value\":[\"maven\"]},{\"name\":\"language\",\"value\":[\"java\"]}]}";
-//        AbstractVirtualFileEntry child = folder.getChild("project");
-//        ((FileEntry)child).updateContent(properties.getBytes());
     }
 
 }

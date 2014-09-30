@@ -36,6 +36,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,6 +61,17 @@ import java.util.regex.Pattern;
  */
 public class MavenUtils {
     public static final Pattern MAVEN_LOGGER_PREFIX_REMOVER = Pattern.compile("(\\[INFO\\]|\\[WARNING\\]|\\[DEBUG\\]|\\[ERROR\\])\\s+(.*)");
+    @Inject
+    @Named("packaging2file-extension")
+    private static Map<String, String> packagingToFileExtensionMapping;
+    /** Internal Maven POM reader. */
+    private static MavenXpp3Reader pomReader = new MavenXpp3Reader();
+    /** Internal Maven POM writer. */
+    private static MavenXpp3Writer pomWriter = new MavenXpp3Writer();
+
+    /** Not instantiable. */
+    private MavenUtils() {
+    }
 
     public static String removeLoggerPrefix(String origin) {
         final Matcher matcher = MAVEN_LOGGER_PREFIX_REMOVER.matcher(origin);
@@ -69,25 +81,12 @@ public class MavenUtils {
         return origin;
     }
 
-    @Inject
-    @Named("packaging2file-extension")
-    private static Map<String, String> packagingToFileExtensionMapping;
-
     /** Get file extension of artifact by packaging, e.g. <packaging>play</packaging> */
     public static String getFileExtensionByPackaging(String packaging) {
         if (packagingToFileExtensionMapping == null) {
             return null;
         }
         return packagingToFileExtensionMapping.get(packaging);
-    }
-
-    /** Internal Maven POM reader. */
-    private static MavenXpp3Reader pomReader = new MavenXpp3Reader();
-    /** Internal Maven POM writer. */
-    private static MavenXpp3Writer pomWriter = new MavenXpp3Writer();
-
-    /** Not instantiable. */
-    private MavenUtils() {
     }
 
     /**
@@ -776,6 +775,140 @@ public class MavenUtils {
      */
     public static String getVersion(java.io.File pom) throws IOException {
         return getVersion(readModel(pom));
+    }
+
+    /**
+     * Set packaging to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setPackaging(File pom, String packaging) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/packaging", packaging), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set packaging to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setPackaging(VirtualFile pom, String packaging) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/packaging", packaging)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set parent artifact Id to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setParentArtifactId(File pom, String parentArtifactId) throws IOException {
+        checkAndCreateParent(pom);
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/parent/artifactId", parentArtifactId), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set parent artifact Id to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setParentArtifactId(VirtualFile pom, String parentArtifactId)
+            throws ServerException, ForbiddenException, IOException {
+        checkAndCreateParent(pom);
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/parent/artifactId", parentArtifactId)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set parent group Id to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setParentGroupId(File pom, String parentGroupId) throws IOException {
+        checkAndCreateParent(pom);
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/parent/groupId", parentGroupId), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set parent group Id to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setParentGroupId(VirtualFile pom, String parentGroupId) throws ServerException, ForbiddenException, IOException {
+        checkAndCreateParent(pom);
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/parent/groupId", parentGroupId)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+
+
+    /**
+     * Set parent version to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setParentVersion(File pom, String parentVersion) throws IOException {
+        checkAndCreateParent(pom);
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(setContent(pomBytes, "project/parent/version", parentVersion), pom);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    /**
+     * Set parent version to artifact. Should be used to avoid pom.xml reformatting or destruction
+     */
+    public static void setParentVersion(VirtualFile pom, String parentVersion) throws ServerException, ForbiddenException, IOException {
+        checkAndCreateParent(pom);
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/parent/version", parentVersion)), null);
+        } catch (XMLStreamException xmlEx) {
+            throw new IOException(xmlEx);
+        }
+    }
+
+    private static void checkAndCreateParent(VirtualFile pom) throws ServerException, IOException, ForbiddenException {
+        Model model = readModel(pom);
+        if (model.getParent() == null) {
+            byte[] content = new byte[(int)pom.getContent().getLength()];
+            ByteStreams.readFully(pom.getContent().getStream(), content);
+            try {
+                pom.updateContent(new ByteArrayInputStream(setContent(content, "project/parent", "\n")), null);
+            } catch (XMLStreamException e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    private static void checkAndCreateParent(File pom) throws IOException {
+        Model model = readModel(pom);
+        if (model.getParent() == null) {
+            byte[] bytes = com.google.common.io.Files.toByteArray(pom);
+            try {
+                com.google.common.io.Files.write(setContent(bytes, "project/parent", "\n"), pom);
+            } catch (XMLStreamException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
     private static byte[] addDependencies(byte[] source, Dependency... dependencies) throws IOException, XMLStreamException {

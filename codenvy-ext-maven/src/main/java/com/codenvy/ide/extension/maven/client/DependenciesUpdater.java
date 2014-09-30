@@ -133,8 +133,8 @@ public class DependenciesUpdater {
 
 
         Map<String, List<String>> attributes = project.getAttributes();
-        if (attributes.containsKey(MavenAttributes.MAVEN_PACKAGING)) {
-            if ("pom".equals(attributes.get(MavenAttributes.MAVEN_PACKAGING).get(0))) {
+        if (attributes.containsKey(MavenAttributes.PACKAGING)) {
+            if ("pom".equals(attributes.get(MavenAttributes.PACKAGING).get(0))) {
                 return;
             }
         }

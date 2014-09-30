@@ -8,18 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.shared;
+
+package com.codenvy.ide.extension.maven.client.module;
+
+import com.codenvy.ide.ui.Styles;
+import com.google.gwt.resources.client.ClientBundle;
 
 /**
  * @author Evgen Vidolob
  */
-public interface MavenAttributes {
+public interface CreateMavenModuleResources extends ClientBundle {
 
-    String GROUP_ID    = "maven.groupId";
-    String VERSION     = "maven.version";
-    String ARTIFACT_ID = "maven.artifactId";
-    String PACKAGING   = "maven.packaging";
-    String PARENT_GROUP_ID    = "maven.parent.groupId";
-    String PARENT_VERSION     = "maven.parent.version";
-    String PARENT_ARTIFACT_ID = "maven.parent.artifactId";
+    @Source({"com/codenvy/ide/api/ui/style.css","com/codenvy/ide/ui/Styles.css"})
+    Css css();
+
+    public interface Css extends Styles{
+
+    }
 }
