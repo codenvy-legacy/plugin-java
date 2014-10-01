@@ -16,7 +16,7 @@ import com.codenvy.api.project.shared.Attribute;
 import com.codenvy.api.project.shared.ProjectTemplateDescription;
 import com.codenvy.api.project.shared.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.ide.server.ProjectTemplateDescriptionLoader;
+import com.codenvy.api.project.server.ProjectTemplateDescriptionLoader;
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;
