@@ -105,6 +105,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         if (projectName != null) {
             view.setArtifactId(projectName);
             view.setGroupId(projectName);
+            scheduleTextChanges();
         }
 
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
