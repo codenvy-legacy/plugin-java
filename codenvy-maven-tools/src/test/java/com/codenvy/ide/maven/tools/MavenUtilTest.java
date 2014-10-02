@@ -253,6 +253,30 @@ public class MavenUtilTest {
     }
 
     @Test
+    public void testAddModule() throws Exception {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testAddModule-pom.xml");
+        Model model = new Model();
+        model.setGroupId("a");
+        model.setArtifactId("b");
+        model.setVersion("c");
+        model.setDescription("test pom");
+        model.setPackaging("pom");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+
+        MavenUtils.addModule(pom, "test-module");
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = documentBuilder.parse(pom);
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        NodeList depsNodeList = (NodeList)xpath.evaluate("/project/modules", dom, XPathConstants.NODESET);
+        Assert.assertEquals(depsNodeList.getLength(), 1);
+        Node node = depsNodeList.item(0);
+        Assert.assertEquals("test-module", xpath.evaluate("module", node, XPathConstants.STRING));
+    }
+
+    @Test
     public void testAddDependencies() throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
         File workDir = new File(System.getProperty("workDir"));
         File pom = new File(workDir, "testAddDependencies-pom.xml");

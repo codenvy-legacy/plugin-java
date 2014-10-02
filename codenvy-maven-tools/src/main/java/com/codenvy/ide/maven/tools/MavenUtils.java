@@ -886,6 +886,39 @@ public class MavenUtils {
         }
     }
 
+    /**
+     * Add maven module to modules list.
+     *
+     * @param pom the pom
+     * @param moduleName the module name
+     */
+    public static void addModule(VirtualFile pom, String moduleName)
+            throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(addModule(content, moduleName)), null);
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Add maven module to modules list.
+     *
+     * @param pom the pom
+     * @param moduleName the module name
+     */
+    public static void addModule(File pom, String moduleName)
+            throws ServerException, ForbiddenException, IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(addModule(pomBytes, moduleName), pom);
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
     private static void checkAndCreateParent(VirtualFile pom) throws ServerException, IOException, ForbiddenException {
         Model model = readModel(pom);
         if (model.getParent() == null) {
@@ -909,6 +942,50 @@ public class MavenUtils {
                 throw new IOException(e);
             }
         }
+    }
+
+    private static byte[] addModule(byte[] source, String module) throws IOException, XMLStreamException {
+
+        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
+        final String[] dependenciesPath = new String[]{"project", "modules"};
+        final String[] currentPath = new String[dependenciesPath.length];
+        final ByteArrayOutputStream result = new ByteArrayOutputStream();
+        boolean found = false;
+        boolean applied = false;
+        int level = 0;
+        int instructionEnd = 0;
+        while (!applied && reader.hasNext()) {
+            switch (reader.next()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    if (level < currentPath.length) {
+                        currentPath[level] = reader.getLocalName();
+                    }
+                    ++level;
+                    if (level == dependenciesPath.length && Arrays.equals(dependenciesPath, currentPath)) {
+                        found = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    if (found && level == dependenciesPath.length && Arrays.equals(currentPath, dependenciesPath)) {
+                        result.write(source, 0, instructionEnd);
+                        result.write(("        " + wrapInTag("module", module)).getBytes());
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    } else if (level == 1 && currentPath[0].equals("project")) {
+                        result.write(source, 0, instructionEnd);
+                        result.write("\n    <modules>\n".getBytes());
+                        result.write(("        " + wrapInTag("module", module)).getBytes());
+                        result.write("\n    </modules>".getBytes());
+                        result.write(source, instructionEnd, source.length - instructionEnd);
+                        applied = true;
+                    }
+                    instructionEnd = reader.getLocation().getCharacterOffset();
+                    --level;
+                    break;
+            }
+        }
+        return result.toByteArray();
     }
 
     private static byte[] addDependencies(byte[] source, Dependency... dependencies) throws IOException, XMLStreamException {

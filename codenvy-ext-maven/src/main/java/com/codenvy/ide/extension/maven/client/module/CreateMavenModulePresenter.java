@@ -18,6 +18,7 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.maven.client.wizard.MavenPomServiceClient;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.util.NameUtils;
@@ -42,7 +43,8 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
     private CreateMavenModuleView view;
     private ProjectServiceClient  projectService;
     private DtoFactory            dtoFactory;
-    private EventBus eventBus;
+    private EventBus              eventBus;
+    private MavenPomServiceClient mavenPomServiceClient;
 
     private String moduleName;
 
@@ -51,11 +53,12 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     @Inject
     public CreateMavenModulePresenter(CreateMavenModuleView view, ProjectServiceClient projectService, DtoFactory dtoFactory,
-                                      EventBus eventBus) {
+                                      EventBus eventBus, MavenPomServiceClient mavenPomServiceClient) {
         this.view = view;
         this.projectService = projectService;
         this.dtoFactory = dtoFactory;
         this.eventBus = eventBus;
+        this.mavenPomServiceClient = mavenPomServiceClient;
         view.setDelegate(this);
     }
 
@@ -94,6 +97,22 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
             @Override
             protected void onSuccess(ProjectDescriptor result) {
+                addModuleToParentPom();
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                view.showButtonLoader(false);
+                Log.error(CreateMavenModulePresenter.class, exception);
+            }
+        });
+    }
+
+    private void addModuleToParentPom() {
+        mavenPomServiceClient.addModule(parentProject.getProjectDescription().getPath(), moduleName, new AsyncRequestCallback<Void>() {
+
+            @Override
+            protected void onSuccess(Void result) {
                 view.close();
                 view.showButtonLoader(false);
                 eventBus.fireEvent(new RefreshProjectTreeEvent());
@@ -101,7 +120,6 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
             @Override
             protected void onFailure(Throwable exception) {
-                view.showButtonLoader(false);
                 Log.error(CreateMavenModulePresenter.class, exception);
             }
         });

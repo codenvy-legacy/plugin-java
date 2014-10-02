@@ -39,11 +39,11 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     protected MavenPageView             view;
     protected EventBus                  eventBus;
-    private   MavenPomReaderClient      pomReaderClient;
+    private   MavenPomServiceClient     pomReaderClient;
     private   Map<String, List<String>> attributes;
 
     @Inject
-    public MavenPagePresenter(MavenPageView view, EventBus eventBus, MavenPomReaderClient pomReaderClient) {
+    public MavenPagePresenter(MavenPageView view, EventBus eventBus, MavenPomServiceClient pomReaderClient) {
         super("Maven project settings", null);
         this.view = view;
         this.eventBus = eventBus;
@@ -151,6 +151,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     @Override
     public void setPackaging(String packaging) {
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
+        attributes.put(MavenAttributes.PACKAGING, Arrays.asList(packaging));
         if ("war".equals(packaging)) {
             project.setRunner("JavaWeb");
         }

@@ -10,8 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server;
 
+import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.MavenUtils;
@@ -23,16 +26,18 @@ import org.apache.maven.model.Model;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import java.io.IOException;
 
 /**
  * @author Evgen Vidolob
  */
 @Path("maven/pom/{ws-id}")
-public class MavenPomReaderService {
+public class MavenPomService {
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().serializeNulls().create();
 
     @PathParam("ws-id")
@@ -60,6 +65,24 @@ public class MavenPomReaderService {
             return gson.toJson(object);
         } else {
             throw new IllegalArgumentException("There is no pom.xml file in project: " + projectPath);
+        }
+    }
+
+    @POST
+    @Path("add-module")
+    public void addModule(@QueryParam("projectpath") String projectPath, @QueryParam("module") String moduleName)
+            throws ServerException, ForbiddenException, IOException {
+        Project project = projectManager.getProject(wsId, projectPath);
+        VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
+        if(pom == null) {
+            throw new IllegalArgumentException("Can't find pom.xml file in path: " + projectPath);
+        }
+
+        Model model = MavenUtils.readModel(pom.getVirtualFile());
+        if("pom".equals(model.getPackaging())){
+            MavenUtils.addModule(pom.getVirtualFile(), moduleName);
+        } else {
+            throw new IllegalArgumentException("Project must have packaging 'pom' in order to adding modules.");
         }
     }
 }

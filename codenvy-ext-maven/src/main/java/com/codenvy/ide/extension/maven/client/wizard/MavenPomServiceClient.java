@@ -22,17 +22,17 @@ import javax.inject.Inject;
  * @author Evgen Vidolob
  */
 @Singleton
-public class MavenPomReaderClient {
+public class MavenPomServiceClient {
 
     private final AsyncRequestFactory asyncRequestFactory;
     private final String              baseUrl;
     private final AsyncRequestLoader  loader;
 
     @Inject
-    public MavenPomReaderClient(@Named("restContext") String baseUrl,
-                                @Named("workspaceId") String workspaceId,
-                                AsyncRequestLoader loader,
-                                AsyncRequestFactory asyncRequestFactory) {
+    public MavenPomServiceClient(@Named("restContext") String baseUrl,
+                                 @Named("workspaceId") String workspaceId,
+                                 AsyncRequestLoader loader,
+                                 AsyncRequestFactory asyncRequestFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
         this.baseUrl = baseUrl + "/maven/pom/" + workspaceId;
         this.loader = loader;
@@ -43,5 +43,10 @@ public class MavenPomReaderClient {
         callback.setSuccessCodes(new int[]{200, 201, 202, 204, 207, 1223});
         asyncRequestFactory.createGetRequest(requestUrl)
                            .send(callback);
+    }
+
+    public void addModule(String projectPath, String moduleName, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = baseUrl + "/add-module?projectpath=" + projectPath + "&module=" + moduleName;
+        asyncRequestFactory.createPostRequest(requestUrl, null).send(callback);
     }
 }
