@@ -65,7 +65,7 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
         setWidget(rootElement);
         createButton = new Button();
         createButton.setText(CREATE);
-        createButton.addStyleName(wizardResources.css().blueButton());
+        createButton.addStyleName(wizardResources.wizardCss().blueButton());
         createButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
