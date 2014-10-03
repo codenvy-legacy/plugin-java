@@ -969,7 +969,7 @@ public class MavenUtils {
                 case XMLStreamConstants.END_ELEMENT:
                     if (found && level == dependenciesPath.length && Arrays.equals(currentPath, dependenciesPath)) {
                         result.write(source, 0, instructionEnd);
-                        result.write(("        " + wrapInTag("module", module)).getBytes());
+                        result.write(("\n        " + wrapInTag("module", module)).getBytes());
                         result.write(source, instructionEnd, source.length - instructionEnd);
                         applied = true;
                     } else if (level == 1 && currentPath[0].equals("project")) {
