@@ -23,7 +23,8 @@ import com.codenvy.ide.extension.maven.server.projecttype.MavenParentVersionValu
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeDescriptionsExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeResolver;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenSourceFoldersValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenSourceFolderValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenTestSourceFolderValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenVersionValueProviderFactory;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
@@ -40,7 +41,6 @@ public class MavenModule extends AbstractModule {
         bind(MavenMultimoduleAutoBuilder.class);
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenSourceFoldersValueProviderFactory.class);
         multiBinder.addBinding().to(MavenArtifactIdValueProviderFactory.class);
         multiBinder.addBinding().to(MavenGroupIdValueProviderFactory.class);
         multiBinder.addBinding().to(MavenVersionValueProviderFactory.class);
@@ -48,6 +48,8 @@ public class MavenModule extends AbstractModule {
         multiBinder.addBinding().to(MavenParentArtifactIdValueProviderFactory.class);
         multiBinder.addBinding().to(MavenParentGroupIdValueProviderFactory.class);
         multiBinder.addBinding().to(MavenParentVersionValueProviderFactory.class);
+        multiBinder.addBinding().to(MavenSourceFolderValueProviderFactory.class);
+        multiBinder.addBinding().to(MavenTestSourceFolderValueProviderFactory.class);
 
         Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(MavenProjectTypeResolver.class);
     }

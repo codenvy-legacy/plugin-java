@@ -158,5 +158,12 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         if ("jar".equals(packaging)) {
             project.setRunner("JavaStandalone");
         }
+        if ("pom".equals(packaging)) {
+            attributes.remove(MavenAttributes.SOURCE_FOLDER);
+            attributes.remove(MavenAttributes.TEST_SOURCE_FOLDER);
+        } else {
+            attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
+            attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+        }
     }
 }

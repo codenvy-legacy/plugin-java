@@ -277,6 +277,53 @@ public class MavenUtilTest {
     }
 
     @Test
+    public void testAddSourceFolder() throws Exception {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testAddSourceFolder-pom.xml");
+        Model model = new Model();
+        model.setGroupId("a");
+        model.setArtifactId("b");
+        model.setVersion("c");
+        model.setDescription("test pom");
+        model.setPackaging("pom");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+
+        MavenUtils.setSourceFolder(pom, "aaa/bbb/ccc");
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = documentBuilder.parse(pom);
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        NodeList depsNodeList = (NodeList)xpath.evaluate("/project/build", dom, XPathConstants.NODESET);
+        Assert.assertEquals(depsNodeList.getLength(), 1);
+        Node node = depsNodeList.item(0);
+        Assert.assertEquals("aaa/bbb/ccc", xpath.evaluate("sourceDirectory", node, XPathConstants.STRING));
+    }
+
+    @Test
+    public void testAddTestSourceFolder() throws Exception {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testAddSourceFolder-pom.xml");
+        Model model = new Model();
+        model.setGroupId("a");
+        model.setArtifactId("b");
+        model.setVersion("c");
+        model.setDescription("test pom");
+        model.setPackaging("pom");
+        model.setPomFile(pom);
+        MavenUtils.writeModel(model);
+
+        MavenUtils.setTestSourceFolder(pom, "zzz/xxx/ccc");
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = documentBuilder.parse(pom);
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        NodeList depsNodeList = (NodeList)xpath.evaluate("/project/build", dom, XPathConstants.NODESET);
+        Assert.assertEquals(depsNodeList.getLength(), 1);
+        Node node = depsNodeList.item(0);
+        Assert.assertEquals("zzz/xxx/ccc", xpath.evaluate("testSourceDirectory", node, XPathConstants.STRING));
+    }
+    @Test
     public void testAddDependencies() throws IOException, ParserConfigurationException, SAXException, XPathExpressionException {
         File workDir = new File(System.getProperty("workDir"));
         File pom = new File(workDir, "testAddDependencies-pom.xml");
