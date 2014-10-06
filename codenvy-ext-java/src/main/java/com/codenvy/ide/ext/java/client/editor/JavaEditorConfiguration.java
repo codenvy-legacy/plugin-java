@@ -80,8 +80,7 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
         this.localizationConstant = localizationConstant;
         outlineModel = new OutlineModel(new JavaNodeRenderer(resources));
         codeAssistProcessor = new JavaCodeAssistProcessor(javaEditor, worker, javaResources, eventLogger);
-        reconcilerStrategy = new JavaReconcilerStrategy(javaEditor, worker, outlineModel, notificationManager, codeAssistProcessor,
-                                                        localizationConstant);
+        reconcilerStrategy = new JavaReconcilerStrategy(javaEditor, worker, outlineModel, notificationManager, codeAssistProcessor);
         this.contentFormatter = contentFormatter;
 
 
