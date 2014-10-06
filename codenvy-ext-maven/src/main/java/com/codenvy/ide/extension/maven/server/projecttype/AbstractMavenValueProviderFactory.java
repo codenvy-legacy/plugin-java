@@ -51,7 +51,6 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
                 Model model = new Model();
                 model.setModelVersion("4.0.0");
                 pomFile = writeModel(model, project);
-                MavenProjectGenerator.generateProjectStructure(project.getBaseFolder());
             }
             return pomFile.getVirtualFile();
         } catch (ForbiddenException | ServerException | ConflictException | IOException e) {

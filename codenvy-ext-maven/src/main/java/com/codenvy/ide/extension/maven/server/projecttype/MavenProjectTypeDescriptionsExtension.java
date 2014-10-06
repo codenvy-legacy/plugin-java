@@ -49,7 +49,6 @@ public class MavenProjectTypeDescriptionsExtension implements ProjectTypeDescrip
         list.add(new AttributeDescription(Constants.FRAMEWORK));
         list.add(new AttributeDescription(Constants.RUNNER_NAME));
 
-        list.add(new AttributeDescription(Constants.BUILDER_MAVEN_SOURCE_FOLDERS));
         list.add(new AttributeDescription(MavenAttributes.GROUP_ID));
         list.add(new AttributeDescription(MavenAttributes.ARTIFACT_ID));
         list.add(new AttributeDescription(MavenAttributes.VERSION));
@@ -57,6 +56,9 @@ public class MavenProjectTypeDescriptionsExtension implements ProjectTypeDescrip
         list.add(new AttributeDescription(MavenAttributes.PARENT_ARTIFACT_ID));
         list.add(new AttributeDescription(MavenAttributes.PARENT_GROUP_ID));
         list.add(new AttributeDescription(MavenAttributes.PACKAGING));
+
+        list.add(new AttributeDescription(MavenAttributes.SOURCE_FOLDER));
+        list.add(new AttributeDescription(MavenAttributes.TEST_SOURCE_FOLDER));
         return list;
     }
 }

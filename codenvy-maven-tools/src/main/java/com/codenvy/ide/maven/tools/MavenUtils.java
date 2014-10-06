@@ -858,7 +858,6 @@ public class MavenUtils {
     }
 
 
-
     /**
      * Set parent version to artifact. Should be used to avoid pom.xml reformatting or destruction
      */
@@ -889,15 +888,17 @@ public class MavenUtils {
     /**
      * Add maven module to modules list.
      *
-     * @param pom the pom
-     * @param moduleName the module name
+     * @param pom
+     *         the pom
+     * @param moduleName
+     *         the module name
      */
     public static void addModule(VirtualFile pom, String moduleName)
             throws ServerException, ForbiddenException, IOException {
         byte[] content = new byte[(int)pom.getContent().getLength()];
         ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            pom.updateContent(new ByteArrayInputStream(addModule(content, moduleName)), null);
+            pom.updateContent(new ByteArrayInputStream(addTagValue(content, moduleName, "module", "modules", "project", "modules")), null);
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
@@ -906,14 +907,86 @@ public class MavenUtils {
     /**
      * Add maven module to modules list.
      *
-     * @param pom the pom
-     * @param moduleName the module name
+     * @param pom
+     *         the pom
+     * @param moduleName
+     *         the module name
      */
     public static void addModule(File pom, String moduleName)
             throws ServerException, ForbiddenException, IOException {
         final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
         try {
-            com.google.common.io.Files.write(addModule(pomBytes, moduleName), pom);
+            com.google.common.io.Files.write(addTagValue(pomBytes, moduleName, "module", "modules", "project", "modules"), pom);
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Sets maven source folder.
+     *
+     * @param pom
+     *         the pom
+     * @param srcPath
+     *         the src path
+     */
+    public static void setSourceFolder(VirtualFile pom, String srcPath) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(addTagValue(content, srcPath, "sourceDirectory", "build", "project", "build")),
+                              null);
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Sets maven source folder.
+     *
+     * @param pom
+     *         the pom
+     * @param srcPath
+     *         the src path
+     */
+    public static void setSourceFolder(File pom, String srcPath) throws IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(addTagValue(pomBytes, srcPath, "sourceDirectory", "build", "project", "build"), pom);
+
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Sets test source folder.
+     *
+     * @param pom the pom
+     * @param srcPath the src path
+     */
+    public static void setTestSourceFolder(VirtualFile pom, String srcPath) throws ServerException, ForbiddenException, IOException {
+        byte[] content = new byte[(int)pom.getContent().getLength()];
+        ByteStreams.readFully(pom.getContent().getStream(), content);
+        try {
+            pom.updateContent(new ByteArrayInputStream(addTagValue(content, srcPath, "testSourceDirectory", "build", "project", "build")),
+                              null);
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Sets test source folder.
+     *
+     * @param pom the pom
+     * @param srcPath the src path
+     */
+    public static void setTestSourceFolder(File pom, String srcPath) throws ServerException, ForbiddenException, IOException {
+        final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
+        try {
+            com.google.common.io.Files.write(addTagValue(pomBytes, srcPath, "testSourceDirectory", "build", "project", "build"), pom);
+
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
@@ -944,11 +1017,11 @@ public class MavenUtils {
         }
     }
 
-    private static byte[] addModule(byte[] source, String module) throws IOException, XMLStreamException {
+    private static byte[] addTagValue(byte[] source, String tagValue, String tagName, String parentTagName, String... tagPath)
+            throws IOException, XMLStreamException {
 
         final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(source));
-        final String[] dependenciesPath = new String[]{"project", "modules"};
-        final String[] currentPath = new String[dependenciesPath.length];
+        final String[] currentPath = new String[tagPath.length];
         final ByteArrayOutputStream result = new ByteArrayOutputStream();
         boolean found = false;
         boolean applied = false;
@@ -961,22 +1034,22 @@ public class MavenUtils {
                         currentPath[level] = reader.getLocalName();
                     }
                     ++level;
-                    if (level == dependenciesPath.length && Arrays.equals(dependenciesPath, currentPath)) {
+                    if (level == tagPath.length && Arrays.equals(tagPath, currentPath)) {
                         found = true;
                     }
                     instructionEnd = reader.getLocation().getCharacterOffset();
                     break;
                 case XMLStreamConstants.END_ELEMENT:
-                    if (found && level == dependenciesPath.length && Arrays.equals(currentPath, dependenciesPath)) {
+                    if (found && level == tagPath.length && Arrays.equals(currentPath, tagPath)) {
                         result.write(source, 0, instructionEnd);
-                        result.write(("\n        " + wrapInTag("module", module)).getBytes());
+                        result.write(("\n        " + wrapInTag(tagName, tagValue)).getBytes());
                         result.write(source, instructionEnd, source.length - instructionEnd);
                         applied = true;
                     } else if (level == 1 && currentPath[0].equals("project")) {
                         result.write(source, 0, instructionEnd);
-                        result.write("\n    <modules>\n".getBytes());
-                        result.write(("        " + wrapInTag("module", module)).getBytes());
-                        result.write("\n    </modules>".getBytes());
+                        result.write(("\n    <" + parentTagName + ">\n").getBytes());
+                        result.write(("        " + wrapInTag(tagName, tagValue)).getBytes());
+                        result.write(("\n    </" + parentTagName + ">").getBytes());
                         result.write(source, instructionEnd, source.length - instructionEnd);
                         applied = true;
                     }

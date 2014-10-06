@@ -12,6 +12,8 @@ package com.codenvy.ide.ext.java.server.core.launching;
 
 import com.codenvy.api.core.util.CancellableProcessWrapper;
 import com.codenvy.api.core.util.CommandLine;
+import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.ListLineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.core.util.ShellFactory;
 import com.codenvy.api.core.util.Watchdog;
@@ -175,7 +177,7 @@ public class StandardVMType implements IVMInstallType {
             } else if (version.startsWith(org.eclipse.jdt.core.JavaCore.VERSION_1_3)) {
                 return new URL("http://download.oracle.com/javase/1.3/docs/api/"); //$NON-NLS-1$
             }
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException ignored) {
         }
         return null;
     }
@@ -589,20 +591,19 @@ public class StandardVMType implements IVMInstallType {
 
                 String[] shellCommand = ShellFactory.getShell().createShellCommand(new CommandLine(cmdLine));
                 try {
-                    p = Runtime.getRuntime().exec(shellCommand, new String[0]);
+                    ProcessBuilder processBuilder = new ProcessBuilder(shellCommand).redirectErrorStream(true);
+                    p =  processBuilder.start();
                 } catch (IOException e) {
                     LOG.error("Process creating failed", e);
                     throw new IllegalStateException(e);
                 }
                 //process will be stopped after timeout
-                Watchdog watcher = null;
-
-                watcher = new Watchdog(30, TimeUnit.SECONDS);
+                Watchdog watcher = new Watchdog(30, TimeUnit.SECONDS);
                 watcher.start(new CancellableProcessWrapper(p));
 
-                LineConsumer consumer = new LineConsumer();
+                ListLineConsumer consumer = new ListLineConsumer();
                 try {
-                    ProcessUtil.process(p, consumer, consumer);
+                    ProcessUtil.process(p, consumer, LineConsumer.DEV_NULL);
                     p.waitFor();
             /*
             * Check process exit value and search for correct error message
@@ -708,24 +709,5 @@ public class StandardVMType implements IVMInstallType {
             }
         }
         return null;
-    }
-
-    private static class LineConsumer implements com.codenvy.api.core.util.LineConsumer {
-
-        StringBuilder builder = new StringBuilder();
-
-        @Override
-        public void writeLine(String line) throws IOException {
-            builder.append(line);
-        }
-
-        @Override
-        public void close() throws IOException {
-
-        }
-
-        public String getText(){
-            return builder.toString();
-        }
     }
 }
