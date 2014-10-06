@@ -36,9 +36,9 @@ public class FileSaveWatcher {
                         FileNode file = editor.getEditorInput().getFile();
                         String packageName = "";
                         if (file.getParent() instanceof PackageNode) {
-                            packageName = ((PackageNode)file.getParent()).getQualifiedName();
+                            packageName = ((PackageNode)file.getParent()).getQualifiedName() + '.';
                         }
-                        String fqn = packageName + '.' + file.getName().substring(0, file.getName().indexOf('.'));
+                        String fqn = packageName + file.getName().substring(0, file.getName().indexOf('.'));
                         worker.removeFanFromCache(fqn);
                     }
                 }
