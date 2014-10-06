@@ -14,7 +14,7 @@ import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -23,9 +23,9 @@ import java.util.List;
 @Singleton
 public class JavaFqnResolver implements FqnResolver {
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
-    public String resolveFqn(@NotNull final FileNode file) {
+    public String resolveFqn(@Nonnull final FileNode file) {
         final ProjectNode project = file.getProject();
         final String builderName = project.getData().getBuilder();
         final List<String> sourceFolders = project.getAttributeValues("builder." + builderName + ".source_folders");

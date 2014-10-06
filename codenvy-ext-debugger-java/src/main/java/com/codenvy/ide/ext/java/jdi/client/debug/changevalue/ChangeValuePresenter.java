@@ -23,7 +23,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+
+import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 
@@ -58,7 +59,7 @@ public class ChangeValuePresenter implements ChangeValueView.ActionDelegate {
     }
 
     /** Show dialog. */
-    public void showDialog(@NotNull DebuggerInfo debuggerInfo, @NotNull Variable variable, @NotNull AsyncCallback<String> callback) {
+    public void showDialog(@Nonnull DebuggerInfo debuggerInfo, @Nonnull Variable variable, @Nonnull AsyncCallback<String> callback) {
         this.debuggerInfo = debuggerInfo;
         this.variable = variable;
         this.callback = callback;

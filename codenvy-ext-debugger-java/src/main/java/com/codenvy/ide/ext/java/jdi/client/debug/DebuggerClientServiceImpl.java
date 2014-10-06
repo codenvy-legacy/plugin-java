@@ -25,7 +25,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import javax.validation.constraints.NotNull;
+
+import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.MimeType.TEXT_PLAIN;
 import static com.codenvy.ide.rest.HTTPHeader.ACCEPT;
@@ -65,7 +66,7 @@ public class DebuggerClientServiceImpl implements DebuggerClientService {
 
     /** {@inheritDoc} */
     @Override
-    public void connect(@NotNull String host, int port, @NotNull AsyncRequestCallback<DebuggerInfo> callback) {
+    public void connect(@Nonnull String host, int port, @Nonnull AsyncRequestCallback<DebuggerInfo> callback) {
         final String requestUrl = baseUrl + "/connect";
         final String params = "?host=" + host + "&port=" + port;
         asyncRequestFactory.createGetRequest(requestUrl + params).loader(loader).send(callback);
@@ -73,98 +74,98 @@ public class DebuggerClientServiceImpl implements DebuggerClientService {
 
     /** {@inheritDoc} */
     @Override
-    public void disconnect(@NotNull String id, @NotNull AsyncRequestCallback<Void> callback) {
+    public void disconnect(@Nonnull String id, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/disconnect/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader, "Disconnecting... ").send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addBreakpoint(@NotNull String id, @NotNull BreakPoint breakPoint, @NotNull AsyncRequestCallback<Void> callback) {
+    public void addBreakpoint(@Nonnull String id, @Nonnull BreakPoint breakPoint, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/breakpoints/add/" + id;
         asyncRequestFactory.createPostRequest(requestUrl, breakPoint).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void getAllBreakpoints(@NotNull String id, @NotNull AsyncRequestCallback<String> callback) {
+    public void getAllBreakpoints(@Nonnull String id, @Nonnull AsyncRequestCallback<String> callback) {
         final String requestUrl = baseUrl + "/breakpoints/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void deleteBreakpoint(@NotNull String id, @NotNull BreakPoint breakPoint, @NotNull AsyncRequestCallback<Void> callback) {
+    public void deleteBreakpoint(@Nonnull String id, @Nonnull BreakPoint breakPoint, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/breakpoints/delete/" + id;
         asyncRequestFactory.createPostRequest(requestUrl, breakPoint).loader(new EmptyLoader()).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void deleteAllBreakpoints(@NotNull String id, @NotNull AsyncRequestCallback<String> callback) {
+    public void deleteAllBreakpoints(@Nonnull String id, @Nonnull AsyncRequestCallback<String> callback) {
         final String requestUrl = baseUrl + "/breakpoints/delete_all/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void checkEvents(@NotNull String id, @NotNull AsyncRequestCallback<DebuggerEventList> callback) {
+    public void checkEvents(@Nonnull String id, @Nonnull AsyncRequestCallback<DebuggerEventList> callback) {
         final String requestUrl = baseUrl + "/events/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(new EmptyLoader()).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void getStackFrameDump(@NotNull String id, @NotNull AsyncRequestCallback<StackFrameDump> callback) {
+    public void getStackFrameDump(@Nonnull String id, @Nonnull AsyncRequestCallback<StackFrameDump> callback) {
         final String requestUrl = baseUrl + "/dump/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void resume(@NotNull String id, @NotNull AsyncRequestCallback<Void> callback) {
+    public void resume(@Nonnull String id, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/resume/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void getValue(@NotNull String id, @NotNull Variable var, @NotNull AsyncRequestCallback<Value> callback) {
+    public void getValue(@Nonnull String id, @Nonnull Variable var, @Nonnull AsyncRequestCallback<Value> callback) {
         final String requestUrl = baseUrl + "/value/get/" + id;
         asyncRequestFactory.createPostRequest(requestUrl, var.getVariablePath()).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setValue(@NotNull String id, @NotNull UpdateVariableRequest request, @NotNull AsyncRequestCallback<Void> callback) {
+    public void setValue(@Nonnull String id, @Nonnull UpdateVariableRequest request, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/value/set/" + id;
         asyncRequestFactory.createPostRequest(requestUrl, request).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stepInto(@NotNull String id, @NotNull AsyncRequestCallback<Void> callback) {
+    public void stepInto(@Nonnull String id, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/step/into/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stepOver(@NotNull String id, @NotNull AsyncRequestCallback<Void> callback) {
+    public void stepOver(@Nonnull String id, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/step/over/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stepReturn(@NotNull String id, @NotNull AsyncRequestCallback<Void> callback) {
+    public void stepReturn(@Nonnull String id, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/step/out/" + id;
         asyncRequestFactory.createGetRequest(requestUrl).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void evaluateExpression(@NotNull String id, @NotNull String expression, @NotNull AsyncRequestCallback<String> callback) {
+    public void evaluateExpression(@Nonnull String id, @Nonnull String expression, @Nonnull AsyncRequestCallback<String> callback) {
         final String requestUrl = baseUrl + "/expression/" + id;
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .data(expression)

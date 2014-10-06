@@ -12,12 +12,12 @@ package com.codenvy.ide.ext.java.jdi.client.fqn;
 
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Evgen Vidolob
  */
 public interface FqnResolver {
-    @NotNull
-    String resolveFqn(@NotNull FileNode file);
+    @Nonnull
+    String resolveFqn(@Nonnull FileNode file);
 }

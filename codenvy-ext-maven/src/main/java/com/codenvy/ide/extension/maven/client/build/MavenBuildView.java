@@ -13,7 +13,8 @@ package com.codenvy.ide.extension.maven.client.build;
 import com.codenvy.ide.api.mvp.View;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 /**
  * The view of {@link MavenBuildPresenter}.
@@ -39,7 +40,7 @@ public interface MavenBuildView extends View<MavenBuildView.ActionDelegate> {
     }
 
     /** @return entered buildCommand */
-    @NotNull
+    @Nonnull
     String getBuildCommand();
 
     /**
@@ -48,7 +49,7 @@ public interface MavenBuildView extends View<MavenBuildView.ActionDelegate> {
      * @param message
      *         text what need to insert
      */
-    void setBuildCommand(@NotNull String message);
+    void setBuildCommand(@Nonnull String message);
 
 
     /** Close dialog. */

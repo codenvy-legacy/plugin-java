@@ -18,7 +18,7 @@ import com.codenvy.ide.ext.java.jdi.shared.Variable;
 import com.codenvy.ide.ext.java.jdi.shared.Location;
 import com.google.gwt.user.client.ui.ToggleButton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -62,7 +62,7 @@ public interface DebuggerView extends View<DebuggerView.ActionDelegate> {
          * @param variable
          *         variable that is selected
          */
-        void onSelectedVariableElement(@NotNull Variable variable);
+        void onSelectedVariableElement(@Nonnull Variable variable);
     }
 
     /**
@@ -81,7 +81,7 @@ public interface DebuggerView extends View<DebuggerView.ActionDelegate> {
      * @param variables
      *         available variables
      */
-    void setVariables(@NotNull List<Variable> variables);
+    void setVariables(@Nonnull List<Variable> variables);
 
     /**
      * Sets breakpoints.
@@ -89,7 +89,7 @@ public interface DebuggerView extends View<DebuggerView.ActionDelegate> {
      * @param breakPoints
      *         available breakpoints
      */
-    void setBreakpoints(@NotNull Array<Breakpoint> breakPoints);
+    void setBreakpoints(@Nonnull Array<Breakpoint> breakPoints);
 
     /**
      * Sets java virtual machine name and version.
@@ -97,7 +97,7 @@ public interface DebuggerView extends View<DebuggerView.ActionDelegate> {
      * @param name
      *         virtual machine name
      */
-    void setVMName(@NotNull String name);
+    void setVMName(@Nonnull String name);
 
     /**
      * Sets whether Resume button is enabled.
@@ -188,7 +188,7 @@ public interface DebuggerView extends View<DebuggerView.ActionDelegate> {
      * @param title
      *         title of view
      */
-    void setTitle(@NotNull String title);
+    void setTitle(@Nonnull String title);
 
     /** Update contents for selected variable. */
     void updateSelectedVariable();
@@ -199,5 +199,5 @@ public interface DebuggerView extends View<DebuggerView.ActionDelegate> {
      * @param variables
      *         variable what need to add into
      */
-    void setVariablesIntoSelectedVariable(@NotNull List<Variable> variables);
+    void setVariablesIntoSelectedVariable(@Nonnull List<Variable> variables);
 }
