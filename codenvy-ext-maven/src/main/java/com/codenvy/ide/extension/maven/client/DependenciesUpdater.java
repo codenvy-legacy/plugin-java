@@ -161,6 +161,8 @@ public class DependenciesUpdater {
                 if (descriptor.getStatus() == BuildStatus.SUCCESSFUL) {
                     notification.setMessage(mavenLocalizationConstant.dependenciesSuccessfullyUpdated());
                     notification.setStatus(FINISHED);
+                    buildContext.setBuilding(false);
+                    updating = false;
                     return;
                 }
                 buildController.showRunningBuild(descriptor, "[INFO] Update Dependencies started...");
@@ -206,10 +208,7 @@ public class DependenciesUpdater {
                                                Pair<ProjectDescriptor, Boolean> pair = projects.poll();
                                                updateDependencies(pair.first, pair.second);
                                            }
-                                           notification.setMessage(exception.getMessage());
-                                           notification.setType(ERROR);
-                                           notification.setStatus(FINISHED);
-                                           buildContext.setBuilding(false);
+                                          updateFinishedWithError(exception, notification);
                                        }
                                    });
             }
@@ -217,7 +216,16 @@ public class DependenciesUpdater {
             @Override
             protected void onFailure(Throwable exception) {
                 Log.warn(MavenExtension.class, "failed to launch build process and get build task descriptor for " + project);
+                updating = false;
+                updateFinishedWithError(exception, notification);
             }
         });
+    }
+
+    private void updateFinishedWithError(Throwable exception, Notification notification) {
+        buildContext.setBuilding(false);
+        notification.setMessage(exception.getMessage());
+        notification.setType(ERROR);
+        notification.setStatus(FINISHED);
     }
 }
