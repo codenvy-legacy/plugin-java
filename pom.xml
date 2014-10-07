@@ -34,6 +34,7 @@
         <module>codenvy-ext-java</module>
         <module>codenvy-ext-java-codeassistant</module>
         <module>codenvy-ext-debugger-java</module>
+        <module>java-jseditor</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:codenvy/plugin-java.git</connection>
