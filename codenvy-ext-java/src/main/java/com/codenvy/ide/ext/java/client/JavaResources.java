@@ -218,4 +218,7 @@ public interface JavaResources extends ClientBundle {
 
     @Source("svg/update-dependencies.svg")
     SVGResource updateDependencies();
+
+    @Source("svg/category/java.svg")
+    SVGResource javaCategoryIcon();
 }
