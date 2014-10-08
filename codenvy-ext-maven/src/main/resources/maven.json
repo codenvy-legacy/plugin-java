@@ -8,7 +8,7 @@
             "location": "https://github.com/codenvy-templates/web-jsp-java-basic.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -30,7 +30,7 @@
             "location": "https://github.com/codenvy-templates/web-spring-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -52,7 +52,7 @@
             "location": "https://github.com/codenvy-templates/desktop-jar-java.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -73,7 +73,7 @@
             "location": "https://github.com/codenvy-templates/desktop-console-java.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -95,7 +95,7 @@
             "location": "https://github.com/codenvy-templates/desktop-swing-java-basic.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "gui",
@@ -117,7 +117,7 @@
             "location": "https://github.com/codenvy-templates/web-gwt-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -139,7 +139,7 @@
             "location": "https://github.com/codenvy-templates/web-play1-java-simple",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -161,7 +161,7 @@
             "location": "https://github.com/codenvy-templates/web-play2-java-simple",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -183,7 +183,7 @@
             "location": "https://github.com/codenvy-templates/web-grails-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -205,7 +205,7 @@
             "location": "https://github.com/codenvy-templates/web-jsf-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -227,7 +227,7 @@
             "location": "https://github.com/codenvy-templates/web-lift-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -249,7 +249,7 @@
             "location": "https://github.com/codenvy-templates/web-struts-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -271,7 +271,7 @@
             "location": "https://github.com/codenvy-templates/web-vaadin-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -293,7 +293,7 @@
             "location": "https://github.com/codenvy-templates/mobile-android-java-basic.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -315,7 +315,7 @@
             "location": "https://github.com/codenvy-templates/web-tapestry-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -337,7 +337,7 @@
             "location": "https://github.com/codenvy-templates/web-wicket-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -359,7 +359,7 @@
             "location": "https://github.com/codenvy-templates/web-groovy-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -381,7 +381,7 @@
             "location": "https://github.com/codenvy-templates/desktop-clojure-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -403,7 +403,7 @@
             "location": "https://github.com/codenvy-templates/desktop-jruby-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -425,7 +425,7 @@
             "location": "https://github.com/codenvy-templates/web-jruby-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -447,7 +447,7 @@
             "location": "https://github.com/codenvy-templates/web-jython-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -469,7 +469,7 @@
             "location": "https://github.com/codenvy-templates/desktop-jython-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -491,7 +491,7 @@
             "location": "https://github.com/codenvy-templates/web-shale-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -513,7 +513,7 @@
             "location": "https://github.com/codenvy-templates/desktop-rhino-java-simple",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -535,7 +535,7 @@
             "location": "https://github.com/codenvy-templates/desktop-kotlin-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -557,7 +557,7 @@
             "location": "https://github.com/codenvy-templates/web-velocity-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -579,7 +579,7 @@
             "location": "https://github.com/codenvy-templates/web-thymeleaf-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -601,7 +601,7 @@
             "location": "https://github.com/codenvy-templates/desktop-mongodb-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -623,7 +623,7 @@
             "location": "https://github.com/codenvy-templates/desktop-mysql-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -645,7 +645,7 @@
             "location": "https://github.com/codenvy-templates/desktop-postgresql-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -667,7 +667,7 @@
             "location": "https://github.com/codenvy-templates/desktop-cassandra-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -689,7 +689,7 @@
             "location": "https://github.com/codenvy-templates/desktop-neo4j-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -711,7 +711,7 @@
             "location": "https://github.com/codenvy-templates/desktop-derby-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -733,7 +733,7 @@
             "location": "https://github.com/codenvy-templates/desktop-hsqldb-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -755,7 +755,7 @@
             "location": "https://github.com/codenvy-templates/desktop-h2-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -777,7 +777,7 @@
             "location": "https://github.com/codenvy-templates/desktop-couchbase-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -799,7 +799,7 @@
             "location": "https://github.com/codenvy-templates/desktop-riak-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -821,7 +821,7 @@
             "location": "https://github.com/codenvy-templates/desktop-nuodb-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
@@ -843,7 +843,7 @@
             "location": "https://github.com/codenvy-templates/desktop-scala-java-simple.git",
             "parameters": {
                 "branch": "3.1.0",
-                "cleanVcs": "true"
+                "keepVcs": "false"
             }
         },
         "defaultRunnerEnvironment": "default",
