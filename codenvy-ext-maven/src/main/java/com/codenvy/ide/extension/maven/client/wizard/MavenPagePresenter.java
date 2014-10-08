@@ -99,6 +99,8 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         ProjectDescriptor projectUpdate = wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE);
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
         attributes = project.getAttributes();
+        attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
+        attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
         project.setBuilder("maven");
         if (projectUpdate != null) {
             List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
