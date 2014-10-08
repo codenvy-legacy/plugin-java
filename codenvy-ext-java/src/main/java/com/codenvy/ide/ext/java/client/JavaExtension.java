@@ -88,5 +88,7 @@ public class JavaExtension {
         iconRegistry.registerIcon(new Icon("maven/png.file.small.icon", resources.imageIcon()));
         // icons for file names
         iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
+        // icon for category in Wizard
+        iconRegistry.registerIcon(new Icon("java.samples.category.icon", resources.javaCategoryIcon()));
     }
 }
