@@ -57,7 +57,8 @@ public class NewPackageAction extends DefaultNewResourceAction {
                             ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             EventBus eventBus,
-                            AnalyticsEventLogger eventLogger) {
+                            AnalyticsEventLogger eventLogger,
+                            DtoUnmarshallerFactory unmarshallerFactory) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
               null,
@@ -67,7 +68,8 @@ public class NewPackageAction extends DefaultNewResourceAction {
               editorAgent,
               projectServiceClient,
               eventBus,
-              eventLogger);
+              eventLogger,
+              unmarshallerFactory);
         this.localizationConstant = localizationConstant;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
