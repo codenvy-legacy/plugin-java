@@ -18,8 +18,8 @@ import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.VirtualFileEntry;
-import com.codenvy.api.project.shared.ValueProvider;
-import com.codenvy.api.project.shared.ValueStorageException;
+import com.codenvy.api.project.server.ValueProvider;
+import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.maven.tools.MavenUtils;
 

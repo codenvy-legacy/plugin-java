@@ -10,11 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client.wizard;
 
+import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.api.wizard.Wizard;
 import com.codenvy.ide.collections.Jso;
+import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
@@ -41,13 +43,15 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     protected EventBus                  eventBus;
     private   MavenPomServiceClient     pomReaderClient;
     private   Map<String, List<String>> attributes;
+    private   DtoFactory                dtoFactory;
 
     @Inject
-    public MavenPagePresenter(MavenPageView view, EventBus eventBus, MavenPomServiceClient pomReaderClient) {
+    public MavenPagePresenter(MavenPageView view, EventBus eventBus, MavenPomServiceClient pomReaderClient, DtoFactory dtoFactory) {
         super("Maven project settings", null);
         this.view = view;
         this.eventBus = eventBus;
         this.pomReaderClient = pomReaderClient;
+        this.dtoFactory = dtoFactory;
         view.setDelegate(this);
     }
 
@@ -98,38 +102,44 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
         ProjectDescriptor projectUpdate = wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE);
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
-        attributes = project.getAttributes();
-        attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
-        attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
-        project.setBuilder("maven");
-        if (projectUpdate != null) {
-            List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
-            if (artifactIdAttr != null) {
-                view.setArtifactId(artifactIdAttr.get(0));
-                view.setGroupId(attributes.get(MavenAttributes.GROUP_ID).get(0));
-                view.setVersion(attributes.get(MavenAttributes.VERSION).get(0));
-                view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
-                scheduleTextChanges();
-            } else {
-                pomReaderClient.readPomAttributes(project.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
-                    @Override
-                    protected void onSuccess(String result) {
-                        Jso jso = Jso.deserialize(result);
-                        view.setArtifactId(jso.getStringField(MavenAttributes.ARTIFACT_ID));
-                        view.setGroupId(jso.getStringField(MavenAttributes.GROUP_ID));
-                        view.setVersion(jso.getStringField(MavenAttributes.VERSION));
-                        view.setPackaging(jso.getStringField(MavenAttributes.PACKAGING));
-                        scheduleTextChanges();
-                    }
+        if (project != null) {
+            attributes = project.getAttributes();
+            attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
+            attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+            BuildersDescriptor builders = project.getBuilders();
+            if (builders == null) {
+                builders = dtoFactory.createDto(BuildersDescriptor.class);
+                project.setBuilders(builders);
+            }
+            builders.setDefault("maven");
+            if (projectUpdate != null) {
+                List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
+                if (artifactIdAttr != null) {
+                    view.setArtifactId(artifactIdAttr.get(0));
+                    view.setGroupId(attributes.get(MavenAttributes.GROUP_ID).get(0));
+                    view.setVersion(attributes.get(MavenAttributes.VERSION).get(0));
+                    view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
+                    scheduleTextChanges();
+                } else {
+                    pomReaderClient.readPomAttributes(project.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+                        @Override
+                        protected void onSuccess(String result) {
+                            Jso jso = Jso.deserialize(result);
+                            view.setArtifactId(jso.getStringField(MavenAttributes.ARTIFACT_ID));
+                            view.setGroupId(jso.getStringField(MavenAttributes.GROUP_ID));
+                            view.setVersion(jso.getStringField(MavenAttributes.VERSION));
+                            view.setPackaging(jso.getStringField(MavenAttributes.PACKAGING));
+                            scheduleTextChanges();
+                        }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        Log.error(MavenPagePresenter.class, exception);
-                    }
-                });
+                        @Override
+                        protected void onFailure(Throwable exception) {
+                            Log.error(MavenPagePresenter.class, exception);
+                        }
+                    });
+                }
             }
         }
-
     }
 
     private void scheduleTextChanges() {
@@ -152,14 +162,6 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     @Override
     public void setPackaging(String packaging) {
-        ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
-        attributes.put(MavenAttributes.PACKAGING, Arrays.asList(packaging));
-        if ("war".equals(packaging)) {
-            project.setRunner("JavaWeb");
-        }
-        if ("jar".equals(packaging)) {
-            project.setRunner("JavaStandalone");
-        }
         if ("pom".equals(packaging)) {
             attributes.remove(MavenAttributes.SOURCE_FOLDER);
             attributes.remove(MavenAttributes.TEST_SOURCE_FOLDER);

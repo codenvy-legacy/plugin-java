@@ -12,8 +12,8 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 
 import com.codenvy.api.project.server.ProjectTypeDescriptionExtension;
 import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
-import com.codenvy.api.project.shared.AttributeDescription;
-import com.codenvy.api.project.shared.ProjectType;
+import com.codenvy.api.project.server.AttributeDescription;
+import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
@@ -44,10 +44,8 @@ public class MavenProjectTypeDescriptionsExtension implements ProjectTypeDescrip
     public List<AttributeDescription> getAttributeDescriptions() {
         final List<AttributeDescription> list = new ArrayList<>();
         list.add(new AttributeDescription(Constants.LANGUAGE));
-        list.add(new AttributeDescription(Constants.BUILDER_NAME));
         list.add(new AttributeDescription(Constants.LANGUAGE_VERSION));
         list.add(new AttributeDescription(Constants.FRAMEWORK));
-        list.add(new AttributeDescription(Constants.RUNNER_NAME));
 
         list.add(new AttributeDescription(MavenAttributes.GROUP_ID));
         list.add(new AttributeDescription(MavenAttributes.ARTIFACT_ID));

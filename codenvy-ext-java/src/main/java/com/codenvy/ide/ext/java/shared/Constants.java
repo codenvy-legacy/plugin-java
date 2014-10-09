@@ -23,8 +23,6 @@ public interface Constants {
     final String LANGUAGE_VERSION             = "language.version";
     final String FRAMEWORK                    = "framework";
     final String FRAMEWORK_VERSION            = "framework.version";
-    final String BUILDER_NAME                 = "builder.name";
-    final String BUILDER_SOURCE_FOLDERS       = "builder.${builder}.source_folders";
     final String BUILDER_ANT_SOURCE_FOLDERS   = "builder.ant.source_folders";
-    final String RUNNER_NAME                  = "runner.name";
+    final String BUILDER_MAVEN_SOURCE_FOLDERS = "builder.maven.source_folders";
 }

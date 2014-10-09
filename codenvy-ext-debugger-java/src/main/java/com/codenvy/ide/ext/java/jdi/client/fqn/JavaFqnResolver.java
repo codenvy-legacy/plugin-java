@@ -10,11 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.fqn;
 
+import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,19 +29,50 @@ public class JavaFqnResolver implements FqnResolver {
     @Override
     public String resolveFqn(@NotNull final FileNode file) {
         final ProjectNode project = file.getProject();
-        final String builderName = project.getData().getBuilder();
-        final List<String> sourceFolders = project.getAttributeValues("builder." + builderName + ".source_folders");
-
-        String fqn = "";
-        for (String sourceFolder : sourceFolders) {
-            if (file.getPath().startsWith(project.getPath() + "/" + sourceFolder)) {
-                fqn = file.getPath().substring((project.getPath() + "/" + sourceFolder + "/").length());
-                break;
+        final BuildersDescriptor builders = project.getData().getBuilders();
+        final List<String> sourceFolders = new ArrayList<>();
+        if (builders != null) {
+            final String builderName = builders.getDefault();
+            if (builderName != null) {
+                List<String> list = project.getAttributeValues(builderName + ".source.folder");
+                if (list != null) {
+                    sourceFolders.addAll(list);
+                }
+                list = project.getAttributeValues(builderName + ".test.source.folder");
+                if (list != null) {
+                    sourceFolders.addAll(list);
+                }
             }
         }
 
-        fqn = fqn.replaceAll("/", ".");
-        fqn = fqn.substring(0, fqn.lastIndexOf('.'));
-        return fqn;
+        final String projectPath = project.getPath();
+        String path = file.getPath();
+        int i = 1;
+        int j = path.lastIndexOf('.');
+        if (j < 0) {
+            j = path.length();
+        }
+        for (String sourceFolder : sourceFolders) {
+            boolean projectPathEndsWithSeparator = projectPath.charAt(projectPath.length() - 1) == '/';
+            boolean sourcePathStartsWithSeparator = sourceFolder.charAt(0) == '/';
+            boolean sourcePathEndsWithSeparator = sourceFolder.charAt(sourceFolder.length() - 1) == '/';
+            String base;
+            if (projectPathEndsWithSeparator && sourcePathStartsWithSeparator) {
+                base = project + sourceFolder.substring(1);
+            } else if (!(projectPathEndsWithSeparator || sourcePathStartsWithSeparator)) {
+                base = projectPath + '/' + sourceFolder;
+            } else {
+                base = project + sourceFolder;
+            }
+            if (!sourcePathEndsWithSeparator) {
+                base = base + '/';
+            }
+
+            if (path.startsWith(base)) {
+                i = base.length();
+                return path.substring(i, j).replaceAll("/", ".");
+            }
+        }
+        return path.substring(i, j).replaceAll("/", ".");
     }
 }

@@ -11,6 +11,7 @@
 package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
@@ -60,8 +61,8 @@ public class UpdateDependencyAction extends Action {
         }
         CurrentProject activeProject = appContext.getCurrentProject();
         if (activeProject != null) {
-            final String builder = activeProject.getAttributeValue(Constants.BUILDER_NAME);
-            if ("maven".equals(builder)) {
+            BuildersDescriptor builders = activeProject.getProjectDescription().getBuilders();
+            if (builders != null && "maven".equals(builders.getDefault())) {
                 e.getPresentation().setEnabledAndVisible(true);
             } else {
                 e.getPresentation().setEnabledAndVisible(false);

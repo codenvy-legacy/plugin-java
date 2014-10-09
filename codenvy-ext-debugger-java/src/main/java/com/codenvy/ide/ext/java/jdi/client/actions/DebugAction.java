@@ -71,7 +71,7 @@ public class DebugAction extends Action {
     public void update(ActionEvent e) {
         CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject != null) {
-            final String projectTypeId = currentProject.getProjectDescription().getProjectTypeId();
+            final String projectTypeId = currentProject.getProjectDescription().getType();
             String packaging = currentProject.getAttributeValue(MavenAttributes.PACKAGING);
             e.getPresentation().setVisible("war".equals(packaging)||
                                            projectTypeId.equals(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID));

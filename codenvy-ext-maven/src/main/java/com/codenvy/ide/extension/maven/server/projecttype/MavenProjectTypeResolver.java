@@ -14,13 +14,14 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
+import com.codenvy.api.project.server.Builders;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
-import com.codenvy.api.project.shared.ProjectDescription;
-import com.codenvy.api.project.shared.ProjectType;
+import com.codenvy.api.project.server.ProjectDescription;
+import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.maven.tools.MavenUtils;
 import com.google.inject.Inject;
@@ -67,7 +68,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
             if (moduleEntry != null && moduleEntry.getVirtualFile().getChild("pom.xml") != null) {
                 Project project = projectManager.getProject(ws, baseFolder.getPath() + "/" + module);
                 if (project == null) {
-                    project = new Project(ws, (FolderEntry)moduleEntry, projectManager);
+                    project = new Project((FolderEntry)moduleEntry, projectManager);
                 }
                 ProjectDescription description = project.getDescription();
                 fillMavenProject(projectType, moduleEntry, project, description);
@@ -76,23 +77,18 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
         }
     }
 
-    private void fillMavenProject(ProjectType projectType, VirtualFileEntry moduleEntry, Project project,
-                                  ProjectDescription description)
+    private void fillMavenProject(ProjectType projectType, VirtualFileEntry moduleEntry, Project project, ProjectDescription description)
             throws IOException, ForbiddenException, ServerException, ConflictException {
         description.setProjectType(projectType);
-        description.setBuilder("maven");
+        Builders builders = description.getBuilders();
+        if (builders == null) {
+            description.setBuilders(builders = new Builders());
+        }
+        builders.setDefault("maven");
         Model model = MavenUtils.readModel(moduleEntry.getVirtualFile().getChild("pom.xml"));
         String packaging = model.getPackaging();
-        switch (packaging) {
-            case "pom":
-                createProjectsOnModules(model, project.getBaseFolder(), project.getWorkspace(), projectType);
-                break;
-            case "war":
-                description.setRunner("java-webapp-default");
-                break;
-            case "jar":
-                description.setRunner("java-standalone-default");
-                break;
+        if (packaging.equals("pom")) {
+            createProjectsOnModules(model, project.getBaseFolder(), project.getWorkspace(), projectType);
         }
     }
 }

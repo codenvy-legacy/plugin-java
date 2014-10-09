@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.server.projecttypes;
+package com.codenvy.ide.extension.maven.server.projecttype;
 
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
@@ -16,23 +16,26 @@ import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueProvider;
+import com.codenvy.ide.maven.tools.MavenUtils;
+
+import org.apache.maven.model.Model;
 
 import javax.inject.Singleton;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * {@link com.codenvy.api.project.server.ValueProviderFactory} implementation for 'builder.ant.source_folders' attribute.
+ * {@link ValueProviderFactory} implementation for 'builder.maven.source_folders' attribute.
  *
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class AntSourceFoldersValueProviderFactory implements ValueProviderFactory {
+public class MavenSourceFoldersValueProviderFactory implements ValueProviderFactory {
 
     @Override
     public String getName() {
-        return "builder.ant.source_folders";
+        return "builder.maven.source_folders";
     }
 
     @Override
@@ -41,13 +44,12 @@ public class AntSourceFoldersValueProviderFactory implements ValueProviderFactor
             @Override
             public List<String> getValues() {
                 final List<String> list = new LinkedList<>();
-                FileEntry buildDescriptor = null;
                 try {
-                    buildDescriptor = (FileEntry)project.getBaseFolder().getChild("build.xml");
-                } catch (ForbiddenException | ServerException ignored) {
-                }
-                if (buildDescriptor != null) {
-                    list.addAll(getAntSourceFolders(buildDescriptor));
+                    final FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
+                    if (pomFile != null) {
+                        list.addAll(getSourceFolders(pomFile));
+                    }
+                } catch (ForbiddenException | ServerException | IOException ignored) {
                 }
                 return list;
             }
@@ -59,11 +61,21 @@ public class AntSourceFoldersValueProviderFactory implements ValueProviderFactor
         };
     }
 
-    private List<String> getAntSourceFolders(FileEntry buildXml) {
-        final String defaultSourceDirectoryPath = "src";
-        List<String> list = new ArrayList<>(1);
-        list.add(defaultSourceDirectoryPath);
-        return list;
-    }
+    private List<String> getSourceFolders(FileEntry pomXml) throws IOException, ServerException {
 
+        final Model model = MavenUtils.readModel(pomXml.getInputStream());
+        return MavenUtils.getSourceDirectories(model);
+
+
+//        final String defaultSourceDirectoryPath = "src/main/java";
+//        final String defaultTestSourceDirectoryPath = "src/test/java";
+//
+//        final Model model = MavenUtils.readModel(pomXml.getInputStream());
+//        final List<String> list = MavenUtils.getSourceDirectories(model);
+//        if (list.isEmpty()) {
+//            list.add(defaultSourceDirectoryPath);
+//            list.add(defaultTestSourceDirectoryPath);
+//        }
+//        return list;
+    }
 }

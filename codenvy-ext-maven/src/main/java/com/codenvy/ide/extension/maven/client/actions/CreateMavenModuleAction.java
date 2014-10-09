@@ -50,7 +50,7 @@ public class CreateMavenModuleAction extends Action {
     public void update(ActionEvent e) {
         CurrentProject currentProject = context.getCurrentProject();
         if (currentProject != null &&
-            Constants.MAVEN_ID.equals(currentProject.getProjectDescription().getProjectTypeId())) {
+            Constants.MAVEN_ID.equals(currentProject.getProjectDescription().getType())) {
             e.getPresentation().setVisible(true);
             e.getPresentation().setEnabled("pom".equals(currentProject.getAttributeValue(MavenAttributes.PACKAGING)));
         } else {

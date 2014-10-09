@@ -12,6 +12,7 @@
 package com.codenvy.ide.extension.maven.client.module;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.CurrentProject;
@@ -80,8 +81,9 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
     @Override
     public void create() {
         NewProject newProject = dtoFactory.createDto(NewProject.class);
-        newProject.setBuilder("maven");
-        newProject.setProjectTypeId(Constants.MAVEN_ID);
+        BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class);
+        builders.setDefault("maven");
+        newProject.setType(Constants.MAVEN_ID);
         newProject.setVisibility(parentProject.getProjectDescription().getVisibility());
         Map<String, List<String>> attributes = new HashMap<>();
         attributes.put(MavenAttributes.ARTIFACT_ID, Arrays.asList(artifactId));
