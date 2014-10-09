@@ -41,7 +41,8 @@ import com.codenvy.ide.texteditor.TextEditorViewImpl;
 import com.codenvy.ide.util.executor.BasicIncrementalScheduler;
 import com.codenvy.ide.util.executor.UserActivityManager;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 /**
  * Java specific configuration of the editor
@@ -162,7 +163,7 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
     }
 
     @Override
-    public ContentFormatter getContentFormatter(@NotNull TextEditorPartView view) {
+    public ContentFormatter getContentFormatter(@Nonnull TextEditorPartView view) {
         return contentFormatter;
     }
 }

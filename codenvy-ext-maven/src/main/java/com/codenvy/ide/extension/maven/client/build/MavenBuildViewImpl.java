@@ -27,7 +27,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 /**
  * The implementation of {@link MavenBuildView}.
@@ -119,7 +120,7 @@ public class MavenBuildViewImpl extends Window implements MavenBuildView {
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getBuildCommand() {
         return buildCommand.getText();
@@ -127,7 +128,7 @@ public class MavenBuildViewImpl extends Window implements MavenBuildView {
 
     /** {@inheritDoc} */
     @Override
-    public void setBuildCommand(@NotNull String buildCommand) {
+    public void setBuildCommand(@Nonnull String buildCommand) {
         this.buildCommand.setText(buildCommand);
     }
 

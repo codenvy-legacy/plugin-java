@@ -68,7 +68,7 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -259,7 +259,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         container.setWidget(view);
     }
 
-    private void onEventListReceived(@NotNull DebuggerEventList eventList) {
+    private void onEventListReceived(@Nonnull DebuggerEventList eventList) {
         if (eventList.getEvents().size() == 0) {
             return;
         }
@@ -318,13 +318,13 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
      *         location of class
      * @return file path
      */
-    @NotNull
-    private String resolveFilePathByLocation(@NotNull Location location) {
+    @Nonnull
+    private String resolveFilePathByLocation(@Nonnull Location location) {
         final String sourcePath = "src/main/java";
         return project.getPath() + "/" + sourcePath + "/" + location.getClassName().replace(".", "/") + ".java";
     }
 
-    private void openFile(@NotNull Location location, final AsyncCallback<ItemReference> callback) {
+    private void openFile(@Nonnull Location location, final AsyncCallback<ItemReference> callback) {
         projectServiceClient.search(new QueryExpression().setPath(resolveFilePathByLocation(location)),
                                     new AsyncRequestCallback<Array<ItemReference>>(
                                             dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class)) {
@@ -531,7 +531,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
-    public void onSelectedVariableElement(@NotNull Variable variable) {
+    public void onSelectedVariableElement(@Nonnull Variable variable) {
         this.selectedVariable = variable;
         updateChangeValueButtonEnableState();
     }
@@ -549,7 +549,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         gutterManager.unmarkCurrentBreakpoint();
     }
 
-    private void showDialog(@NotNull DebuggerInfo debuggerInfo) {
+    private void showDialog(@Nonnull DebuggerInfo debuggerInfo) {
         view.setVMName(debuggerInfo.getVmName() + " " + debuggerInfo.getVmVersion());
         selectedVariable = null;
         updateChangeValueButtonEnableState();
@@ -594,7 +594,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
      * @param project
      *         project to debug
      */
-    public void attachDebugger(@NotNull final ApplicationProcessDescriptor appDescriptor, ProjectDescriptor project) {
+    public void attachDebugger(@Nonnull final ApplicationProcessDescriptor appDescriptor, ProjectDescriptor project) {
         this.project = project;
         this.appDescriptor = appDescriptor;
         service.connect(appDescriptor.getDebugHost(), appDescriptor.getDebugPort(),
@@ -689,7 +689,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
-    public void addBreakpoint(@NotNull final FileNode file, final int lineNumber, final AsyncCallback<Breakpoint> callback) {
+    public void addBreakpoint(@Nonnull final FileNode file, final int lineNumber, final AsyncCallback<Breakpoint> callback) {
         if (debuggerInfo != null) {
             Location location = dtoFactory.createDto(Location.class);
             location.setLineNumber(lineNumber + 1);
@@ -724,7 +724,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
-    public void deleteBreakpoint(@NotNull FileNode file, int lineNumber, final AsyncCallback<Void> callback) {
+    public void deleteBreakpoint(@Nonnull FileNode file, int lineNumber, final AsyncCallback<Void> callback) {
         if (debuggerInfo != null) {
             Location location = dtoFactory.createDto(Location.class);
             location.setLineNumber(lineNumber + 1);

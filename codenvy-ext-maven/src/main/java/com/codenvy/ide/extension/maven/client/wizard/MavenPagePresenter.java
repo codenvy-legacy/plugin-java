@@ -28,7 +28,7 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +83,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     }
 
     @Override
-    public void setUpdateDelegate(@NotNull Wizard.UpdateDelegate delegate) {
+    public void setUpdateDelegate(@Nonnull Wizard.UpdateDelegate delegate) {
         super.setUpdateDelegate(delegate);
     }
 

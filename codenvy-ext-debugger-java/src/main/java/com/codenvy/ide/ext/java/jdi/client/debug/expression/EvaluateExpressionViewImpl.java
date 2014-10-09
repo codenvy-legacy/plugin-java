@@ -28,7 +28,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 /**
  * The implementation of {@link EvaluateExpressionView}.
@@ -83,7 +84,7 @@ public class EvaluateExpressionViewImpl extends DialogBox implements EvaluateExp
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getExpression() {
         return expression.getText();
@@ -91,13 +92,13 @@ public class EvaluateExpressionViewImpl extends DialogBox implements EvaluateExp
 
     /** {@inheritDoc} */
     @Override
-    public void setExpression(@NotNull String expression) {
+    public void setExpression(@Nonnull String expression) {
         this.expression.setText(expression);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setResult(@NotNull String value) {
+    public void setResult(@Nonnull String value) {
         this.result.setText(value);
     }
 

@@ -15,8 +15,8 @@ import com.codenvy.ide.collections.StringMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 /** @author Evgen Vidolob */
 @Singleton
@@ -29,16 +29,16 @@ public class FqnResolverFactory {
         this.resolvers = Collections.createStringMap();
     }
 
-    public void addResolver(@NotNull String mimeType, @NotNull FqnResolver resolver) {
+    public void addResolver(@Nonnull String mimeType, @Nonnull FqnResolver resolver) {
         resolvers.put(mimeType, resolver);
     }
 
     @Nullable
-    public FqnResolver getResolver(@NotNull String mimeType) {
+    public FqnResolver getResolver(@Nonnull String mimeType) {
         return resolvers.get(mimeType);
     }
 
-    public boolean isResolverExist(@NotNull String mimeType) {
+    public boolean isResolverExist(@Nonnull String mimeType) {
         return resolvers.containsKey(mimeType);
     }
 }

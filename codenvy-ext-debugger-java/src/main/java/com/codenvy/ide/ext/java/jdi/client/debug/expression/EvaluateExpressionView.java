@@ -12,7 +12,8 @@ package com.codenvy.ide.ext.java.jdi.client.debug.expression;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 /**
  * The view of {@link EvaluateExpressionPresenter}.
@@ -37,7 +38,7 @@ public interface EvaluateExpressionView extends View<EvaluateExpressionView.Acti
      *
      * @return {@link String}
      */
-    @NotNull
+    @Nonnull
     String getExpression();
 
     /**
@@ -45,7 +46,7 @@ public interface EvaluateExpressionView extends View<EvaluateExpressionView.Acti
      *
      * @param expression
      */
-    void setExpression(@NotNull String expression);
+    void setExpression(@Nonnull String expression);
 
     /**
      * Set result field value.
@@ -53,7 +54,7 @@ public interface EvaluateExpressionView extends View<EvaluateExpressionView.Acti
      * @param value
      *         result field value
      */
-    void setResult(@NotNull String value);
+    void setResult(@Nonnull String value);
 
     /**
      * Change the enable state of the evaluate button.

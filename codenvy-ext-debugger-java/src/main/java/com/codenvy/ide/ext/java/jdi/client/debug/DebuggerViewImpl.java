@@ -49,7 +49,7 @@ import com.google.inject.Singleton;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -249,7 +249,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setVariables(@NotNull List<Variable> variables) {
+    public void setVariables(@Nonnull List<Variable> variables) {
         Variable root = this.variables.getModel().getRoot();
         if (root == null) {
             root = dtoFactory.createDto(Variable.class);
@@ -261,13 +261,13 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setBreakpoints(@NotNull Array<Breakpoint> breakpoints) {
+    public void setBreakpoints(@Nonnull Array<Breakpoint> breakpoints) {
         this.breakpoints.render(breakpoints);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setVMName(@NotNull String name) {
+    public void setVMName(@Nonnull String name) {
         vmName.setText(name);
     }
 
@@ -359,7 +359,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setVariablesIntoSelectedVariable(@NotNull List<Variable> variables) {
+    public void setVariablesIntoSelectedVariable(@Nonnull List<Variable> variables) {
         Variable rootVariable = selectedVariable.getData();
         rootVariable.setVariables(variables);
     }

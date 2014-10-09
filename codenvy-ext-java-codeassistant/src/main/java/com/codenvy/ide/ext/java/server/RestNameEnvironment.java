@@ -45,9 +45,9 @@ import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -326,7 +326,7 @@ public class RestNameEnvironment {
     }
 
     @Nullable
-    private Link findLink(@NotNull String rel, List<Link> links) {
+    private Link findLink(@Nonnull String rel, List<Link> links) {
         for (Link link : links) {
             if (link.getRel().equals(rel)) {
                 return link;
@@ -335,8 +335,8 @@ public class RestNameEnvironment {
         return null;
     }
 
-    @NotNull
-    private BuildTaskDescriptor waitTaskFinish(@NotNull BuildTaskDescriptor buildDescription) throws Exception {
+    @Nonnull
+    private BuildTaskDescriptor waitTaskFinish(@Nonnull BuildTaskDescriptor buildDescription) throws Exception {
         BuildTaskDescriptor request = buildDescription;
         final int sleepTime = 500;
 
@@ -356,8 +356,8 @@ public class RestNameEnvironment {
     }
 
 
-    @NotNull
-    private BuildTaskDescriptor getDependencies(@NotNull String url, @NotNull String projectName, @NotNull String analyzeType)
+    @Nonnull
+    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType)
             throws Exception {
         Pair<String, String> projectParam = Pair.of("project", projectName);
         Pair<String, String> typeParam = Pair.of("type", analyzeType);

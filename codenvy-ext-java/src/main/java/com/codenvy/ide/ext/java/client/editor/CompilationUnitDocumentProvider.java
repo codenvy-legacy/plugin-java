@@ -42,8 +42,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -94,7 +94,7 @@ public class CompilationUnitDocumentProvider extends ResourceDocumentProvider {
 
     /** {@inheritDoc} */
     @Override
-    public void getDocument(@Nullable EditorInput input, @NotNull final DocumentCallback callback) {
+    public void getDocument(@Nullable EditorInput input, @Nonnull final DocumentCallback callback) {
         super.getDocument(input, new DocumentCallback() {
             @Override
             public void onDocument(Document document) {
@@ -109,7 +109,7 @@ public class CompilationUnitDocumentProvider extends ResourceDocumentProvider {
 
     /** {@inheritDoc} */
     @Override
-    public void documentClosed(@NotNull Document document) {
+    public void documentClosed(@Nonnull Document document) {
         super.documentClosed(document);
         modelStringMap.remove(document);
     }
