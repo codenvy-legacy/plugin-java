@@ -27,7 +27,7 @@ import com.google.inject.name.Named;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 
 /** @author Evgen Vidolob */
-@Extension(title = "Java syntax highlighting and code autocompletion.", version = "3.0.0")
+@Extension(title = "Java", version = "3.0.0")
 public class JavaExtension {
 
     @Inject

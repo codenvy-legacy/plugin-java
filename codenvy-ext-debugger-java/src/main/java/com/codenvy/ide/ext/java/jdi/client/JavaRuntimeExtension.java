@@ -36,7 +36,7 @@ import static com.codenvy.ide.api.constraints.Anchor.AFTER;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-@Extension(title = "Java debugger", version = "3.0.0")
+@Extension(title = "Java Debugger", version = "3.0.0")
 public class JavaRuntimeExtension {
     /** Channel for the messages containing debugger events. */
     public static final String EVENTS_CHANNEL     = "debugger:events:";
