@@ -46,7 +46,7 @@ public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
     }
 
     public void cleanup() {
-        this.directoryCache = null;
+        this.directoryCache = new SimpleLookupTable(5);
         packagesCache = null;
     }
 
