@@ -13,9 +13,11 @@ package com.codenvy.runner.webapps;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.rest.shared.dto.Link;
 import com.codenvy.api.core.util.CustomPortService;
+import com.codenvy.api.project.shared.EnvironmentId;
+import com.codenvy.api.project.shared.dto.RunnerEnvironment;
+import com.codenvy.api.project.shared.dto.RunnerEnvironmentTree;
 import com.codenvy.api.runner.RunnerException;
 import com.codenvy.api.runner.dto.RunRequest;
-import com.codenvy.api.runner.dto.RunnerEnvironment;
 import com.codenvy.api.runner.internal.ApplicationProcess;
 import com.codenvy.api.runner.internal.Constants;
 import com.codenvy.api.runner.internal.DeploymentSources;
@@ -37,6 +39,8 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,7 +57,6 @@ public class DeployToApplicationServerRunner extends Runner {
     public static final String HOST_NAME           = "runner.java_webapp.host_name";
 
     private final Map<String, ApplicationServer> servers;
-    private final Map<String, RunnerEnvironment> environments;
     private final String                         hostName;
     private final CustomPortService              portService;
     private final DeploymentSourcesValidator     applicationValidator;
@@ -73,16 +76,6 @@ public class DeployToApplicationServerRunner extends Runner {
         for (ApplicationServer server : appServers) {
             this.servers.put(server.getName(), server);
         }
-        this.environments = new HashMap<>(servers.size());
-        final DtoFactory dtoFactory = DtoFactory.getInstance();
-        for (ApplicationServer server : appServers) {
-            final RunnerEnvironment runnerEnvironment = dtoFactory.createDto(RunnerEnvironment.class)
-                                                                  .withId(server.getName())
-                                                                  .withDescription(server.getDescription())
-                                                                  .withDisplayName(server.getName())
-                                                                  .withIsDefault(DEFAULT_SERVER_NAME.equals(server.getName()));
-            this.environments.put(runnerEnvironment.getId(), runnerEnvironment);
-        }
         this.applicationValidator = new JavaWebApplicationValidator();
     }
 
@@ -97,13 +90,20 @@ public class DeployToApplicationServerRunner extends Runner {
     }
 
     @Override
-    public Map<String, RunnerEnvironment> getEnvironments() {
-        final Map<String, RunnerEnvironment> copy = new HashMap<>(environments.size());
+    public RunnerEnvironmentTree getEnvironments() {
         final DtoFactory dtoFactory = DtoFactory.getInstance();
-        for (Map.Entry<String, RunnerEnvironment> entry : environments.entrySet()) {
-            copy.put(entry.getKey(), dtoFactory.clone(entry.getValue()));
+        final RunnerEnvironmentTree root = dtoFactory.createDto(RunnerEnvironmentTree.class).withDisplayName(getName());
+        final List<RunnerEnvironment> environments = new LinkedList<>();
+        for (ApplicationServer server : servers.values()) {
+            final String id = new EnvironmentId(EnvironmentId.Scope.system, getName(), server.getName()).toString();
+            final RunnerEnvironment runnerEnvironment = dtoFactory.createDto(RunnerEnvironment.class)
+                                                                  .withId(id)
+                                                                  .withDescription(server.getDescription())
+                                                                  .withDisplayName(server.getName())
+                                                                  .withDefault(DEFAULT_SERVER_NAME.equals(server.getName()));
+            environments.add(runnerEnvironment);
         }
-        return copy;
+        return root.withEnvironments(environments);
     }
 
     @Override
@@ -111,11 +111,9 @@ public class DeployToApplicationServerRunner extends Runner {
         return new RunnerConfigurationFactory() {
             @Override
             public RunnerConfiguration createRunnerConfiguration(RunRequest request) throws RunnerException {
+                final String environmentId = request.getEnvironmentId();
+                String server = environmentId == null ? DEFAULT_SERVER_NAME : EnvironmentId.parse(environmentId).getName();
                 final int httpPort = portService.acquire();
-                String server = request.getEnvironmentId();
-                if (server == null) {
-                    server = DEFAULT_SERVER_NAME;
-                }
                 final ApplicationServerRunnerConfiguration configuration =
                         new ApplicationServerRunnerConfiguration(server, request.getMemorySize(), httpPort, request);
                 configuration.getLinks().add(DtoFactory.getInstance().createDto(Link.class)
