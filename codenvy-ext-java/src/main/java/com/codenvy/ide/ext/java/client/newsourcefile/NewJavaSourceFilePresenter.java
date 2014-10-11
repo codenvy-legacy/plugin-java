@@ -12,8 +12,10 @@ package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
@@ -42,16 +44,18 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
     private ProjectServiceClient   projectServiceClient;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private EventBus               eventBus;
+    private EditorAgent editorAgent;
     private Array<JavaSourceFileType> sourceFileTypes = Collections.createArray();
 
     @Inject
     public NewJavaSourceFilePresenter(NewJavaSourceFileView view, SelectionAgent selectionAgent, ProjectServiceClient projectServiceClient,
-                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus) {
+                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus, EditorAgent editorAgent) {
         this.view = view;
         this.selectionAgent = selectionAgent;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.eventBus = eventBus;
+        this.editorAgent = editorAgent;
 
         this.view.setDelegate(this);
         sourceFileTypes.add(JavaSourceFileType.CLASS);
@@ -126,6 +130,9 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
                     @Override
                     protected void onSuccess(ItemReference result) {
                         eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
+                        FileNode file =
+                                new FileNode(null, result, eventBus, projectServiceClient, null);
+                        editorAgent.openEditor(file);
                     }
 
                     @Override

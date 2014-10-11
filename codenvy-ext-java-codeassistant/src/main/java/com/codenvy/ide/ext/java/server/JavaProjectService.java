@@ -157,6 +157,7 @@ public class JavaProjectService {
                         if (eventPath.startsWith(path)) {
                             JavaProject javaProject = cache.get(eventWorkspace + path);
                             if (javaProject != null)
+                                javaProject.getNameEnvironment().reset();
                                 javaProject.getIndexManager().indexAll(javaProject);
                             break;
                         }
