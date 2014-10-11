@@ -111,11 +111,9 @@ public class DeployToApplicationServerRunner extends Runner {
         return new RunnerConfigurationFactory() {
             @Override
             public RunnerConfiguration createRunnerConfiguration(RunRequest request) throws RunnerException {
+                final String environmentId = request.getEnvironmentId();
+                String server = environmentId == null ? DEFAULT_SERVER_NAME : EnvironmentId.parse(environmentId).getName();
                 final int httpPort = portService.acquire();
-                String server = request.getEnvironmentId();
-                if (server == null) {
-                    server = DEFAULT_SERVER_NAME;
-                }
                 final ApplicationServerRunnerConfiguration configuration =
                         new ApplicationServerRunnerConfiguration(server, request.getMemorySize(), httpPort, request);
                 configuration.getLinks().add(DtoFactory.getInstance().createDto(Link.class)
