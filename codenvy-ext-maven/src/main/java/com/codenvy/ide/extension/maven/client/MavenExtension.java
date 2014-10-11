@@ -44,7 +44,7 @@ import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-@Extension(title = "Building Maven project", version = "3.0.0")
+@Extension(title = "Maven", version = "3.0.0")
 public class MavenExtension {
 
     @Inject
