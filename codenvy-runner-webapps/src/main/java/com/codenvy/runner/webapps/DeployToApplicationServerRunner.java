@@ -53,7 +53,7 @@ import java.util.Set;
 public class DeployToApplicationServerRunner extends Runner {
     private static final Logger LOG = LoggerFactory.getLogger(DeployToApplicationServerRunner.class);
 
-    public static final String DEFAULT_SERVER_NAME = "Tomcat7";
+    public static final String DEFAULT_SERVER_NAME = "tomcat7";
     public static final String HOST_NAME           = "runner.java_webapp.host_name";
 
     private final Map<String, ApplicationServer> servers;
@@ -95,13 +95,18 @@ public class DeployToApplicationServerRunner extends Runner {
         final RunnerEnvironmentTree root = dtoFactory.createDto(RunnerEnvironmentTree.class).withDisplayName(getName());
         final List<RunnerEnvironment> environments = new LinkedList<>();
         for (ApplicationServer server : servers.values()) {
-            final String id = new EnvironmentId(EnvironmentId.Scope.system, getName(), server.getName()).toString();
+            final String serverName = server.getName();
+            final String id = new EnvironmentId(EnvironmentId.Scope.system, getName(), serverName).toString();
             final RunnerEnvironment runnerEnvironment = dtoFactory.createDto(RunnerEnvironment.class)
                                                                   .withId(id)
                                                                   .withDescription(server.getDescription())
-                                                                  .withDisplayName(server.getName())
-                                                                  .withDefault(DEFAULT_SERVER_NAME.equals(server.getName()));
+                                                                  .withDisplayName(serverName);
             environments.add(runnerEnvironment);
+            if (DEFAULT_SERVER_NAME.equals(serverName)) {
+                // Have a lot templates with runner environment id: system:/java-webapp-default/default. This makes them work.
+                final String defaultId = new EnvironmentId(EnvironmentId.Scope.system, getName(), "default").toString();
+                environments.add(dtoFactory.clone(runnerEnvironment.withId(defaultId)));
+            }
         }
         return root.withEnvironments(environments);
     }
@@ -112,7 +117,13 @@ public class DeployToApplicationServerRunner extends Runner {
             @Override
             public RunnerConfiguration createRunnerConfiguration(RunRequest request) throws RunnerException {
                 final String environmentId = request.getEnvironmentId();
-                String server = environmentId == null ? DEFAULT_SERVER_NAME : EnvironmentId.parse(environmentId).getName();
+                final String name = EnvironmentId.parse(environmentId).getName();
+                String server;
+                if (name.equals("default")) {
+                    server = DEFAULT_SERVER_NAME;
+                } else {
+                    server = name;
+                }
                 final int httpPort = portService.acquire();
                 final ApplicationServerRunnerConfiguration configuration =
                         new ApplicationServerRunnerConfiguration(server, request.getMemorySize(), httpPort, request);

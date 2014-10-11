@@ -81,7 +81,7 @@ public class TomcatServer implements ApplicationServer {
 
     @Override
     public final String getName() {
-        return "Tomcat7";
+        return "tomcat7";
     }
 
     @Override
