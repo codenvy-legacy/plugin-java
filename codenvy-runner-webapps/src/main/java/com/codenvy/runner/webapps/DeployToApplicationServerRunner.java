@@ -105,7 +105,7 @@ public class DeployToApplicationServerRunner extends Runner {
             if (DEFAULT_SERVER_NAME.equals(serverName)) {
                 // Have a lot templates with runner environment id: system:/java-webapp-default/default. This makes them work.
                 final String defaultId = new EnvironmentId(EnvironmentId.Scope.system, getName(), "default").toString();
-                environments.add(dtoFactory.clone(runnerEnvironment.withId(defaultId)));
+                environments.add(dtoFactory.clone(runnerEnvironment).withId(defaultId));
             }
         }
         return root.withEnvironments(environments);
