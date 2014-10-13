@@ -198,8 +198,6 @@ public interface JavaResources extends ClientBundle {
     @Source("svg/jsp.svg")
     SVGResource jspFile();
 
-    @Source("svg/maven.svg")
-    SVGResource maven();
 
     @Source("svg/open-folder.svg")
     SVGResource openFolder();
@@ -213,8 +211,7 @@ public interface JavaResources extends ClientBundle {
     @Source("svg/text.svg")
     SVGResource textFile();
 
-    @Source("svg/xml.svg")
-    SVGResource xmlFile();
+
 
     @Source("svg/update-dependencies.svg")
     SVGResource updateDependencies();

@@ -30,15 +30,18 @@ import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 @Extension(title = "Java", version = "3.0.0")
 public class JavaExtension {
 
+
     @Inject
     public JavaExtension(FileTypeRegistry fileTypeRegistry,
                          EditorRegistry editorRegistry,
                          JavaEditorProvider javaEditorProvider,
-                         @Named("JavaFileType") FileType javaFile) {
+                         @Named("JavaFileType") FileType javaFile,
+                         @Named("JspFileType") FileType jspFile) {
         JavaResources.INSTANCE.css().ensureInjected();
 
         editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
         fileTypeRegistry.registerFileType(javaFile);
+        fileTypeRegistry.registerFileType(jspFile);
     }
 
     /** For test use only. */
@@ -66,6 +69,7 @@ public class JavaExtension {
         newGroup.addSeparator();
         newGroup.add(newJavaSourceFileAction);
         newGroup.add(newPackageAction);
+
     }
 
     @Inject
@@ -73,21 +77,6 @@ public class JavaExtension {
         // icons for project tree nodes
         iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
         iconRegistry.registerIcon(new Icon("java.sourceFolder", resources.sourceFolder()));
-        // icons for project types
-        iconRegistry.registerIcon(new Icon("maven.projecttype.big.icon", "java-extension/jar_64.png"));
-        // icons for file extensions
-        iconRegistry.registerIcon(new Icon("maven/java.file.small.icon", resources.javaFile()));
-        iconRegistry.registerIcon(new Icon("maven/xml.file.small.icon", resources.xmlFile()));
-        iconRegistry.registerIcon(new Icon("maven/css.file.small.icon", resources.cssFile()));
-        iconRegistry.registerIcon(new Icon("maven/js.file.small.icon", resources.jsFile()));
-        iconRegistry.registerIcon(new Icon("maven/json.file.small.icon", resources.jsonFile()));
-        iconRegistry.registerIcon(new Icon("maven/html.file.small.icon", resources.htmlFile()));
-        iconRegistry.registerIcon(new Icon("maven/jsp.file.small.icon", resources.jspFile()));
-        iconRegistry.registerIcon(new Icon("maven/gif.file.small.icon", resources.imageIcon()));
-        iconRegistry.registerIcon(new Icon("maven/jpg.file.small.icon", resources.imageIcon()));
-        iconRegistry.registerIcon(new Icon("maven/png.file.small.icon", resources.imageIcon()));
-        // icons for file names
-        iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", resources.maven()));
         // icon for category in Wizard
         iconRegistry.registerIcon(new Icon("java.samples.category.icon", resources.javaCategoryIcon()));
     }

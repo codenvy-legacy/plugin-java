@@ -57,4 +57,19 @@ public class JavaGinModule extends AbstractGinModule {
     protected FileType provideJavaFile() {
         return new FileType("Java", JavaResources.INSTANCE.javaFile(), MimeType.APPLICATION_JAVA, "java");
     }
+
+    @Provides
+    @Singleton
+    @Named("JspFileType")
+    protected FileType provideJspFile() {
+        return new FileType("Jsp", JavaResources.INSTANCE.jspFile(), MimeType.APPLICATION_JSP, "jsp");
+    }
+
+
+    @Provides
+    @Singleton
+    @Named("JsfFileType")
+    protected FileType provideJsfFile() {
+        return new FileType("Jsf", JavaResources.INSTANCE.jsfFile(), MimeType.APPLICATION_JAVA, "jsf");
+    }
 }

@@ -95,5 +95,7 @@ public class MavenExtension {
     @Inject
     private void registerIcons(IconRegistry iconRegistry, MavenResources mavenResources) {
         iconRegistry.registerIcon(new Icon("maven.module", mavenResources.module()));
+        // icons for file names
+        iconRegistry.registerIcon(new Icon("maven/pom.xml.file.small.icon", mavenResources.maven()));
     }
 }
