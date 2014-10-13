@@ -260,20 +260,25 @@ public class RestNameEnvironment {
                                              BuildTaskDescriptor descriptor,
                                              @Context UriInfo uriInfo) throws Exception {
         // call to wait-for-build-finish method
-        BuildTaskDescriptor finishedBuildStatus = waitTaskFinish(descriptor);
-        if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
-            buildFailed(finishedBuildStatus);
-        }
-        javaProjectService.removeProject(wsId, projectPath);
+        try {
+            BuildTaskDescriptor finishedBuildStatus = waitTaskFinish(descriptor);
+            if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
+                buildFailed(finishedBuildStatus);
+            }
+            javaProjectService.removeProject(wsId, projectPath);
 
-        File projectDepDir = new File(temp, wsId + projectPath);
-        projectDepDir.mkdirs();
-        projectDepDir.deleteOnExit();
+            File projectDepDir = new File(temp, wsId + projectPath);
+            projectDepDir.mkdirs();
+            projectDepDir.deleteOnExit();
 
-        Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
-        if (downloadLink != null) {
-            InputStream stream = doDownload(downloadLink.getHref());
-            ZipUtils.unzip(stream, projectDepDir);
+            Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
+            if (downloadLink != null) {
+                InputStream stream = doDownload(downloadLink.getHref());
+                ZipUtils.unzip(stream, projectDepDir);
+            }
+        }catch (Throwable debug) {
+            LOG.error("RestNameEnvironment", debug);
+            throw new WebApplicationException(debug);
         }
     }
 
