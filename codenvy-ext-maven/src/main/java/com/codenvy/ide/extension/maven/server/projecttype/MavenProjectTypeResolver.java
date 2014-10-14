@@ -17,13 +17,12 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Builders;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
+import com.codenvy.api.project.server.ProjectDescription;
 import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
-import com.codenvy.api.project.server.ProjectDescription;
-import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.MavenUtils;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -39,37 +38,34 @@ import java.util.List;
 @Singleton
 public class MavenProjectTypeResolver implements ProjectTypeResolver {
 
+    @Inject
     private ProjectManager projectManager;
 
-    private final ProjectDescription maven;
-
-    @Inject
-    public MavenProjectTypeResolver(ProjectManager projectManager) {
-        this.projectManager = projectManager;
-        ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
-        if (projectType == null)
-            throw new RuntimeException(String.format("Project type '%s' not registered. ", Constants.MAVEN_ID));
+    private ProjectDescription createProjectDescriptor(ProjectType projectType) {
         Builders builders = new Builders();
         builders.setDefault("maven");
-        maven = new ProjectDescription(projectType, builders, null);
+        return new ProjectDescription(projectType, builders, null);
     }
 
     @Override
     public boolean resolve(FolderEntry folderEntry) throws ServerException {
         try {
+            ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
+            if (projectType == null)
+                throw new ServerException(String.format("Project type '%s' not registered. ", Constants.MAVEN_ID));
             if (folderEntry.getChild("pom.xml") == null) {
                 return false;
             }
             Project project = new Project(folderEntry, projectManager);
-            project.updateDescription(maven);
-            fillMavenProject(maven.getProjectType(), project);
+            project.updateDescription(createProjectDescriptor(projectType));
+            fillMavenProject(projectType, project);
             return true;
         } catch (ForbiddenException | IOException | ConflictException e) {
             throw new ServerException("An error occurred when trying to resolve maven project.", e);
         }
     }
 
-    private void createProjectsOnModules(Model model, Project  parentProject, String ws, ProjectType projectType)
+    private void createProjectsOnModules(Model model, Project parentProject, String ws, ProjectType projectType)
             throws ServerException, ForbiddenException, ConflictException, IOException {
         List<String> modules = model.getModules();
         for (String module : modules) {
@@ -80,7 +76,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                     project = new Project(moduleEntry, projectManager);
                 }
                 fillMavenProject(projectType, project);
-                project.updateDescription(maven);
+                project.updateDescription(createProjectDescriptor(projectType));
             }
         }
     }
