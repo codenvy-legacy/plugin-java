@@ -39,7 +39,7 @@ public class ClasspathJar extends CodenvyClasspathLocation {
     ZipFile       zipFile;
     long          lastModified;
     boolean       closeZipFileAtEnd;
-    SimpleSet     knownPackageNames;
+    volatile SimpleSet     knownPackageNames;
     AccessRuleSet accessRuleSet;
     Set<String[]> packageNames;
 
@@ -87,11 +87,6 @@ public class ClasspathJar extends CodenvyClasspathLocation {
      */
     static SimpleSet findPackageSet(ClasspathJar jar) {
         String zipFileName = jar.zipFilename;
-        long lastModified = jar.lastModified();
-        long fileSize = new File(zipFileName).length();
-//        PackageCacheEntry cacheEntry = (PackageCacheEntry)PackageCache.get(zipFileName);
-//        if (cacheEntry != null && cacheEntry.lastModified == lastModified && cacheEntry.fileSize == fileSize)
-//            return cacheEntry.packageSet;
 
         SimpleSet packageSet = new SimpleSet(41);
         packageSet.add(""); //$NON-NLS-1$
@@ -118,15 +113,12 @@ public class ClasspathJar extends CodenvyClasspathLocation {
             }
         }
 
-//        PackageCache.put(zipFileName, new PackageCacheEntry(lastModified, fileSize, packageSet));
         return packageSet;
     }
 
     @Override
     public void findPackages(String[] name, ISearchRequestor requestor) {
-        if (knownPackageNames == null) {
-            readPackages();
-        }
+        SimpleSet knownPackageNames = getKnownPackages();
         for (Object value : knownPackageNames.values) {
             if (value == null) {
                 continue;
@@ -140,6 +132,21 @@ public class ClasspathJar extends CodenvyClasspathLocation {
             }
 
         }
+    }
+
+    private SimpleSet getKnownPackages() {
+        SimpleSet packageNames = knownPackageNames;
+        if (packageNames == null) {
+            synchronized (this){
+                packageNames = knownPackageNames;
+                if(packageNames == null){
+                    packageNames = readPackages();
+                    knownPackageNames = packageNames;
+                }
+            }
+        }
+        return packageNames;
+
     }
 
     public void cleanup() {
@@ -191,13 +198,11 @@ public class ClasspathJar extends CodenvyClasspathLocation {
     }
 
     public boolean isPackage(String qualifiedPackageName) {
-        if (this.knownPackageNames != null)
-            return this.knownPackageNames.includes(qualifiedPackageName);
-        readPackages();
-        return this.knownPackageNames.includes(qualifiedPackageName);
+        SimpleSet knownPackages = getKnownPackages();
+        return knownPackages.includes(qualifiedPackageName);
     }
 
-    private void readPackages() {
+    private SimpleSet readPackages() {
         try {
             if (this.zipFile == null) {
                 if (org.eclipse.jdt.internal.core.JavaModelManager.ZIP_ACCESS_VERBOSE) {
@@ -209,9 +214,9 @@ public class ClasspathJar extends CodenvyClasspathLocation {
                 this.zipFile = new ZipFile(this.zipFilename);
                 this.closeZipFileAtEnd = true;
             }
-            this.knownPackageNames = findPackageSet(this);
+           return findPackageSet(this);
         } catch (Exception e) {
-            this.knownPackageNames = new SimpleSet(); // assume for this build the zipFile is empty
+            return new SimpleSet(); // assume for this build the zipFile is empty
         }
     }
 
