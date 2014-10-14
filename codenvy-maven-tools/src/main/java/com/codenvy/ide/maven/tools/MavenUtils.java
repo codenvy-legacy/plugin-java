@@ -1133,13 +1133,21 @@ public class MavenUtils {
                     } else if (level < currentPath.length) {
                         currentPath[level] = reader.getLocalName();
                     }
+
                     instructionEnd = reader.getLocation().getCharacterOffset();
+
+                    // check character at offset
+                    if (found) {
+                        char currentChar = (char)source[instructionEnd - 1];
+                        while (currentChar != '>' && instructionEnd > 0) {
+                            instructionEnd--;
+                            currentChar = (char)source[instructionEnd - 1];
+                        }
+                    }
                     ++level;
                     break;
                 case XMLStreamConstants.CHARACTERS:
-                    if (!found) {
-                        instructionEnd += reader.getTextLength();
-                    } else {
+                    if (found) {
                         textLength = reader.getTextLength();
                     }
                     break;
@@ -1151,12 +1159,16 @@ public class MavenUtils {
                         result.write(source, offset, source.length - offset);
                         applied = true;
                     } else if (level == parentPath.length && Arrays.equals(parentPath, currentPath)) {
+                        // write the content of the source element before the element
                         result.write(source, 0, instructionEnd);
+                        // indent
                         for (int i = 0; i < level * 4; ++i) {
                             result.write(' ');
                         }
+                        // write the element by appending < and >
                         result.write(wrapInTag(targetTag, newContent).getBytes());
                         result.write('\n');
+                        // we add everything else (starting from the remaining element
                         result.write(source, instructionEnd, source.length - instructionEnd);
                         applied = true;
                     }

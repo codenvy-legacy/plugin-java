@@ -29,10 +29,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /** @author andrew00x */
 public class MavenUtilTest {
@@ -424,6 +428,62 @@ public class MavenUtilTest {
     }
 
     @Test
+    public void testAddPackaging() throws IOException, URISyntaxException {
+        URL pomURLOrigin = Thread.currentThread().getContextClassLoader().getResource("no-packaging.xml");
+        Assert.assertNotNull(pomURLOrigin);
+        Assert.assertEquals("file", pomURLOrigin.getProtocol());
+
+        File workDir = new File(System.getProperty("workDir"));
+        File pomSource = new File(pomURLOrigin.toURI());
+        File pomDest = new File(workDir, "testUpdatePackaging-pom.xml");
+        Files.copy(pomSource.toPath(), pomDest.toPath(), REPLACE_EXISTING);
+
+        // read origin model
+        Model originModel = MavenUtils.readModel(pomSource);
+        Assert.assertNotNull(originModel);
+        // when there is none, default is jar
+        Assert.assertEquals("jar", originModel.getPackaging());
+
+        // change packaging
+        MavenUtils.setPackaging(pomDest, "zip");
+
+        // now read updated model
+        Model updatedModel = MavenUtils.readModel(pomDest);
+        Assert.assertNotNull(updatedModel);
+        Assert.assertEquals("zip", updatedModel.getPackaging());
+
+    }
+
+
+    @Test
+    public void testReplaceArtifactId() throws IOException, URISyntaxException {
+        URL pomURLOrigin = Thread.currentThread().getContextClassLoader().getResource("test-artifactId.xml");
+        Assert.assertNotNull(pomURLOrigin);
+        Assert.assertEquals("file", pomURLOrigin.getProtocol());
+
+        File workDir = new File(System.getProperty("workDir"));
+        File pomSource = new File(pomURLOrigin.toURI());
+        File pomDest = new File(workDir, "testReplaceArtifactId-pom.xml");
+        Files.copy(pomSource.toPath(), pomDest.toPath(), REPLACE_EXISTING);
+
+        // read origin model
+        Model originModel = MavenUtils.readModel(pomSource);
+        Assert.assertNotNull(originModel);
+        Assert.assertEquals("desktop-console-java", originModel.getArtifactId());
+
+        // change artifactID
+        MavenUtils.setArtifactId(pomDest, "myNewArtifactId");
+
+        // now read updated model
+        Model updatedModel = MavenUtils.readModel(pomDest);
+        Assert.assertNotNull(updatedModel);
+        Assert.assertEquals("myNewArtifactId", updatedModel.getArtifactId());
+
+    }
+
+
+
+    @Test
     public void testSetParentVersion() throws IOException {
         File workDir = new File(System.getProperty("workDir"));
         File pom = new File(workDir, "testWithParent-pom.xml");
@@ -439,6 +499,9 @@ public class MavenUtilTest {
         Assert.assertNotNull(readModel.getParent());
         Assert.assertEquals("no-fake", readModel.getParent().getVersion());
     }
+
+
+
 
 
     private String toString(Model model) {
