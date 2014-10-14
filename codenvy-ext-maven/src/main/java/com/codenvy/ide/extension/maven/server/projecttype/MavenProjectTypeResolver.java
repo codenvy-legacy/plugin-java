@@ -17,11 +17,11 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Builders;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
+import com.codenvy.api.project.server.ProjectDescription;
 import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
-import com.codenvy.api.project.server.ProjectDescription;
-import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.maven.tools.MavenUtils;
 import com.google.inject.Inject;
@@ -37,58 +37,59 @@ import java.util.List;
  */
 @Singleton
 public class MavenProjectTypeResolver implements ProjectTypeResolver {
+
     @Inject
     private ProjectManager projectManager;
 
+    private ProjectDescription createProjectDescriptor(ProjectType projectType) {
+        Builders builders = new Builders();
+        builders.setDefault("maven");
+        return new ProjectDescription(projectType, builders, null);
+    }
+
     @Override
-    public boolean resolve(Project project) throws ServerException {
+    public boolean resolve(FolderEntry folderEntry) throws ServerException {
         try {
             ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
-            if (projectType == null) {
-                //thea are no maven project type registered
+            if (projectType == null)
+                throw new ServerException(String.format("Project type '%s' not registered. ", Constants.MAVEN_ID));
+            if (folderEntry.getChild("pom.xml") == null) {
                 return false;
             }
-            if (project.getBaseFolder().getChild("pom.xml") == null) {
-                return false;
-            }
-            ProjectDescription description = project.getDescription();
-            fillMavenProject(projectType, project.getBaseFolder(), project, description);
-            project.updateDescription(description);
+            Project project = new Project(folderEntry, projectManager);
+            project.updateDescription(createProjectDescriptor(projectType));
+            fillMavenProject(projectType, project);
             return true;
         } catch (ForbiddenException | IOException | ConflictException e) {
             throw new ServerException("An error occurred when trying to resolve maven project.", e);
         }
     }
 
-    private void createProjectsOnModules(Model model, FolderEntry baseFolder, String ws, ProjectType projectType)
+    private void createProjectsOnModules(Model model, Project parentProject, String ws, ProjectType projectType)
             throws ServerException, ForbiddenException, ConflictException, IOException {
         List<String> modules = model.getModules();
         for (String module : modules) {
-            VirtualFileEntry moduleEntry = baseFolder.getChild(module);
+            FolderEntry moduleEntry = (FolderEntry)parentProject.getBaseFolder().getChild(module);
             if (moduleEntry != null && moduleEntry.getVirtualFile().getChild("pom.xml") != null) {
-                Project project = projectManager.getProject(ws, baseFolder.getPath() + "/" + module);
+                Project project = projectManager.getProject(ws, parentProject.getPath() + "/" + module);
                 if (project == null) {
-                    project = new Project((FolderEntry)moduleEntry, projectManager);
+                    project = new Project(moduleEntry, projectManager);
                 }
-                ProjectDescription description = project.getDescription();
-                fillMavenProject(projectType, moduleEntry, project, description);
-                project.updateDescription(description);
+                fillMavenProject(projectType, project);
+                project.updateDescription(createProjectDescriptor(projectType));
             }
         }
     }
 
-    private void fillMavenProject(ProjectType projectType, VirtualFileEntry moduleEntry, Project project, ProjectDescription description)
+    private void fillMavenProject(ProjectType projectType, Project project)
             throws IOException, ForbiddenException, ServerException, ConflictException {
-        description.setProjectType(projectType);
-        Builders builders = description.getBuilders();
-        if (builders == null) {
-            description.setBuilders(builders = new Builders());
-        }
-        builders.setDefault("maven");
-        Model model = MavenUtils.readModel(moduleEntry.getVirtualFile().getChild("pom.xml"));
-        String packaging = model.getPackaging();
-        if (packaging.equals("pom")) {
-            createProjectsOnModules(model, project.getBaseFolder(), project.getWorkspace(), projectType);
+        VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
+        if (pom != null) {
+            Model model = MavenUtils.readModel(pom.getVirtualFile());
+            String packaging = model.getPackaging();
+            if (packaging.equals("pom")) {
+                createProjectsOnModules(model, project, project.getWorkspace(), projectType);
+            }
         }
     }
 }
