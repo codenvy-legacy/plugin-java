@@ -28,60 +28,88 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
-    private static final Logger LOG = LoggerFactory.getLogger(ClasspathSourceDirectory.class);
-    File              sourceFolder;
-    SimpleLookupTable directoryCache;
-    SimpleLookupTable missingPackageHolder = new SimpleLookupTable();
-    char[][]    fullExclusionPatternChars;
-    char[][]    fulInclusionPatternChars;
-    Set<String> packagesCache;
+    private static final Logger                    LOG                  = LoggerFactory.getLogger(ClasspathSourceDirectory.class);
+    //uses as marker for packages that isn't from this  source directory
+    private final        Future<SimpleLookupTable> missingPackageHolder =
+            new FutureTask<>(new Callable<SimpleLookupTable>() {
+                @Override
+                public SimpleLookupTable call() throws Exception {
+                    return null;
+                }
+            });
+    File sourceFolder;
+    //    SimpleLookupTable directoryCache;
+    volatile ConcurrentHashMap<String, Future<SimpleLookupTable>> directoryCache;
+    volatile Set<String>                                          packagesCache;
+    char[][] fullExclusionPatternChars;
+    char[][] fulInclusionPatternChars;
 
     ClasspathSourceDirectory(File sourceFolder, char[][] fullExclusionPatternChars, char[][] fulInclusionPatternChars) {
         this.sourceFolder = sourceFolder;
-        this.directoryCache = new SimpleLookupTable(5);
+        this.directoryCache = new ConcurrentHashMap<>(5);
         this.fullExclusionPatternChars = fullExclusionPatternChars;
         this.fulInclusionPatternChars = fulInclusionPatternChars;
     }
 
     public void cleanup() {
-        this.directoryCache = new SimpleLookupTable(5);
+        this.directoryCache = new ConcurrentHashMap<>(5);
         packagesCache = null;
     }
 
-    SimpleLookupTable directoryTable(String qualifiedPackageName) {
-        SimpleLookupTable dirTable = (SimpleLookupTable)this.directoryCache.get(qualifiedPackageName);
-        if (dirTable == this.missingPackageHolder) return null; // package exists in another classpath directory or jar
-        if (dirTable != null) return dirTable;
-
-        try {
-//            IResource container = this.sourceFolder.findMember(qualifiedPackageName); // this is a case-sensitive check
-            File container = new File(sourceFolder, qualifiedPackageName);
-            if (container.isDirectory()) {
-                dirTable = new SimpleLookupTable();
-                DirectoryStream<Path> members = Files.newDirectoryStream(container.toPath());
-                for (Path member : members) {
-                    String name;
-                    if (!member.toFile().isDirectory()) {
-                        int index = Util.indexOfJavaLikeExtension(name = member.getFileName().toString());
-                        if (index >= 0) {
-                            String fullPath = member.toAbsolutePath().toString();
-                            if (!org.eclipse.jdt.internal.compiler.util.Util
-                                    .isExcluded(fullPath.toCharArray(), this.fulInclusionPatternChars,
-                                                this.fullExclusionPatternChars, false/*not a folder path*/)) {
-                                dirTable.put(name.substring(0, index), member.toFile());
+    SimpleLookupTable directoryTable(final String qualifiedPackageName) {
+        final ConcurrentHashMap<String, Future<SimpleLookupTable>> directoryCache = this.directoryCache;
+        Future<SimpleLookupTable> future = directoryCache.get(qualifiedPackageName);
+        if (future == missingPackageHolder) {
+            // package exists in another classpath directory or jar
+            return null;
+        }
+        if (future == null) {
+            FutureTask<SimpleLookupTable> newFuture = new FutureTask<>(new Callable<SimpleLookupTable>() {
+                @Override
+                public SimpleLookupTable call() throws Exception {
+                    File container = new File(sourceFolder, qualifiedPackageName);
+                    SimpleLookupTable dirTable = new SimpleLookupTable();
+                    if (container.isDirectory()) {
+                        DirectoryStream<Path> members = Files.newDirectoryStream(container.toPath());
+                        for (Path member : members) {
+                            String name;
+                            if (!member.toFile().isDirectory()) {
+                                int index = Util.indexOfJavaLikeExtension(name = member.getFileName().toString());
+                                if (index >= 0) {
+                                    String fullPath = member.toAbsolutePath().toString();
+                                    if (!org.eclipse.jdt.internal.compiler.util.Util
+                                            .isExcluded(fullPath.toCharArray(), fulInclusionPatternChars,
+                                                        fullExclusionPatternChars, false/*not a folder path*/)) {
+                                        dirTable.put(name.substring(0, index), member.toFile());
+                                    }
+                                }
                             }
                         }
+                        return dirTable;
                     }
+                    directoryCache.put(qualifiedPackageName, missingPackageHolder);
+                    return null;
                 }
-                this.directoryCache.put(qualifiedPackageName, dirTable);
-                return dirTable;
+            });
+            future = directoryCache.putIfAbsent(qualifiedPackageName, newFuture);
+            if (future == null) {
+                future = newFuture;
+                newFuture.run();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        this.directoryCache.put(qualifiedPackageName, this.missingPackageHolder);
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.error("Error while reading source directory", e);
+        }
+        directoryCache.put(qualifiedPackageName, missingPackageHolder);
         return null;
     }
 
@@ -119,7 +147,7 @@ public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
     }
 
     public void reset() {
-        this.directoryCache = new SimpleLookupTable(5);
+        cleanup();
     }
 
     public String toString() {
@@ -132,29 +160,36 @@ public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
 
     @Override
     public void findPackages(String[] pkgName, ISearchRequestor requestor) {
-        if (packagesCache == null) {
-            packagesCache = new HashSet<>();
-            packagesCache.add("");
-            fillPackagesCache(sourceFolder, "");
+        Set<String> packages = packagesCache;
+        if (packages == null) {
+            synchronized (this) {
+                packages = packagesCache;
+                if (packages == null) {
+                    packages = new HashSet<>();
+                    packages.add("");
+                    fillPackagesCache(sourceFolder, "", packages);
+                    packagesCache = packages;
+                }
+            }
         }
+
         String pkg = org.eclipse.jdt.internal.core.util.Util.concatWith(pkgName, '.');
-        for (String s : packagesCache) {
+        for (String s : packages) {
             if (s.startsWith(pkg)) {
                 requestor.acceptPackage(s.toCharArray());
             }
         }
     }
 
-    private void fillPackagesCache(File parentFolder, String parentPackage) {
+    private void fillPackagesCache(File parentFolder, String parentPackage, Set<String> cache) {
         try {
             DirectoryStream<Path> directoryStream = Files.newDirectoryStream(parentFolder.toPath());
             for (Path path : directoryStream) {
                 if (path.toFile().isDirectory()) {
                     if (org.eclipse.jdt.internal.core.util.Util.isValidFolderNameForPackage(path.getFileName().toString(), "1.7", "1.7")) {
                         String pack = parentPackage + "." + path.getFileName();
-                        packagesCache.add(pack);
-                        fillPackagesCache(path.toFile(), pack);
-
+                        cache.add(pack);
+                        fillPackagesCache(path.toFile(), pack, cache);
                     }
                 }
             }
