@@ -15,6 +15,7 @@ import com.codenvy.api.builder.BuilderException;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.core.rest.HttpJsonHelper;
 import com.codenvy.api.core.rest.shared.dto.Link;
+import com.codenvy.api.vfs.server.util.DeleteOnCloseFileInputStream;
 import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.commons.lang.Pair;
 import com.codenvy.commons.lang.ZipUtils;
@@ -62,17 +63,19 @@ import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Rest service for WorkerNameEnvironment
- *
+ * The name environment provides a callback API that the compiler can use to look up types, compilation units, and packages in the
+ * current environment
  * @author Evgen Vidolob
  */
 @javax.ws.rs.Path("java-name-environment/{ws-id}")
@@ -273,8 +276,8 @@ public class RestNameEnvironment {
 
             Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
             if (downloadLink != null) {
-                InputStream stream = doDownload(downloadLink.getHref());
-                ZipUtils.unzip(stream, projectDepDir);
+                File zip = doDownload(downloadLink.getHref(), projectPath);
+                ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
             }
         }catch (Throwable debug) {
             LOG.error("RestNameEnvironment", debug);
@@ -282,8 +285,9 @@ public class RestNameEnvironment {
         }
     }
 
-    private InputStream doDownload(String downloadURL) throws IOException {
+    private File doDownload(String downloadURL, String projectPath) throws IOException {
         HttpURLConnection http = null;
+        HttpStream stream = null;
         try {
             URI uri = UriBuilder.fromUri(downloadURL).queryParam("token", getAuthenticationToken()).build();
             http = (HttpURLConnection)uri.toURL().openConnection();
@@ -294,7 +298,10 @@ public class RestNameEnvironment {
             }
             // Connection closed automatically when input stream closed.
             // If IOException or BuilderException occurs then connection closed immediately.
-            return new HttpStream(http);
+            stream = new HttpStream(http);
+            java.nio.file.Path path = Paths.get(temp, wsId + projectPath + "/dependencies.zip");
+            Files.copy(stream, path);
+            return path.toFile();
         } catch (MalformedURLException e) {
             throw e;
         } catch (IOException ioe) {
@@ -302,6 +309,10 @@ public class RestNameEnvironment {
                 http.disconnect();
             }
             throw ioe;
+        }finally {
+            if(stream != null){
+                stream.close();
+            }
         }
 
     }
