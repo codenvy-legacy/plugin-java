@@ -188,7 +188,7 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
     }
 
     public void disableCodeAssistant() {
-        errorMessage = "Code Assistant unavailable. Waiting for file parsing to finish.";
+        errorMessage = "Code Assistant currently unavailable due to file parsing. Try again in a moment.";
     }
 
     public void enableCodeAssistant() {
