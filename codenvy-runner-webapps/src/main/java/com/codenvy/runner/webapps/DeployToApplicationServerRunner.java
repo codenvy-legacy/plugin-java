@@ -13,9 +13,7 @@ package com.codenvy.runner.webapps;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.rest.shared.dto.Link;
 import com.codenvy.api.core.util.CustomPortService;
-import com.codenvy.api.project.shared.EnvironmentId;
 import com.codenvy.api.project.shared.dto.RunnerEnvironment;
-import com.codenvy.api.project.shared.dto.RunnerEnvironmentTree;
 import com.codenvy.api.runner.RunnerException;
 import com.codenvy.api.runner.dto.RunRequest;
 import com.codenvy.api.runner.internal.ApplicationProcess;
@@ -90,25 +88,17 @@ public class DeployToApplicationServerRunner extends Runner {
     }
 
     @Override
-    public RunnerEnvironmentTree getEnvironments() {
+    public List<RunnerEnvironment> getEnvironments() {
         final DtoFactory dtoFactory = DtoFactory.getInstance();
-        final RunnerEnvironmentTree root = dtoFactory.createDto(RunnerEnvironmentTree.class).withDisplayName(getName());
         final List<RunnerEnvironment> environments = new LinkedList<>();
         for (ApplicationServer server : servers.values()) {
-            final String serverName = server.getName();
-            final String id = new EnvironmentId(EnvironmentId.Scope.system, getName(), serverName).toString();
             final RunnerEnvironment runnerEnvironment = dtoFactory.createDto(RunnerEnvironment.class)
-                                                                  .withId(id)
+                                                                  .withId(server.getName())
                                                                   .withDescription(server.getDescription())
-                                                                  .withDisplayName(serverName);
+                                                                  .withDefault(DEFAULT_SERVER_NAME.equals(server.getName()));
             environments.add(runnerEnvironment);
-            if (DEFAULT_SERVER_NAME.equals(serverName)) {
-                // Have a lot templates with runner environment id: system:/java-webapp-default/default. This makes them work.
-                final String defaultId = new EnvironmentId(EnvironmentId.Scope.system, getName(), "default").toString();
-                environments.add(dtoFactory.clone(runnerEnvironment).withId(defaultId));
-            }
         }
-        return root.withEnvironments(environments);
+        return environments;
     }
 
     @Override
@@ -116,13 +106,12 @@ public class DeployToApplicationServerRunner extends Runner {
         return new RunnerConfigurationFactory() {
             @Override
             public RunnerConfiguration createRunnerConfiguration(RunRequest request) throws RunnerException {
-                final String environmentId = request.getEnvironmentId();
-                final String name = EnvironmentId.parse(environmentId).getName();
+                final String envId = request.getEnvironmentId();
                 String server;
-                if (name.equals("default")) {
+                if (envId == null || envId.equals("default")) {
                     server = DEFAULT_SERVER_NAME;
                 } else {
-                    server = name;
+                    server = envId;
                 }
                 final int httpPort = portService.acquire();
                 final ApplicationServerRunnerConfiguration configuration =
