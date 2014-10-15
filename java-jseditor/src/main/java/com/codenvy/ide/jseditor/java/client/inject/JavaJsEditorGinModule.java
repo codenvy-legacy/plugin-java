@@ -15,6 +15,7 @@ import com.codenvy.ide.jseditor.java.client.editor.JavaAnnotationModelFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JavaCodeAssistProcessorFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JavaPartitionScanner;
 import com.codenvy.ide.jseditor.java.client.editor.JavaPartitionerFactory;
+import com.codenvy.ide.jseditor.java.client.editor.JavaQuickAssistProcessorFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JavaReconcilerStrategyFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JsJavaEditorConfigurationFactory;
 import com.google.gwt.inject.client.AbstractGinModule;
@@ -26,6 +27,7 @@ public class JavaJsEditorGinModule extends AbstractGinModule {
     @Override
     protected void configure() {
         install(new GinFactoryModuleBuilder().build(JavaCodeAssistProcessorFactory.class));
+        install(new GinFactoryModuleBuilder().build(JavaQuickAssistProcessorFactory.class));
         install(new GinFactoryModuleBuilder().build(JsJavaEditorConfigurationFactory.class));
         install(new GinFactoryModuleBuilder().build(JavaReconcilerStrategyFactory.class));
         install(new GinFactoryModuleBuilder().build(JavaAnnotationModelFactory.class));

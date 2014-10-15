@@ -10,6 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
@@ -22,9 +25,6 @@ import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.texteditor.codeassistant.QuickAssistAssistantImpl;
 import com.codenvy.ide.util.loging.Log;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
  */
@@ -32,7 +32,7 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
 
     private TextEditorPartView textView;
 
-    private TextEditorPartPresenter textEditor;
+    private final TextEditorPartPresenter textEditor;
 
     private Position fPosition;
 
@@ -43,7 +43,7 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
     /** @param textEditor */
     public JavaCorrectionAssistant(TextEditorPartPresenter textEditor, JavaParserWorker worker, JavaResources javaResources) {
         this.textEditor = textEditor;
-        JavaCorrectionProcessor processor = new JavaCorrectionProcessor(this, worker, javaResources);
+        final JavaCorrectionProcessor processor = new JavaCorrectionProcessor(this, worker, javaResources);
         setQuickAssistProcessor(processor);
     }
 
@@ -68,18 +68,21 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
         fPosition = null;
         fCurrentAnnotations = null;
 
-        if (textView == null || textView.getDocument() == null)
+        if (textView == null || textView.getDocument() == null) {
             // Let superclass deal with this
             return super.showPossibleQuickAssists();
+        }
 
-        ArrayList<Annotation> resultingAnnotations = new ArrayList<Annotation>(20);
+        final ArrayList<Annotation> resultingAnnotations = new ArrayList<Annotation>(20);
         try {
-            Position selectedRange = textView.getSelection().getSelectedRange();
-            int currOffset = selectedRange.offset;
-            int currLength = selectedRange.length;
-            boolean goToClosest = (currLength == 0);
+            // find target zone for computing the quickfixes
+            //  = selection or set a flag if zero length
+            final Position selectedRange = textView.getSelection().getSelectedRange();
+            final int currOffset = selectedRange.offset;
+            final int currLength = selectedRange.length;
+            final boolean goToClosest = (currLength == 0);
 
-            int newOffset =
+            final int newOffset =
                     collectQuickFixableAnnotations(textEditor, textView, currOffset, goToClosest, resultingAnnotations);
             if (newOffset != currOffset) {
                 storePosition(currOffset, currLength);
@@ -88,7 +91,7 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
                     hide();
                 }
             }
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
             Log.error(getClass(), e);
         }
         fCurrentAnnotations = resultingAnnotations.toArray(new Annotation[resultingAnnotations.size()]);
@@ -101,29 +104,29 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
                                                      int invocationLocation, boolean goToClosest,
                                                      ArrayList<Annotation> resultingAnnotations)
             throws BadLocationException {
-        AnnotationModel model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
+        final AnnotationModel model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
         if (model == null) {
             return invocationLocation;
         }
 
         //      ensureUpdatedAnnotations(editor);
 
-        Iterator<Annotation> iter = model.getAnnotationIterator();
+        final Iterator<Annotation> iter = model.getAnnotationIterator();
         if (goToClosest) {
-            Region lineInfo = getRegionOfInterest(view, invocationLocation);
+            final Region lineInfo = getRegionOfInterest(view, invocationLocation);
             if (lineInfo == null) {
                 return invocationLocation;
             }
-            int rangeStart = lineInfo.getOffset();
-            int rangeEnd = rangeStart + lineInfo.getLength();
+            final int rangeStart = lineInfo.getOffset();
+            final int rangeEnd = rangeStart + lineInfo.getLength();
 
-            ArrayList<Annotation> allAnnotations = new ArrayList<Annotation>();
-            ArrayList<Position> allPositions = new ArrayList<Position>();
+            final ArrayList<Annotation> allAnnotations = new ArrayList<Annotation>();
+            final ArrayList<Position> allPositions = new ArrayList<Position>();
             int bestOffset = Integer.MAX_VALUE;
             while (iter.hasNext()) {
-                Annotation annot = iter.next();
+                final Annotation annot = iter.next();
                 if (JavaCorrectionProcessor.isQuickFixableType(annot)) {
-                    Position pos = model.getPosition(annot);
+                    final Position pos = model.getPosition(annot);
                     if (pos != null && isInside(pos.offset, rangeStart, rangeEnd)) { // inside our range?
                         allAnnotations.add(annot);
                         allPositions.add(pos);
@@ -135,7 +138,7 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
                 return invocationLocation;
             }
             for (int i = 0; i < allPositions.size(); i++) {
-                Position pos = allPositions.get(i);
+                final Position pos = allPositions.get(i);
                 if (isInside(bestOffset, pos.offset, pos.offset + pos.length)) {
                     resultingAnnotations.add(allAnnotations.get(i));
                 }
@@ -143,9 +146,9 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
             return bestOffset;
         } else {
             while (iter.hasNext()) {
-                Annotation annot = iter.next();
+                final Annotation annot = iter.next();
                 if (JavaCorrectionProcessor.isQuickFixableType(annot)) {
-                    Position pos = model.getPosition(annot);
+                    final Position pos = model.getPosition(annot);
                     if (pos != null && isInside(invocationLocation, pos.offset, pos.offset + pos.length)) {
                         resultingAnnotations.add(annot);
                     }
@@ -156,12 +159,12 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
     }
 
     private static int processAnnotation(Annotation annot, Position pos, int invocationLocation, int bestOffset) {
-        int posBegin = pos.offset;
-        int posEnd = posBegin + pos.length;
+        final int posBegin = pos.offset;
+        final int posEnd = posBegin + pos.length;
         if (isInside(invocationLocation, posBegin, posEnd)) { // covers invocation location?
             return invocationLocation;
         } else if (bestOffset != invocationLocation) {
-            int newClosestPosition = computeBestOffset(posBegin, invocationLocation, bestOffset);
+            final int newClosestPosition = computeBestOffset(posBegin, invocationLocation, bestOffset);
             if (newClosestPosition != -1) {
                 if (newClosestPosition != bestOffset) { // new best
                     if (JavaCorrectionProcessor.hasCorrections(annot)) { // only jump to it if there are proposals
@@ -201,7 +204,9 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
         }
 
         if (newOffset <= bestOffset)
+         {
             return newOffset; // we are closer or equal
+        }
 
         return -1; // further away
     }
@@ -216,7 +221,7 @@ public class JavaCorrectionAssistant extends QuickAssistAssistantImpl {
 
     private static Region getRegionOfInterest(TextEditorPartView view, int invocationLocation)
             throws BadLocationException {
-        Document document = view.getDocument();
+        final Document document = view.getDocument();
         if (document == null) {
             return null;
         }

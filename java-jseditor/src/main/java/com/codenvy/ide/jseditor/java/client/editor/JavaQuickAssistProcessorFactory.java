@@ -12,9 +12,9 @@ package com.codenvy.ide.jseditor.java.client.editor;
 
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 
-/** Factory for {@link JavaCodeAssistProcessor} instances. */
-public interface JavaCodeAssistProcessorFactory {
+/** Factory for {@link JavaQuickAssistProcessor} instances. */
+public interface JavaQuickAssistProcessorFactory {
 
-    /** Create a {@link JavaCodeAssistProcessor}. */
-    JavaCodeAssistProcessor create(EditorPartPresenter editor);
+    /** Create a {@link JavaQuickAssistProcessor}. */
+    JavaQuickAssistProcessor create(EditorPartPresenter editor);
 }
