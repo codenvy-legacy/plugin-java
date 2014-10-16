@@ -68,7 +68,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
     public static final  String            MANAGE_PRODUCT_INDEXES_PROPERTY      = "jdt.core.manageProductIndexes"; //$NON-NLS-1$
     private static final boolean           IS_MANAGING_PRODUCT_INDEXES_PROPERTY = Boolean.getBoolean(MANAGE_PRODUCT_INDEXES_PROPERTY);
     // Debug
-    public static        boolean           DEBUG                                = true;
+    public static        boolean           DEBUG                                = false;
     // key = containerPath, value = indexLocation path
     // indexLocation path is created by appending an index file name to the getJavaPluginWorkingLocation() path
     public               SimpleLookupTable indexLocations                       = new SimpleLookupTable();
@@ -222,6 +222,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
             Util.verbose("Deleting index files"); //$NON-NLS-1$
         this.savedIndexNamesFile.delete(); // forget saved indexes & delete each index file
         deleteIndexFiles(null);
+        getSavedIndexesDirectory().delete();
     }
 
     private void deleteIndexFiles(SimpleSet pathsToKeep) {
