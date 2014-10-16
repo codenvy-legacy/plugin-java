@@ -94,8 +94,7 @@ public class DeployToApplicationServerRunner extends Runner {
         for (ApplicationServer server : servers.values()) {
             final RunnerEnvironment runnerEnvironment = dtoFactory.createDto(RunnerEnvironment.class)
                                                                   .withId(server.getName())
-                                                                  .withDescription(server.getDescription())
-                                                                  .withDefault(DEFAULT_SERVER_NAME.equals(server.getName()));
+                                                                  .withDescription(server.getDescription());
             environments.add(runnerEnvironment);
         }
         return environments;
@@ -106,13 +105,7 @@ public class DeployToApplicationServerRunner extends Runner {
         return new RunnerConfigurationFactory() {
             @Override
             public RunnerConfiguration createRunnerConfiguration(RunRequest request) throws RunnerException {
-                final String envId = request.getEnvironmentId();
-                String server;
-                if (envId == null || envId.equals("default")) {
-                    server = DEFAULT_SERVER_NAME;
-                } else {
-                    server = envId;
-                }
+                final String server = request.getEnvironmentId();
                 final int httpPort = portService.acquire();
                 final ApplicationServerRunnerConfiguration configuration =
                         new ApplicationServerRunnerConfiguration(server, request.getMemorySize(), httpPort, request);
@@ -145,7 +138,8 @@ public class DeployToApplicationServerRunner extends Runner {
 
         final java.io.File appDir;
         try {
-            appDir = Files.createTempDirectory(getDeployDirectory().toPath(), (server.getName() + '_' + getName() + '_')).toFile();
+            appDir = Files.createTempDirectory(getDeployDirectory().toPath(),
+                                               (server.getName() + '_' + getName().replace("/", "."))).toFile();
         } catch (IOException e) {
             throw new RunnerException(e);
         }
