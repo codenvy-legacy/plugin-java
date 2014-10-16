@@ -22,6 +22,7 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.JavaUtils;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -131,7 +132,7 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
                     protected void onSuccess(ItemReference result) {
                         eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
                         FileNode file =
-                                new FileNode(null, result, eventBus, projectServiceClient, null);
+                                new SourceFileNode(parent, result, eventBus, projectServiceClient, null);
                         editorAgent.openEditor(file);
                     }
 
