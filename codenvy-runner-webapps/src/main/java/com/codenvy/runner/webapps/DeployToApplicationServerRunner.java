@@ -79,7 +79,7 @@ public class DeployToApplicationServerRunner extends Runner {
 
     @Override
     public String getName() {
-        return "java-webapp-default";
+        return "java/web";
     }
 
     @Override
