@@ -116,8 +116,18 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                 List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
                 if (artifactIdAttr != null) {
                     view.setArtifactId(artifactIdAttr.get(0));
-                    view.setGroupId(attributes.get(MavenAttributes.GROUP_ID).get(0));
-                    view.setVersion(attributes.get(MavenAttributes.VERSION).get(0));
+                    Log.info(MavenPagePresenter.class, ">>>" + attributes.toString());
+                    if (attributes.get(MavenAttributes.GROUP_ID) == null || attributes.get(MavenAttributes.GROUP_ID).isEmpty()) {
+                        view.setGroupId(attributes.get(MavenAttributes.PARENT_GROUP_ID).get(0));
+                    } else {
+                        view.setGroupId(attributes.get(MavenAttributes.GROUP_ID).get(0));
+                    }
+
+                    if (attributes.get(MavenAttributes.VERSION) == null || attributes.get(MavenAttributes.VERSION).isEmpty()) {
+                        view.setVersion(attributes.get(MavenAttributes.PARENT_VERSION).get(0));
+                    } else {
+                        view.setVersion(attributes.get(MavenAttributes.VERSION).get(0));
+                    }
                     view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
                     scheduleTextChanges();
                 } else {
