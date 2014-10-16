@@ -165,7 +165,7 @@ public class DependenciesUpdater {
                     updating = false;
                     return;
                 }
-                buildController.showRunningBuild(descriptor, "[INFO] Update Dependencies started...");
+                buildController.showRunningBuild(descriptor, "[INFO] Updating dependencies...");
 
                 String urlWaitEnd = JavaExtension.getJavaCAPath() + "/java-name-environment/" + workspaceId +
                                     "/update-dependencies-wait-build-end?projectpath=" + project.getPath();
