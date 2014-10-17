@@ -1161,6 +1161,7 @@ public class MavenUtils {
                     } else if (level == parentPath.length && Arrays.equals(parentPath, currentPath)) {
                         // write the content of the source element before the element
                         result.write(source, 0, instructionEnd);
+                        result.write('\n');
                         // indent
                         for (int i = 0; i < level * 4; ++i) {
                             result.write(' ');

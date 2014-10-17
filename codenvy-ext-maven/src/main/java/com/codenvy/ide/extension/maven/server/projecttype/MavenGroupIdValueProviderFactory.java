@@ -45,14 +45,22 @@ public class MavenGroupIdValueProviderFactory extends AbstractMavenValueProvider
             @Override
             public void setValues(List<String> value) throws ValueStorageException {
                 if (value.isEmpty()) {
-                    throw new ValueStorageException("Maven GroupId can't be empty.");
+                    return;
                 }
                 if (value.size() > 1) {
                     throw new ValueStorageException("Maven GroupId must be only one value.");
                 }
+                String groupId = value.get(0);
+                if (groupId == null || groupId.isEmpty()) {
+                    return;
+                }
                 try {
                     VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setGroupId(pom, value.get(0));
+                    Model model = MavenUtils.readModel(pom);
+
+                    if(!groupId.equals(model.getGroupId())) {
+                        MavenUtils.setGroupId(pom, groupId);
+                    }
                 } catch (ForbiddenException | ServerException | IOException e) {
                    throwWriteException(e);
                 }

@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
+import com.codenvy.api.project.server.ValueStorageException;
+import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
@@ -42,28 +42,25 @@ public class MavenVersionValueProviderFactory extends AbstractMavenValueProvider
             }
 
             @Override
-            public void setValues(List<String> value) {
+            public void setValues(List<String> value) throws ValueStorageException {
                 if (value.isEmpty()) {
-                    throw new IllegalStateException("Maven Version can't be empty.");
+                    return;
                 }
                 if (value.size() > 1) {
                     throw new IllegalStateException("Maven Version must be only one value.");
                 }
+                String version = value.get(0);
+                if (version == null || version.isEmpty()) {
+                    return;
+                }
                 try {
-                    FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
-                    Model model;
-                    if (pomFile != null) {
-                        model = MavenUtils.readModel(pomFile.getInputStream());
-                    } else {
-                        model = new Model();
-                        model.setModelVersion("4.0.0");
-                        MavenProjectGenerator.generateProjectStructure(project.getBaseFolder());
-                        pomFile = project.getBaseFolder().createFile("pom.xml", new byte[0], "text/xml");
+                    VirtualFile pom = getOrCreatePom(project);
+                    Model model = MavenUtils.readModel(pom);
+                    if (!version.equals(model.getVersion())) {
+                        MavenUtils.setVersion(pom, version);
                     }
-                    model.setVersion(value.get(0));
-                    MavenUtils.writeModel(model, pomFile.getVirtualFile());
-                } catch (ForbiddenException | ServerException | ConflictException | IOException e) {
-                    throw new IllegalStateException(e);
+                } catch (ForbiddenException | ServerException | IOException e) {
+                    throwWriteException(e);
                 }
             }
         };
