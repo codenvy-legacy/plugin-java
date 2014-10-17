@@ -78,6 +78,6 @@ public class JavaExtension {
         iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
         iconRegistry.registerIcon(new Icon("java.sourceFolder", resources.sourceFolder()));
         // icon for category in Wizard
-        iconRegistry.registerIcon(new Icon("java.samples.category.icon", resources.javaCategoryIcon()));
+        iconRegistry.registerIcon(new Icon("Java.samples.category.icon", resources.javaCategoryIcon()));
     }
 }
