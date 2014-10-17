@@ -83,6 +83,11 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     }
 
     @Override
+    public boolean canSkip() {
+        return wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE) != null;
+    }
+
+    @Override
     public void setUpdateDelegate(@Nonnull Wizard.UpdateDelegate delegate) {
         super.setUpdateDelegate(delegate);
     }

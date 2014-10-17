@@ -49,9 +49,17 @@ public class MavenPackagingValueProviderFactory extends AbstractMavenValueProvid
                 if (value.size() > 1) {
                     throw new IllegalStateException("Maven Packaging must be only one value.");
                 }
+                String packaging = value.get(0);
+                if (packaging == null || packaging.isEmpty()) {
+                    return;
+                }
                 try {
                     VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setPackaging(pom, value.get(0));
+                    Model model = MavenUtils.readModel(pom);
+
+                    if (!packaging.equals(model.getPackaging())) {
+                        MavenUtils.setPackaging(pom, packaging);
+                    }
                 } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);
                 }
