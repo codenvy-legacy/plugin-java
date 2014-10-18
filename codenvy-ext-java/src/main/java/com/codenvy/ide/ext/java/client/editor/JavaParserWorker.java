@@ -39,11 +39,11 @@ public interface JavaParserWorker {
                             JsoArray<ProblemLocationMessage> problems,
                             WorkerCallback<WorkerProposal> callback);
 
-    void removeFanFromCache(String fqn);
+    void removeFqnFromCache(String fqn);
 
     void format(int offset, int length, String content, FormatResultCallback callback);
 
-    void preferenceFormatsettings(JsoStringMap<String> settings);
+    void preferenceFormatSettings(JsoStringMap<String> settings);
 
     public interface WorkerCallback<T> {
         void onResult(Array<T> problems);

@@ -12,6 +12,17 @@ package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
+import com.codenvy.ide.api.text.edits.CopySourceEdit;
+import com.codenvy.ide.api.text.edits.CopyTargetEdit;
+import com.codenvy.ide.api.text.edits.CopyingRangeMarker;
+import com.codenvy.ide.api.text.edits.DeleteEdit;
+import com.codenvy.ide.api.text.edits.InsertEdit;
+import com.codenvy.ide.api.text.edits.MoveSourceEdit;
+import com.codenvy.ide.api.text.edits.MoveTargetEdit;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.RangeMarker;
+import com.codenvy.ide.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.Jso;
@@ -31,17 +42,6 @@ import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
 import com.codenvy.ide.ext.java.messages.impl.OutlineUpdateMessage;
 import com.codenvy.ide.ext.java.messages.impl.WorkerCodeBlock;
-import com.codenvy.ide.api.text.edits.CopySourceEdit;
-import com.codenvy.ide.api.text.edits.CopyTargetEdit;
-import com.codenvy.ide.api.text.edits.CopyingRangeMarker;
-import com.codenvy.ide.api.text.edits.DeleteEdit;
-import com.codenvy.ide.api.text.edits.InsertEdit;
-import com.codenvy.ide.api.text.edits.MoveSourceEdit;
-import com.codenvy.ide.api.text.edits.MoveTargetEdit;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.RangeMarker;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.util.UUID;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.core.client.GWT;
@@ -239,7 +239,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     }
 
     @Override
-    public void removeFanFromCache(String fqn) {
+    public void removeFqnFromCache(String fqn) {
         if (worker == null) {
             return;
         }
@@ -259,7 +259,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     }
 
     @Override
-    public void preferenceFormatsettings(JsoStringMap<String> settings) {
+    public void preferenceFormatSettings(JsoStringMap<String> settings) {
         MessagesImpls.PreferenceFormatSetMessageImpl message = MessagesImpls.PreferenceFormatSetMessageImpl.make();
         message.setSettings(settings);
         worker.postMessage(message.serialize());

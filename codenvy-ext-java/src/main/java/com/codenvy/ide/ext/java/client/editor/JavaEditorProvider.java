@@ -18,11 +18,11 @@ import com.codenvy.ide.api.editor.DocumentProvider;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorProvider;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.text.DocumentFactory;
 import com.codenvy.ide.api.texteditor.ContentFormatter;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
-import com.codenvy.ide.api.text.DocumentFactory;
 import com.codenvy.ide.util.executor.UserActivityManager;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -39,7 +39,7 @@ public class JavaEditorProvider implements EditorProvider {
     private final NotificationManager         notificationManager;
     private       Provider<CodenvyTextEditor> editorProvider;
     private       JavaParserWorker            worker;
-    private       FileSaveWatcher             watcher;
+    private FileWatcher watcher;
     private       AnalyticsEventLogger        eventLogger;
     private       JavaLocalizationConstant    localizationConstant;
     private       ContentFormatter            contentFormatter;
@@ -56,7 +56,7 @@ public class JavaEditorProvider implements EditorProvider {
                               NotificationManager notificationManager,
                               JavaParserWorker worker,
                               EventBus eventBus,
-                              FileSaveWatcher watcher,
+                              FileWatcher watcher,
                               ContentFormatter contentFormatter,
                               AnalyticsEventLogger eventLogger,
                               JavaLocalizationConstant localizationConstant,

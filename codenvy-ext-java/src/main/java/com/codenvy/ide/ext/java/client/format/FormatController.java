@@ -50,7 +50,7 @@ public class FormatController {
             @Override
             protected void onSuccess(String result) {
                 JsoStringMap<String> mapSettings = Jso.deserialize(result).cast();
-                worker.preferenceFormatsettings(mapSettings);
+                worker.preferenceFormatSettings(mapSettings);
             }
 
             @Override
