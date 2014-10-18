@@ -21,6 +21,7 @@ import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
 import com.codenvy.ide.ext.java.client.editor.JavaEditorProvider;
+import com.codenvy.ide.ext.java.shared.Constants;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -78,6 +79,6 @@ public class JavaExtension {
         iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
         iconRegistry.registerIcon(new Icon("java.sourceFolder", resources.sourceFolder()));
         // icon for category in Wizard
-        iconRegistry.registerIcon(new Icon("Java.samples.category.icon", resources.javaCategoryIcon()));
+        iconRegistry.registerIcon(new Icon(Constants.JAVA_CATEGORY + ".samples.category.icon", resources.javaCategoryIcon()));
     }
 }
