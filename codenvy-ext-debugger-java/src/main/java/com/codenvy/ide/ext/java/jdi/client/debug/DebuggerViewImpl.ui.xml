@@ -117,7 +117,7 @@
                                 <g:Label ui:field="variablesInfo"/>
                             </g:north>
                             <g:center>
-                                <g:SimplePanel ui:field="variablesPanel" addStyleNames="{coreRes.coreCss.simpleListContainer}"
+                                <g:ScrollPanel ui:field="variablesPanel" addStyleNames="{coreRes.coreCss.simpleListContainer}"
                                                debugId="debugger-variablesPanel"/>
                             </g:center>
                         </g:DockLayoutPanel>

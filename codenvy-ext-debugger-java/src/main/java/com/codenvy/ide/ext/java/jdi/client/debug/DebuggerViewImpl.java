@@ -81,7 +81,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
     @UiField
     Label                           variablesInfo;
     @UiField
-    SimplePanel                     variablesPanel;
+    ScrollPanel                     variablesPanel;
     @UiField
     ScrollPanel                     breakpointsPanel;
     @UiField(provided = true)
