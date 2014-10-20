@@ -18,30 +18,27 @@ import com.google.inject.ImplementedBy;
  */
 @ImplementedBy(MavenPageViewImpl.class)
 public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
-    void setArtifactId(String artifact);
-
-    void setGroupId(String group);
-
-    void setVersion(String value);
-
     String getPackaging();
-
-    void reset();
 
     void setPackaging(String packaging);
 
-    public interface ActionDelegate{
+    void reset();
 
-        void onTextsChange();
+    void disableAllFields();
 
-        void setPackaging(String packaging);
-    }
+    void enableAllFields();
 
     String getGroupId();
 
+    void setGroupId(String group);
+
     String getArtifactId();
 
+    void setArtifactId(String artifact);
+
     String getVersion();
+
+    void setVersion(String value);
 
     void enablePackaging(boolean enabled);
 
@@ -50,4 +47,11 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
     void showGroupIdMissingIndicator(boolean doShow);
 
     void showVersionMissingIndicator(boolean doShow);
+
+    public interface ActionDelegate {
+
+        void onTextsChange();
+
+        void setPackaging(String packaging);
+    }
 }
