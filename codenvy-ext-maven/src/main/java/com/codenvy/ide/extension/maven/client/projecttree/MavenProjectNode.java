@@ -40,12 +40,6 @@ public class MavenProjectNode extends JavaProjectNode {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
-    /** Tests if the specified item is a source folder. */
-    protected static boolean isSourceFolder(ItemReference item) {
-        // TODO: read source folders from project/module attributes
-        return isFolder(item) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
-    }
-
     /** Tests if the specified item is a project (module). */
     protected static boolean isModule(ItemReference item) {
         return "project".equals(item.getType());

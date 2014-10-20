@@ -246,11 +246,6 @@ public class RestNameEnvironment {
             throw new CodeAssistantException(500, "Project doesn't exist");
         }
 
-        if (!hasPom(project)) {
-            LOG.warn("Project doesn't have pom.xml file");
-            throw new CodeAssistantException(500, "Project doesn't have pom.xml file");
-        }
-
         String url = apiUrl +  "/builder/" + wsId + "/dependencies";
         return getDependencies(url, projectPath, "copy");
     }

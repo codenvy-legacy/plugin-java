@@ -8,23 +8,29 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.server;
+package com.codenvy.ide.extension.ant.server.inject;
 
+import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueProviderFactory;
-import com.codenvy.ide.ext.java.server.projecttypes.AntSourceFoldersValueProviderFactory;
+import com.codenvy.ide.extension.ant.server.project.type.*;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 
-/**
- * @author Evgen Vidolob
- */
+/** @author Vladyslav Zhukovskii */
 @DynaModule
-public class JavaModule extends AbstractModule {
-
+public class AntModule extends AbstractModule {
+    /** {@inheritDoc} */
     @Override
     protected void configure() {
+        bind(AntProjectTypeDescriptionsExtension.class);
+        bind(AntProjectTypeExtension.class);
+        Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(AntProjectTypeResolver.class);
+
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
+        multiBinder.addBinding().to(AntProjectContentValueProvider.class);
+        multiBinder.addBinding().to(AntSourceFolderValueProviderFactory.class);
+        multiBinder.addBinding().to(AntTestSourceFolderValueProviderFactory.class);
         multiBinder.addBinding().to(AntSourceFoldersValueProviderFactory.class);
     }
 }

@@ -62,12 +62,6 @@ public interface MavenLocalizationConstant extends Messages {
     @Key("messages.parsing.file")
     String parsingFile();
 
-    @Key("messages.dependencies.successfully.updated")
-    String dependenciesSuccessfullyUpdated();
-
-    @Key("messages.dependencies.updating.dependencies")
-    String updatingDependencies();
-
     @Key("action.CreateMavenModule.text")
     String actionCreateMavenModuleText();
 

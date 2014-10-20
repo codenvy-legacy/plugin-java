@@ -459,9 +459,14 @@ public class AntBuilder extends Builder {
                 } else if ("jar".equals(antTask) || "war".equals(antTask) || "ear".equals(antTask) || "zip".equals(antTask)) {
                     packaging = antTask;
                     // Ant send messages in format: Building jar|war|ear|zip: <absolute path to file>. Try to get this path.
-                    if (text != null && (text.startsWith("Building jar: ") || text.startsWith("Building war: ")
-                                         || text.startsWith("Building ear: ") || text.startsWith("Building zip: "))) {
-                        pack = new java.io.File(text.substring(14));
+                    // Or Building MANIFEST-only jar: <absolute path to file>.
+                    if (text != null) {
+                        if (text.startsWith("Building MANIFEST-only jar: ")) {
+                            pack = new java.io.File(text.substring(28));
+                        } else if (text.startsWith("Building jar: ") || text.startsWith("Building war: ")
+                                   || text.startsWith("Building ear: ") || text.startsWith("Building zip: ")) {
+                            pack = new java.io.File(text.substring(14));
+                        }
                     }
                 }
             }

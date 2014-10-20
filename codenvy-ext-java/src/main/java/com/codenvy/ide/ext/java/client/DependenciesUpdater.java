@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.client;
+package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.api.builder.BuildStatus;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
@@ -17,24 +17,15 @@ import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.CodenvyTextEditor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
-import com.codenvy.ide.api.event.FileEvent;
-import com.codenvy.ide.api.event.FileEventHandler;
-import com.codenvy.ide.api.event.ProjectActionEvent;
-import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.texteditor.reconciler.Reconciler;
 import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.StringMap;
-import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaReconcilerStrategy;
-import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.builder.client.build.BuildController;
-import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenEvent;
-import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenHandler;
-import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -44,11 +35,8 @@ import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
 
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
@@ -59,33 +47,33 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  * Updates dependencies for Maven project.
  *
  * @author Artem Zatsarynnyy
+ * @author Vladyslav Zhukovskii
  */
 @Singleton
 public class DependenciesUpdater {
-    private NotificationManager       notificationManager;
-    private BuildContext              buildContext;
-    private AsyncRequestFactory       asyncRequestFactory;
-    private JavaParserWorker          parserWorker;
-    private EditorAgent               editorAgent;
-    private BuildController           buildController;
-    private DtoUnmarshallerFactory    dtoUnmarshallerFactory;
-    private MavenLocalizationConstant mavenLocalizationConstant;
-    private String                    workspaceId;
+    private NotificationManager      notificationManager;
+    private BuildContext             buildContext;
+    private AsyncRequestFactory      asyncRequestFactory;
+    private JavaParserWorker         parserWorker;
+    private EditorAgent              editorAgent;
+    private BuildController          buildController;
+    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private JavaLocalizationConstant javaLocalizationConstant;
+    private String                   workspaceId;
     private Queue<Pair<ProjectDescriptor, Boolean>> projects = new LinkedList<>();
     private boolean                                 updating = false;
 
     @Inject
-    public DependenciesUpdater(MavenLocalizationConstant mavenLocalizationConstants,
+    public DependenciesUpdater(JavaLocalizationConstant javaLocalizationConstant,
                                NotificationManager notificationManager,
                                BuildContext buildContext,
                                AsyncRequestFactory asyncRequestFactory,
                                JavaParserWorker parserWorker,
-                               final EditorAgent editorAgent,
+                               EditorAgent editorAgent,
                                BuildController buildController,
                                @Named("workspaceId") String workspaceId,
-                               DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                               EventBus eventBus) {
-        this.mavenLocalizationConstant = mavenLocalizationConstants;
+                               DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        this.javaLocalizationConstant = javaLocalizationConstant;
         this.notificationManager = notificationManager;
         this.buildContext = buildContext;
         this.asyncRequestFactory = asyncRequestFactory;
@@ -94,57 +82,15 @@ public class DependenciesUpdater {
         this.buildController = buildController;
         this.workspaceId = workspaceId;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-
-        eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
-            @Override
-            public void onProjectOpened(ProjectActionEvent event) {
-                ProjectDescriptor project = event.getProject();
-                Map<String, List<String>> attributes = project.getAttributes();
-                if (!attributes.isEmpty() && attributes.containsKey(Constants.LANGUAGE) &&
-                    "java".equals(attributes.get(Constants.LANGUAGE).get(0))) {
-                    updateDependencies(project, false);
-                }
-            }
-
-            @Override
-            public void onProjectClosed(ProjectActionEvent event) {
-            }
-        });
-
-        eventBus.addHandler(FileEvent.TYPE, new FileEventHandler() {
-            @Override
-            public void onFileOperation(FileEvent event) {
-                String name = event.getFile().getName();
-                if (event.getOperationType() == FileEvent.FileOperation.SAVE && "pom.xml".equals(name)) {
-                    updateDependencies(event.getFile().getProject().getData(), true);
-                }
-            }
-        });
-
-        eventBus.addHandler(BeforeModuleOpenEvent.TYPE, new BeforeModuleOpenHandler() {
-            @Override
-            public void onBeforeModuleOpen(BeforeModuleOpenEvent event) {
-                updateDependencies(event.getModule().getData(), false);
-            }
-        });
     }
 
     public void updateDependencies(final ProjectDescriptor project, final boolean force) {
-
-
-        Map<String, List<String>> attributes = project.getAttributes();
-        if (attributes.containsKey(MavenAttributes.PACKAGING)) {
-            if ("pom".equals(attributes.get(MavenAttributes.PACKAGING).get(0))) {
-                return;
-            }
-        }
-
         if (updating) {
             projects.add(new Pair<>(project, force));
             return;
         }
 
-        final Notification notification = new Notification(mavenLocalizationConstant.updatingDependencies(), PROGRESS);
+        final Notification notification = new Notification(javaLocalizationConstant.updatingDependencies(), PROGRESS);
         notificationManager.showNotification(notification);
 
         buildContext.setBuilding(true);
@@ -159,7 +105,7 @@ public class DependenciesUpdater {
             @Override
             protected void onSuccess(BuildTaskDescriptor descriptor) {
                 if (descriptor.getStatus() == BuildStatus.SUCCESSFUL) {
-                    notification.setMessage(mavenLocalizationConstant.dependenciesSuccessfullyUpdated());
+                    notification.setMessage(javaLocalizationConstant.dependenciesSuccessfullyUpdated());
                     notification.setStatus(FINISHED);
                     buildContext.setBuilding(false);
                     updating = false;
@@ -175,26 +121,29 @@ public class DependenciesUpdater {
                                        @Override
                                        protected void onSuccess(String result) {
                                            updating = false;
-                                           notification.setMessage(mavenLocalizationConstant.dependenciesSuccessfullyUpdated());
+                                           notification.setMessage(javaLocalizationConstant.dependenciesSuccessfullyUpdated());
                                            notification.setStatus(FINISHED);
                                            buildContext.setBuilding(false);
                                            parserWorker.dependenciesUpdated();
-                                           editorAgent.getOpenedEditors().iterate(new StringMap.IterationCallback<EditorPartPresenter>() {
-                                               @Override
-                                               public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
-                                                   if (editorPartPresenter instanceof CodenvyTextEditor) {
-                                                       CodenvyTextEditor editor = (CodenvyTextEditor)editorPartPresenter;
-                                                       Reconciler reconciler = editor.getConfiguration().getReconciler(editor.getView());
-                                                       if (reconciler != null) {
-                                                           ReconcilingStrategy strategy =
-                                                                   reconciler.getReconcilingStrategy(Document.DEFAULT_CONTENT_TYPE);
-                                                           if (strategy != null && strategy instanceof JavaReconcilerStrategy) {
-                                                               ((JavaReconcilerStrategy)strategy).parse();
-                                                           }
-                                                       }
-                                                   }
-                                               }
-                                           });
+                                           editorAgent.getOpenedEditors()
+                                                      .iterate(new StringMap.IterationCallback<EditorPartPresenter>() {
+                                                          @Override
+                                                          public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
+                                                              if (editorPartPresenter instanceof CodenvyTextEditor) {
+                                                                  CodenvyTextEditor editor = (CodenvyTextEditor)editorPartPresenter;
+                                                                  Reconciler reconciler = editor.getConfiguration()
+                                                                                                .getReconciler(editor.getView());
+                                                                  if (reconciler != null) {
+                                                                      ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(
+                                                                              Document.DEFAULT_CONTENT_TYPE);
+                                                                      if (strategy != null &&
+                                                                          strategy instanceof JavaReconcilerStrategy) {
+                                                                          ((JavaReconcilerStrategy)strategy).parse();
+                                                                      }
+                                                                  }
+                                                              }
+                                                          }
+                                                      });
                                            if (!projects.isEmpty()) {
                                                Pair<ProjectDescriptor, Boolean> pair = projects.poll();
                                                updateDependencies(pair.first, pair.second);
@@ -208,14 +157,14 @@ public class DependenciesUpdater {
                                                Pair<ProjectDescriptor, Boolean> pair = projects.poll();
                                                updateDependencies(pair.first, pair.second);
                                            }
-                                          updateFinishedWithError(exception, notification);
+                                           updateFinishedWithError(exception, notification);
                                        }
                                    });
             }
 
             @Override
             protected void onFailure(Throwable exception) {
-                Log.warn(MavenExtension.class, "failed to launch build process and get build task descriptor for " + project);
+                Log.warn(DependenciesUpdater.class, "Failed to launch build process and get build task descriptor for " + project);
                 updating = false;
                 updateFinishedWithError(exception, notification);
             }

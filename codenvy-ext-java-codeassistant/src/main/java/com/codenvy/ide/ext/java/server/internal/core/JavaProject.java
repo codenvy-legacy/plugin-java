@@ -10,11 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core;
 
-import com.codenvy.api.project.server.ProjectJson;
+import com.codenvy.api.project.server.Builders;
+import com.codenvy.api.project.server.ProjectJson2;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
-import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -147,23 +147,28 @@ public class JavaProject extends Openable implements IJavaProject {
 
     private void addSources(File projectDir, List<IClasspathEntry> paths) throws IOException {
         File codenvy = new File(projectDir, com.codenvy.api.project.server.Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
-        final ProjectJson projectJson;
-        try (FileInputStream in = new FileInputStream(codenvy)) {
-            projectJson = ProjectJson.load(in);
-        }
-        String builder = projectJson.getBuilder();
         List<File> sources = new LinkedList<>();
-        if ("maven".equals(builder)) {
-            File pom = new File(projectDir, "pom.xml");
-            if (pom.exists()) {
-                for (String src : MavenUtils.getSourceDirectories(pom)) {
-                    sources.add(new File(projectDir, src));
-                }
-            }
-        } else {
-            sources.add(new File(projectDir, "/src/main/java"));
-            sources.add(new File(projectDir, "/src/test/java"));
+
+        final ProjectJson2 projectJson;
+        try (FileInputStream in = new FileInputStream(codenvy)) {
+            projectJson = ProjectJson2.load(in);
         }
+
+        Builders defBuilder = projectJson.getBuilders();
+
+        if (defBuilder != null) {
+            Map<String, List<String>> attributes = projectJson.getAttributes();
+
+            if (attributes.containsKey(defBuilder.getDefault() + ".source.folder"))
+                sources.add(new File(projectDir, attributes.get(projectJson.getBuilders().getDefault() + ".source.folder").get(0)));
+            if (attributes.containsKey(defBuilder.getDefault() + ".test.source.folder"))
+                sources.add(new File(projectDir, attributes.get(projectJson.getBuilders().getDefault() + ".test.source.folder").get(0)));
+        }
+
+        if (sources.isEmpty()) {
+            sources.add(projectDir);
+        }
+
         for (File source : sources) {
             if (source.exists()) {
                 paths.add(JavaCore.newSourceEntry(new Path(source.getAbsolutePath())));

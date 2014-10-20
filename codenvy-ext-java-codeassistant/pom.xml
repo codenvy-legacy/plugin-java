@@ -43,11 +43,6 @@
             <version>${codenvy.plugin-java.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.plugin-java</groupId>
-            <artifactId>codenvy-maven-tools</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.birt.runtime</groupId>
             <artifactId>org.eclipse.core.jobs</artifactId>
             <version>${org.eclipse.core.jobs.version}</version>

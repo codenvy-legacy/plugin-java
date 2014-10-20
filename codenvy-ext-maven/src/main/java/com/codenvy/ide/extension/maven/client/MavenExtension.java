@@ -10,10 +10,17 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.constraints.Anchor;
 import com.codenvy.ide.api.constraints.Constraints;
+import com.codenvy.ide.api.event.FileEvent;
+import com.codenvy.ide.api.event.FileEventHandler;
+import com.codenvy.ide.api.event.NodeChangedEvent;
+import com.codenvy.ide.api.event.ProjectActionEvent;
+import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
@@ -22,17 +29,29 @@ import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
 import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
+import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.builder.client.BuilderLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.actions.CreateMavenModuleAction;
 import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
 import com.codenvy.ide.extension.maven.client.actions.UpdateDependencyAction;
+import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenEvent;
+import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenHandler;
 import com.codenvy.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
 import com.codenvy.ide.extension.maven.client.wizard.MavenPagePresenter;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
+import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.Unmarshallable;
+import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_BUILD_CONTEXT_MENU;
@@ -54,7 +73,11 @@ public class MavenExtension {
                           NotificationManager notificationManager,
                           TreeStructureProviderRegistry treeStructureProviderRegistry,
                           MavenProjectTreeStructureProvider mavenProjectTreeStructureProvider,
-                          PreSelectedProjectTypeManager preSelectedProjectManager) {
+                          PreSelectedProjectTypeManager preSelectedProjectManager,
+                          final EventBus eventBus,
+                          final DependenciesUpdater dependenciesUpdater,
+                          final ProjectServiceClient projectServiceClient,
+                          final DtoUnmarshallerFactory dtoUnmarshallerFactory) {
 
         ProjectWizard wizard = new ProjectWizard(notificationManager);
         wizard.addPage(mavenPagePresenter);
@@ -64,6 +87,67 @@ public class MavenExtension {
         treeStructureProviderRegistry.registerProvider(Constants.MAVEN_ID, mavenProjectTreeStructureProvider);
 
         preSelectedProjectManager.setProjectTypeIdToPreselect(Constants.MAVEN_ID, 100);
+
+        eventBus.addHandler(BeforeModuleOpenEvent.TYPE, new BeforeModuleOpenHandler() {
+            @Override
+            public void onBeforeModuleOpen(BeforeModuleOpenEvent event) {
+                if (isValidForResolveDependencies(event.getModule().getProject().getData())) {
+                    dependenciesUpdater.updateDependencies(event.getModule().getData(), false);
+                }
+            }
+        });
+
+        eventBus.addHandler(FileEvent.TYPE, new FileEventHandler() {
+            @Override
+            public void onFileOperation(final FileEvent event) {
+                if (event.getOperationType() == FileEvent.FileOperation.SAVE &&
+                    isValidForResolveDependencies(event.getFile().getProject().getData())
+                    && "pom.xml".equals(event.getFile().getName())) {
+                    dependenciesUpdater.updateDependencies(event.getFile().getProject().getData(), true);
+
+                    final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+                    projectServiceClient.getProject(event.getFile().getProject().getData().getPath(),
+                                                    new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+                                                        @Override
+                                                        protected void onSuccess(ProjectDescriptor result) {
+                                                            if (!result.getAttributes()
+                                                                       .equals(event.getFile().getProject().getData().getAttributes())) {
+                                                                event.getFile().getProject().setData(result);
+                                                                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(
+                                                                        event.getFile().getProject()));
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        protected void onFailure(Throwable exception) {
+                                                            Log.info(getClass(), "Unable to get the project.", exception);
+                                                        }
+                                                    });
+                }
+            }
+        });
+
+        eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
+            @Override
+            public void onProjectOpened(ProjectActionEvent event) {
+                ProjectDescriptor project = event.getProject();
+                if (isValidForResolveDependencies(project)) {
+                    dependenciesUpdater.updateDependencies(project, false);
+                }
+            }
+
+            @Override
+            public void onProjectClosed(ProjectActionEvent event) {
+            }
+        });
+    }
+
+    private boolean isValidForResolveDependencies(ProjectDescriptor project) {
+        Map<String, List<String>> attr = project.getAttributes();
+
+        return Constants.MAVEN_ID.equals(project.getType()) &&
+               attr.containsKey(Constants.LANGUAGE) && attr.get(Constants.LANGUAGE).get(0).equals("java") &&
+               attr.containsKey(MavenAttributes.PACKAGING) && !attr.get(MavenAttributes.PACKAGING).get(0).equals("pom");
     }
 
     @Inject

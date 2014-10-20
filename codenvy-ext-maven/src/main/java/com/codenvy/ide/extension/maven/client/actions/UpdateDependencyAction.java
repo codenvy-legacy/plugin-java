@@ -18,7 +18,7 @@ import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.ext.java.client.JavaResources;
-import com.codenvy.ide.extension.maven.client.DependenciesUpdater;
+import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

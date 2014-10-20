@@ -156,7 +156,7 @@ public class MavenProjectTypeResolverTest {
     }
 
     @Test
-    public void withPomXmlMuliModule() throws Exception {
+    public void withPomXmlMultiModule() throws Exception {
         FolderEntry test = projectManager.getProjectsRoot(workspace).createFolder("test");
         test.createFile("pom.xml", pom.getBytes(), "text/xml");
 
