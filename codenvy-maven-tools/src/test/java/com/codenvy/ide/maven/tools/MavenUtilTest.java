@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.maven.tools;
 
+import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
@@ -281,6 +282,38 @@ public class MavenUtilTest {
     }
 
     @Test
+    public void testAddAnotherModule() throws Exception {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testAddAnotherModule-pom.xml");
+        Model model = new Model();
+        model.setGroupId("a");
+        model.setArtifactId("b");
+        model.setVersion("c");
+        model.setDescription("test pom");
+        model.setPackaging("pom");
+        model.setPomFile(pom);
+        model.setModules(Arrays.asList("aaa", "bbb"));
+        MavenUtils.writeModel(model);
+
+        MavenUtils.addModule(pom, "test-module");
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = documentBuilder.parse(pom);
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        NodeList modulesNodeList = (NodeList)xpath.evaluate("/project/modules", dom, XPathConstants.NODESET);
+        modulesNodeList = (NodeList)xpath.evaluate("module", modulesNodeList.item(0), XPathConstants.NODESET);
+        boolean moduleAdded = false;
+        for (int i = 0; i < modulesNodeList.getLength(); i++) {
+            Object module = modulesNodeList.item(i).getFirstChild().getNodeValue();
+            if ("test-module".equals(module)) {
+                moduleAdded = true;
+                break;
+            }
+        }
+        Assert.assertTrue(moduleAdded);
+    }
+
+    @Test
     public void testAddSourceFolder() throws Exception {
         File workDir = new File(System.getProperty("workDir"));
         File pom = new File(workDir, "testAddSourceFolder-pom.xml");
@@ -305,9 +338,36 @@ public class MavenUtilTest {
     }
 
     @Test
+    public void testChangeSourceFolder() throws Exception {
+        File workDir = new File(System.getProperty("workDir"));
+        File pom = new File(workDir, "testChangeSourceFolder-pom.xml");
+        Model model = new Model();
+        model.setGroupId("a");
+        model.setArtifactId("b");
+        model.setVersion("c");
+        model.setDescription("test pom");
+        model.setPackaging("pom");
+        model.setPomFile(pom);
+        Build build = new Build();
+        build.setSourceDirectory("zzz/xxx/vvv");
+        model.setBuild(build);
+        MavenUtils.writeModel(model);
+
+        MavenUtils.setSourceFolder(pom, "aaa/bbb/ccc");
+        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = documentBuilder.parse(pom);
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        NodeList depsNodeList = (NodeList)xpath.evaluate("/project/build", dom, XPathConstants.NODESET);
+        Assert.assertEquals(depsNodeList.getLength(), 1);
+        Node node = depsNodeList.item(0);
+        Assert.assertEquals("aaa/bbb/ccc", xpath.evaluate("sourceDirectory", node, XPathConstants.STRING));
+    }
+
+    @Test
     public void testAddTestSourceFolder() throws Exception {
         File workDir = new File(System.getProperty("workDir"));
-        File pom = new File(workDir, "testAddSourceFolder-pom.xml");
+        File pom = new File(workDir, "testAddTestSourceFolder-pom.xml");
         Model model = new Model();
         model.setGroupId("a");
         model.setArtifactId("b");

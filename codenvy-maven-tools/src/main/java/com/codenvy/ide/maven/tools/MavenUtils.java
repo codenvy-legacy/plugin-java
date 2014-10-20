@@ -931,10 +931,11 @@ public class MavenUtils {
      *         the src path
      */
     public static void setSourceFolder(VirtualFile pom, String srcPath) throws ServerException, ForbiddenException, IOException {
+        checkAndCreateBuild(pom);
         byte[] content = new byte[(int)pom.getContent().getLength()];
         ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            pom.updateContent(new ByteArrayInputStream(addTagValue(content, srcPath, "sourceDirectory", "build", "project", "build")),
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/build/sourceDirectory", srcPath)),
                               null);
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -950,9 +951,10 @@ public class MavenUtils {
      *         the src path
      */
     public static void setSourceFolder(File pom, String srcPath) throws IOException {
+        checkAndCreateBuild(pom);
         final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
         try {
-            com.google.common.io.Files.write(addTagValue(pomBytes, srcPath, "sourceDirectory", "build", "project", "build"), pom);
+            com.google.common.io.Files.write(setContent(pomBytes, "project/build/sourceDirectory", srcPath), pom);
 
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -966,10 +968,11 @@ public class MavenUtils {
      * @param srcPath the src path
      */
     public static void setTestSourceFolder(VirtualFile pom, String srcPath) throws ServerException, ForbiddenException, IOException {
+        checkAndCreateBuild(pom);
         byte[] content = new byte[(int)pom.getContent().getLength()];
         ByteStreams.readFully(pom.getContent().getStream(), content);
         try {
-            pom.updateContent(new ByteArrayInputStream(addTagValue(content, srcPath, "testSourceDirectory", "build", "project", "build")),
+            pom.updateContent(new ByteArrayInputStream(setContent(content, "project/build/testSourceDirectory", srcPath)),
                               null);
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -983,9 +986,10 @@ public class MavenUtils {
      * @param srcPath the src path
      */
     public static void setTestSourceFolder(File pom, String srcPath) throws ServerException, ForbiddenException, IOException {
+        checkAndCreateBuild(pom);
         final byte[] pomBytes = com.google.common.io.Files.toByteArray(pom);
         try {
-            com.google.common.io.Files.write(addTagValue(pomBytes, srcPath, "testSourceDirectory", "build", "project", "build"), pom);
+            com.google.common.io.Files.write(setContent(pomBytes, "project/build/testSourceDirectory", srcPath), pom);
 
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -1011,6 +1015,31 @@ public class MavenUtils {
             byte[] bytes = com.google.common.io.Files.toByteArray(pom);
             try {
                 com.google.common.io.Files.write(setContent(bytes, "project/parent", "\n"), pom);
+            } catch (XMLStreamException e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    private static void checkAndCreateBuild(File pom) throws IOException {
+        Model model = readModel(pom);
+        if (model.getBuild() == null) {
+            byte[] bytes = com.google.common.io.Files.toByteArray(pom);
+            try {
+                com.google.common.io.Files.write(setContent(bytes, "project/build", "\n"), pom);
+            } catch (XMLStreamException e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    private static void checkAndCreateBuild(VirtualFile pom) throws ServerException, IOException, ForbiddenException {
+        Model model = readModel(pom);
+        if (model.getBuild() == null) {
+            byte[] content = new byte[(int)pom.getContent().getLength()];
+            ByteStreams.readFully(pom.getContent().getStream(), content);
+            try {
+                pom.updateContent(new ByteArrayInputStream(setContent(content, "project/build", "\n")), null);
             } catch (XMLStreamException e) {
                 throw new IOException(e);
             }
