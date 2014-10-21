@@ -27,8 +27,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -83,11 +83,6 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
     }
 
     @Override
-    public boolean canSkip() {
-        return wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE) != null;
-    }
-
-    @Override
     public void setUpdateDelegate(@Nonnull Wizard.UpdateDelegate delegate) {
         super.setUpdateDelegate(delegate);
     }
@@ -121,7 +116,6 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                 List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
                 if (artifactIdAttr != null) {
                     view.setArtifactId(artifactIdAttr.get(0));
-                    Log.info(MavenPagePresenter.class, ">>>" + attributes.toString());
                     if (attributes.get(MavenAttributes.GROUP_ID) == null || attributes.get(MavenAttributes.GROUP_ID).isEmpty()) {
                         view.setGroupId(attributes.get(MavenAttributes.PARENT_GROUP_ID).get(0));
                     } else {
@@ -153,6 +147,9 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                         }
                     });
                 }
+                view.disableAllFields();
+            } else {
+                view.enableAllFields();
             }
         }
     }
