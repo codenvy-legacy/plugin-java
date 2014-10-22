@@ -19,6 +19,7 @@ import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.editor.outline.JavaNodeRenderer;
 import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;
+import com.codenvy.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import com.codenvy.ide.jseditor.client.editorconfig.DefaultTextEditorConfiguration;
 import com.codenvy.ide.jseditor.client.partition.DocumentPartitioner;
@@ -46,6 +47,7 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     private final DocumentPositionMap documentPositionMap;
     private final AnnotationModel annotationModel;
     private final QuickAssistProcessor quickAssistProcessors;
+    private final ChangeInterceptorProvider changeInterceptors;
 
     @AssistedInject
     public JsJavaEditorConfiguration(@Assisted final EmbeddedTextEditorPresenter editor,
@@ -77,6 +79,8 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
 
         this.partitioner = partitionerFactory.create(this.documentPositionMap);
         this.reconciler = initReconciler(reconcilerFactory, javaReconcilerStrategy);
+
+        this.changeInterceptors = new JavaChangeInterceptorProvider();
     }
 
     @Override
@@ -112,6 +116,11 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     @Override
     public AnnotationModel getAnnotationModel() {
         return this.annotationModel;
+    }
+
+    @Override
+    public ChangeInterceptorProvider getChangeInterceptorProvider() {
+        return this.changeInterceptors;
     }
 
     private Reconciler initReconciler(final ReconcilerFactory reconcilerFactory,
