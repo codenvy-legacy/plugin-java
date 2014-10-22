@@ -130,7 +130,8 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                     view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
                     scheduleTextChanges();
                 } else {
-                    pomReaderClient.readPomAttributes(project.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+                    Log.info(MavenPagePresenter.class, ">>>>" + projectUpdate.getPath());
+                    pomReaderClient.readPomAttributes(projectUpdate.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                         @Override
                         protected void onSuccess(String result) {
                             Jso jso = Jso.deserialize(result);
