@@ -32,8 +32,6 @@ import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.ui.dialogs.InputCallback;
-import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
-import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -83,7 +81,7 @@ public class NewPackageAction extends DefaultNewResourceAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        dialogFactory.createInputDialog("New " + title, "Name:", "", new InputCallback() {
+        dialogFactory.createInputDialog("New " + title, "Name:", new InputCallback() {
             @Override
             public void accepted(String value) {
                 try {
