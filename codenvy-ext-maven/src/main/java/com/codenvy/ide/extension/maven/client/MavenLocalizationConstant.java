@@ -58,10 +58,6 @@ public interface MavenLocalizationConstant extends Messages {
     @DefaultMessage("Work Offline (-o,--offline)")
     String offlineMode();
 
-
-    @Key("messages.parsing.file")
-    String parsingFile();
-
     @Key("messages.dependencies.successfully.updated")
     String dependenciesSuccessfullyUpdated();
 

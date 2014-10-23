@@ -52,6 +52,5 @@ public interface JavaLocalizationConstant extends Messages {
     String messagesNewPackageInvalidName();
 
     @Key("messages.file.successfully.parsed")
-    String fileFuccessfullyParsed();
-
+    String fileSuccessfullyParsed();
 }
