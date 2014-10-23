@@ -31,6 +31,7 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
+import com.codenvy.ide.ui.dialogs.InputCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -71,7 +72,8 @@ public class NewPackageAction extends DefaultNewResourceAction {
               projectServiceClient,
               eventBus,
               eventLogger,
-              unmarshallerFactory);
+              unmarshallerFactory,
+              dialogFactory);
         this.localizationConstant = localizationConstant;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dialogFactory = dialogFactory;
@@ -81,9 +83,9 @@ public class NewPackageAction extends DefaultNewResourceAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        new AskValueDialog("New " + title, "Name:", new AskValueCallback() {
+        dialogFactory.createInputDialog("New " + title, "Name:", "", new InputCallback() {
             @Override
-            public void onOk(String value) {
+            public void accepted(String value) {
                 try {
                     JavaUtils.checkPackageName(value);
                     final StorableNode parent = getParent();
@@ -101,9 +103,9 @@ public class NewPackageAction extends DefaultNewResourceAction {
                 } catch (IllegalStateException ex) {
                     dialogFactory.createMessageDialog(localizationConstant.messagesNewPackageInvalidName(), ex.getMessage(), null).show();
                 }
+
             }
-        }
-        ).show();
+        }, null).show();
     }
 
     @Override
