@@ -30,9 +30,9 @@ import com.codenvy.ide.newresource.DefaultNewResourceAction;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
-import com.codenvy.ide.ui.dialogs.info.Info;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -47,6 +47,7 @@ import com.google.web.bindery.event.shared.EventBus;
 public class NewPackageAction extends DefaultNewResourceAction {
     private JavaLocalizationConstant localizationConstant;
     private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private DialogFactory            dialogFactory;
 
     @Inject
     public NewPackageAction(JavaResources javaResources,
@@ -58,7 +59,8 @@ public class NewPackageAction extends DefaultNewResourceAction {
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             EventBus eventBus,
                             AnalyticsEventLogger eventLogger,
-                            DtoUnmarshallerFactory unmarshallerFactory) {
+                            DtoUnmarshallerFactory unmarshallerFactory,
+                            DialogFactory dialogFactory) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
               null,
@@ -72,6 +74,7 @@ public class NewPackageAction extends DefaultNewResourceAction {
               unmarshallerFactory);
         this.localizationConstant = localizationConstant;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.dialogFactory = dialogFactory;
     }
 
     @Override
@@ -92,11 +95,11 @@ public class NewPackageAction extends DefaultNewResourceAction {
 
                         @Override
                         public void onFailure(Throwable caught) {
-                            new Info(caught.getMessage()).show();
+                            dialogFactory.createMessageDialog("", caught.getMessage(), null).show();
                         }
                     });
                 } catch (IllegalStateException ex) {
-                    new Info(localizationConstant.messagesNewPackageInvalidName(), ex.getMessage()).show();
+                    dialogFactory.createMessageDialog(localizationConstant.messagesNewPackageInvalidName(), ex.getMessage(), null).show();
                 }
             }
         }
