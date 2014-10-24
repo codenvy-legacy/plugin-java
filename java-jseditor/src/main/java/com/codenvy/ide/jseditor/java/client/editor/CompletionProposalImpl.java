@@ -20,7 +20,8 @@ import com.codenvy.ide.ext.java.messages.ProposalAppliedMessage;
 import com.codenvy.ide.jseditor.client.codeassist.Completion;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
 import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
-import com.google.gwt.user.client.ui.Widget;
+
+import elemental.dom.Element;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
@@ -43,7 +44,7 @@ public class CompletionProposalImpl implements CompletionProposal {
 
     /** {@inheritDoc} */
     @Override
-    public Widget getAdditionalProposalInfo() {
+    public Element getAdditionalProposalInfo() {
         return null;
     }
 

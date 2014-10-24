@@ -25,19 +25,19 @@ import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
-import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView;
+import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
-    private final EditorPartPresenter  editor;
-    private final JavaParserWorker     worker;
-    private final JavaResources        javaResources;
+    private final EditorPartPresenter editor;
+    private final JavaParserWorker worker;
+    private final JavaResources javaResources;
     private final AnalyticsEventLogger eventLogger;
 
-    private String                     errorMessage;
+    private String errorMessage;
 
     @AssistedInject
     public JavaCodeAssistProcessor(@Assisted final EditorPartPresenter editor,
@@ -151,13 +151,14 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
             case imp_obj:
                 img = javaResources.imp_obj();
                 break;
-            default:break;
+            default:
+                break;
         }
         return img;
     }
 
     @Override
-    public void computeCompletionProposals(final EmbeddedTextEditorPartView view, final int offset,
+    public void computeCompletionProposals(final TextEditor textEditor, final int offset,
                                            final CodeAssistCallback callback) {
         if (errorMessage != null) {
             return;
@@ -165,7 +166,7 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
         this.eventLogger.log(this, "Autocompleting");
         final FileNode file = editor.getEditorInput().getFile();
         final String projectPath = file.getPath().substring(1).split("/")[0];
-        this.worker.computeCAProposals(view.getEmbeddedDocument().getContents(), offset, file.getName(), projectPath,
+        this.worker.computeCAProposals(textEditor.getDocument().getContents(), offset, file.getName(), projectPath,
                                   new JavaParserWorker.WorkerCallback<WorkerProposal>() {
                                       @Override
                                       public void onResult(final Array<WorkerProposal> problems) {
@@ -184,11 +185,6 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
                                           callback.proposalComputed(proposals);
                                       }
                                   });
-    }
-
-    @Override
-    public char[] getCompletionProposalAutoActivationCharacters() {
-        return null;
     }
 
     @Override
