@@ -122,7 +122,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
         if (!first) {
             if (notification != null) {
                 notification.setStatus(FINISHED);
-                notification.setMessage(localizationConstant.fileFuccessfullyParsed());
+                notification.setMessage(localizationConstant.fileSuccessfullyParsed());
                 notification = null;
             }
             codeAssistProcessor.enableCodeAssistant();
