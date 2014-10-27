@@ -20,6 +20,7 @@ import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -122,7 +123,7 @@ public class MavenFolderNode extends JavaFolderNode {
     protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
         if (isModule(item)) {
             return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, getModule(item, modules));
-        } else if (isSourceFolder(item)) {
+        } else if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((MavenProjectTreeStructure)treeStructure).newSourceFolderNode(MavenFolderNode.this, item);
         } else if (isFolder(item)) {
             return ((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(MavenFolderNode.this, item);

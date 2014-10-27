@@ -19,6 +19,7 @@ import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -74,7 +75,7 @@ public class AntFolderNode extends JavaFolderNode {
     @Nullable
     @Override
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
-        if (isSourceFolder(item)) {
+        if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((AntProjectTreeStructure)treeStructure).newSourceFolderNode(AntFolderNode.this, item);
         } else if (isFolder(item)) {
             return ((AntProjectTreeStructure)treeStructure).newJavaFolderNode(AntFolderNode.this, item);

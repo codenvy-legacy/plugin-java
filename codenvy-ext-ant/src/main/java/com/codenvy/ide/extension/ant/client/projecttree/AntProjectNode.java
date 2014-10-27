@@ -18,6 +18,7 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.JavaProjectNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -45,7 +46,7 @@ public class AntProjectNode extends JavaProjectNode {
     @Nullable
     @Override
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
-        if (isSourceFolder(item)) {
+        if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((AntProjectTreeStructure)treeStructure).newSourceFolderNode(AntProjectNode.this, item);
         } else if (isFolder(item)) {
             return ((AntProjectTreeStructure)treeStructure).newJavaFolderNode(AntProjectNode.this, item);

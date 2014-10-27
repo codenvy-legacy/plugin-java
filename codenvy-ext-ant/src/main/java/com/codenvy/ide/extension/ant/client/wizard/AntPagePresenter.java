@@ -74,12 +74,10 @@ public class AntPagePresenter extends AbstractWizardPage implements AntPageView.
         return true;
     }
 
-
     /** {@inheritDoc} */
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-
     }
 
     /** {@inheritDoc} */

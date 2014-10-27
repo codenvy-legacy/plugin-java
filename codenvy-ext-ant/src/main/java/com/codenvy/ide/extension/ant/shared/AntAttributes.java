@@ -15,7 +15,6 @@ public interface AntAttributes {
     String ANT_PROJECT_CONTENT     = "ant.project.content";
     String ANT_DEF_PROJECT_CONTENT = "default";
 
-    String BUILDER_SOURCE_FOLDERS = "builder.ant.source_folders";
     String SOURCE_FOLDER          = "ant.source.folder";
     String TEST_SOURCE_FOLDER     = "ant.test.source.folder";
 

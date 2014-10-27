@@ -31,6 +31,5 @@ public class AntModule extends AbstractModule {
         multiBinder.addBinding().to(AntProjectContentValueProvider.class);
         multiBinder.addBinding().to(AntSourceFolderValueProviderFactory.class);
         multiBinder.addBinding().to(AntTestSourceFolderValueProviderFactory.class);
-        multiBinder.addBinding().to(AntSourceFoldersValueProviderFactory.class);
     }
 }
