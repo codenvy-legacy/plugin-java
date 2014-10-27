@@ -27,7 +27,7 @@ import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
-import com.codenvy.ide.ui.dialogs.info.Info;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -45,18 +45,21 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
     private ProjectServiceClient   projectServiceClient;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private EventBus               eventBus;
-    private EditorAgent editorAgent;
+    private EditorAgent            editorAgent;
+    private DialogFactory          dialogFactory;
     private Array<JavaSourceFileType> sourceFileTypes = Collections.createArray();
 
     @Inject
     public NewJavaSourceFilePresenter(NewJavaSourceFileView view, SelectionAgent selectionAgent, ProjectServiceClient projectServiceClient,
-                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus, EditorAgent editorAgent) {
+                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus, EditorAgent editorAgent,
+                                      DialogFactory dialogFactory) {
         this.view = view;
         this.selectionAgent = selectionAgent;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.eventBus = eventBus;
         this.editorAgent = editorAgent;
+        this.dialogFactory = dialogFactory;
 
         this.view.setDelegate(this);
         sourceFileTypes.add(JavaSourceFileType.CLASS);
@@ -138,7 +141,7 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
 
                     @Override
                     protected void onFailure(Throwable exception) {
-                        new Info(exception.getMessage()).show();
+                        dialogFactory.createMessageDialog("", exception.getMessage(), null).show();
                     }
                 });
     }

@@ -29,11 +29,8 @@ public class MavenPageViewImpl implements MavenPageView {
 
     private static MavenPageViewImplUiBinder ourUiBinder = GWT.create(MavenPageViewImplUiBinder.class);
     private final DockLayoutPanel rootElement;
-    private       ActionDelegate  delegate;
-
     @UiField
-    Style       style;
-
+    Style   style;
     @UiField
     TextBox versionField;
     @UiField
@@ -42,6 +39,7 @@ public class MavenPageViewImpl implements MavenPageView {
     TextBox artifactId;
     @UiField
     ListBox packagingField;
+    private ActionDelegate delegate;
 
     public MavenPageViewImpl() {
         rootElement = ourUiBinder.createAndBindUi(this);
@@ -64,18 +62,13 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
-    public String getVersion() {
-        return versionField.getText();
-    }
-
-    @Override
     public void setArtifactId(String artifactId) {
         this.artifactId.setText(artifactId);
     }
 
     @Override
-    public void setGroupId(String group) {
-        groupId.setText(group);
+    public String getVersion() {
+        return versionField.getText();
     }
 
     @Override
@@ -86,6 +79,16 @@ public class MavenPageViewImpl implements MavenPageView {
     @Override
     public String getPackaging() {
         return packagingField.getValue(packagingField.getSelectedIndex());
+    }
+
+    @Override
+    public void setPackaging(String packaging) {
+        for (int i = 0; i < packagingField.getItemCount(); i++) {
+            if (packaging.equals(packagingField.getValue(i))) {
+                packagingField.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 
     @Override
@@ -104,13 +107,20 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
-    public void setPackaging(String packaging) {
-        for (int i = 0; i < packagingField.getItemCount(); i++) {
-            if (packaging.equals(packagingField.getValue(i))) {
-                packagingField.setSelectedIndex(i);
-                break;
-            }
-        }
+    public void disableAllFields() {
+        changeEnabling(false);
+    }
+
+    @Override
+    public void enableAllFields() {
+        changeEnabling(true);
+    }
+
+    private void changeEnabling(boolean enabled) {
+        versionField.setEnabled(enabled);
+        groupId.setEnabled(enabled);
+        artifactId.setEnabled(enabled);
+        packagingField.setEnabled(enabled);
     }
 
     @Override
@@ -118,7 +128,10 @@ public class MavenPageViewImpl implements MavenPageView {
         return groupId.getText();
     }
 
-
+    @Override
+    public void setGroupId(String group) {
+        groupId.setText(group);
+    }
 
     @UiHandler({"versionField", "groupId", "artifactId"})
     void onKeyUp(KeyUpEvent event) {
