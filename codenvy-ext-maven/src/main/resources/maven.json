@@ -11,15 +11,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Spring",
@@ -33,15 +35,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Maven JAR",
@@ -55,14 +59,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Java Console",
@@ -76,15 +83,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Swing",
@@ -99,14 +108,17 @@
             }
         },
         "defaultRunnerEnvironment": "gui",
-        "runnerEnvironmentConfigurations": {
-            "gui": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "GWT",
@@ -120,15 +132,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Play 1.0",
@@ -142,15 +156,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/play1",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-play1",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Play 2.0",
@@ -164,15 +180,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Grails",
@@ -186,15 +204,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 1024
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 1024
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "JSF",
@@ -208,15 +228,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Lift",
@@ -230,15 +252,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Struts",
@@ -252,15 +276,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Vaadin",
@@ -274,15 +300,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Android",
@@ -296,15 +324,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/mobile/android",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-mobile-android",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Tapestry",
@@ -318,15 +348,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Wicket",
@@ -340,15 +372,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Groovy",
@@ -362,15 +396,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Clojure",
@@ -384,15 +420,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-defaultt",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "JRuby",
@@ -406,15 +444,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "JRuby Spring",
@@ -428,15 +468,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Jython Servlet",
@@ -450,15 +492,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Jython",
@@ -472,15 +516,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Shale",
@@ -494,15 +540,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Rhino",
@@ -516,15 +564,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Kotlin",
@@ -538,15 +588,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Velocity",
@@ -560,15 +612,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Thymeleaf",
@@ -582,15 +636,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/web/tomcat7",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-webapp-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "MongoDB",
@@ -604,15 +660,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/mongodb",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-mongodb",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "MySQL",
@@ -626,15 +684,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/mysql",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-mysql",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "PostgreSQL",
@@ -648,15 +708,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/postgresql",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-postgresql",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Cassandra",
@@ -670,15 +732,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/cassandra",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-cassandra",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Neo4j",
@@ -692,15 +756,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/neo4j",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-neo4j",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Derby",
@@ -714,15 +780,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "HSQLDB",
@@ -736,15 +804,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "H2",
@@ -758,15 +828,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Couchbase",
@@ -780,15 +852,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/couchbase",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-couchbase",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Riak",
@@ -802,15 +876,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/riak",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-riak",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "NuoDB",
@@ -824,15 +900,17 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/db/nuodb",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-nuodb",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     },
     {
         "displayName": "Scala",
@@ -846,14 +924,16 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "default",
-        "runnerEnvironmentConfigurations": {
-            "default": {
-                "recommendedMemorySize": 256
+        "runners": {
+            "default": "system:/java/standalone/simple/cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
             }
         },
-        "defaultBuilderEnvironment": "default",
-        "runnerName": "java-standalone-default",
-        "builderName": "maven"
+        "builders": {
+            "default": "default"
+        }
     }
 ]
