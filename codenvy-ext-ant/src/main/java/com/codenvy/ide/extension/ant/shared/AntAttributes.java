@@ -12,12 +12,11 @@ package com.codenvy.ide.extension.ant.shared;
 
 /** @author Vladyslav Zhukovskii */
 public interface AntAttributes {
-    String ANT_PROJECT_CONTENT     = "ant.project.content";
-    String ANT_DEF_PROJECT_CONTENT = "default";
-
-    String SOURCE_FOLDER          = "ant.source.folder";
-    String TEST_SOURCE_FOLDER     = "ant.test.source.folder";
+    String SOURCE_FOLDER      = "ant.source.folder";
+    String TEST_SOURCE_FOLDER = "ant.test.source.folder";
 
     String DEF_SRC_PATH      = "src";
     String DEF_TEST_SRC_PATH = "test";
+
+    String BUILD_FILE = "build.xml";
 }

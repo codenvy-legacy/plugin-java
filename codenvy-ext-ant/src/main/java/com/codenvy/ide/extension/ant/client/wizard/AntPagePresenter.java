@@ -87,7 +87,8 @@ public class AntPagePresenter extends AbstractWizardPage implements AntPageView.
         if (project != null) {
             BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class).withDefault(Constants.ANT_ID);
             project.setBuilders(builders);
-            project.getAttributes().put(AntAttributes.ANT_PROJECT_CONTENT, Arrays.asList(AntAttributes.ANT_DEF_PROJECT_CONTENT));
+            project.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
+            project.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
         }
 
         super.commit(callback);

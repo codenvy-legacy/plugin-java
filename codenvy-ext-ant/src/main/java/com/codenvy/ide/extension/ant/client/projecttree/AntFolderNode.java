@@ -77,7 +77,7 @@ public class AntFolderNode extends JavaFolderNode {
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
         if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((AntProjectTreeStructure)treeStructure).newSourceFolderNode(AntFolderNode.this, item);
-        } else if (isFolder(item)) {
+        } else if ("folder".equals(item.getType())) {
             return ((AntProjectTreeStructure)treeStructure).newJavaFolderNode(AntFolderNode.this, item);
         } else {
             return super.createChildNode(item);

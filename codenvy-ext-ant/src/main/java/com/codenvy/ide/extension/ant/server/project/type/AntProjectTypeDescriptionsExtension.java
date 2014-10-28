@@ -48,7 +48,6 @@ public class AntProjectTypeDescriptionsExtension implements ProjectTypeDescripti
     public List<AttributeDescription> getAttributeDescriptions() {
         final List<AttributeDescription> list = new ArrayList<>(4);
         list.add(new AttributeDescription(Constants.LANGUAGE));
-        list.add(new AttributeDescription(AntAttributes.ANT_PROJECT_CONTENT));
         list.add(new AttributeDescription(AntAttributes.SOURCE_FOLDER));
         list.add(new AttributeDescription(AntAttributes.TEST_SOURCE_FOLDER));
         return list;

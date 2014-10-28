@@ -13,7 +13,6 @@ package com.codenvy.ide.ext.java.client.projecttree;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.Map;
 public class JavaSourceFolderUtil {
     /** Tests if the specified item is a source folder. */
     public static boolean isSourceFolder(ItemReference item, ProjectNode projectNode) {
-        if (FolderNode.isFolder(item)) {
+        if ("folder".equals(item.getType())) {
             ProjectDescriptor projectDescriptor = projectNode.getData();
             BuildersDescriptor builders = projectDescriptor.getBuilders();
             Map<String, List<String>> attributes = projectDescriptor.getAttributes();

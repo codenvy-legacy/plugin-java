@@ -22,6 +22,7 @@ import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -42,7 +43,7 @@ public class AntProjectTypeResolver implements ProjectTypeResolver {
                 return false;
             }
 
-            if (folderEntry.getChild("build.xml") == null) {
+            if (folderEntry.getChild(AntAttributes.BUILD_FILE) == null) {
                 return false;
             }
 
