@@ -25,96 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 public class FileSystem implements INameEnvironment, SuffixConstants {
-    public interface Classpath {
-        char[][][] findTypeNames(String qualifiedPackageName);
-
-        NameEnvironmentAnswer findClass(char[] typeName, String qualifiedPackageName, String qualifiedBinaryFileName);
-
-        NameEnvironmentAnswer findClass(char[] typeName, String qualifiedPackageName, String qualifiedBinaryFileName,
-                                        boolean asBinaryOnly);
-
-        boolean isPackage(String qualifiedPackageName);
-
-        /**
-         * Return a list of the jar file names defined in the Class-Path section
-         * of the jar file manifest if any, null else. Only ClasspathJar (and
-         * extending classes) instances may return a non-null result.
-         *
-         * @param problemReporter
-         *         problem reporter with which potential
-         *         misconfiguration issues are raised
-         * @return a list of the jar file names defined in the Class-Path
-         *         section of the jar file manifest if any
-         */
-        List fetchLinkedJars(ClasspathSectionProblemReporter problemReporter);
-
-        /**
-         * This method resets the environment. The resulting state is equivalent to
-         * a new name environment without creating a new object.
-         */
-        void reset();
-
-        /**
-         * Return a normalized path for file based classpath entries. This is an
-         * absolute path in which file separators are transformed to the
-         * platform-agnostic '/', ending with a '/' for directories. This is an
-         * absolute path in which file separators are transformed to the
-         * platform-agnostic '/', deprived from the '.jar' (resp. '.zip')
-         * extension for jar (resp. zip) files.
-         *
-         * @return a normalized path for file based classpath entries
-         */
-        char[] normalizedPath();
-
-        /**
-         * Return the path for file based classpath entries. This is an absolute path
-         * ending with a file separator for directories, an absolute path including the '.jar'
-         * (resp. '.zip') extension for jar (resp. zip) files.
-         *
-         * @return the path for file based classpath entries
-         */
-        String getPath();
-
-        /** Initialize the entry */
-        void initialize() throws IOException;
-    }
-
-    public interface ClasspathSectionProblemReporter {
-        void invalidClasspathSection(String jarFilePath);
-
-        void multipleClasspathSections(String jarFilePath);
-    }
-
-    /**
-     * This class is defined how to normalize the classpath entries.
-     * It removes duplicate entries.
-     */
-    public static class ClasspathNormalizer {
-        /**
-         * Returns the normalized classpath entries (no duplicate).
-         * <p>The given classpath entries are FileSystem.Classpath. We check the getPath() in order to find
-         * duplicate entries.</p>
-         *
-         * @param classpaths
-         *         the given classpath entries
-         * @return the normalized classpath entries
-         */
-        public static ArrayList normalize(ArrayList classpaths) {
-            ArrayList normalizedClasspath = new ArrayList();
-            HashSet cache = new HashSet();
-            for (Iterator iterator = classpaths.iterator(); iterator.hasNext(); ) {
-                FileSystem.Classpath classpath = (FileSystem.Classpath)iterator.next();
-                if (!cache.contains(classpath)) {
-                    normalizedClasspath.add(classpath);
-                    cache.add(classpath);
-                }
-            }
-            return normalizedClasspath;
-        }
-    }
-
     Classpath[] classpaths;
-
     Set knownFileNames;
 
     /*
@@ -196,6 +107,45 @@ public class FileSystem implements INameEnvironment, SuffixConstants {
         return result;
     }
 
+    private static String convertPathSeparators(String path) {
+        return File.separatorChar == '/' ? path.replace('\\', '/') : path.replace('/', '\\');
+    }
+
+    /**
+     * Returns whether the given name is potentially a zip archive file name
+     * (it has a file extension and it is not ".java" nor ".class")
+     */
+    public final static boolean isPotentialZipArchive(String name) {
+        int lastDot = name.lastIndexOf('.');
+        if (lastDot == -1) {
+            return false; // no file extension, it cannot be a zip archive name
+        }
+        if (name.lastIndexOf(File.separatorChar) > lastDot) {
+            return false; // dot was before the last file separator, it cannot be a zip archive name
+        }
+        int length = name.length();
+        int extensionLength = length - lastDot - 1;
+        if (extensionLength == EXTENSION_java.length()) {
+            for (int i = extensionLength - 1; i >= 0; i--) {
+                if (Character.toLowerCase(name.charAt(length - extensionLength + i)) != EXTENSION_java.charAt(i)) {
+                    break; // not a ".java" file, check ".class" file case below
+                }
+                if (i == 0) {
+                    return false; // it is a ".java" file, it cannot be a zip archive name
+                }
+            }
+        }
+        if (extensionLength == EXTENSION_class.length()) {
+            for (int i = extensionLength - 1; i >= 0; i--) {
+                if (Character.toLowerCase(name.charAt(length - extensionLength + i)) != EXTENSION_class.charAt(i)) {
+                    return true; // not a ".class" file, so this is a potential archive name
+                }
+            }
+            return false; // it is a ".class" file, it cannot be a zip archive name
+        }
+        return true; // it is neither a ".java" file nor a ".class" file, so this is a potential archive name
+    }
+
     private void initializeKnownFileNames(String[] initialFileNames) {
         if (initialFileNames == null) {
             this.knownFileNames = new HashSet(0);
@@ -261,10 +211,6 @@ public class FileSystem implements INameEnvironment, SuffixConstants {
         for (int i = 0, max = this.classpaths.length; i < max; i++) {
             this.classpaths[i].reset();
         }
-    }
-
-    private static String convertPathSeparators(String path) {
-        return File.separatorChar == '/' ? path.replace('\\', '/') : path.replace('/', '\\');
     }
 
     private NameEnvironmentAnswer findClass(String qualifiedTypeName, char[] typeName, boolean asBinaryOnly) {
@@ -414,71 +360,118 @@ public class FileSystem implements INameEnvironment, SuffixConstants {
         return false;
     }
 
-    /**
-     * @see com.codenvy.ide.ext.java.client.internal.compiler.env.INameEnvironment#findTypes(char[], boolean, boolean, int,
-     *      com.codenvy.ide.ext.java.client.internal.codeassist.ISearchRequestor, com.codenvy.ide.ext.java.client.runtime.IProgressMonitor)
-     */
     @Override
     public void findTypes(char[] qualifiedName, boolean b, boolean camelCaseMatch, int searchFor,
                           final ISearchRequestor requestor) {
     }
 
-    /**
-     * @see com.codenvy.ide.ext.java.client.internal.compiler.env.INameEnvironment#findPackages(char[],
-     *      com.codenvy.ide.ext.java.client.internal.codeassist.ISearchRequestor)
-     */
     @Override
     public void findPackages(char[] qualifiedName, ISearchRequestor requestor) {
     }
 
-    /**
-     * @see com.codenvy.ide.ext.java.client.internal.compiler.env.INameEnvironment#findConstructorDeclarations(char[], boolean,
-     *      com.codenvy.ide.ext.java.client.internal.codeassist.ISearchRequestor, com.codenvy.ide.ext.java.client.runtime.IProgressMonitor)
-     */
     @Override
     public void findConstructorDeclarations(char[] prefix, boolean camelCaseMatch, final ISearchRequestor requestor) {
     }
 
-    /**
-     * @see com.codenvy.ide.ext.java.client.internal.compiler.env.INameEnvironment#findExactTypes(char[], boolean, int,
-     *      com.codenvy.ide.ext.java.client.internal.codeassist.ISearchRequestor)
-     */
     @Override
     public void findExactTypes(char[] missingSimpleName, boolean b, int type, ISearchRequestor storage) {
     }
 
+    @Override
+    public void setProjectPath(String projectPath) {
+
+    }
+
+    @Override
+    public void clearBlackList() {
+
+    }
+
+    public interface Classpath {
+        char[][][] findTypeNames(String qualifiedPackageName);
+
+        NameEnvironmentAnswer findClass(char[] typeName, String qualifiedPackageName, String qualifiedBinaryFileName);
+
+        NameEnvironmentAnswer findClass(char[] typeName, String qualifiedPackageName, String qualifiedBinaryFileName,
+                                        boolean asBinaryOnly);
+
+        boolean isPackage(String qualifiedPackageName);
+
+        /**
+         * Return a list of the jar file names defined in the Class-Path section
+         * of the jar file manifest if any, null else. Only ClasspathJar (and
+         * extending classes) instances may return a non-null result.
+         *
+         * @param problemReporter
+         *         problem reporter with which potential
+         *         misconfiguration issues are raised
+         * @return a list of the jar file names defined in the Class-Path
+         *         section of the jar file manifest if any
+         */
+        List fetchLinkedJars(ClasspathSectionProblemReporter problemReporter);
+
+        /**
+         * This method resets the environment. The resulting state is equivalent to
+         * a new name environment without creating a new object.
+         */
+        void reset();
+
+        /**
+         * Return a normalized path for file based classpath entries. This is an
+         * absolute path in which file separators are transformed to the
+         * platform-agnostic '/', ending with a '/' for directories. This is an
+         * absolute path in which file separators are transformed to the
+         * platform-agnostic '/', deprived from the '.jar' (resp. '.zip')
+         * extension for jar (resp. zip) files.
+         *
+         * @return a normalized path for file based classpath entries
+         */
+        char[] normalizedPath();
+
+        /**
+         * Return the path for file based classpath entries. This is an absolute path
+         * ending with a file separator for directories, an absolute path including the '.jar'
+         * (resp. '.zip') extension for jar (resp. zip) files.
+         *
+         * @return the path for file based classpath entries
+         */
+        String getPath();
+
+        /** Initialize the entry */
+        void initialize() throws IOException;
+    }
+
+    public interface ClasspathSectionProblemReporter {
+        void invalidClasspathSection(String jarFilePath);
+
+        void multipleClasspathSections(String jarFilePath);
+    }
+
     /**
-     * Returns whether the given name is potentially a zip archive file name
-     * (it has a file extension and it is not ".java" nor ".class")
+     * This class is defined how to normalize the classpath entries.
+     * It removes duplicate entries.
      */
-    public final static boolean isPotentialZipArchive(String name) {
-        int lastDot = name.lastIndexOf('.');
-        if (lastDot == -1) {
-            return false; // no file extension, it cannot be a zip archive name
-        }
-        if (name.lastIndexOf(File.separatorChar) > lastDot) {
-            return false; // dot was before the last file separator, it cannot be a zip archive name
-        }
-        int length = name.length();
-        int extensionLength = length - lastDot - 1;
-        if (extensionLength == EXTENSION_java.length()) {
-            for (int i = extensionLength - 1; i >= 0; i--) {
-                if (Character.toLowerCase(name.charAt(length - extensionLength + i)) != EXTENSION_java.charAt(i)) {
-                    break; // not a ".java" file, check ".class" file case below
-                }
-                if (i == 0) {
-                    return false; // it is a ".java" file, it cannot be a zip archive name
-                }
-            }
-        }
-        if (extensionLength == EXTENSION_class.length()) {
-            for (int i = extensionLength - 1; i >= 0; i--) {
-                if (Character.toLowerCase(name.charAt(length - extensionLength + i)) != EXTENSION_class.charAt(i)) {
-                    return true; // not a ".class" file, so this is a potential archive name
+    public static class ClasspathNormalizer {
+        /**
+         * Returns the normalized classpath entries (no duplicate).
+         * <p>The given classpath entries are FileSystem.Classpath. We check the getPath() in order to find
+         * duplicate entries.</p>
+         *
+         * @param classpaths
+         *         the given classpath entries
+         * @return the normalized classpath entries
+         */
+        public static ArrayList normalize(ArrayList classpaths) {
+            ArrayList normalizedClasspath = new ArrayList();
+            HashSet cache = new HashSet();
+            for (Iterator iterator = classpaths.iterator(); iterator.hasNext(); ) {
+                FileSystem.Classpath classpath = (FileSystem.Classpath)iterator.next();
+                if (!cache.contains(classpath)) {
+                    normalizedClasspath.add(classpath);
+                    cache.add(classpath);
                 }
             }
-            return false; // it is a ".class" file, it cannot be a zip archive name
+            return normalizedClasspath;
         }
-        return true; // it is neither a ".java" file nor a ".class" file, so this is a potential archive name
     }
 }

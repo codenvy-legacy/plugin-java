@@ -39,7 +39,7 @@ public class JavaFolderNode extends FolderNode {
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
         if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((JavaTreeStructure)treeStructure).newSourceFolderNode(this, item);
-        } else if (isFolder(item)) {
+        } else if ("folder".equals(item.getType())) {
             return ((JavaTreeStructure)treeStructure).newJavaFolderNode(this, item);
         } else {
             return super.createChildNode(item);

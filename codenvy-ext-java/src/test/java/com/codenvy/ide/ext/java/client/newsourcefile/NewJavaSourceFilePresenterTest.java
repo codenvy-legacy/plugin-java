@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
@@ -19,6 +20,7 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -70,6 +72,12 @@ public class NewJavaSourceFilePresenterTest {
     private PackageNode                codenvyPackage;
     @Mock
     private ItemReference              createdFile;
+
+    @Mock
+    private DtoUnmarshallerFactory factory;
+
+    @Mock
+    private EditorAgent editorAgent;
 
     @Before
     public void setUp() {

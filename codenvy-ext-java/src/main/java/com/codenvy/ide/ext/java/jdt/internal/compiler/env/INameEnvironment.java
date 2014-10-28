@@ -106,4 +106,7 @@ public interface INameEnvironment {
      */
     void findExactTypes(char[] missingSimpleName, boolean findMembers, int searchFor, ISearchRequestor storage);
 
+    void setProjectPath(String projectPath);
+
+    void clearBlackList();
 }

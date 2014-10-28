@@ -26,6 +26,7 @@ import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.Signature;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.internal.codeassist.CompletionEngine;
+import com.codenvy.ide.ext.java.jdt.internal.compiler.env.INameEnvironment;
 import com.codenvy.ide.ext.java.messages.ComputeCAProposalsMessage;
 import com.codenvy.ide.ext.java.messages.RoutingTypes;
 import com.codenvy.ide.ext.java.messages.WorkerProposal;
@@ -66,7 +67,7 @@ public class WorkerCodeAssist {
         }
     };
     private JavaParserWorker                   worker;
-    private WorkerNameEnvironment              nameEnvironment;
+    private INameEnvironment              nameEnvironment;
     private TemplateCompletionProposalComputer templateCompletionProposalComputer;
     private String                             projectPath;
     private String                             docContext;
@@ -76,7 +77,7 @@ public class WorkerCodeAssist {
     private WorkerDocument                     document;
 
     public WorkerCodeAssist(JavaParserWorker worker, MessageFilter messageFilter, WorkerProposalApplier workerProposalApplier,
-                            WorkerNameEnvironment nameEnvironment,
+                            INameEnvironment nameEnvironment,
                             TemplateCompletionProposalComputer templateCompletionProposalComputer, String docContext) {
         this.worker = worker;
         this.workerProposalApplier = workerProposalApplier;

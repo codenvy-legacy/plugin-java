@@ -48,82 +48,28 @@ import java.util.Collection;
  */
 public class WorkerCorrectionProcessor {
 
-    private static QuickFixProcessor fixProcessor;
+    private static QuickFixProcessor fixProcessor = new QuickFixProcessorImpl();
+    ;
 
-    private static QuickAssistProcessor[] assistProcessors;
+    private static QuickAssistProcessor[] assistProcessors =
+            new QuickAssistProcessor[]{new QuickAssistProcessorImpl(), new AdvancedQuickAssistProcessor()};
 
 
     private String fErrorMessage;
 
-    private CompilationUnit  cu;
-    private JavaParserWorker worker;
+    private CompilationUnit       cu;
+    private JavaParserWorker      worker;
     private WorkerProposalApplier workerProposalApplier;
 
     public WorkerCorrectionProcessor(JavaParserWorker worker, MessageFilter messageFilter, WorkerProposalApplier workerProposalApplier) {
         this.worker = worker;
         this.workerProposalApplier = workerProposalApplier;
-        if (fixProcessor == null) {
-            fixProcessor = new QuickFixProcessorImpl();
-            assistProcessors =
-                    new QuickAssistProcessor[]{new QuickAssistProcessorImpl(), new AdvancedQuickAssistProcessor()};
-        }
         messageFilter.registerMessageRecipient(RoutingTypes.COMPUTE_CORRECTION, new MessageFilter.MessageRecipient<ComputeCorrMessage>() {
             @Override
             public void onMessageReceived(ComputeCorrMessage message) {
                 computateProposals(message);
             }
         });
-    }
-
-    public void setCu(CompilationUnit cu) {
-        this.cu = cu;
-    }
-
-    public void computateProposals(ComputeCorrMessage message) {
-        JsoStringMap<JavaCompletionProposal> proposalMap = JsoStringMap.create();
-        int documentOffset = message.documentOffset();
-
-        WorkerDocument document = new WorkerDocument(message.documentContent());
-        AssistContext context = null;
-        if (cu != null) {
-            int length = message.documentSelectionLength();
-            context = new AssistContext(document, documentOffset, length, cu);
-        }
-
-
-        fErrorMessage = null;
-        Array<ProblemLocationMessage> problemLocations = message.problemLocations();
-        ArrayList<JavaCompletionProposal> proposals = new ArrayList<JavaCompletionProposal>(10);
-        try {
-            if (context != null && problemLocations != null) {
-                IStatus status =
-                        collectProposals(context, problemLocations, true, !message.updatedOffset(), proposals);
-                if (!status.isOK()) {
-                    fErrorMessage = status.getMessage();
-                    //TODO
-                    //JavaPlugin.log(status);
-                }
-            }
-        } catch (CoreException e) {
-            //TODO log error
-            throw new RuntimeException(e);
-        }
-        MessagesImpls.CAProposalsComputedMessageImpl caComputedMessage = MessagesImpls.CAProposalsComputedMessageImpl.make();
-        caComputedMessage.setId(message.id());
-        JsoArray<WorkerProposal> workerProposals = JsoArray.create();
-        for (JavaCompletionProposal proposal : proposals) {
-            MessagesImpls.WorkerProposalImpl prop = MessagesImpls.WorkerProposalImpl.make();
-            prop.setAutoInsertable(proposal.isAutoInsertable()).setDisplayText(proposal.getDisplayString())
-                .setImage(proposal.getImage() == null ? null : proposal.getImage().name());
-            String uuid = UUID.uuid();
-            prop.setId(uuid);
-            proposalMap.put(uuid, proposal);
-            workerProposals.add(prop);
-        }
-        workerProposalApplier.setQuickDocument(document);
-        workerProposalApplier.setQuickProposalMap(proposalMap);
-        caComputedMessage.setProposals(workerProposals);
-        worker.sendMessage(caComputedMessage.serialize());
     }
 
     public static IStatus collectProposals(InvocationContext context,
@@ -204,6 +150,57 @@ public class WorkerCorrectionProcessor {
         }
 
         return false;
+    }
+
+    public void setCu(CompilationUnit cu) {
+        this.cu = cu;
+    }
+
+    public void computateProposals(ComputeCorrMessage message) {
+        JsoStringMap<JavaCompletionProposal> proposalMap = JsoStringMap.create();
+        int documentOffset = message.documentOffset();
+
+        WorkerDocument document = new WorkerDocument(message.documentContent());
+        AssistContext context = null;
+        if (cu != null) {
+            int length = message.documentSelectionLength();
+            context = new AssistContext(document, documentOffset, length, cu);
+        }
+
+
+        fErrorMessage = null;
+        Array<ProblemLocationMessage> problemLocations = message.problemLocations();
+        ArrayList<JavaCompletionProposal> proposals = new ArrayList<JavaCompletionProposal>(10);
+        try {
+            if (context != null && problemLocations != null) {
+                IStatus status =
+                        collectProposals(context, problemLocations, true, !message.updatedOffset(), proposals);
+                if (!status.isOK()) {
+                    fErrorMessage = status.getMessage();
+                    //TODO
+                    //JavaPlugin.log(status);
+                }
+            }
+        } catch (CoreException e) {
+            //TODO log error
+            throw new RuntimeException(e);
+        }
+        MessagesImpls.CAProposalsComputedMessageImpl caComputedMessage = MessagesImpls.CAProposalsComputedMessageImpl.make();
+        caComputedMessage.setId(message.id());
+        JsoArray<WorkerProposal> workerProposals = JsoArray.create();
+        for (JavaCompletionProposal proposal : proposals) {
+            MessagesImpls.WorkerProposalImpl prop = MessagesImpls.WorkerProposalImpl.make();
+            prop.setAutoInsertable(proposal.isAutoInsertable()).setDisplayText(proposal.getDisplayString())
+                .setImage(proposal.getImage() == null ? null : proposal.getImage().name());
+            String uuid = UUID.uuid();
+            prop.setId(uuid);
+            proposalMap.put(uuid, proposal);
+            workerProposals.add(prop);
+        }
+        workerProposalApplier.setQuickDocument(document);
+        workerProposalApplier.setQuickProposalMap(proposalMap);
+        caComputedMessage.setProposals(workerProposals);
+        worker.sendMessage(caComputedMessage.serialize());
     }
 
 }

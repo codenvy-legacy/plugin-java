@@ -10,6 +10,17 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.worker;
 
+import com.codenvy.ide.api.text.edits.CopySourceEdit;
+import com.codenvy.ide.api.text.edits.CopyTargetEdit;
+import com.codenvy.ide.api.text.edits.CopyingRangeMarker;
+import com.codenvy.ide.api.text.edits.DeleteEdit;
+import com.codenvy.ide.api.text.edits.InsertEdit;
+import com.codenvy.ide.api.text.edits.MoveSourceEdit;
+import com.codenvy.ide.api.text.edits.MoveTargetEdit;
+import com.codenvy.ide.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.api.text.edits.RangeMarker;
+import com.codenvy.ide.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.collections.js.JsoArray;
@@ -54,17 +65,6 @@ import com.codenvy.ide.ext.java.messages.Problem;
 import com.codenvy.ide.ext.java.messages.RemoveFqnMessage;
 import com.codenvy.ide.ext.java.messages.RoutingTypes;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
-import com.codenvy.ide.api.text.edits.CopySourceEdit;
-import com.codenvy.ide.api.text.edits.CopyTargetEdit;
-import com.codenvy.ide.api.text.edits.CopyingRangeMarker;
-import com.codenvy.ide.api.text.edits.DeleteEdit;
-import com.codenvy.ide.api.text.edits.InsertEdit;
-import com.codenvy.ide.api.text.edits.MoveSourceEdit;
-import com.codenvy.ide.api.text.edits.MoveTargetEdit;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.RangeMarker;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.webworker.client.MessageEvent;
@@ -83,7 +83,7 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
     private static WorkerMessageHandler      instance;
     private final  WorkerOutlineModelUpdater outlineModelUpdater;
     private        WorkerCorrectionProcessor correctionProcessor;
-    private        WorkerNameEnvironment     nameEnvironment;
+    private        INameEnvironment     nameEnvironment;
     private HashMap<String, String> options                  = new HashMap<String, String>();
     private Map<String, String>     preferenceFormatSettings = new HashMap<String, String>();
     private MessageFilter                      messageFilter;
@@ -171,6 +171,20 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
         });
     }
 
+    public static WorkerMessageHandler get() {
+        return instance;
+    }
+
+    /** Creates a JsoArray from a Java array. */
+    public static <M> JsoArray<M> from(M... array) {
+        JsoArray<M> result = JsoArray.create();
+        for (M s : array) {
+            if(s != null)
+              result.add(s);
+        }
+        return result;
+    }
+
     private Jso convertTextEditToJso(TextEdit edit) {
         Jso textEdit = Jso.create();
         textEdit.addField("offSet", edit.getOffset());
@@ -235,10 +249,6 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
             edits.add(child);
         }
         return edits;
-    }
-
-    public static WorkerMessageHandler get() {
-        return instance;
     }
 
     private void initOptions() {
@@ -406,16 +416,6 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
         if (templateStore == null)
             templateStore = new TemplateStore();
         return templateStore;
-    }
-
-    /** Creates a JsoArray from a Java array. */
-    public static <M> JsoArray<M> from(M... array) {
-        JsoArray<M> result = JsoArray.create();
-        for (M s : array) {
-            if(s != null)
-              result.add(s);
-        }
-        return result;
     }
 
     public INameEnvironment getNameEnvironment() {

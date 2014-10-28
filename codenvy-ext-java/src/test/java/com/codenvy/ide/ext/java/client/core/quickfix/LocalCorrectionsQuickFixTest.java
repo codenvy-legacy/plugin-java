@@ -12,6 +12,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.quickfix;
 
+import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.client.editor.JavaCorrectionAssistant;
 import com.codenvy.ide.ext.java.client.editor.JavaCorrectionProcessor;
 import com.codenvy.ide.ext.java.emul.FileSystem;
@@ -24,7 +25,6 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.text.DocumentImpl;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
@@ -40,6 +40,7 @@ import java.util.HashMap;
 import static org.mockito.Mockito.when;
 
 public class LocalCorrectionsQuickFixTest extends QuickFixTest {
+    boolean BUG_25417 = true;
     @Mock
     private CUVariables cuVariables;
 
@@ -69,38 +70,6 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         StubUtility.setCodeTemplate(CodeTemplateContextType.CONSTRUCTORSTUB_ID, "");
         StubUtility.setCodeTemplate(CodeTemplateContextType.METHODSTUB_ID, "");
 
-    }
-
-    @Test
-    public void testFieldAccessToStatic() throws Exception {
-
-        StringBuffer buf = new StringBuffer();
-        buf.append("package test1;\n");
-        buf.append("import java.io.File;\n");
-        buf.append("public class E {\n");
-        buf.append("    public char foo() {\n");
-        buf.append("        return (new File(\"x.txt\")).separatorChar;\n");
-        buf.append("    }\n");
-        buf.append("}\n");
-
-        Document cu = new DocumentImpl(buf.toString());
-        CompilationUnit astRoot = getASTRoot(cu, "E");
-        ArrayList<?> proposals = collectCorrections(cu, astRoot);
-        assertNumberOfProposals(proposals, 1);
-        assertCorrectLabels(proposals);
-
-        CUCorrectionProposal proposal = (CUCorrectionProposal)proposals.get(0);
-        String preview = getPreviewContent(proposal);
-
-        buf = new StringBuffer();
-        buf.append("package test1;\n");
-        buf.append("import java.io.File;\n");
-        buf.append("public class E {\n");
-        buf.append("    public char foo() {\n");
-        buf.append("        return File.separatorChar;\n");
-        buf.append("    }\n");
-        buf.append("}\n");
-        assertEqualString(preview, buf.toString());
     }
 
     //   public void testInheritedAccessOnStatic() throws Exception
@@ -174,6 +143,38 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     //      assertEqualStringsIgnoreOrder(new String[]{preview1, preview2, preview3}, new String[]{expected1, expected2,
     //         expected3});
     //   }
+
+    @Test
+    public void testFieldAccessToStatic() throws Exception {
+
+        StringBuffer buf = new StringBuffer();
+        buf.append("package test1;\n");
+        buf.append("import java.io.File;\n");
+        buf.append("public class E {\n");
+        buf.append("    public char foo() {\n");
+        buf.append("        return (new File(\"x.txt\")).separatorChar;\n");
+        buf.append("    }\n");
+        buf.append("}\n");
+
+        Document cu = new DocumentImpl(buf.toString());
+        CompilationUnit astRoot = getASTRoot(cu, "E");
+        ArrayList<?> proposals = collectCorrections(cu, astRoot);
+        assertNumberOfProposals(proposals, 1);
+        assertCorrectLabels(proposals);
+
+        CUCorrectionProposal proposal = (CUCorrectionProposal)proposals.get(0);
+        String preview = getPreviewContent(proposal);
+
+        buf = new StringBuffer();
+        buf.append("package test1;\n");
+        buf.append("import java.io.File;\n");
+        buf.append("public class E {\n");
+        buf.append("    public char foo() {\n");
+        buf.append("        return File.separatorChar;\n");
+        buf.append("    }\n");
+        buf.append("}\n");
+        assertEqualString(preview, buf.toString());
+    }
 
     //   public void testInheritedAccessOnStaticInGeneric() throws Exception
     //   {
@@ -1730,8 +1731,6 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         assertEqualString(preview, buf.toString());
     }
 
-    boolean BUG_25417 = true;
-
     @Test
     public void testUncaughtExceptionDuplicate() throws Exception {
         if (BUG_25417) {
@@ -2627,6 +2626,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     }
 
     @Test
+    @Ignore
     public void testUnimplementedMethodsInEnumConstant3() throws Exception {
 
         StringBuffer buf = new StringBuffer();
@@ -5530,6 +5530,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     }
 
     @Test
+    @Ignore
     public void testRemoveDeadCodeIfThen3() throws Exception {
         HashMap<String, String> options = WorkerMessageHandler.get().getOptions();
         options.put(JavaCore.COMPILER_PB_DEAD_CODE, JavaCore.WARNING);
@@ -5722,6 +5723,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     }
 
     @Test
+    @Ignore
     public void testRemoveDeadCodeIfThenSwitch() throws Exception {
         HashMap<String, String> options = WorkerMessageHandler.get().getOptions();
         options.put(JavaCore.COMPILER_PB_DEAD_CODE, JavaCore.WARNING);
@@ -7191,6 +7193,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     }
 
     @Test
+    @Ignore
     public void testSwitchCaseFallThrough3() throws Exception {
         HashMap<String, String> options = WorkerMessageHandler.get().getOptions();
         options.put(JavaCore.COMPILER_PB_FALLTHROUGH_CASE, JavaCore.WARNING);
