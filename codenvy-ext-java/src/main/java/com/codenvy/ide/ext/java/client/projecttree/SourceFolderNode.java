@@ -38,9 +38,9 @@ public class SourceFolderNode extends FolderNode {
     /** {@inheritDoc} */
     @Override
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
-        if (isFile(item) && item.getName().endsWith(".java")) {
+        if ("file".equals(item.getType()) && item.getName().endsWith(".java")) {
             return ((JavaTreeStructure)treeStructure).newSourceFileNode(this, item);
-        } else if (isFolder(item)) {
+        } else if ("folder".equals(item.getType())) {
             return ((JavaTreeStructure)treeStructure).newPackageNode(this, item);
         } else {
             return super.createChildNode(item);
