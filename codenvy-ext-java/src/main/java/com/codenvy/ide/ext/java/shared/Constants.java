@@ -13,9 +13,11 @@ package com.codenvy.ide.ext.java.shared;
 /** @author Artem Zatsarynnyy */
 public interface Constants {
     final String MAVEN_ID = "maven";
+    final String ANT_ID   = "ant";
 
     // project type names
     final String MAVEN_NAME                   = "Maven Project";
+    final String ANT_NAME                     = "Ant Project";
     // project categories
     final String JAVA_CATEGORY                = "Java";
     // project attribute names

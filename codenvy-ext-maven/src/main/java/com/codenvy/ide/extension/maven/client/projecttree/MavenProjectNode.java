@@ -18,6 +18,7 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.JavaProjectNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -38,12 +39,6 @@ public class MavenProjectNode extends JavaProjectNode {
                             TreeSettings settings, EventBus eventBus, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-    }
-
-    /** Tests if the specified item is a source folder. */
-    protected static boolean isSourceFolder(ItemReference item) {
-        // TODO: read source folders from project/module attributes
-        return "folder".equals(item.getType()) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */
@@ -121,7 +116,7 @@ public class MavenProjectNode extends JavaProjectNode {
     protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
         if ("project".equals(item.getType())) {
             return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, getModule(item, modules));
-        } else if (isSourceFolder(item)) {
+        } else if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((MavenProjectTreeStructure)treeStructure).newSourceFolderNode(MavenProjectNode.this, item);
         } else if ("folder".equals(item.getType())) {
             return ((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(MavenProjectNode.this, item);

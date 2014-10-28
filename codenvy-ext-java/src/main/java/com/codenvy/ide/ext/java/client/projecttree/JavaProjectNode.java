@@ -22,6 +22,7 @@ import com.google.web.bindery.event.shared.EventBus;
  * Node that represents Java project.
  *
  * @author Artem Zatsarynnyy
+ * @author Vladyslav Zhukovskii
  */
 public class JavaProjectNode extends ProjectNode {
     public JavaProjectNode(TreeNode<?> parent, ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings,

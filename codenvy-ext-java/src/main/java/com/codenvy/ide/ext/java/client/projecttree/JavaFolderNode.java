@@ -24,6 +24,7 @@ import com.google.web.bindery.event.shared.EventBus;
  * {@link FolderNode} that may contains {@link SourceFolderNode}s.
  *
  * @author Artem Zatsarynnyy
+ * @author Vladyslav Zhukovskii
  */
 public class JavaFolderNode extends FolderNode {
 
@@ -33,16 +34,10 @@ public class JavaFolderNode extends FolderNode {
         super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
     }
 
-    /** Tests if the specified item is a source folder. */
-    protected static boolean isSourceFolder(ItemReference item) {
-        // TODO: read source folders from project/module attributes
-        return "folder".equals(item.getType()) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
-    }
-
     /** {@inheritDoc} */
     @Override
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
-        if (isSourceFolder(item)) {
+        if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return ((JavaTreeStructure)treeStructure).newSourceFolderNode(this, item);
         } else if ("folder".equals(item.getType())) {
             return ((JavaTreeStructure)treeStructure).newJavaFolderNode(this, item);
