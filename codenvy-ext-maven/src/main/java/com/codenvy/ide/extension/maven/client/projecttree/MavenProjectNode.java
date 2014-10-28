@@ -43,12 +43,7 @@ public class MavenProjectNode extends JavaProjectNode {
     /** Tests if the specified item is a source folder. */
     protected static boolean isSourceFolder(ItemReference item) {
         // TODO: read source folders from project/module attributes
-        return isFolder(item) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
-    }
-
-    /** Tests if the specified item is a project (module). */
-    protected static boolean isModule(ItemReference item) {
-        return "project".equals(item.getType());
+        return "folder".equals(item.getType()) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */
@@ -124,11 +119,11 @@ public class MavenProjectNode extends JavaProjectNode {
      */
     @Nullable
     protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
-        if (isModule(item)) {
+        if ("project".equals(item.getType())) {
             return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, getModule(item, modules));
         } else if (isSourceFolder(item)) {
             return ((MavenProjectTreeStructure)treeStructure).newSourceFolderNode(MavenProjectNode.this, item);
-        } else if (isFolder(item)) {
+        } else if ("folder".equals(item.getType())) {
             return ((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(MavenProjectNode.this, item);
         } else {
             return super.createChildNode(item);
@@ -141,7 +136,7 @@ public class MavenProjectNode extends JavaProjectNode {
      */
     @Nullable
     private ProjectDescriptor getModule(ItemReference folderItem, Array<ProjectDescriptor> modules) {
-        if (isModule(folderItem)) {
+        if ("project".equals(folderItem.getType())) {
             for (ProjectDescriptor module : modules.asIterable()) {
                 if (folderItem.getName().equals(module.getName())) {
                     return module;

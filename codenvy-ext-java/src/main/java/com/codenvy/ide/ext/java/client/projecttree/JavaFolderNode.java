@@ -36,7 +36,7 @@ public class JavaFolderNode extends FolderNode {
     /** Tests if the specified item is a source folder. */
     protected static boolean isSourceFolder(ItemReference item) {
         // TODO: read source folders from project/module attributes
-        return isFolder(item) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
+        return "folder".equals(item.getType()) && item.getPath().endsWith("src/main/java") || item.getPath().endsWith("src/test/java");
     }
 
     /** {@inheritDoc} */
@@ -44,7 +44,7 @@ public class JavaFolderNode extends FolderNode {
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
         if (isSourceFolder(item)) {
             return ((JavaTreeStructure)treeStructure).newSourceFolderNode(this, item);
-        } else if (isFolder(item)) {
+        } else if ("folder".equals(item.getType())) {
             return ((JavaTreeStructure)treeStructure).newJavaFolderNode(this, item);
         } else {
             return super.createChildNode(item);
