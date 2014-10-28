@@ -34,12 +34,6 @@ public abstract class ParserBaseTest extends BaseTest {
 
     protected char[] javaFiles;
 
-    protected interface Resources extends ClientBundle {
-        @Source("CreateJavaClassPresenter.txt")
-        TextResource resource();
-    }
-
-
     @Before
     public void gwtSetUp() {
         Resources rs = GWT.create(Resources.class);
@@ -54,6 +48,12 @@ public abstract class ParserBaseTest extends BaseTest {
         unit = (CompilationUnit)ast;
 
 //      new JavaCodeAssistantService(null, null);
+    }
+
+
+    protected interface Resources extends ClientBundle {
+        @Source("CreateJavaClassPresenter.txt")
+        TextResource resource();
     }
 
     private class MockNameEnv implements INameEnvironment {
@@ -117,6 +117,16 @@ public abstract class ParserBaseTest extends BaseTest {
          */
         @Override
         public void findExactTypes(char[] missingSimpleName, boolean b, int type, ISearchRequestor storage) {
+        }
+
+        @Override
+        public void setProjectPath(String projectPath) {
+
+        }
+
+        @Override
+        public void clearBlackList() {
+
         }
 
     }

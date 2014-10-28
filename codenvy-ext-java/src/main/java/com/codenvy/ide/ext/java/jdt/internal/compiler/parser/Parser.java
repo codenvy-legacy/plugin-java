@@ -13,98 +13,10 @@ package com.codenvy.ide.ext.java.jdt.internal.compiler.parser;
 
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
-import com.codenvy.ide.ext.java.jdt.core.util.JSONUtil;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.ASTVisitor;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.ClassFileConstants;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.CompilationResult;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.AND_AND_Expression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ASTNode;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.AbstractMethodDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.AbstractVariableDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.AllocationExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Annotation;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.AnnotationMethodDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Argument;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ArrayAllocationExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ArrayInitializer;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ArrayReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ArrayTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.AssertStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Assignment;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.BinaryExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Block;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.BreakStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.CaseStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.CastExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.CharLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ClassLiteralAccess;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.CombinedBinaryExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.CompoundAssignment;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ConditionalExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ConstructorDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ContinueStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.DoStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.DoubleLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.EmptyStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.EqualExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ExplicitConstructorCall;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Expression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.FalseLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.FieldDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.FieldReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.FloatLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ForStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ForeachStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.IfStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ImportReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Initializer;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.InstanceOfExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.IntLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Javadoc;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.LabeledStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.LocalDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.LongLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.MarkerAnnotation;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.MemberValuePair;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.MessageSend;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.MethodDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.NameReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.NormalAnnotation;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.NullLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.OR_OR_Expression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.OperatorIds;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.PostfixExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.PrefixExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.QualifiedAllocationExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.QualifiedNameReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.QualifiedSuperReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.QualifiedThisReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.QualifiedTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Reference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ReturnStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.SingleMemberAnnotation;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.SingleNameReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.SingleTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Statement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.StringLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.SuperReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.SwitchStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.SynchronizedStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ThisReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.ThrowStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TrueLiteral;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TryStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TypeDeclaration;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TypeParameter;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.UnaryExpression;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.UnionTypeReference;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.WhileStatement;
-import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Wildcard;
+import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.*;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.impl.CompilerOptions;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.impl.ReferenceContext;
@@ -122,7 +34,6 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.problem.ProblemSeverities;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Messages;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util;
 import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 
 import java.util.ArrayList;
@@ -207,93 +118,169 @@ public class Parser implements ParserBasicInformation, TerminalTokens, OperatorI
 //        TextResource readebleNames();
 //    }
 
-    protected static final int THIS_CALL = ExplicitConstructorCall.This;
-
-    protected static final int SUPER_CALL = ExplicitConstructorCall.Super;
-
     public static final char[] FALL_THROUGH_TAG = "$FALL-THROUGH$".toCharArray(); //$NON-NLS-1$
-
-    public static char asb[] = null;
-
-    public static char asr[] = null;
-
+    public static final int BracketKinds = 3;
+    public static final int CurlyBracket = 2;
+    public static final int RoundBracket = 0;
+    public static final int SquareBracket = 1;
+    protected static final int THIS_CALL = ExplicitConstructorCall.This;
+    protected static final int SUPER_CALL = ExplicitConstructorCall.Super;
     // ast stack
     protected final static int AstStackIncrement = 100;
-
-    public static char base_action[] = null;
-
-    public static final int BracketKinds = 3;
-
-    public static short check_table[] = null;
-
-    public static final int CurlyBracket = 2;
-
-    private static final boolean DEBUG = false;
-
-    private static final boolean DEBUG_AUTOMATON = false;
-
+    protected ASTNode[] astStack = new ASTNode[AstStackIncrement];
+    ASTNode[] noAstNodes = new ASTNode[AstStackIncrement];
     // expression stack
     protected final static int ExpressionStackIncrement = 100;
-
+    protected Expression[] expressionStack = new Expression[ExpressionStackIncrement];
+    Expression[] noExpressions = new Expression[ExpressionStackIncrement];
     protected final static int GenericsStackIncrement = 10;
-
-    public static char in_symb[] = null;
-
-    public static char lhs[] = null;
-
-    public static String name[] = null;
-
-    public static char nasb[] = null;
-
-    public static char nasr[] = null;
-
-    public static char non_terminal_index[] = null;
-
-    public static String readableName[] = null;
-
-    public static byte rhs[] = null;
-
-    public static int[] reverse_index = null;
-
-    public static char[] recovery_templates_index = null;
-
-    public static char[] recovery_templates = null;
-
-    public static char[] statements_recovery_filter = null;
-
-    public static long rules_compliance[] = null;
-
-    public static final int RoundBracket = 0;
-
-    public static byte scope_la[] = null;
-
-    public static char scope_lhs[] = null;
-
-    public static char scope_prefix[] = null;
-
-    public static char scope_rhs[] = null;
-
-    public static char scope_state[] = null;
-
-    public static char scope_state_set[] = null;
-
-    public static char scope_suffix[] = null;
-
-    public static final int SquareBracket = 1;
-
+    protected int[] genericsIdentifiersLengthStack = new int[GenericsStackIncrement];
+    protected int[] genericsLengthStack = new int[GenericsStackIncrement];
+    protected ASTNode[] genericsStack = new ASTNode[GenericsStackIncrement];
     // internal data for the automat
     protected final static int StackIncrement = 255;
-
+    protected int[] stack = new int[StackIncrement];
+    private static final boolean DEBUG = false;
+    private static final boolean DEBUG_AUTOMATON = false;
+    public static char asb[] = null;
+    public static char asr[] = null;
+    public static char base_action[] = null;
+    public static short check_table[] = null;
+    public static char in_symb[] = null;
+    public static char lhs[] = null;
+    public static String name[] = null;
+    public static char nasb[] = null;
+    public static char nasr[] = null;
+    public static char non_terminal_index[] = null;
+    public static String readableName[] = null;
+    public static byte rhs[] = null;
+    public static int[] reverse_index = null;
+    public static char[] recovery_templates_index = null;
+    public static char[] recovery_templates = null;
+    public static char[] statements_recovery_filter = null;
+    public static long rules_compliance[] = null;
+    public static byte scope_la[] = null;
+    public static char scope_lhs[] = null;
+    public static char scope_prefix[] = null;
+    public static char scope_rhs[] = null;
+    public static char scope_state[] = null;
+    public static char scope_state_set[] = null;
+    public static char scope_suffix[] = null;
     public static char term_action[] = null;
-
     public static byte term_check[] = null;
-
     public static char terminal_index[] = null;
-
     public static boolean VERBOSE_RECOVERY = false;
-
     static {
         initTables();
+    }
+    public CompilationUnitDeclaration compilationUnit; /* the result from parse() */
+    public int currentToken;
+    public int firstToken; // handle for multiple parsing goals
+    public int lastAct; // handle for multiple parsing goals
+    public ReferenceContext referenceContext;
+    public boolean reportOnlyOneSyntaxError = false;
+    public boolean reportSyntaxErrorIsRequired = true;
+    // statement recovery
+    public boolean methodRecoveryActivated = false;
+    public RecoveryScanner recoveryScanner;
+    // scanner token
+    public Scanner scanner;
+    // javadoc
+    public Javadoc javadoc;
+    public JavadocParser javadocParser;
+    // inner classes...]
+    protected int astLengthPtr;
+    // one)
+    protected int[] astLengthStack;
+    protected int astPtr;
+    protected RecoveredElement currentElement;
+    protected boolean diet = false; // tells the scanner to jump over some parts of the code/expressions like method bodies
+    protected int dietInt = 0; // if > 0 force the none-diet-parsing mode (even if diet if requested) [field parsing with anonymous
+    protected int endPosition; // accurate only when used ! (the start position is pushed into intStack while the end the current
+    protected int endStatementPosition;
+    protected int expressionLengthPtr;
+    protected int[] expressionLengthStack;
+    protected int expressionPtr;
+    // generics management
+    protected int genericsIdentifiersLengthPtr;
+    protected int genericsLengthPtr;
+    protected int genericsPtr;
+    protected boolean hasError;
+    protected boolean hasReportedError;
+    // identifiers stacks
+    protected int identifierLengthPtr;
+    protected int[] identifierLengthStack;
+    protected long[] identifierPositionStack;
+    protected int identifierPtr;
+    protected char[][] identifierStack;
+    protected boolean ignoreNextOpeningBrace;
+    // positions , dimensions , .... (int stacks)
+    protected int intPtr;
+    protected int[] intStack;
+    // error recovery management
+    protected int lastCheckPoint;
+
+    protected int lastErrorEndPosition;
+
+    protected int lastErrorEndPositionBeforeRecovery = -1;
+
+    protected int lastIgnoredToken, nextIgnoredToken;
+
+    protected int listLength; // for recovering some incomplete list (interfaces, throws or parameters)
+
+    protected int listTypeParameterLength; // for recovering some incomplete list (type parameters)
+
+    protected int lParenPos, rParenPos; // accurate only when used !
+
+    protected int modifiers;
+
+    protected int modifiersSourceStart;
+
+    protected int[] nestedMethod; // the ptr is nestedType
+
+    protected int nestedType, dimensions;
+    // modifiers dimensions nestedType etc.......
+    protected boolean optimizeStringLiterals = true;
+    protected CompilerOptions options;
+    protected ProblemReporter problemReporter;
+    protected int rBraceStart, rBraceEnd, rBraceSuccessorStart; // accurate only when used !
+    protected int realBlockPtr;
+    protected int[] realBlockStack;
+    protected int recoveredStaticInitializerStart;
+    protected boolean restartRecovery;
+    protected boolean annotationRecoveryActivated = true;
+    protected int lastPosistion;
+    protected boolean statementRecoveryActivated = false;
+    protected TypeDeclaration[] recoveredTypes;
+    protected int recoveredTypePtr;
+    protected int nextTypeStart;
+    protected TypeDeclaration pendingRecoveredType;
+    protected int stateStackTop;
+    protected int synchronizedBlockSourceStart;
+    protected int[] variablesCounter;
+    protected boolean checkExternalizeStrings;
+    protected boolean recordStringLiterals;
+    // used for recovery
+    protected int lastJavadocEnd;
+
+    public Parser(ProblemReporter problemReporter, boolean optimizeStringLiterals) {
+
+        this.problemReporter = problemReporter;
+        this.options = problemReporter.options;
+        this.optimizeStringLiterals = optimizeStringLiterals;
+        initializeScanner();
+        this.astLengthStack = new int[50];
+        this.expressionLengthStack = new int[30];
+        this.intStack = new int[50];
+        this.identifierStack = new char[30][];
+        this.identifierLengthStack = new int[30];
+        this.nestedMethod = new int[30];
+        this.realBlockStack = new int[30];
+        this.identifierPositionStack = new long[30];
+        this.variablesCounter = new int[30];
+
+        // javadoc support
+        this.javadocParser = createJavadocParser();
     }
 
     public static int asi(int state) {
@@ -336,52 +323,45 @@ try {
 
 
 //        ParserResources resources = GWT.create(ParserResources.class);
-        RSC rsc = RSC.get();
+        RSC rsc = new RSC();
 
-        lhs = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser1()));// readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        char[] chars = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser2())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        lhs = rsc.parser1();// readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        char[] chars = rsc.parser2(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
         check_table = new short[chars.length];
         for (int c = chars.length; c-- > 0; ) {
             check_table[c] = (short)(chars[c] - 32768);
         }
-        asb = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser3())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        asr = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser4()));// readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        nasb = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser5())); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        nasr = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser6()));//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        terminal_index = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser7())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        non_terminal_index =
-                JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser8())); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        term_action = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser9()));//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        asb = rsc.parser3(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        asr = rsc.parser4();// readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        nasb = rsc.parser5(); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        nasr = rsc.parser6();//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        terminal_index = rsc.parser7(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        non_terminal_index = rsc.parser8(); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        term_action = rsc.parser9();//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
 
-        scope_prefix = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser10())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        scope_suffix = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser11())); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        scope_lhs = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser12()));//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        scope_state_set =
-                JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser13())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        scope_rhs = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser14()));//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        scope_state = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser15())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        in_symb = JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser16())); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_prefix = rsc.parser10(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_suffix = rsc.parser11(); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_lhs = rsc.parser12();//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_state_set = rsc.parser13(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_rhs = rsc.parser14();//readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_state = rsc.parser15(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        in_symb = rsc.parser16(); // readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
 
-        rhs = JSONUtil.parseArrayToByteArray(new JSONObject(rsc.parser17())); //readByteTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        term_check =
-                JSONUtil.parseArrayToByteArray(new JSONObject(rsc.parser18())); // readByteTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        scope_la = JSONUtil.parseArrayToByteArray(new JSONObject(rsc.parser19())); //readByteTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        rhs = rsc.parser17(); //readByteTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        term_check =rsc.parser18(); // readByteTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        scope_la = rsc.parser19(); //readByteTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
 
-        name = readNameTable(JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser20()))); //$NON-NLS-1$
+        name = readNameTable(rsc.parser20()); //$NON-NLS-1$
 
-        rules_compliance =
-                JSONUtil.parseJsonAsLongArray(new JSONObject(rsc.parser21())); //readLongTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        readableName = parseJsonArray(new JSONObject(rsc.readableNames())); // readReadableNameTable(READABLE_NAMES_FILE_NAME);
+        rules_compliance = rsc.parser21(); //readLongTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        readableName = rsc.readableNames(); // readReadableNameTable(READABLE_NAMES_FILE_NAME);
 
         reverse_index = computeReverseTable(terminal_index, non_terminal_index, name);
 
-        recovery_templates_index =
-                JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser22())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
-        recovery_templates =
-                JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser23())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        recovery_templates_index = rsc.parser22(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        recovery_templates = rsc.parser23(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
 
-        statements_recovery_filter =
-                JSONUtil.parseArrayToCharArray(new JSONObject(rsc.parser24())); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
+        statements_recovery_filter = rsc.parser24(); //readTable(prefix + (++i) + ".rsc"); //$NON-NLS-1$
 
         base_action = lhs;
 }
@@ -436,189 +416,6 @@ catch (Exception e){
         byte b = term_check[i];
         if (b == sym) return term_action[i];
         else return term_action[base_action[state]];
-    }
-
-    protected int astLengthPtr;
-
-    protected int[] astLengthStack;
-
-    protected int astPtr;
-
-    protected ASTNode[] astStack = new ASTNode[AstStackIncrement];
-
-    public CompilationUnitDeclaration compilationUnit; /* the result from parse() */
-
-    protected RecoveredElement currentElement;
-
-    public int currentToken;
-
-    protected boolean diet = false; // tells the scanner to jump over some parts of the code/expressions like method bodies
-
-    protected int dietInt = 0; // if > 0 force the none-diet-parsing mode (even if diet if requested) [field parsing with anonymous
-    // inner classes...]
-
-    protected int endPosition; // accurate only when used ! (the start position is pushed into intStack while the end the current
-    // one)
-
-    protected int endStatementPosition;
-
-    protected int expressionLengthPtr;
-
-    protected int[] expressionLengthStack;
-
-    protected int expressionPtr;
-
-    protected Expression[] expressionStack = new Expression[ExpressionStackIncrement];
-
-    public int firstToken; // handle for multiple parsing goals
-
-    // generics management
-    protected int genericsIdentifiersLengthPtr;
-
-    protected int[] genericsIdentifiersLengthStack = new int[GenericsStackIncrement];
-
-    protected int genericsLengthPtr;
-
-    protected int[] genericsLengthStack = new int[GenericsStackIncrement];
-
-    protected int genericsPtr;
-
-    protected ASTNode[] genericsStack = new ASTNode[GenericsStackIncrement];
-
-    protected boolean hasError;
-
-    protected boolean hasReportedError;
-
-    // identifiers stacks
-    protected int identifierLengthPtr;
-
-    protected int[] identifierLengthStack;
-
-    protected long[] identifierPositionStack;
-
-    protected int identifierPtr;
-
-    protected char[][] identifierStack;
-
-    protected boolean ignoreNextOpeningBrace;
-
-    // positions , dimensions , .... (int stacks)
-    protected int intPtr;
-
-    protected int[] intStack;
-
-    public int lastAct; // handle for multiple parsing goals
-
-    // error recovery management
-    protected int lastCheckPoint;
-
-    protected int lastErrorEndPosition;
-
-    protected int lastErrorEndPositionBeforeRecovery = -1;
-
-    protected int lastIgnoredToken, nextIgnoredToken;
-
-    protected int listLength; // for recovering some incomplete list (interfaces, throws or parameters)
-
-    protected int listTypeParameterLength; // for recovering some incomplete list (type parameters)
-
-    protected int lParenPos, rParenPos; // accurate only when used !
-
-    protected int modifiers;
-
-    protected int modifiersSourceStart;
-
-    protected int[] nestedMethod; // the ptr is nestedType
-
-    protected int nestedType, dimensions;
-
-    ASTNode[] noAstNodes = new ASTNode[AstStackIncrement];
-
-    Expression[] noExpressions = new Expression[ExpressionStackIncrement];
-
-    // modifiers dimensions nestedType etc.......
-    protected boolean optimizeStringLiterals = true;
-
-    protected CompilerOptions options;
-
-    protected ProblemReporter problemReporter;
-
-    protected int rBraceStart, rBraceEnd, rBraceSuccessorStart; // accurate only when used !
-
-    protected int realBlockPtr;
-
-    protected int[] realBlockStack;
-
-    protected int recoveredStaticInitializerStart;
-
-    public ReferenceContext referenceContext;
-
-    public boolean reportOnlyOneSyntaxError = false;
-
-    public boolean reportSyntaxErrorIsRequired = true;
-
-    protected boolean restartRecovery;
-
-    protected boolean annotationRecoveryActivated = true;
-
-    protected int lastPosistion;
-
-    // statement recovery
-    public boolean methodRecoveryActivated = false;
-
-    protected boolean statementRecoveryActivated = false;
-
-    protected TypeDeclaration[] recoveredTypes;
-
-    protected int recoveredTypePtr;
-
-    protected int nextTypeStart;
-
-    protected TypeDeclaration pendingRecoveredType;
-
-    public RecoveryScanner recoveryScanner;
-
-    // scanner token
-    public Scanner scanner;
-
-    protected int[] stack = new int[StackIncrement];
-
-    protected int stateStackTop;
-
-    protected int synchronizedBlockSourceStart;
-
-    protected int[] variablesCounter;
-
-    protected boolean checkExternalizeStrings;
-
-    protected boolean recordStringLiterals;
-
-    // javadoc
-    public Javadoc javadoc;
-
-    public JavadocParser javadocParser;
-
-    // used for recovery
-    protected int lastJavadocEnd;
-
-    public Parser(ProblemReporter problemReporter, boolean optimizeStringLiterals) {
-
-        this.problemReporter = problemReporter;
-        this.options = problemReporter.options;
-        this.optimizeStringLiterals = optimizeStringLiterals;
-        initializeScanner();
-        this.astLengthStack = new int[50];
-        this.expressionLengthStack = new int[30];
-        this.intStack = new int[50];
-        this.identifierStack = new char[30][];
-        this.identifierLengthStack = new int[30];
-        this.nestedMethod = new int[30];
-        this.realBlockStack = new int[30];
-        this.identifierPositionStack = new long[30];
-        this.variablesCounter = new int[30];
-
-        // javadoc support
-        this.javadocParser = createJavadocParser();
     }
 
     protected void annotationRecoveryCheckPoint(int start, int end) {
@@ -10046,162 +9843,6 @@ catch (Exception e){
         this.realBlockStack[this.realBlockPtr] = i;
     }
 
-    public class MethodVisitor extends ASTVisitor {
-        public ASTVisitor typeVisitor;
-
-        TypeDeclaration enclosingType; // used only for initializer
-
-        TypeDeclaration[] types = new TypeDeclaration[0];
-
-        int typePtr = -1;
-
-        public void endVisit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
-            endVisitMethod(constructorDeclaration, scope);
-        }
-
-        public void endVisit(Initializer initializer, MethodScope scope) {
-            if (initializer.block == null)
-                return;
-            TypeDeclaration[] foundTypes = null;
-            int length = 0;
-            if (this.typePtr > -1) {
-                length = this.typePtr + 1;
-                foundTypes = new TypeDeclaration[length];
-                System.arraycopy(this.types, 0, foundTypes, 0, length);
-            }
-            ReferenceContext oldContext = Parser.this.referenceContext;
-            Parser.this.recoveryScanner.resetTo(initializer.bodyStart, initializer.bodyEnd);
-            Scanner oldScanner = Parser.this.scanner;
-            Parser.this.scanner = Parser.this.recoveryScanner;
-            parseStatements(this.enclosingType, initializer.bodyStart, initializer.bodyEnd, foundTypes,
-                            Parser.this.compilationUnit);
-            Parser.this.scanner = oldScanner;
-            Parser.this.referenceContext = oldContext;
-
-            for (int i = 0; i < length; i++) {
-                foundTypes[i].traverse(this.typeVisitor, scope);
-            }
-        }
-
-        public void endVisit(MethodDeclaration methodDeclaration, ClassScope scope) {
-            endVisitMethod(methodDeclaration, scope);
-        }
-
-        private void endVisitMethod(AbstractMethodDeclaration methodDeclaration, ClassScope scope) {
-            TypeDeclaration[] foundTypes = null;
-            int length = 0;
-            if (this.typePtr > -1) {
-                length = this.typePtr + 1;
-                foundTypes = new TypeDeclaration[length];
-                System.arraycopy(this.types, 0, foundTypes, 0, length);
-            }
-            ReferenceContext oldContext = Parser.this.referenceContext;
-            Parser.this.recoveryScanner.resetTo(methodDeclaration.bodyStart, methodDeclaration.bodyEnd);
-            Scanner oldScanner = Parser.this.scanner;
-            Parser.this.scanner = Parser.this.recoveryScanner;
-            parseStatements(methodDeclaration, methodDeclaration.bodyStart, methodDeclaration.bodyEnd, foundTypes,
-                            Parser.this.compilationUnit);
-            Parser.this.scanner = oldScanner;
-            Parser.this.referenceContext = oldContext;
-
-            for (int i = 0; i < length; i++) {
-                foundTypes[i].traverse(this.typeVisitor, scope);
-            }
-        }
-
-        public boolean visit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
-            this.typePtr = -1;
-            return true;
-        }
-
-        public boolean visit(Initializer initializer, MethodScope scope) {
-            this.typePtr = -1;
-            if (initializer.block == null)
-                return false;
-            return true;
-        }
-
-        public boolean visit(MethodDeclaration methodDeclaration, ClassScope scope) {
-            this.typePtr = -1;
-            return true;
-        }
-
-        private boolean visit(TypeDeclaration typeDeclaration) {
-            if (this.types.length <= ++this.typePtr) {
-                int length = this.typePtr;
-                System.arraycopy(this.types, 0, this.types = new TypeDeclaration[length * 2 + 1], 0, length);
-            }
-            this.types[this.typePtr] = typeDeclaration;
-            return false;
-        }
-
-        public boolean visit(TypeDeclaration typeDeclaration, BlockScope scope) {
-            return this.visit(typeDeclaration);
-        }
-
-        public boolean visit(TypeDeclaration typeDeclaration, ClassScope scope) {
-            return this.visit(typeDeclaration);
-        }
-    }
-
-    public class TypeVisitor extends ASTVisitor {
-        public MethodVisitor methodVisitor;
-
-        TypeDeclaration[] types = new TypeDeclaration[0];
-
-        int typePtr = -1;
-
-        public void endVisit(TypeDeclaration typeDeclaration, BlockScope scope) {
-            endVisitType();
-        }
-
-        public void endVisit(TypeDeclaration typeDeclaration, ClassScope scope) {
-            endVisitType();
-        }
-
-        private void endVisitType() {
-            this.typePtr--;
-        }
-
-        public boolean visit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
-            if (constructorDeclaration.isDefaultConstructor())
-                return false;
-
-            constructorDeclaration.traverse(this.methodVisitor, scope);
-            return false;
-        }
-
-        public boolean visit(Initializer initializer, MethodScope scope) {
-            if (initializer.block == null)
-                return false;
-            this.methodVisitor.enclosingType = this.types[this.typePtr];
-            initializer.traverse(this.methodVisitor, scope);
-            return false;
-        }
-
-        public boolean visit(MethodDeclaration methodDeclaration, ClassScope scope) {
-            methodDeclaration.traverse(this.methodVisitor, scope);
-            return false;
-        }
-
-        private boolean visit(TypeDeclaration typeDeclaration) {
-            if (this.types.length <= ++this.typePtr) {
-                int length = this.typePtr;
-                System.arraycopy(this.types, 0, this.types = new TypeDeclaration[length * 2 + 1], 0, length);
-            }
-            this.types[this.typePtr] = typeDeclaration;
-            return true;
-        }
-
-        public boolean visit(TypeDeclaration typeDeclaration, BlockScope scope) {
-            return this.visit(typeDeclaration);
-        }
-
-        public boolean visit(TypeDeclaration typeDeclaration, ClassScope scope) {
-            return this.visit(typeDeclaration);
-        }
-    }
-
     protected void recoverStatements() {
 
         MethodVisitor methodVisitor = new MethodVisitor();
@@ -10611,5 +10252,161 @@ catch (Exception e){
 
         exp.sourceEnd = this.intStack[this.intPtr--];
         exp.sourceStart = this.intStack[this.intPtr--];
+    }
+
+    public class MethodVisitor extends ASTVisitor {
+        public ASTVisitor typeVisitor;
+
+        TypeDeclaration enclosingType; // used only for initializer
+
+        TypeDeclaration[] types = new TypeDeclaration[0];
+
+        int typePtr = -1;
+
+        public void endVisit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
+            endVisitMethod(constructorDeclaration, scope);
+        }
+
+        public void endVisit(Initializer initializer, MethodScope scope) {
+            if (initializer.block == null)
+                return;
+            TypeDeclaration[] foundTypes = null;
+            int length = 0;
+            if (this.typePtr > -1) {
+                length = this.typePtr + 1;
+                foundTypes = new TypeDeclaration[length];
+                System.arraycopy(this.types, 0, foundTypes, 0, length);
+            }
+            ReferenceContext oldContext = Parser.this.referenceContext;
+            Parser.this.recoveryScanner.resetTo(initializer.bodyStart, initializer.bodyEnd);
+            Scanner oldScanner = Parser.this.scanner;
+            Parser.this.scanner = Parser.this.recoveryScanner;
+            parseStatements(this.enclosingType, initializer.bodyStart, initializer.bodyEnd, foundTypes,
+                            Parser.this.compilationUnit);
+            Parser.this.scanner = oldScanner;
+            Parser.this.referenceContext = oldContext;
+
+            for (int i = 0; i < length; i++) {
+                foundTypes[i].traverse(this.typeVisitor, scope);
+            }
+        }
+
+        public void endVisit(MethodDeclaration methodDeclaration, ClassScope scope) {
+            endVisitMethod(methodDeclaration, scope);
+        }
+
+        private void endVisitMethod(AbstractMethodDeclaration methodDeclaration, ClassScope scope) {
+            TypeDeclaration[] foundTypes = null;
+            int length = 0;
+            if (this.typePtr > -1) {
+                length = this.typePtr + 1;
+                foundTypes = new TypeDeclaration[length];
+                System.arraycopy(this.types, 0, foundTypes, 0, length);
+            }
+            ReferenceContext oldContext = Parser.this.referenceContext;
+            Parser.this.recoveryScanner.resetTo(methodDeclaration.bodyStart, methodDeclaration.bodyEnd);
+            Scanner oldScanner = Parser.this.scanner;
+            Parser.this.scanner = Parser.this.recoveryScanner;
+            parseStatements(methodDeclaration, methodDeclaration.bodyStart, methodDeclaration.bodyEnd, foundTypes,
+                            Parser.this.compilationUnit);
+            Parser.this.scanner = oldScanner;
+            Parser.this.referenceContext = oldContext;
+
+            for (int i = 0; i < length; i++) {
+                foundTypes[i].traverse(this.typeVisitor, scope);
+            }
+        }
+
+        public boolean visit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
+            this.typePtr = -1;
+            return true;
+        }
+
+        public boolean visit(Initializer initializer, MethodScope scope) {
+            this.typePtr = -1;
+            if (initializer.block == null)
+                return false;
+            return true;
+        }
+
+        public boolean visit(MethodDeclaration methodDeclaration, ClassScope scope) {
+            this.typePtr = -1;
+            return true;
+        }
+
+        private boolean visit(TypeDeclaration typeDeclaration) {
+            if (this.types.length <= ++this.typePtr) {
+                int length = this.typePtr;
+                System.arraycopy(this.types, 0, this.types = new TypeDeclaration[length * 2 + 1], 0, length);
+            }
+            this.types[this.typePtr] = typeDeclaration;
+            return false;
+        }
+
+        public boolean visit(TypeDeclaration typeDeclaration, BlockScope scope) {
+            return this.visit(typeDeclaration);
+        }
+
+        public boolean visit(TypeDeclaration typeDeclaration, ClassScope scope) {
+            return this.visit(typeDeclaration);
+        }
+    }
+
+    public class TypeVisitor extends ASTVisitor {
+        public MethodVisitor methodVisitor;
+
+        TypeDeclaration[] types = new TypeDeclaration[0];
+
+        int typePtr = -1;
+
+        public void endVisit(TypeDeclaration typeDeclaration, BlockScope scope) {
+            endVisitType();
+        }
+
+        public void endVisit(TypeDeclaration typeDeclaration, ClassScope scope) {
+            endVisitType();
+        }
+
+        private void endVisitType() {
+            this.typePtr--;
+        }
+
+        public boolean visit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
+            if (constructorDeclaration.isDefaultConstructor())
+                return false;
+
+            constructorDeclaration.traverse(this.methodVisitor, scope);
+            return false;
+        }
+
+        public boolean visit(Initializer initializer, MethodScope scope) {
+            if (initializer.block == null)
+                return false;
+            this.methodVisitor.enclosingType = this.types[this.typePtr];
+            initializer.traverse(this.methodVisitor, scope);
+            return false;
+        }
+
+        public boolean visit(MethodDeclaration methodDeclaration, ClassScope scope) {
+            methodDeclaration.traverse(this.methodVisitor, scope);
+            return false;
+        }
+
+        private boolean visit(TypeDeclaration typeDeclaration) {
+            if (this.types.length <= ++this.typePtr) {
+                int length = this.typePtr;
+                System.arraycopy(this.types, 0, this.types = new TypeDeclaration[length * 2 + 1], 0, length);
+            }
+            this.types[this.typePtr] = typeDeclaration;
+            return true;
+        }
+
+        public boolean visit(TypeDeclaration typeDeclaration, BlockScope scope) {
+            return this.visit(typeDeclaration);
+        }
+
+        public boolean visit(TypeDeclaration typeDeclaration, ClassScope scope) {
+            return this.visit(typeDeclaration);
+        }
     }
 }
