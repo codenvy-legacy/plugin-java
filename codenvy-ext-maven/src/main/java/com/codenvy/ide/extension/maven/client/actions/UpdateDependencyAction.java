@@ -12,19 +12,19 @@ package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
-import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
+import com.codenvy.ide.ext.java.client.JavaResources;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /** @author Evgen Vidolob */
 @Singleton
-public class UpdateDependencyAction extends Action {
+public class UpdateDependencyAction extends ProjectAction {
 
     private final AppContext           appContext;
     private final AnalyticsEventLogger eventLogger;
@@ -37,7 +37,7 @@ public class UpdateDependencyAction extends Action {
                                   JavaResources resources,
                                   BuildContext buildContext,
                                   DependenciesUpdater dependenciesUpdater) {
-        super("Update Dependencies", "Update Dependencies", null, resources.updateDependencies());
+        super("Update Dependencies", "Update Dependencies", resources.updateDependencies());
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.buildContext = buildContext;
@@ -51,9 +51,8 @@ public class UpdateDependencyAction extends Action {
         dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getProjectDescription(), true);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
+    protected void updateProjectAction(ActionEvent e) {
         if (buildContext.isBuilding()) {
             e.getPresentation().setEnabled(false);
             return;
