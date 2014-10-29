@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.jdi.client.debug.expression;
 
 import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeLocalizationConstant;
-import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerClientService;
+import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerServiceClient;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
@@ -28,13 +28,13 @@ import javax.annotation.Nonnull;
 @Singleton
 public class EvaluateExpressionPresenter implements EvaluateExpressionView.ActionDelegate {
     private EvaluateExpressionView          view;
-    private DebuggerClientService           service;
+    private DebuggerServiceClient           service;
     private DebuggerInfo                    debuggerInfo;
     private JavaRuntimeLocalizationConstant constant;
 
     /** Create presenter. */
     @Inject
-    public EvaluateExpressionPresenter(EvaluateExpressionView view, DebuggerClientService service,
+    public EvaluateExpressionPresenter(EvaluateExpressionView view, DebuggerServiceClient service,
                                        JavaRuntimeLocalizationConstant constant) {
         this.view = view;
         this.view.setDelegate(this);

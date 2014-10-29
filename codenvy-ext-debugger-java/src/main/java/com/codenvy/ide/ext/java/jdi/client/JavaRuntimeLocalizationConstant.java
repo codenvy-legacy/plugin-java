@@ -87,6 +87,15 @@ public interface JavaRuntimeLocalizationConstant extends com.google.gwt.i18n.cli
     @Key("evaluateExpression")
     String evaluateExpression();
 
+    @Key("debugger.connecting")
+    String debuggerConnecting();
+
+    @Key("debugger.disconnecting")
+    String debuggerDisconnecting();
+
+    @Key("debugger.connected")
+    String debuggerConnected(String address);
+
     @Key("debugger.disconnected")
     String debuggerDisconnected(String address);
 

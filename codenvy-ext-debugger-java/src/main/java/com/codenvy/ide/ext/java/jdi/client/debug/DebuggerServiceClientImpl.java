@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.debug;
 
+import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeLocalizationConstant;
 import com.codenvy.ide.ext.java.jdi.shared.BreakPoint;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerEventList;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
@@ -25,7 +26,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-
 import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.MimeType.TEXT_PLAIN;
@@ -33,34 +33,27 @@ import static com.codenvy.ide.rest.HTTPHeader.ACCEPT;
 import static com.codenvy.ide.rest.HTTPHeader.CONTENTTYPE;
 
 /**
- * The implementation of {@link DebuggerClientService}.
+ * The implementation of {@link DebuggerServiceClient}.
  *
  * @author Vitaly Parfonov
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class DebuggerClientServiceImpl implements DebuggerClientService {
-    /** REST-service context. */
-    private final String              baseUrl;
-    private final AsyncRequestLoader  loader;
-    private final AsyncRequestFactory asyncRequestFactory;
+public class DebuggerServiceClientImpl implements DebuggerServiceClient {
+    private final String                          baseUrl;
+    private final AsyncRequestLoader              loader;
+    private final AsyncRequestFactory             asyncRequestFactory;
+    private final JavaRuntimeLocalizationConstant localizationConstant;
 
-    /**
-     * Create client service.
-     *
-     * @param baseUrl
-     *         REST-service context
-     * @param workspaceId
-     * @param loader
-     * @param asyncRequestFactory
-     */
     @Inject
-    protected DebuggerClientServiceImpl(@Named("restContext") String baseUrl,
+    protected DebuggerServiceClientImpl(@Named("restContext") String baseUrl,
                                         @Named("workspaceId") String workspaceId,
                                         AsyncRequestLoader loader,
-                                        AsyncRequestFactory asyncRequestFactory) {
+                                        AsyncRequestFactory asyncRequestFactory,
+                                        JavaRuntimeLocalizationConstant localizationConstant) {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
+        this.localizationConstant = localizationConstant;
         this.baseUrl = baseUrl + "/debug-java/" + workspaceId;
     }
 
@@ -69,14 +62,14 @@ public class DebuggerClientServiceImpl implements DebuggerClientService {
     public void connect(@Nonnull String host, int port, @Nonnull AsyncRequestCallback<DebuggerInfo> callback) {
         final String requestUrl = baseUrl + "/connect";
         final String params = "?host=" + host + "&port=" + port;
-        asyncRequestFactory.createGetRequest(requestUrl + params).loader(loader).send(callback);
+        asyncRequestFactory.createGetRequest(requestUrl + params).loader(loader, localizationConstant.debuggerConnecting()).send(callback);
     }
 
     /** {@inheritDoc} */
     @Override
     public void disconnect(@Nonnull String id, @Nonnull AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseUrl + "/disconnect/" + id;
-        asyncRequestFactory.createGetRequest(requestUrl).loader(loader, "Disconnecting... ").send(callback);
+        asyncRequestFactory.createGetRequest(requestUrl).loader(loader, localizationConstant.debuggerDisconnecting()).send(callback);
     }
 
     /** {@inheritDoc} */

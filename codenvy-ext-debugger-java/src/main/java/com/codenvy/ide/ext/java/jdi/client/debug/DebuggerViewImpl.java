@@ -41,7 +41,6 @@ import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
@@ -79,7 +78,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
     @UiField
     Label                           vmName;
     @UiField
-    Label                           variablesInfo;
+    Label                           executionPoint;
     @UiField
     ScrollPanel                     variablesPanel;
     @UiField
@@ -179,22 +178,18 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
             @Override
             public void onNodeClosed(TreeNodeElement<Variable> node) {
-                //do nothing
             }
 
             @Override
             public void onNodeContextMenu(int mouseX, int mouseY, TreeNodeElement<Variable> node) {
-                //do nothing
             }
 
             @Override
             public void onNodeDragStart(TreeNodeElement<Variable> node, MouseEvent event) {
-                //do nothing
             }
 
             @Override
             public void onNodeDragDrop(TreeNodeElement<Variable> node, MouseEvent event) {
-                //do nothing
             }
 
             @Override
@@ -212,39 +207,35 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
             @Override
             public void onRootContextMenu(int mouseX, int mouseY) {
-                //do nothing
             }
 
             @Override
             public void onRootDragDrop(MouseEvent event) {
-                //do nothing
             }
             
             @Override
             public void onKeyboard(KeyboardEvent event) {
-                //do nothing
             }
         });
 
-//        variables.asWidget().setSize("100%","100%");
         this.variablesPanel.add(variables);
         minimizeButton.ensureDebugId("debugger-minimizeBut");
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setVariablesInfo(boolean existInformation, Location location) {
+    public void setExecutionPoint(boolean existInformation, Location location) {
         StringBuilder labelText = new StringBuilder();
         if (location != null) {
             labelText.append("{" + location.getClassName() + ":" + location.getLineNumber() + "} ");
         }
         if (existInformation) {
-            variablesInfo.getElement().setClassName(coreRes.coreCss().defaultFont());
+            executionPoint.getElement().setClassName(coreRes.coreCss().defaultFont());
         } else {
             labelText.append(locale.absentInformationVariables());
-            variablesInfo.getElement().setClassName(coreRes.coreCss().warningFont());
+            executionPoint.getElement().setClassName(coreRes.coreCss().warningFont());
         }
-        variablesInfo.setText(labelText.toString());
+        executionPoint.setText(labelText.toString());
     }
 
     /** {@inheritDoc} */

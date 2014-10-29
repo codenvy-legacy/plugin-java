@@ -14,7 +14,7 @@ import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.parts.PartStack;
 import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerClientService;
+import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerServiceClient;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.websocket.MessageBus;
@@ -37,7 +37,7 @@ public abstract class BaseTest {
     public static final String  DEBUGGER_ID    = "debugger_id";
     public static final boolean DISABLE_BUTTON = false;
     @Mock
-    protected DebuggerClientService           service;
+    protected DebuggerServiceClient           service;
     @Mock
     protected DebuggerInfo                    debuggerInfo;
     @Mock

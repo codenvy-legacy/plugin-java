@@ -14,7 +14,7 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeLocalizationConstant;
-import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerClientService;
+import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerServiceClient;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
 import com.codenvy.ide.ext.java.jdi.shared.UpdateVariableRequest;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
@@ -41,14 +41,14 @@ public class ChangeValuePresenter implements ChangeValueView.ActionDelegate {
     private       Variable                        variable;
     /** Connected debugger information. */
     private       DebuggerInfo                    debuggerInfo;
-    private       DebuggerClientService           service;
+    private       DebuggerServiceClient           service;
     private       JavaRuntimeLocalizationConstant constant;
     private       NotificationManager             notificationManager;
     private       AsyncCallback<String>           callback;
 
     /** Create presenter. */
     @Inject
-    public ChangeValuePresenter(ChangeValueView view, DebuggerClientService service, JavaRuntimeLocalizationConstant constant,
+    public ChangeValuePresenter(ChangeValueView view, DebuggerServiceClient service, JavaRuntimeLocalizationConstant constant,
                                 NotificationManager notificationManager, DtoFactory dtoFactory) {
         this.view = view;
         this.dtoFactory = dtoFactory;

@@ -22,11 +22,11 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import javax.annotation.Nonnull;
 
 /**
- * The client service for debug java application.
+ * The client for service to debug java application.
  *
- * @author <a href="mailto:vparfonov@exoplatform.com">Vitaly Parfonov</a>
+ * @author Vitaly Parfonov
  */
-public interface DebuggerClientService {
+public interface DebuggerServiceClient {
     /**
      * Attach debugger.
      *
