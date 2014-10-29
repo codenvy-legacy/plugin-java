@@ -96,8 +96,7 @@ public class JavaCompletionProposal implements CompletionProposal {
         @Override
         public void apply(EmbeddedDocument document) {
             for (Change change : changes.asIterable()) {
-                Region region = new RegionImpl(change.offset(), change.length());
-                document.replace(region, change.text());
+                document.replace(change.offset(), change.length(), change.text());
             }
         }
 
