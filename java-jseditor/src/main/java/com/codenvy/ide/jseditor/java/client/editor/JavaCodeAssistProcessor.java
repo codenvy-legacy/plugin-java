@@ -173,7 +173,7 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
                                           final List<CompletionProposal> proposals = new ArrayList<>(problems.size());
                                           for (final WorkerProposal proposal : problems.asIterable()) {
                                               final CompletionProposal completionProposal =
-                                                  new CompletionProposalImpl(proposal.id(),
+                                                  new JavaCompletionProposal(proposal.id(),
                                                                              insertStyle(javaResources, proposal.displayText()),
                                                                              new Icon("",
                                                                                       getImage(javaResources, proposal.image())),

@@ -172,7 +172,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
         for (final WorkerProposal problem : problems.asIterable()) {
             final String style = JavaCodeAssistProcessor.insertStyle(javaResources, problem.displayText());
             final Icon icon = new Icon("", JavaCodeAssistProcessor.getImage(javaResources, problem.image()));
-            final CompletionProposal proposal = new CompletionProposalImpl(problem.id(), style, icon,
+            final CompletionProposal proposal = new JavaCompletionProposal(problem.id(), style, icon,
                                                                            problem.autoInsertable(),
                                                                            worker);
             proposals.add(proposal);

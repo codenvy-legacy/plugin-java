@@ -26,7 +26,7 @@ import elemental.dom.Element;
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
  */
-public class CompletionProposalImpl implements CompletionProposal {
+public class JavaCompletionProposal implements CompletionProposal {
 
     private String id;
     private String display;
@@ -34,7 +34,7 @@ public class CompletionProposalImpl implements CompletionProposal {
     private boolean autoInsertable;
     private JavaParserWorker worker;
 
-    public CompletionProposalImpl(String id, String display, Icon icon, boolean autoInsertable, JavaParserWorker worker) {
+    public JavaCompletionProposal(String id, String display, Icon icon, boolean autoInsertable, JavaParserWorker worker) {
         this.id = id;
         this.display = display;
         this.icon = icon;
