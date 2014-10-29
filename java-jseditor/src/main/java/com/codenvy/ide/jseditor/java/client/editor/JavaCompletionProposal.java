@@ -28,13 +28,14 @@ import elemental.dom.Element;
  */
 public class JavaCompletionProposal implements CompletionProposal {
 
-    private String id;
-    private String display;
-    private Icon icon;
-    private boolean autoInsertable;
-    private JavaParserWorker worker;
+    private final String id;
+    private final String display;
+    private final Icon icon;
+    private final boolean autoInsertable;
+    private final JavaParserWorker worker;
 
-    public JavaCompletionProposal(String id, String display, Icon icon, boolean autoInsertable, JavaParserWorker worker) {
+    public JavaCompletionProposal(final String id, final String display, final Icon icon,
+                                  final boolean autoInsertable, final JavaParserWorker worker) {
         this.id = id;
         this.display = display;
         this.icon = icon;
@@ -87,26 +88,27 @@ public class JavaCompletionProposal implements CompletionProposal {
         private final Array<Change> changes;
         private final com.codenvy.ide.ext.java.messages.Region region;
 
-        private CompletionImpl(Array<Change> changes, com.codenvy.ide.ext.java.messages.Region region) {
+        private CompletionImpl(final Array<Change> changes, final com.codenvy.ide.ext.java.messages.Region region) {
             this.changes = changes;
             this.region = region;
         }
 
         /** {@inheritDoc} */
         @Override
-        public void apply(EmbeddedDocument document) {
-            for (Change change : changes.asIterable()) {
+        public void apply(final EmbeddedDocument document) {
+            for (final Change change : changes.asIterable()) {
                 document.replace(change.offset(), change.length(), change.text());
             }
         }
 
         /** {@inheritDoc} */
         @Override
-        public Region getSelection(EmbeddedDocument document) {
-            if (region == null)
+        public Region getSelection(final EmbeddedDocument document) {
+            if (region == null) {
                 return null;
-            else
+            } else {
                 return new RegionImpl(region.getOffset(), region.getLength());
+            }
         }
     }
 }
