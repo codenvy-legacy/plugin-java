@@ -177,7 +177,6 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
                                                                              insertStyle(javaResources, proposal.displayText()),
                                                                              new Icon("",
                                                                                       getImage(javaResources, proposal.image())),
-                                                                             proposal.autoInsertable(),
                                                                              worker);
                                               proposals.add(completionProposal);
                                           }

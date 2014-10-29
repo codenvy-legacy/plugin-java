@@ -11,8 +11,6 @@
 package com.codenvy.ide.jseditor.java.client.editor;
 
 import com.codenvy.ide.api.icon.Icon;
-import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.RegionImpl;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.messages.Change;
@@ -20,6 +18,7 @@ import com.codenvy.ide.ext.java.messages.ProposalAppliedMessage;
 import com.codenvy.ide.jseditor.client.codeassist.Completion;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
 import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
+import com.codenvy.ide.jseditor.client.text.LinearRange;
 
 import elemental.dom.Element;
 
@@ -31,15 +30,12 @@ public class JavaCompletionProposal implements CompletionProposal {
     private final String id;
     private final String display;
     private final Icon icon;
-    private final boolean autoInsertable;
     private final JavaParserWorker worker;
 
-    public JavaCompletionProposal(final String id, final String display, final Icon icon,
-                                  final boolean autoInsertable, final JavaParserWorker worker) {
+    public JavaCompletionProposal(final String id, final String display, final Icon icon, final JavaParserWorker worker) {
         this.id = id;
         this.display = display;
         this.icon = icon;
-        this.autoInsertable = autoInsertable;
         this.worker = worker;
     }
 
@@ -59,18 +55,6 @@ public class JavaCompletionProposal implements CompletionProposal {
     @Override
     public Icon getIcon() {
         return icon;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public char[] getTriggerCharacters() {
-        return new char[0];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isAutoInsertable() {
-        return autoInsertable;
     }
 
     @Override
@@ -103,11 +87,11 @@ public class JavaCompletionProposal implements CompletionProposal {
 
         /** {@inheritDoc} */
         @Override
-        public Region getSelection(final EmbeddedDocument document) {
+        public LinearRange getSelection(final EmbeddedDocument document) {
             if (region == null) {
                 return null;
             } else {
-                return new RegionImpl(region.getOffset(), region.getLength());
+                return LinearRange.createWithStart(region.getOffset()).andLength(region.getLength());
             }
         }
     }

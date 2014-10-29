@@ -20,7 +20,6 @@ import javax.inject.Inject;
 
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.text.Position;
-import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.annotation.Annotation;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.js.JsoArray;
@@ -38,11 +37,11 @@ import com.codenvy.ide.jseditor.client.annotation.QueryAnnotationsEvent.Annotati
 import com.codenvy.ide.jseditor.client.annotation.QueryAnnotationsEvent.QueryCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
-import com.codenvy.ide.jseditor.client.document.DocumentHandle;
+import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistInvocationContext;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import com.codenvy.ide.jseditor.client.text.LinearRange;
-import com.codenvy.ide.jseditor.client.texteditor.EditorHandle;
+import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
 
 /**
  * {@link QuickAssistProcessor} for java files.
@@ -63,15 +62,14 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
 
     @Override
     public void computeQuickAssistProposals(final QuickAssistInvocationContext quickAssistContext, final CodeAssistCallback callback) {
-        final EditorHandle editorHandle = quickAssistContext.getEditorHandle();
-        final DocumentHandle documentHandle = quickAssistContext.getDocumentHandle();
+        final TextEditor textEditor = quickAssistContext.getTextEditor();
+        final EmbeddedDocument document = textEditor.getDocument();
 
         LinearRange tempRange;
         if (quickAssistContext.getLine() != null) {
-            tempRange = documentHandle.getDocument().getLinearRangeForLine(quickAssistContext.getLine());
+            tempRange = document.getLinearRangeForLine(quickAssistContext.getLine());
         } else {
-            final Region selection = editorHandle.getEditor().getSelectedRegion();
-            tempRange = LinearRange.createWithStart(selection.getOffset()).andLength(selection.getLength());
+            tempRange = textEditor.getSelectedLinearRange();
         }
         final LinearRange range = tempRange;
 
@@ -92,15 +90,15 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             @Override
             public void respond(final Map<Annotation, Position> annotations) {
                 final Map<Annotation, Position> problems = collectQuickFixableAnnotations(range, annotations, goToClosest);
-                setupProposals(callback, editorHandle, range, problems);
+                setupProposals(callback, textEditor, range, problems);
             }
         };
         final QueryAnnotationsEvent event = new QueryAnnotationsEvent.Builder().withFilter(filter).withCallback(queryCallback).build();
-        documentHandle.getDocEventBus().fireEvent(event);
+        document.getDocumentHandle().getDocEventBus().fireEvent(event);
     }
 
     private void setupProposals(final CodeAssistCallback callback,
-                                final EditorHandle editorHandle,
+                                final TextEditor textEditor,
                                 final LinearRange range,
                                 final Map<Annotation, Position> annotations) {
         final JsoArray<ProblemLocationMessage> problems = JsoArray.create();
@@ -116,7 +114,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
                 }
             }
         }
-        worker.computeQAProposals(editorHandle.getEditor().getContents(), range.getStartOffset(), range.getLength(),
+        worker.computeQAProposals(textEditor.getDocument().getContents(), range.getStartOffset(), range.getLength(),
                                   false, problems,
                                   new JavaParserWorker.WorkerCallback<WorkerProposal>() {
                                       @Override
@@ -173,7 +171,6 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             final String style = JavaCodeAssistProcessor.insertStyle(javaResources, problem.displayText());
             final Icon icon = new Icon("", JavaCodeAssistProcessor.getImage(javaResources, problem.image()));
             final CompletionProposal proposal = new JavaCompletionProposal(problem.id(), style, icon,
-                                                                           problem.autoInsertable(),
                                                                            worker);
             proposals.add(proposal);
         }
