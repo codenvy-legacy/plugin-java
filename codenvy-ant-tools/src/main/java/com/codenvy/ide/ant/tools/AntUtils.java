@@ -14,6 +14,10 @@ import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.helper.ProjectHelper2;
+
+import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Writer;
@@ -21,11 +25,26 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 /** @author andrew00x */
 public class AntUtils {
+    private static final Path   BUILD_FILE_PATH    = Paths.get(System.getProperty("java.io.tmpdir"), "codenvy_ant_properties.xml");
+    private static final String BUILD_FILE_CONTENT = "<project name=\"ant_properties\" default=\"get_properties\">\n" +
+                                                     "    <target name=\"get_properties\">\n" +
+                                                     "        <echo>Ant version: ${ant.version}</echo>\n" +
+                                                     "        <echo>Ant home: ${ant.home}</echo>\n" +
+                                                     "        <echo>Java version: ${java.version}, vendor: ${java.vendor}</echo>\n" +
+                                                     "        <echo>Java home: ${java.home}</echo>\n" +
+                                                     "        <echo>OS name: \"${os.name}\", version: \"${os.version}\", " +
+                                                     "arch: \"${os.arch}\"</echo>\n" +
+                                                     "    </target>\n" +
+                                                     "</project>\n";
+
     /** Not instantiable. */
     private AntUtils() {
     }
@@ -108,17 +127,6 @@ public class AntUtils {
         };
     }
 
-    private static final Path   BUILD_FILE_PATH    = Paths.get(System.getProperty("java.io.tmpdir"), "codenvy_ant_properties.xml");
-    private static final String BUILD_FILE_CONTENT = "<project name=\"ant_properties\" default=\"get_properties\">\n" +
-                                                     "    <target name=\"get_properties\">\n" +
-                                                     "        <echo>Ant version: ${ant.version}</echo>\n" +
-                                                     "        <echo>Ant home: ${ant.home}</echo>\n" +
-                                                     "        <echo>Java version: ${java.version}, vendor: ${java.vendor}</echo>\n" +
-                                                     "        <echo>Java home: ${java.home}</echo>\n" +
-                                                     "        <echo>OS name: \"${os.name}\", version: \"${os.version}\", arch: \"${os.arch}\"</echo>\n" +
-                                                     "    </target>\n" +
-                                                     "</project>\n";
-
     public static Map<String, String> getAntEnvironmentInformation() throws IOException {
         final Map<String, String> versionInfo = new HashMap<>();
         final LineConsumer cmdOutput = new LineConsumer() {
@@ -179,5 +187,55 @@ public class AntUtils {
         final ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).redirectErrorStream(true);
         final Process process = processBuilder.start();
         ProcessUtil.process(process, cmdOutput, LineConsumer.DEV_NULL);
+    }
+
+    /** Get source directories. */
+    public static List<String> getSourceDirectories(File buildFile) {
+        return getSourceDirectories(readProject(buildFile));
+    }
+
+    /**
+     * Read description of ant project.
+     *
+     * @param buildFile
+     *         path to build.xml file
+     * @return description of ant project
+     */
+    public static Project readProject(File buildFile) {
+        org.apache.tools.ant.Project antProject = new org.apache.tools.ant.Project();
+        ProjectHelper2.configureProject(antProject, buildFile);
+
+        return antProject;
+    }
+
+    /** Get source directories. */
+    public static List<String> getSourceDirectories(Project project) {
+        Hashtable<String, Object> properties = project.getProperties();
+        String absProjectPath = project.getBaseDir().getAbsolutePath();
+        List<String> paths = new ArrayList<>(2);
+
+        if (properties.containsKey("src.dir")) {
+            String srcPath = (String)properties.get("src.dir");
+            srcPath = srcPath.substring(absProjectPath.length());
+
+            if (srcPath.startsWith("/")) {
+                srcPath = srcPath.substring(1);
+            }
+            paths.add(srcPath);
+        }
+        if (properties.containsKey("test.dir")) {
+            String testPath = (String)properties.get("test.dir");
+            testPath = testPath.substring(absProjectPath.length());
+
+            if (testPath.startsWith("/")) {
+                testPath = testPath.substring(1);
+            }
+            paths.add(testPath);
+        }
+        if (paths.isEmpty()) {
+            paths.add("src");
+            paths.add("test");
+        }
+        return paths;
     }
 }

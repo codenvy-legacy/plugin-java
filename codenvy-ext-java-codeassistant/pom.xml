@@ -11,7 +11,8 @@
       Codenvy, S.A. - initial API and implementation
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-plugin-java-parent</artifactId>
@@ -39,8 +40,18 @@
         </dependency>
         <dependency>
             <groupId>com.codenvy.plugin-java</groupId>
+            <artifactId>codenvy-ant-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-java</groupId>
             <artifactId>codenvy-jdt-core-repack</artifactId>
             <version>${codenvy.plugin-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-java</groupId>
+            <artifactId>codenvy-maven-tools</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.birt.runtime</groupId>

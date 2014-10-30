@@ -73,7 +73,7 @@ public class ClasspathJar extends CodenvyClasspathLocation {
     public ClasspathJar(ZipFile zipFile, AccessRuleSet accessRuleSet) {
         this.zipFilename = zipFile.getName();
         this.zipFile = zipFile;
-        this.closeZipFileAtEnd = false;
+        this.closeZipFileAtEnd = true;
         this.knownPackageNames = null;
         this.accessRuleSet = accessRuleSet;
     }
@@ -239,17 +239,4 @@ public class ClasspathJar extends CodenvyClasspathLocation {
             return this.zipFilename;
         return this.zipFilename + '(' + (new Date(time)) + " : " + time + ')'; //$NON-NLS-1$
     }
-
-    static class PackageCacheEntry {
-        long      lastModified;
-        long      fileSize;
-        SimpleSet packageSet;
-
-        PackageCacheEntry(long lastModified, long fileSize, SimpleSet packageSet) {
-            this.lastModified = lastModified;
-            this.fileSize = fileSize;
-            this.packageSet = packageSet;
-        }
-    }
-
 }

@@ -126,6 +126,13 @@ public class JavaProjectService {
         File projectDepDir = new File(tempDir, wsId + projectPath);
         if (projectDepDir.exists()) {
             IoUtil.deleteRecursive(projectDepDir);
+            File wsDepDir = new File(tempDir, wsId);
+            if (wsDepDir.exists()) {
+                String[] files = wsDepDir.list();
+                if (files == null || files.length == 0) {
+                    wsDepDir.delete();
+                }
+            }
         }
     }
 
