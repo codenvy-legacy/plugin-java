@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -76,6 +77,7 @@ import java.util.Map;
  * Rest service for WorkerNameEnvironment
  * The name environment provides a callback API that the compiler can use to look up types, compilation units, and packages in the
  * current environment
+ *
  * @author Evgen Vidolob
  */
 @javax.ws.rs.Path("java-name-environment/{ws-id}")
@@ -89,6 +91,9 @@ public class RestNameEnvironment {
     @Inject
     private JavaProjectService javaProjectService;
 
+    @Context
+    private HttpServletRequest request;
+
     @Inject
     @Named("project.temp")
     private String temp;
@@ -100,6 +105,15 @@ public class RestNameEnvironment {
     @Inject
     @Named("api.endpoint")
     private String apiUrl;
+
+    private static String getAuthenticationToken() {
+        User user = EnvironmentContext.getCurrent().getUser();
+        if (user != null) {
+            return user.getToken();
+        }
+        return null;
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @javax.ws.rs.Path("findTypeCompound")
@@ -145,7 +159,7 @@ public class RestNameEnvironment {
     }
 
     private JavaProject getJavaProject(String projectPath) {
-        return javaProjectService.getOrCreateJavaProject(wsId, projectPath);
+        return javaProjectService.getOrCreateJavaProject(wsId, projectPath, request.getSession().getId());
     }
 
     @GET
@@ -231,10 +245,11 @@ public class RestNameEnvironment {
     @GET
     @javax.ws.rs.Path("/update-dependencies-launch-task")
     @Produces(MediaType.APPLICATION_JSON)
-    public BuildTaskDescriptor updateDependency(@QueryParam("projectpath") String projectPath,@QueryParam("force") boolean force, @Context UriInfo uriInfo) throws Exception {
+    public BuildTaskDescriptor updateDependency(@QueryParam("projectpath") String projectPath, @QueryParam("force") boolean force,
+                                                @Context UriInfo uriInfo) throws Exception {
 
         //project already has updated dependency's, so skip build
-        if(javaProjectService.isProjectDependencyExist(wsId, projectPath) && !force) {
+        if (javaProjectService.isProjectDependencyExist(wsId, projectPath) && !force) {
             BuildTaskDescriptor descriptor = DtoFactory.getInstance().createDto(BuildTaskDescriptor.class);
             descriptor.setStatus(BuildStatus.SUCCESSFUL);
             return descriptor;
@@ -246,7 +261,7 @@ public class RestNameEnvironment {
             throw new CodeAssistantException(500, "Project doesn't exist");
         }
 
-        String url = apiUrl +  "/builder/" + wsId + "/dependencies";
+        String url = apiUrl + "/builder/" + wsId + "/dependencies";
         return getDependencies(url, projectPath, "copy");
     }
 
@@ -274,7 +289,7 @@ public class RestNameEnvironment {
                 File zip = doDownload(downloadLink.getHref(), projectPath);
                 ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
             }
-        }catch (Throwable debug) {
+        } catch (Throwable debug) {
             LOG.error("RestNameEnvironment", debug);
             throw new WebApplicationException(debug);
         }
@@ -304,24 +319,12 @@ public class RestNameEnvironment {
                 http.disconnect();
             }
             throw ioe;
-        }finally {
-            if(stream != null){
+        } finally {
+            if (stream != null) {
                 stream.close();
             }
         }
 
-    }
-
-    private static String getAuthenticationToken() {
-        User user = EnvironmentContext.getCurrent().getUser();
-        if (user != null) {
-            return user.getToken();
-        }
-        return null;
-    }
-
-    private boolean hasPom(File project) {
-        return new File(project, "pom.xml").exists();
     }
 
     private void buildFailed(@Nullable BuildTaskDescriptor buildStatus) throws BuilderException {

@@ -16,7 +16,6 @@ import com.codenvy.api.core.notification.EventSubscriber;
 import com.codenvy.api.vfs.server.observation.VirtualFileEvent;
 import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
-import com.codenvy.ide.ext.java.server.internal.core.ProjectApiRestClient;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -47,18 +46,15 @@ public class JavaProjectService {
     private ConcurrentHashMap<String, JavaProject>                 cache       = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<String>> projectInWs = new ConcurrentHashMap<>();
     private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
-    private ProjectApiRestClient              apiRestClient;
     private String                            tempDir;
     private Map<String, String> options = new HashMap<>();
 
     @Inject
     public JavaProjectService(EventService eventService,
                               WorkspaceHashLocalFSMountStrategy fsMountStrategy,
-                              ProjectApiRestClient apiRestClient,
                               @Named("project.temp") String temp) {
         eventService.subscribe(new VirtualFileEventSubscriber());
         this.fsMountStrategy = fsMountStrategy;
-        this.apiRestClient = apiRestClient;
         tempDir = temp;
         options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_7);
         options.put(JavaCore.CORE_ENCODING, "UTF-8");
@@ -75,7 +71,7 @@ public class JavaProjectService {
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
     }
 
-    public JavaProject getOrCreateJavaProject(String wsId, String projectPath) {
+    public JavaProject getOrCreateJavaProject(String wsId, String projectPath, String sessionId) {
         String key = wsId + projectPath;
         if (cache.containsKey(key)) {
             return cache.get(key);
@@ -165,7 +161,7 @@ public class JavaProjectService {
                             JavaProject javaProject = cache.get(eventWorkspace + path);
                             if (javaProject != null)
                                 javaProject.getNameEnvironment().reset();
-                                javaProject.getIndexManager().indexAll(javaProject);
+                            javaProject.getIndexManager().indexAll(javaProject);
                             break;
                         }
                     }

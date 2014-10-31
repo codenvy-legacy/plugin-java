@@ -68,7 +68,13 @@ import java.util.Map;
  */
 public class JavaProject extends Openable implements IJavaProject {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JavaProject.class);
+    private static final Logger                                     LOG       = LoggerFactory.getLogger(JavaProject.class);
+    private final        DirectoryStream.Filter<java.nio.file.Path> jarFilter = new DirectoryStream.Filter<java.nio.file.Path>() {
+        @Override
+        public boolean accept(java.nio.file.Path entry) throws IOException {
+            return entry.getFileName().toString().endsWith("jar");
+        }
+    };
     private JavaSearchNameEnvironment nameEnvironment;
     private String                    projectPath;
     private String              tempDir;
@@ -118,22 +124,19 @@ public class JavaProject extends Openable implements IJavaProject {
         }
 
         paths.add(JavaCore.newContainerEntry(new Path("codenvy:Jre")));
+        File depDir = new File(tempDir, wsId + projectPath);
         try {
-            File depDir = new File(tempDir, wsId + projectPath);
             if (depDir.exists()) {
-                DirectoryStream<java.nio.file.Path> deps =
-                        Files.newDirectoryStream(depDir.toPath(), new DirectoryStream.Filter<java.nio.file.Path>() {
-                            @Override
-                            public boolean accept(java.nio.file.Path entry) throws IOException {
-                                return entry.getFileName().toString().endsWith("jar");
-                            }
-                        });
+                try (DirectoryStream<java.nio.file.Path> deps =
+                             Files.newDirectoryStream(depDir.toPath(), jarFilter)) {
 
-                for (java.nio.file.Path dep : deps) {
-                    paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), null, null));
+                    for (java.nio.file.Path dep : deps) {
+                        paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), null, null));
+                    }
                 }
+                rawClassPath = paths.toArray(new IClasspathEntry[paths.size()]);
             }
-            rawClassPath = paths.toArray(new IClasspathEntry[paths.size()]);
+
         } catch (IOException e) {
             LOG.error("Can't find jar dependency's: ", e);
         }

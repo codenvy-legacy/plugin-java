@@ -77,22 +77,23 @@ public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
                     File container = new File(sourceFolder, qualifiedPackageName);
                     SimpleLookupTable dirTable = new SimpleLookupTable();
                     if (container.isDirectory()) {
-                        DirectoryStream<Path> members = Files.newDirectoryStream(container.toPath());
-                        for (Path member : members) {
-                            String name;
-                            if (!member.toFile().isDirectory()) {
-                                int index = Util.indexOfJavaLikeExtension(name = member.getFileName().toString());
-                                if (index >= 0) {
-                                    String fullPath = member.toAbsolutePath().toString();
-                                    if (!org.eclipse.jdt.internal.compiler.util.Util
-                                            .isExcluded(fullPath.toCharArray(), fulInclusionPatternChars,
-                                                        fullExclusionPatternChars, false/*not a folder path*/)) {
-                                        dirTable.put(name.substring(0, index), member.toFile());
+                        try (DirectoryStream<Path> members = Files.newDirectoryStream(container.toPath())) {
+                            for (Path member : members) {
+                                String name;
+                                if (!member.toFile().isDirectory()) {
+                                    int index = Util.indexOfJavaLikeExtension(name = member.getFileName().toString());
+                                    if (index >= 0) {
+                                        String fullPath = member.toAbsolutePath().toString();
+                                        if (!org.eclipse.jdt.internal.compiler.util.Util
+                                                .isExcluded(fullPath.toCharArray(), fulInclusionPatternChars,
+                                                            fullExclusionPatternChars, false/*not a folder path*/)) {
+                                            dirTable.put(name.substring(0, index), member.toString());
+                                        }
                                     }
                                 }
                             }
+                            return dirTable;
                         }
-                        return dirTable;
                     }
                     directoryCache.put(qualifiedPackageName, missingPackageHolder);
                     return null;
@@ -124,9 +125,9 @@ public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
                                            String qualifiedSourceFileWithoutExtension) {
         SimpleLookupTable dirTable = directoryTable(qualifiedPackageName);
         if (dirTable != null && dirTable.elementSize > 0) {
-            File file = (File)dirTable.get(sourceFileWithoutExtension);
+            String file = (String)dirTable.get(sourceFileWithoutExtension);
             if (file != null) {
-                return new NameEnvironmentAnswer(new ResourceCompilationUnit(file),
+                return new NameEnvironmentAnswer(new ResourceCompilationUnit(new File(file)),
                                                  null /* no access restriction */);
             }
         }
@@ -182,8 +183,7 @@ public class ClasspathSourceDirectory extends CodenvyClasspathLocation {
     }
 
     private void fillPackagesCache(File parentFolder, String parentPackage, Set<String> cache) {
-        try {
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(parentFolder.toPath());
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(parentFolder.toPath())) {
             for (Path path : directoryStream) {
                 if (path.toFile().isDirectory()) {
                     if (org.eclipse.jdt.internal.core.util.Util.isValidFolderNameForPackage(path.getFileName().toString(), "1.7", "1.7")) {
