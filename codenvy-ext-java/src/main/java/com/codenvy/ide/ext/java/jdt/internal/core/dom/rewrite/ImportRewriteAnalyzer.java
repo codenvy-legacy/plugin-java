@@ -578,7 +578,7 @@ public final class ImportRewriteAnalyzer {
     }
 
     private boolean isImplicitImport(String qualifier) {
-        if (qualifier.startsWith(JAVA_LANG)) {
+        if (JAVA_LANG.equals(Signature.getQualifier(qualifier))) {
             return true;
         }
         // TODO

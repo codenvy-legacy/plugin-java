@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.corext.util;
 
+import com.codenvy.ide.ext.java.jdt.core.Signature;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 
 /**
@@ -18,7 +19,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
  */
 public class ModelUtil {
     public static boolean isImplicitImport(String string, CompilationUnit fCompilationUnit) {
-        if ("java.lang".equals(string)) {
+        if ("java.lang".equals(Signature.getQualifier(string))) {
             return true;
         }
         return false;
