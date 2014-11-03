@@ -106,6 +106,9 @@ public class RestNameEnvironment {
     @Named("api.endpoint")
     private String apiUrl;
 
+    @Inject
+    private JavaProjectWatcher projectWatcher;
+
     private static String getAuthenticationToken() {
         User user = EnvironmentContext.getCurrent().getUser();
         if (user != null) {
@@ -288,6 +291,7 @@ public class RestNameEnvironment {
             if (downloadLink != null) {
                 File zip = doDownload(downloadLink.getHref(), projectPath);
                 ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
+                projectWatcher.projectOpened(request.getSession().getId(), wsId, projectPath);
             }
         } catch (Throwable debug) {
             LOG.error("RestNameEnvironment", debug);

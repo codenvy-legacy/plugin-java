@@ -48,11 +48,13 @@ public class JavaProjectService {
     private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
     private String                            tempDir;
     private Map<String, String> options = new HashMap<>();
+    private JavaProjectWatcher watcher;
 
     @Inject
     public JavaProjectService(EventService eventService,
                               WorkspaceHashLocalFSMountStrategy fsMountStrategy,
-                              @Named("project.temp") String temp) {
+                              @Named("project.temp") String temp, JavaProjectWatcher watcher) {
+        this.watcher = watcher;
         eventService.subscribe(new VirtualFileEventSubscriber());
         this.fsMountStrategy = fsMountStrategy;
         tempDir = temp;
@@ -141,14 +143,9 @@ public class JavaProjectService {
             final String eventPath = event.getPath();
 
             if (eventType == VirtualFileEvent.ChangeType.DELETED) {
-                JavaProject javaProject = cache.remove(eventWorkspace + eventPath);
+                JavaProject javaProject = cache.get(eventWorkspace + eventPath);
                 if (javaProject != null) {
-                    try {
-                        javaProject.close();
-                    } catch (JavaModelException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
-                    deleteDependencyDirectory(eventWorkspace, eventPath);
+                    removeProject(eventWorkspace, eventPath);
                 } else if (event.isFolder()) {
                     if (isProjectDependencyExist(eventWorkspace, eventPath)) {
                         deleteDependencyDirectory(eventWorkspace, eventPath);

@@ -15,6 +15,8 @@ import com.codenvy.commons.lang.Pair;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -24,10 +26,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Singleton
 public class JavaProjectWatcher {
 
-    private ConcurrentHashMap<Pair<String,String>, CopyOnWriteArraySet<String>> openedProjects = new ConcurrentHashMap<>();
-
     private static JavaProjectWatcher INSTANCE;
-
+    private ConcurrentHashMap<Pair<String, String>, CopyOnWriteArraySet<String>> openedProjects = new ConcurrentHashMap<>();
     @Inject
     private JavaProjectService projectService;
 
@@ -38,16 +38,17 @@ public class JavaProjectWatcher {
     public static void sessionDestroyed(String sessionId) {
         if (INSTANCE == null)
             return;
-        Pair<String, String> pair = null;
+        List<Pair<String, String>> pairs = new ArrayList<>();
         for (Pair<String,String> key : INSTANCE.openedProjects.keySet()) {
             CopyOnWriteArraySet<String> sessions = INSTANCE.openedProjects.get(key);
             if (sessions.contains(sessionId)) {
-                pair = key;
-                break;
+                pairs.add(key);
             }
         }
-        if (pair != null) {
+
+        for (Pair<String, String> pair : pairs) {
             INSTANCE.projectClosed(sessionId, pair.first, pair.second);
+
         }
     }
 
