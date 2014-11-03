@@ -48,13 +48,11 @@ public class JavaProjectService {
     private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
     private String                            tempDir;
     private Map<String, String> options = new HashMap<>();
-    private JavaProjectWatcher watcher;
 
     @Inject
     public JavaProjectService(EventService eventService,
                               WorkspaceHashLocalFSMountStrategy fsMountStrategy,
-                              @Named("project.temp") String temp, JavaProjectWatcher watcher) {
-        this.watcher = watcher;
+                              @Named("project.temp") String temp) {
         eventService.subscribe(new VirtualFileEventSubscriber());
         this.fsMountStrategy = fsMountStrategy;
         tempDir = temp;

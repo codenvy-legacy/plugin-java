@@ -265,6 +265,7 @@ public class RestNameEnvironment {
         }
 
         String url = apiUrl + "/builder/" + wsId + "/dependencies";
+        projectWatcher.projectOpened(request.getSession().getId(), wsId, projectPath);
         return getDependencies(url, projectPath, "copy");
     }
 
@@ -291,7 +292,6 @@ public class RestNameEnvironment {
             if (downloadLink != null) {
                 File zip = doDownload(downloadLink.getHref(), projectPath);
                 ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
-                projectWatcher.projectOpened(request.getSession().getId(), wsId, projectPath);
             }
         } catch (Throwable debug) {
             LOG.error("RestNameEnvironment", debug);
