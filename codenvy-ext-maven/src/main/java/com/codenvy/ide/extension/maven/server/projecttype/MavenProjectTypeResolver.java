@@ -74,6 +74,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                 Project project = projectManager.getProject(ws, parentProject.getPath() + "/" + module);
                 if (project == null) {
                     project = new Project(moduleEntry, projectManager);
+                    project.getMisc().setCreationDate(System.currentTimeMillis());
                 }
                 fillMavenProject(projectType, project);
                 project.updateDescription(createProjectDescriptor(projectType));
