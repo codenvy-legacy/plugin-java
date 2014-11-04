@@ -89,12 +89,12 @@ public class MavenPomService {
             throws ServerException, ForbiddenException, IOException {
         Project project = projectManager.getProject(wsId, projectPath);
         VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
-        if (pom == null) {
+        if(pom == null) {
             throw new IllegalArgumentException("Can't find pom.xml file in path: " + projectPath);
         }
 
         Model model = MavenUtils.readModel(pom.getVirtualFile());
-        if ("pom".equals(model.getPackaging())) {
+        if("pom".equals(model.getPackaging())){
             MavenUtils.addModule(pom.getVirtualFile(), moduleName);
         } else {
             throw new IllegalArgumentException("Project must have packaging 'pom' in order to adding modules.");
