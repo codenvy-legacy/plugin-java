@@ -11,6 +11,7 @@
 package com.codenvy.ide.extension.maven.client;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
@@ -144,10 +145,9 @@ public class MavenExtension {
 
     private boolean isValidForResolveDependencies(ProjectDescriptor project) {
         Map<String, List<String>> attr = project.getAttributes();
-
-        return Constants.MAVEN_ID.equals(project.getType()) &&
-               attr.containsKey(Constants.LANGUAGE) && attr.get(Constants.LANGUAGE).get(0).equals("java") &&
-               attr.containsKey(MavenAttributes.PACKAGING) && !attr.get(MavenAttributes.PACKAGING).get(0).equals("pom");
+        BuildersDescriptor builders = project.getBuilders();
+        return builders != null && "maven".equals(builders.getDefault()) &&
+               !(attr.containsKey(MavenAttributes.PACKAGING) && "pom".equals(attr.get(MavenAttributes.PACKAGING).get(0)));
     }
 
     @Inject
