@@ -107,23 +107,6 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
-    public void disableAllFields() {
-        changeEnabling(false);
-    }
-
-    @Override
-    public void enableAllFields() {
-        changeEnabling(true);
-    }
-
-    private void changeEnabling(boolean enabled) {
-        versionField.setEnabled(enabled);
-        groupId.setEnabled(enabled);
-        artifactId.setEnabled(enabled);
-        packagingField.setEnabled(enabled);
-    }
-
-    @Override
     public String getGroupId() {
         return groupId.getText();
     }

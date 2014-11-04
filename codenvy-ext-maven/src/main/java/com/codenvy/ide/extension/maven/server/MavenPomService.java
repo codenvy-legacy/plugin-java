@@ -23,6 +23,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -58,9 +59,23 @@ public class MavenPomService {
         if (pomFile != null) {
             Model model = MavenUtils.readModel(pomFile);
             JsonObject object = new JsonObject();
+            Parent parent = model.getParent();
             object.addProperty(MavenAttributes.ARTIFACT_ID, model.getArtifactId());
-            object.addProperty(MavenAttributes.GROUP_ID, model.getGroupId());
-            object.addProperty(MavenAttributes.VERSION, model.getVersion());
+            if (model.getGroupId() == null) {
+                if (parent != null) {
+                    object.addProperty(MavenAttributes.GROUP_ID, parent.getGroupId());
+                }
+            } else {
+                object.addProperty(MavenAttributes.GROUP_ID, model.getGroupId());
+            }
+
+            if (model.getVersion() == null) {
+                if (parent != null) {
+                    object.addProperty(MavenAttributes.VERSION, parent.getVersion());
+                }
+            } else {
+                object.addProperty(MavenAttributes.VERSION, model.getVersion());
+            }
             object.addProperty(MavenAttributes.PACKAGING, model.getPackaging());
             return gson.toJson(object);
         } else {
@@ -74,12 +89,12 @@ public class MavenPomService {
             throws ServerException, ForbiddenException, IOException {
         Project project = projectManager.getProject(wsId, projectPath);
         VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
-        if(pom == null) {
+        if (pom == null) {
             throw new IllegalArgumentException("Can't find pom.xml file in path: " + projectPath);
         }
 
         Model model = MavenUtils.readModel(pom.getVirtualFile());
-        if("pom".equals(model.getPackaging())){
+        if ("pom".equals(model.getPackaging())) {
             MavenUtils.addModule(pom.getVirtualFile(), moduleName);
         } else {
             throw new IllegalArgumentException("Project must have packaging 'pom' in order to adding modules.");

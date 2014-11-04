@@ -24,10 +24,6 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void reset();
 
-    void disableAllFields();
-
-    void enableAllFields();
-
     String getGroupId();
 
     void setGroupId(String group);

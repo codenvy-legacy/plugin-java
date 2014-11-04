@@ -147,9 +147,6 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                         }
                     });
                 }
-                view.disableAllFields();
-            } else {
-                view.enableAllFields();
             }
         }
     }
