@@ -935,5 +935,29 @@
         "builders": {
             "default": "default"
         }
+    },
+    {
+        "displayName": "Codenvy CLI",
+        "category": "Samples - Codenvy",
+        "description": "Codenvy CLI utility example.",
+        "source": {
+            "type": "git",
+            "location": "https://github.com/codenvy-templates/desktop-codenvy-java-cli.git",
+            "parameters": {
+                "branch": "3.1.0",
+                "keepVcs": "false"
+            }
+        },
+        "runners": {
+            "default": "system:/java/codenvy-cli",
+            "configs": {
+                "recommend": {
+                    "ram": 256
+                }
+            }
+        },
+        "builders": {
+            "default": "default"
+        }
     }
 ]
