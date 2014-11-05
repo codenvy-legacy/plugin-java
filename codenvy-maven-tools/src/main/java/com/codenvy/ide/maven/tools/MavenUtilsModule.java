@@ -29,6 +29,7 @@ public class MavenUtilsModule extends AbstractModule {
         pluginPackaging.put("play", ".zip");
         pluginPackaging.put("play2", ".war");
         pluginPackaging.put("grails-app", ".war");
+        pluginPackaging.put("bundle", ".zip"); // need to fetch Codenvy CLI packaging
         bind(new TypeLiteral<Map<String, String>>() {
         }).annotatedWith(Names.named("packaging2file-extension")).toInstance(pluginPackaging);
         requestStaticInjection(MavenUtils.class);
