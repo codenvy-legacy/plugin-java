@@ -14,18 +14,14 @@ import com.codenvy.api.builder.BuildStatus;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.api.editor.CodenvyTextEditor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.texteditor.reconciler.Reconciler;
-import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
-import com.codenvy.ide.ext.java.client.editor.JavaReconcilerStrategy;
 import com.codenvy.ide.extension.builder.client.build.BuildController;
+import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -88,7 +84,7 @@ public class DependenciesUpdater {
         if (isUserReadOnly(project)) {
             return;
         }
-        
+
         if (updating) {
             projects.add(new Pair<>(project, force));
             return;
@@ -133,18 +129,9 @@ public class DependenciesUpdater {
                                                       .iterate(new StringMap.IterationCallback<EditorPartPresenter>() {
                                                           @Override
                                                           public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
-                                                              if (editorPartPresenter instanceof CodenvyTextEditor) {
-                                                                  CodenvyTextEditor editor = (CodenvyTextEditor)editorPartPresenter;
-                                                                  Reconciler reconciler = editor.getConfiguration()
-                                                                                                .getReconciler(editor.getView());
-                                                                  if (reconciler != null) {
-                                                                      ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(
-                                                                              Document.DEFAULT_CONTENT_TYPE);
-                                                                      if (strategy != null &&
-                                                                          strategy instanceof JavaReconcilerStrategy) {
-                                                                          ((JavaReconcilerStrategy)strategy).parse();
-                                                                      }
-                                                                  }
+                                                              if (editorPartPresenter instanceof EmbeddedTextEditorPresenter) {
+                                                                  final EmbeddedTextEditorPresenter editor = (EmbeddedTextEditorPresenter)editorPartPresenter;
+                                                                  editor.refreshEditor();
                                                               }
                                                           }
                                                       });
