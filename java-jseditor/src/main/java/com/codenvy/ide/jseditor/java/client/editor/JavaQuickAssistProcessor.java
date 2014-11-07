@@ -24,10 +24,10 @@ import com.codenvy.ide.api.text.annotation.Annotation;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.js.JsoArray;
 import com.codenvy.ide.ext.java.client.JavaResources;
-import com.codenvy.ide.ext.java.client.editor.CompilationUnitDocumentProvider;
 import com.codenvy.ide.ext.java.client.editor.JavaAnnotation;
+import com.codenvy.ide.ext.java.client.editor.JavaAnnotationUtil;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
-import com.codenvy.ide.ext.java.client.editor.QuickFixResolver;
+import com.codenvy.ide.ext.java.client.editor.ProblemAnnotation;
 import com.codenvy.ide.ext.java.jdt.core.IJavaModelMarker;
 import com.codenvy.ide.ext.java.messages.ProblemLocationMessage;
 import com.codenvy.ide.ext.java.messages.WorkerProposal;
@@ -82,7 +82,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
                     return false;
                 } else {
                     JavaAnnotation javaAnnotation = (JavaAnnotation)annotation;
-                    return !javaAnnotation.isMarkedDeleted() && hasCorrections(annotation);
+                    return !javaAnnotation.isMarkedDeleted() && JavaAnnotationUtil.hasCorrections(annotation);
                 }
             }
         };
@@ -125,24 +125,13 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
                                   });
     }
 
-    private static boolean hasCorrections(final Annotation annotation) {
-        if (annotation instanceof JavaAnnotation) {
-            final JavaAnnotation javaAnnotation = (JavaAnnotation)annotation;
-            final int problemId = javaAnnotation.getId();
-            if (problemId != -1) {
-                return QuickFixResolver.hasCorrections(problemId);
-            }
-        }
-        return false;
-    }
-
     private static ProblemLocationMessage getProblemLocation(final JavaAnnotation javaAnnotation, final Position position) {
         final int problemId = javaAnnotation.getId();
         if (problemId != -1 && position != null) {
             final MessagesImpls.ProblemLocationMessageImpl problemLocations = MessagesImpls.ProblemLocationMessageImpl.make();
 
             problemLocations.setOffset(position.getOffset()).setLength(position.getLength());
-            problemLocations.setIsError(CompilationUnitDocumentProvider.ProblemAnnotation.ERROR_ANNOTATION_TYPE.equals(javaAnnotation.getType()));
+            problemLocations.setIsError(ProblemAnnotation.ERROR_ANNOTATION_TYPE.equals(javaAnnotation.getType()));
 
             final String markerType = javaAnnotation.getMarkerType();
             if (markerType != null) {
@@ -189,7 +178,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             final ArrayList<Annotation> allAnnotations = new ArrayList<Annotation>();
             int bestOffset = Integer.MAX_VALUE;
             for (Annotation annotation : annotations.keySet()) {
-                if (isQuickFixableType(annotation)) {
+                if (JavaAnnotationUtil.isQuickFixableType(annotation)) {
                     final Position pos = annotations.get(annotation);
                     if (pos != null && isInside(pos.offset, rangeStart, rangeEnd)) { // inside our range?
                         allAnnotations.add(annotation);
@@ -211,7 +200,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
         } else {
             final Map<Annotation, Position> result = new HashMap<>();
             for (final Annotation annotation : annotations.keySet()) {
-                if (isQuickFixableType(annotation)) {
+                if (JavaAnnotationUtil.isQuickFixableType(annotation)) {
                     final Position pos = annotations.get(annotation);
                     if (pos != null && isInside(lineRange.getStartOffset(), pos.offset, pos.offset + pos.length)) {
                         result.put(annotation, pos);
@@ -235,7 +224,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             final int newClosestPosition = computeBestOffset(posBegin, invocationLocation, bestOffset);
             if (newClosestPosition != -1) {
                 if (newClosestPosition != bestOffset) { // new best
-                    if (hasCorrections(annot)) { // only jump to it if there are proposals
+                    if (JavaAnnotationUtil.hasCorrections(annot)) { // only jump to it if there are proposals
                         return newClosestPosition;
                     }
                 }
@@ -283,9 +272,5 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
      */
     private static boolean isInside(int offset, int start, int end) {
         return offset == start || offset == end || (offset > start && offset < end); // make sure to handle 0-length ranges
-    }
-
-    private static boolean isQuickFixableType(final Annotation annotation) {
-        return (annotation instanceof JavaAnnotation) && !annotation.isMarkedDeleted();
     }
 }
