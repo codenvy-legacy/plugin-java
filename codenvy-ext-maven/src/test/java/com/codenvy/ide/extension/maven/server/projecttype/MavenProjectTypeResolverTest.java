@@ -27,10 +27,10 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.multibindings.Multibinder;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.MockitoAnnotations;
-import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,7 +74,7 @@ public class MavenProjectTypeResolverTest {
 
     private ProjectManager projectManager;
 
-    @BeforeMethod
+    @Before
     public void setUp() throws Exception {
         final ProjectTypeDescriptionRegistry projectTypeRegistry = new ProjectTypeDescriptionRegistry("test");
         VirtualFileSystemRegistry virtualFileSystemRegistry = new VirtualFileSystemRegistry();
