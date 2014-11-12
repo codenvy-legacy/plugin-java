@@ -31,9 +31,8 @@ import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.debug.Breakpoint;
-import com.codenvy.ide.debug.BreakpointGutterManager;
+import com.codenvy.ide.debug.BreakpointManager;
 import com.codenvy.ide.debug.Debugger;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeExtension;
@@ -110,7 +109,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     private       JavaRuntimeLocalizationConstant        constant;
     private       DebuggerInfo                           debuggerInfo;
     private       MessageBus                             messageBus;
-    private       BreakpointGutterManager                gutterManager;
+    private       BreakpointManager                      breakpointManager;
     private       WorkspaceAgent                         workspaceAgent;
     private       FqnResolverFactory                     resolverFactory;
     private       EditorAgent                            editorAgent;
@@ -134,7 +133,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                              final MessageBus messageBus,
                              final JavaRuntimeLocalizationConstant constant,
                              WorkspaceAgent workspaceAgent,
-                             BreakpointGutterManager gutterManager,
+                             final BreakpointManager breakpointManager,
                              FqnResolverFactory resolverFactory,
                              EditorAgent editorAgent,
                              final EvaluateExpressionPresenter evaluateExpressionPresenter,
@@ -156,7 +155,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         this.messageBus = messageBus;
         this.constant = constant;
         this.workspaceAgent = workspaceAgent;
-        this.gutterManager = gutterManager;
+        this.breakpointManager = breakpointManager;
         this.resolverFactory = resolverFactory;
         this.variables = new ArrayList<>();
         this.editorAgent = editorAgent;
@@ -263,7 +262,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     /** {@inheritDoc} */
     @Override
     public void go(AcceptsOneWidget container) {
-        view.setBreakpoints(gutterManager.getBreakpoints());
+        view.setBreakpoints(breakpointManager.getBreakpointList());
         view.setVariables(variables);
         container.setWidget(view);
     }
@@ -301,7 +300,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                     @Override
                     public void onSuccess(ItemReference result) {
                         if (result != null && filePath != null && filePath.equalsIgnoreCase(result.getPath())) {
-                            gutterManager.markCurrentBreakpoint(finalLocation.getLineNumber() - 1);
+                            breakpointManager.markCurrentBreakpoint(finalLocation.getLineNumber() - 1);
                         }
                     }
 
@@ -313,7 +312,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                     }
                 });
             } else {
-                gutterManager.markCurrentBreakpoint(location.getLineNumber() - 1);
+                breakpointManager.markCurrentBreakpoint(location.getLineNumber() - 1);
             }
             getStackFrameDump();
             changeButtonsEnableState(true);
@@ -432,8 +431,8 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         service.deleteAllBreakpoints(debuggerInfo.getId(), new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
-                gutterManager.removeAllBreakPoints();
-                view.setBreakpoints(Collections.<Breakpoint>createArray());
+                breakpointManager.removeAllBreakpoints();
+                view.setBreakpoints(new ArrayList<Breakpoint>());
             }
 
             @Override
@@ -580,7 +579,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         view.setVariables(variables);
         selectedVariable = null;
         updateChangeValueButtonEnableState();
-        gutterManager.unmarkCurrentBreakpoint();
+        breakpointManager.unmarkCurrentBreakpoint();
     }
 
     private void showDialog(@Nonnull DebuggerInfo debuggerInfo) {
@@ -673,7 +672,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
             });
         } else {
             changeButtonsEnableState(false);
-            gutterManager.unmarkCurrentBreakpoint();
+            breakpointManager.unmarkCurrentBreakpoint();
         }
     }
 
@@ -710,8 +709,8 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     /** Perform some action after disconnecting a debugger. */
     private void onDebuggerDisconnected() {
         debuggerInfo = null;
-        gutterManager.unmarkCurrentBreakpoint();
-        gutterManager.removeAllBreakPoints();
+        breakpointManager.unmarkCurrentBreakpoint();
+        breakpointManager.removeAllBreakpoints();
         Notification notification =
                 new Notification(constant.debuggerDisconnected(appDescriptor.getDebugHost() + ':' + appDescriptor.getDebugPort()), INFO);
         notificationManager.showNotification(notification);
@@ -719,7 +718,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     }
 
     private void updateBreakPoints() {
-        view.setBreakpoints(gutterManager.getBreakpoints());
+        view.setBreakpoints(breakpointManager.getBreakpointList());
     }
 
     /** {@inheritDoc} */

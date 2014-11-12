@@ -12,7 +12,6 @@ package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
-import com.codenvy.ide.api.editor.EditorRegistry;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.filetypes.FileType;
 import com.codenvy.ide.api.filetypes.FileTypeRegistry;
@@ -20,7 +19,6 @@ import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
-import com.codenvy.ide.ext.java.client.editor.JavaEditorProvider;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -34,13 +32,10 @@ public class JavaExtension {
 
     @Inject
     public JavaExtension(FileTypeRegistry fileTypeRegistry,
-                         EditorRegistry editorRegistry,
-                         JavaEditorProvider javaEditorProvider,
                          @Named("JavaFileType") FileType javaFile,
                          @Named("JspFileType") FileType jspFile) {
         JavaResources.INSTANCE.css().ensureInjected();
 
-        editorRegistry.registerDefaultEditor(javaFile, javaEditorProvider);
         fileTypeRegistry.registerFileType(javaFile);
         fileTypeRegistry.registerFileType(jspFile);
     }

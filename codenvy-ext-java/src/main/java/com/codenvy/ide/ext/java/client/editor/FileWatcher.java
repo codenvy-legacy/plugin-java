@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
-import com.codenvy.ide.api.editor.CodenvyTextEditor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.ItemEvent;
@@ -18,12 +17,10 @@ import com.codenvy.ide.api.event.ItemHandler;
 import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PropertyListener;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.texteditor.reconciler.Reconciler;
-import com.codenvy.ide.api.texteditor.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
+import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -89,17 +86,10 @@ public class FileWatcher {
     private void reparseAllOpenedFiles() {
         editorAgent.getOpenedEditors().iterate(new StringMap.IterationCallback<EditorPartPresenter>() {
             @Override
-            public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
-                if (editorPartPresenter instanceof CodenvyTextEditor) {
-                    CodenvyTextEditor editor = (CodenvyTextEditor)editorPartPresenter;
-                    Reconciler reconciler = editor.getConfiguration().getReconciler(editor.getView());
-                    if (reconciler != null) {
-                        ReconcilingStrategy strategy =
-                                reconciler.getReconcilingStrategy(Document.DEFAULT_CONTENT_TYPE);
-                        if (strategy != null && strategy instanceof JavaReconcilerStrategy) {
-                            ((JavaReconcilerStrategy)strategy).parse();
-                        }
-                    }
+            public void onIteration(final String s, final EditorPartPresenter editorPartPresenter) {
+                if (editorPartPresenter instanceof EmbeddedTextEditorPresenter) {
+                    final EmbeddedTextEditorPresenter editor = (EmbeddedTextEditorPresenter)editorPartPresenter;
+                    editor.refreshEditor();
                 }
             }
         });

@@ -10,6 +10,26 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client;
 
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
@@ -17,7 +37,7 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.debug.Breakpoint;
-import com.codenvy.ide.debug.BreakpointGutterManager;
+import com.codenvy.ide.debug.BreakpointManager;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerView;
 import com.codenvy.ide.ext.java.jdi.client.debug.changevalue.ChangeValuePresenter;
@@ -32,26 +52,6 @@ import com.codenvy.ide.extension.runner.client.run.RunController;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import java.lang.reflect.Method;
-
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Testing {@link DebuggerPresenter} functionality.
@@ -77,7 +77,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Mock
     private RunController                runController;
     @Mock
-    private BreakpointGutterManager      gutterManager;
+    private BreakpointManager            gutterManager;
     @Mock
     private FileNode                     file;
     @Mock
@@ -169,7 +169,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         verify(runController).stopActiveProject(false);
         verify(gutterManager).unmarkCurrentBreakpoint();
-        verify(gutterManager).removeAllBreakPoints();
+        verify(gutterManager).removeAllBreakpoints();
         verify(view).setEnableRemoveAllBreakpointsButton(DISABLE_BUTTON);
         verify(view).setEnableDisconnectButton(DISABLE_BUTTON);
         verify(workspaceAgent).removePart(presenter);

@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
-import static com.codenvy.ide.jseditor.client.partition.DefaultPartitioner.DEFAULT_CONTENT_TYPE;
 import static com.codenvy.ide.jseditor.client.partition.DefaultPartitioner.DEFAULT_PARTITIONING;
+import static com.codenvy.ide.jseditor.client.partition.DocumentPartitioner.DEFAULT_CONTENT_TYPE;
 
 import com.codenvy.ide.api.texteditor.outline.OutlineModel;
 import com.codenvy.ide.collections.Collections;
@@ -19,10 +19,12 @@ import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.editor.outline.JavaNodeRenderer;
 import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;
+import com.codenvy.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import com.codenvy.ide.jseditor.client.editorconfig.DefaultTextEditorConfiguration;
 import com.codenvy.ide.jseditor.client.partition.DocumentPartitioner;
 import com.codenvy.ide.jseditor.client.partition.DocumentPositionMap;
+import com.codenvy.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import com.codenvy.ide.jseditor.client.reconciler.Reconciler;
 import com.codenvy.ide.jseditor.client.reconciler.ReconcilerFactory;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
@@ -44,12 +46,15 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     private final DocumentPartitioner partitioner;
     private final DocumentPositionMap documentPositionMap;
     private final AnnotationModel annotationModel;
+    private final QuickAssistProcessor quickAssistProcessors;
+    private final ChangeInterceptorProvider changeInterceptors;
 
     @AssistedInject
     public JsJavaEditorConfiguration(@Assisted final EmbeddedTextEditorPresenter editor,
                                      final UserActivityManager userActivityManager,
                                      final JavaResources javaResources,
                                      final JavaCodeAssistProcessorFactory codeAssistProcessorFactory,
+                                     final JavaQuickAssistProcessorFactory quickAssistProcessorFactory,
                                      final ReconcilerFactory reconcilerFactory,
                                      final JavaPartitionerFactory partitionerFactory,
                                      final JavaReconcilerStrategyFactory strategyFactory,
@@ -60,6 +65,7 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
         final JavaCodeAssistProcessor codeAssistProcessor = codeAssistProcessorFactory.create(editor);
         this.codeAssistProcessors = Collections.createStringMap();
         this.codeAssistProcessors.put(DEFAULT_CONTENT_TYPE, codeAssistProcessor);
+        this.quickAssistProcessors = quickAssistProcessorFactory.create(editor);
 
         this.userActivityManager = userActivityManager;
 
@@ -73,6 +79,8 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
 
         this.partitioner = partitionerFactory.create(this.documentPositionMap);
         this.reconciler = initReconciler(reconcilerFactory, javaReconcilerStrategy);
+
+        this.changeInterceptors = new JavaChangeInterceptorProvider();
     }
 
     @Override
@@ -83,6 +91,11 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     @Override
     public StringMap<CodeAssistProcessor> getContentAssistantProcessors() {
         return this.codeAssistProcessors;
+    }
+
+    @Override
+    public QuickAssistProcessor getQuickAssistProcessor() {
+        return this.quickAssistProcessors;
     }
 
     @Override
@@ -105,10 +118,15 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
         return this.annotationModel;
     }
 
+    @Override
+    public ChangeInterceptorProvider getChangeInterceptorProvider() {
+        return this.changeInterceptors;
+    }
+
     private Reconciler initReconciler(final ReconcilerFactory reconcilerFactory,
                                       final JavaReconcilerStrategy javaReconcilerStrategy) {
         final BasicIncrementalScheduler scheduler = new BasicIncrementalScheduler(userActivityManager, 50, 100);
-        Reconciler reconciler = reconcilerFactory.create(DEFAULT_PARTITIONING, scheduler, this.partitioner);
+        final Reconciler reconciler = reconcilerFactory.create(DEFAULT_PARTITIONING, scheduler, this.partitioner);
         reconciler.addReconcilingStrategy(DEFAULT_CONTENT_TYPE, javaReconcilerStrategy);
         return reconciler;
     }

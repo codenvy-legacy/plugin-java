@@ -10,27 +10,31 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorProvider;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.client.editor.FileWatcher;
 import com.codenvy.ide.jseditor.client.defaulteditor.DefaultEditorProvider;
+import com.codenvy.ide.jseditor.client.editorconfig.EditorUpdateAction;
 import com.codenvy.ide.jseditor.client.editorconfig.TextEditorConfiguration;
+import com.codenvy.ide.jseditor.client.reconciler.Reconciler;
+import com.codenvy.ide.jseditor.client.reconciler.ReconcilingStrategy;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
-import com.codenvy.ide.texteditor.TextEditorPresenter;
-
-import javax.inject.Inject;
-import java.util.logging.Logger;
 
 /** EditorProvider that provides a text editor configured for java source files. */
 public class JsJavaEditorProvider implements EditorProvider {
 
     private static final Logger LOG = Logger.getLogger(JsJavaEditorProvider.class.getName());
 
-    private final DefaultEditorProvider            editorProvider;
-    private final FileWatcher                      watcher;
+    private final DefaultEditorProvider editorProvider;
+    private final FileWatcher watcher;
     private final JsJavaEditorConfigurationFactory jsJavaEditorConfigurationFactory;
-    private final NotificationManager              notificationManager;
+    private final NotificationManager notificationManager;
 
 
     @Inject
@@ -60,16 +64,23 @@ public class JsJavaEditorProvider implements EditorProvider {
 
         final EditorPartPresenter textEditor = editorProvider.getEditor();
 
-        if (textEditor instanceof TextEditorPresenter) {
-            //could chain with JavaEditorProvider ?
-            LOG.fine("\t classic implmeentation, no dedicated configuration available.");
-
-        } else if (textEditor instanceof EmbeddedTextEditorPresenter) {
-            LOG.fine("\t jseditor implementation, configuring editor");
+        if (textEditor instanceof EmbeddedTextEditorPresenter) {
             final EmbeddedTextEditorPresenter editor = (EmbeddedTextEditorPresenter)textEditor;
             final TextEditorConfiguration configuration =
-                    this.jsJavaEditorConfigurationFactory.create(editor);
+                                                          this.jsJavaEditorConfigurationFactory.create(editor);
             editor.initialize(configuration, this.notificationManager);
+            editor.addEditorUpdateAction(new EditorUpdateAction() {
+                @Override
+                public void doRefresh() {
+                    final Reconciler reconciler = configuration.getReconciler();
+                    if (reconciler != null) {
+                        final ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(Document.DEFAULT_CONTENT_TYPE);
+                        if (strategy instanceof JavaReconcilerStrategy) {
+                            ((JavaReconcilerStrategy)strategy).parse();
+                        }
+                    }
+                }
+            });
         }
         watcher.editorOpened(textEditor);
         return textEditor;
