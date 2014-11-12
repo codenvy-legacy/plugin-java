@@ -116,7 +116,7 @@ public class ProblemAnnotation extends Annotation implements JavaAnnotation, Qui
                 selectedImageElement = fgErrorElement;
             }
         }
-        selectedImageElement.setClassName(javaRes.css().markElementIcon());
+//        selectedImageElement.setClassName(javaRes.css().markElementIcon());
         fImageElement = Elements.createDivElement();
         fImageElement.setClassName(javaRes.css().markElement());
         fImageElement.setInnerHTML(selectedImageElement.getOuterHTML());
