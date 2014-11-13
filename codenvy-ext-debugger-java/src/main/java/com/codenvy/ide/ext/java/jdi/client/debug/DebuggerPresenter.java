@@ -10,12 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.debug;
 
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.api.project.gwt.client.QueryExpression;
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
 import com.codenvy.api.runner.dto.RunOptions;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.ActivePartChangedEvent;
@@ -29,6 +27,7 @@ import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
@@ -58,12 +57,10 @@ import com.codenvy.ide.extension.runner.client.run.RunController;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.HTTPStatus;
-import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.MessageBus;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.SubscriptionHandler;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -85,7 +82,6 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 import static com.codenvy.ide.api.notification.Notification.Type.WARNING;
 import static com.codenvy.ide.ext.java.jdi.shared.DebuggerEvent.BREAKPOINT;
 import static com.codenvy.ide.ext.java.jdi.shared.DebuggerEvent.STEP;
-import static com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 /**
  * The presenter provides debug java application.
@@ -98,7 +94,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     private static final String TITLE = "Debug";
     private final DtoFactory                             dtoFactory;
     private final DtoUnmarshallerFactory                 dtoUnmarshallerFactory;
-    private       ProjectServiceClient                   projectServiceClient;
+    private final AppContext appContext;
     /** Channel identifier to receive events from debugger over WebSocket. */
     private       String                                 debuggerEventsChannel;
     /** Channel identifier to receive event when debugger will disconnected. */
@@ -143,13 +139,13 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                              final RunController runController,
                              final DtoFactory dtoFactory,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                             ProjectServiceClient projectServiceClient) {
+                             AppContext appContext) {
         this.view = view;
         this.eventBus = eventBus;
         this.runController = runController;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.projectServiceClient = projectServiceClient;
+        this.appContext = appContext;
         this.view.setDelegate(this);
         this.view.setTitle(TITLE);
         this.service = service;
@@ -297,9 +293,9 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
             final String filePath = resolveFilePathByLocation(location);
             if (activeFile == null || !filePath.equalsIgnoreCase(activeFile.getPath())) {
                 final Location finalLocation = location;
-                openFile(location, new AsyncCallback<ItemReference>() {
+                openFile(location, new AsyncCallback<FileNode>() {
                     @Override
-                    public void onSuccess(ItemReference result) {
+                    public void onSuccess(FileNode result) {
                         if (result != null && filePath != null && filePath.equalsIgnoreCase(result.getPath())) {
                             gutterManager.markCurrentBreakpoint(finalLocation.getLineNumber() - 1);
                         }
@@ -333,43 +329,40 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         return project.getPath() + "/" + sourcePath + "/" + location.getClassName().replace(".", "/") + ".java";
     }
 
-    private void openFile(@Nonnull Location location, final AsyncCallback<ItemReference> callback) {
+    private void openFile(@Nonnull Location location, final AsyncCallback<FileNode> callback) {
         final String filePath = resolveFilePathByLocation(location);
-        final int lastSlashPos = filePath.lastIndexOf("/");
-        final String parentPath = filePath.substring(0, lastSlashPos);
-        final String fileName = filePath.substring(lastSlashPos + 1);
-        final QueryExpression query = new QueryExpression().setPath(parentPath).setName(fileName);
-        final Unmarshallable<Array<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ItemReference.class);
-        projectServiceClient.search(query, new AsyncRequestCallback<Array<ItemReference>>(unmarshaller) {
+        appContext.getCurrentProject().getCurrentTree().getNodeByPath(filePath, new AsyncCallback<TreeNode<?>>() {
             public HandlerRegistration handlerRegistration;
 
             @Override
-            protected void onSuccess(final Array<ItemReference> result) {
-                final FileNode fileToOpen = new FileNode(null, result.get(0), eventBus, projectServiceClient, dtoUnmarshallerFactory);
-                handlerRegistration = eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
-                    @Override
-                    public void onActivePartChanged(ActivePartChangedEvent event) {
-                        if (event.getActivePart() instanceof EditorPartPresenter) {
-                            final FileNode openedFile = ((EditorPartPresenter)event.getActivePart()).getEditorInput().getFile();
-                            if (fileToOpen.getPath().equals(openedFile.getPath())) {
-                                handlerRegistration.removeHandler();
-                                // give the editor some time to fully render it's view
-                                new Timer() {
-                                    @Override
-                                    public void run() {
-                                        callback.onSuccess(result.get(0));
-                                    }
-                                }.schedule(300);
+            public void onSuccess(final TreeNode<?> result) {
+                if (result instanceof FileNode) {
+                    final FileNode fileToOpen = (FileNode)result;
+                    handlerRegistration = eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
+                        @Override
+                        public void onActivePartChanged(ActivePartChangedEvent event) {
+                            if (event.getActivePart() instanceof EditorPartPresenter) {
+                                final FileNode openedFile = ((EditorPartPresenter)event.getActivePart()).getEditorInput().getFile();
+                                if (fileToOpen.getPath().equals(openedFile.getPath())) {
+                                    handlerRegistration.removeHandler();
+                                    // give the editor some time to fully render it's view
+                                    new Timer() {
+                                        @Override
+                                        public void run() {
+                                            callback.onSuccess(fileToOpen);
+                                        }
+                                    }.schedule(300);
+                                }
                             }
                         }
-                    }
-                });
-                eventBus.fireEvent(new FileEvent(fileToOpen, OPEN));
+                    });
+                    eventBus.fireEvent(new FileEvent(fileToOpen, OPEN));
+                }
             }
 
             @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
+            public void onFailure(Throwable caught) {
+                callback.onFailure(caught);
             }
         });
     }
