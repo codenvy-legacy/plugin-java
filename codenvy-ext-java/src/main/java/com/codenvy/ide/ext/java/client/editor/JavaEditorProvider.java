@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.java.client.editor;
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.Resources;
+import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.CodenvyTextEditor;
 import com.codenvy.ide.api.editor.DocumentProvider;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
@@ -39,10 +40,11 @@ public class JavaEditorProvider implements EditorProvider {
     private final NotificationManager         notificationManager;
     private       Provider<CodenvyTextEditor> editorProvider;
     private       JavaParserWorker            worker;
-    private FileWatcher watcher;
+    private FileWatcher      watcher;
     private       AnalyticsEventLogger        eventLogger;
     private       JavaLocalizationConstant    localizationConstant;
-    private       ContentFormatter            contentFormatter;
+    private BuildContext     buildContext;
+    private ContentFormatter contentFormatter;
 
     /**
      * @param resources
@@ -60,7 +62,8 @@ public class JavaEditorProvider implements EditorProvider {
                               ContentFormatter contentFormatter,
                               AnalyticsEventLogger eventLogger,
                               JavaLocalizationConstant localizationConstant,
-                              ProjectServiceClient projectServiceClient) {
+                              ProjectServiceClient projectServiceClient,
+                              BuildContext buildContext) {
         super();
         this.activityManager = activityManager;
         this.editorProvider = editorProvider;
@@ -68,6 +71,7 @@ public class JavaEditorProvider implements EditorProvider {
         this.watcher = watcher;
         this.eventLogger = eventLogger;
         this.localizationConstant = localizationConstant;
+        this.buildContext = buildContext;
         this.documentProvider =
                 new CompilationUnitDocumentProvider(resources.workspaceEditorCss(), JavaResources.INSTANCE.css(), documentFactory,
                                                     eventBus, projectServiceClient);
@@ -99,7 +103,8 @@ public class JavaEditorProvider implements EditorProvider {
                                             contentFormatter,
                                             eventLogger,
                                             notificationManager,
-                                            localizationConstant);
+                                            localizationConstant,
+                                            buildContext);
 
         textEditor.initialize(configuration, documentProvider, notificationManager);
         watcher.editorOpened(textEditor);

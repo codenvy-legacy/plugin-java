@@ -10,9 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
+import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorWithErrors;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
-import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
@@ -33,24 +33,26 @@ import com.codenvy.ide.util.loging.Log;
  */
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 
-    private final TextEditorPartPresenter  editor;
-    private       Document                 document;
-    private       JavaParserWorker         worker;
-    private       OutlineModel             outlineModel;
-    private       JavaCodeAssistProcessor  codeAssistProcessor;
-    private       FileNode                 file;
-    private       EditorWithErrors         editorWithErrors;
+    private final TextEditorPartPresenter editor;
+    private       Document                document;
+    private       JavaParserWorker        worker;
+    private       OutlineModel            outlineModel;
+    private       JavaCodeAssistProcessor codeAssistProcessor;
+    private       BuildContext            buildContext;
+    private       FileNode                file;
+    private       EditorWithErrors        editorWithErrors;
     private boolean first = true;
 
     public JavaReconcilerStrategy(TextEditorPartPresenter editor,
                                   JavaParserWorker worker,
                                   OutlineModel outlineModel,
-                                  NotificationManager notificationManager,
-                                  JavaCodeAssistProcessor codeAssistProcessor) {
+                                  JavaCodeAssistProcessor codeAssistProcessor,
+                                  BuildContext buildContext) {
         this.editor = editor;
         this.worker = worker;
         this.outlineModel = outlineModel;
         this.codeAssistProcessor = codeAssistProcessor;
+        this.buildContext = buildContext;
         if (editor instanceof EditorWithErrors) {
             editorWithErrors = ((EditorWithErrors)editor);
         }
@@ -71,6 +73,9 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     }
 
     public void parse() {
+        if (buildContext.isBuilding()) {
+            return;
+        }
         if (first) {
             codeAssistProcessor.disableCodeAssistant();
             first = false;

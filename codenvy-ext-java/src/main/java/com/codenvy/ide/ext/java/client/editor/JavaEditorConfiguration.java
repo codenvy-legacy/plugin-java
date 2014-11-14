@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.text.Document;
@@ -71,7 +72,8 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
                                    ContentFormatter contentFormatter,
                                    AnalyticsEventLogger eventLogger,
                                    NotificationManager notificationManager,
-                                   JavaLocalizationConstant localizationConstant) {
+                                   JavaLocalizationConstant localizationConstant,
+                                   BuildContext buildContext) {
         this.manager = manager;
         this.javaEditor = javaEditor;
         this.documentPartitioning = documentPartitioning;
@@ -80,8 +82,8 @@ public class JavaEditorConfiguration extends TextEditorConfiguration {
         this.eventLogger = eventLogger;
         this.localizationConstant = localizationConstant;
         outlineModel = new OutlineModel(new JavaNodeRenderer(resources));
-        codeAssistProcessor = new JavaCodeAssistProcessor(javaEditor, worker, javaResources, eventLogger);
-        reconcilerStrategy = new JavaReconcilerStrategy(javaEditor, worker, outlineModel, notificationManager, codeAssistProcessor);
+        codeAssistProcessor = new JavaCodeAssistProcessor(javaEditor, worker, javaResources, eventLogger, buildContext);
+        reconcilerStrategy = new JavaReconcilerStrategy(javaEditor, worker, outlineModel, codeAssistProcessor, buildContext);
         this.contentFormatter = contentFormatter;
 
 

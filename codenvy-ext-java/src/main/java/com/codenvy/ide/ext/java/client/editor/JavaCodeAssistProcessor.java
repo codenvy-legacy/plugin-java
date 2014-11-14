@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.client.editor;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.TextEditorPartPresenter;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.texteditor.CodeAssistCallback;
@@ -33,16 +34,19 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
     private JavaParserWorker        worker;
     private JavaResources           javaResources;
     private AnalyticsEventLogger    eventLogger;
-    private String                  errorMessage;
+    private BuildContext buildContext;
+    private String       errorMessage;
 
     public JavaCodeAssistProcessor(TextEditorPartPresenter editor,
                                    JavaParserWorker worker,
                                    JavaResources javaResources,
-                                   AnalyticsEventLogger eventLogger) {
+                                   AnalyticsEventLogger eventLogger,
+                                   BuildContext buildContext) {
         this.editor = editor;
         this.worker = worker;
         this.javaResources = javaResources;
         this.eventLogger = eventLogger;
+        this.buildContext = buildContext;
     }
 
     public static String insertStyle(JavaResources javaResources, String display) {
@@ -151,6 +155,11 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
     /** {@inheritDoc} */
     @Override
     public void computeCompletionProposals(TextEditorPartView view, int offset, final CodeAssistCallback callback) {
+        if (buildContext.isBuilding()) {
+            errorMessage = "Code Assistant currently unavailable due to project build.";
+        } else {
+            errorMessage = null;
+        }
         if(errorMessage != null){
             return;
         }
