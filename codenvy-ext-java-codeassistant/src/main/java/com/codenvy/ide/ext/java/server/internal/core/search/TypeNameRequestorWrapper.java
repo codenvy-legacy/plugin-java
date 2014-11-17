@@ -38,14 +38,14 @@ import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
  * 	org.eclipse.core.runtime.IProgressMonitor monitor) }.
  */
 public class TypeNameRequestorWrapper implements IRestrictedAccessTypeRequestor {
-    TypeNameRequestor requestor;
+	TypeNameRequestor requestor;
 
-    public TypeNameRequestorWrapper(TypeNameRequestor requestor) {
-        this.requestor = requestor;
-    }
+	public TypeNameRequestorWrapper(TypeNameRequestor requestor) {
+		this.requestor = requestor;
+	}
 
-    public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
-                           AccessRestriction access) {
-        this.requestor.acceptType(modifiers, packageName, simpleTypeName, enclosingTypeNames, path);
-    }
+	public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
+						   AccessRestriction access) {
+		this.requestor.acceptType(modifiers, packageName, simpleTypeName, enclosingTypeNames, path);
+	}
 }

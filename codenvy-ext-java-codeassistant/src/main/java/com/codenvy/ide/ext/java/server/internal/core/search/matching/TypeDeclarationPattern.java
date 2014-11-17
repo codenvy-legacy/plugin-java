@@ -229,7 +229,7 @@ public char[][] getIndexCategories() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	TypeDeclarationPattern
-            pattern = (TypeDeclarationPattern) decodedPattern;
+			pattern = (TypeDeclarationPattern)decodedPattern;
 
 	// check type suffix
 	if (this.typeSuffix != pattern.typeSuffix && this.typeSuffix != TYPE_SUFFIX) {
@@ -299,7 +299,7 @@ public EntryResult[] queryIn(Index index) throws IOException {
 			}
 			// must decode to check enclosingTypeNames due to the encoding of local types
 			key = CharOperation.concat(
-                    this.simpleName == null ? ONE_STAR : this.simpleName, SEPARATOR, this.pkg, SEPARATOR, ONE_STAR);
+					this.simpleName == null ? ONE_STAR : this.simpleName, SEPARATOR, this.pkg, SEPARATOR, ONE_STAR);
 			break;
 		case R_REGEXP_MATCH :
 			// TODO (frederic) implement regular expression match

@@ -21,33 +21,33 @@ import org.eclipse.jdt.internal.core.search.PatternSearchJob;
 
 public class SubTypeSearchJob extends PatternSearchJob {
 
-    SimpleSet indexes = new SimpleSet(5);
+	SimpleSet indexes = new SimpleSet(5);
 
-    public SubTypeSearchJob(SearchPattern pattern, SearchParticipant participant, IJavaSearchScope scope, IndexQueryRequestor requestor) {
-        super(pattern, participant, scope, requestor);
-    }
+	public SubTypeSearchJob(SearchPattern pattern, SearchParticipant participant, IJavaSearchScope scope, IndexQueryRequestor requestor) {
+		super(pattern, participant, scope, requestor);
+	}
 
-    public void finished() {
-        Object[] values = this.indexes.values;
-        for (int i = 0, l = values.length; i < l; i++)
-            if (values[i] != null)
-                ((Index)values[i]).stopQuery();
-    }
+	public void finished() {
+		Object[] values = this.indexes.values;
+		for (int i = 0, l = values.length; i < l; i++)
+			if (values[i] != null)
+				((Index)values[i]).stopQuery();
+	}
 
-    public Index[] getIndexes(IProgressMonitor progressMonitor) {
-        if (this.indexes.elementSize == 0) {
-            return super.getIndexes(progressMonitor);
-        }
-        this.areIndexesReady = true; // use stored indexes until the job's end
-        Index[] values = new Index[this.indexes.elementSize];
-        this.indexes.asArray(values);
-        return values;
-    }
+	public Index[] getIndexes(IProgressMonitor progressMonitor) {
+		if (this.indexes.elementSize == 0) {
+			return super.getIndexes(progressMonitor);
+		}
+		this.areIndexesReady = true; // use stored indexes until the job's end
+		Index[] values = new Index[this.indexes.elementSize];
+		this.indexes.asArray(values);
+		return values;
+	}
 
-    public boolean search(Index index, IProgressMonitor progressMonitor) {
-        if (index == null) return COMPLETE;
-        if (this.indexes.addIfNotIncluded(index) == index)
-            index.startQuery();
-        return super.search(index, progressMonitor);
-    }
+	public boolean search(Index index, IProgressMonitor progressMonitor) {
+		if (index == null) return COMPLETE;
+		if (this.indexes.addIfNotIncluded(index) == index)
+			index.startQuery();
+		return super.search(index, progressMonitor);
+	}
 }

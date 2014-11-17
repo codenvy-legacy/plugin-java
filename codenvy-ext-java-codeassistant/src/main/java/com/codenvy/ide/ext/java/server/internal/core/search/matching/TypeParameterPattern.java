@@ -37,55 +37,55 @@ import org.eclipse.jdt.internal.core.util.Util;
  */
 public class TypeParameterPattern extends JavaSearchPattern {
 
-    protected boolean        findDeclarations;
-    protected boolean        findReferences;
-    protected char[]         name;
-    protected ITypeParameter typeParameter;
-    protected char[]         declaringMemberName;
-    protected char[]         methodDeclaringClassName;
-    protected char[][]       methodArgumentTypes;
+	protected boolean        findDeclarations;
+	protected boolean        findReferences;
+	protected char[]         name;
+	protected ITypeParameter typeParameter;
+	protected char[]         declaringMemberName;
+	protected char[]         methodDeclaringClassName;
+	protected char[][]       methodArgumentTypes;
 
-    /**
-     * @param findDeclarations
-     * @param findReferences
-     * @param typeParameter
-     * @param matchRule
-     */
-    public TypeParameterPattern(boolean findDeclarations, boolean findReferences, ITypeParameter typeParameter, int matchRule) {
-        super(TYPE_PARAM_PATTERN, matchRule);
+	/**
+	 * @param findDeclarations
+	 * @param findReferences
+	 * @param typeParameter
+	 * @param matchRule
+	 */
+	public TypeParameterPattern(boolean findDeclarations, boolean findReferences, ITypeParameter typeParameter, int matchRule) {
+		super(TYPE_PARAM_PATTERN, matchRule);
 
-        this.findDeclarations = findDeclarations; // set to find declarations & all occurences
-        this.findReferences = findReferences; // set to find references & all occurences
-        this.typeParameter = typeParameter;
-        this.name = typeParameter.getElementName().toCharArray(); // store type parameter name
-        IMember member = typeParameter.getDeclaringMember();
-        this.declaringMemberName = member.getElementName().toCharArray(); // store type parameter declaring member name
+		this.findDeclarations = findDeclarations; // set to find declarations & all occurences
+		this.findReferences = findReferences; // set to find references & all occurences
+		this.typeParameter = typeParameter;
+		this.name = typeParameter.getElementName().toCharArray(); // store type parameter name
+		IMember member = typeParameter.getDeclaringMember();
+		this.declaringMemberName = member.getElementName().toCharArray(); // store type parameter declaring member name
 
-        // For method type parameter, store also declaring class name and parameters type names
-        if (member instanceof IMethod) {
-            IMethod method = (IMethod)member;
-            this.methodDeclaringClassName = method.getParent().getElementName().toCharArray();
-            String[] parameters = method.getParameterTypes();
-            int length = parameters.length;
-            this.methodArgumentTypes = new char[length][];
-            for (int i = 0; i < length; i++) {
-                this.methodArgumentTypes[i] = Signature.toCharArray(parameters[i].toCharArray());
-            }
-        }
-    }
+		// For method type parameter, store also declaring class name and parameters type names
+		if (member instanceof IMethod) {
+			IMethod method = (IMethod)member;
+			this.methodDeclaringClassName = method.getParent().getElementName().toCharArray();
+			String[] parameters = method.getParameterTypes();
+			int length = parameters.length;
+			this.methodArgumentTypes = new char[length][];
+			for (int i = 0; i < length; i++) {
+				this.methodArgumentTypes[i] = Signature.toCharArray(parameters[i].toCharArray());
+			}
+		}
+	}
 
-    /*
-     * Same than LocalVariablePattern.
-     */
-    public void findIndexMatches(Index index, IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope,
-                                 IProgressMonitor progressMonitor) {
-        IPackageFragmentRoot root = (IPackageFragmentRoot)this.typeParameter.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-        String documentPath;
-        String relativePath;
-        if (root.isArchive()) {
-            IType type = (IType) this.typeParameter.getAncestor(IJavaElement.TYPE);
-    	    relativePath = (type.getFullyQualifiedName('$')).replace('.', '/') + SuffixConstants.SUFFIX_STRING_class;
-	        documentPath = root.getPath() + IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR + relativePath;
+	/*
+	 * Same than LocalVariablePattern.
+	 */
+	public void findIndexMatches(Index index, IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope,
+								 IProgressMonitor progressMonitor) {
+		IPackageFragmentRoot root = (IPackageFragmentRoot)this.typeParameter.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+		String documentPath;
+		String relativePath;
+		if (root.isArchive()) {
+			IType type = (IType)this.typeParameter.getAncestor(IJavaElement.TYPE);
+			relativePath = (type.getFullyQualifiedName('$')).replace('.', '/') + SuffixConstants.SUFFIX_STRING_class;
+			documentPath = root.getPath() + IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR + relativePath;
 	    } else {
 			IPath path = this.typeParameter.getPath();
 	        documentPath = path.toString();

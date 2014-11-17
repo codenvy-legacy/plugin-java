@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,11 +21,14 @@ import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Reference;
+import org.eclipse.jdt.internal.compiler.ast.ReferenceExpression;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -33,77 +36,90 @@ import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MemberTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 public class OrLocator extends PatternLocator {
 
-    protected PatternLocator[] patternLocators;
+	protected PatternLocator[] patternLocators;
 
-    public OrLocator(OrPattern pattern) {
-        super(pattern);
+	public OrLocator(OrPattern pattern) {
+		super(pattern);
 
-        SearchPattern[] patterns = pattern.patterns;
-        int length = patterns.length;
-        this.patternLocators = new PatternLocator[length];
-        for (int i = 0; i < length; i++)
-            this.patternLocators[i] = PatternLocator.patternLocator(patterns[i]);
-    }
+		SearchPattern[] patterns = pattern.patterns;
+		int length = patterns.length;
+		this.patternLocators = new PatternLocator[length];
+		for (int i = 0; i < length; i++)
+			this.patternLocators[i] = PatternLocator.patternLocator(patterns[i]);
+	}
 
-    public void initializePolymorphicSearch(MatchLocator locator) {
-        for (int i = 0, length = this.patternLocators.length; i < length; i++)
-            this.patternLocators[i].initializePolymorphicSearch(locator);
-    }
+	public void initializePolymorphicSearch(MatchLocator locator) {
+		for (int i = 0, length = this.patternLocators.length; i < length; i++)
+			this.patternLocators[i].initializePolymorphicSearch(locator);
+	}
 
-    public int match(Annotation node, MatchingNodeSet nodeSet) {
-        int level = IMPOSSIBLE_MATCH;
-        for (int i = 0, length = this.patternLocators.length; i < length; i++) {
-            int newLevel = this.patternLocators[i].match(node, nodeSet);
-            if (newLevel > level) {
-                if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
-                level = newLevel;
-            }
-        }
-        return level;
-    }
+	public int match(Annotation node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			int newLevel = this.patternLocators[i].match(node, nodeSet);
+			if (newLevel > level) {
+				if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
+				level = newLevel;
+			}
+		}
+		return level;
+	}
 
-    public int match(ASTNode node, MatchingNodeSet nodeSet) {
-        int level = IMPOSSIBLE_MATCH;
-        for (int i = 0, length = this.patternLocators.length; i < length; i++) {
-            int newLevel = this.patternLocators[i].match(node, nodeSet);
-            if (newLevel > level) {
-                if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
-                level = newLevel;
-            }
-        }
-        return level;
-    }
+	public int match(ASTNode node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			int newLevel = this.patternLocators[i].match(node, nodeSet);
+			if (newLevel > level) {
+				if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
+				level = newLevel;
+			}
+		}
+		return level;
+	}
 
-    public int match(ConstructorDeclaration node, MatchingNodeSet nodeSet) {
-        int level = IMPOSSIBLE_MATCH;
-        for (int i = 0, length = this.patternLocators.length; i < length; i++) {
-            int newLevel = this.patternLocators[i].match(node, nodeSet);
-            if (newLevel > level) {
-                if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
-                level = newLevel;
-            }
-        }
-        return level;
-    }
+	public int match(ConstructorDeclaration node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			int newLevel = this.patternLocators[i].match(node, nodeSet);
+			if (newLevel > level) {
+				if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
+				level = newLevel;
+			}
+		}
+		return level;
+	}
 
-    public int match(Expression node, MatchingNodeSet nodeSet) {
-        int level = IMPOSSIBLE_MATCH;
-        for (int i = 0, length = this.patternLocators.length; i < length; i++) {
-            int newLevel = this.patternLocators[i].match(node, nodeSet);
-            if (newLevel > level) {
-                if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
-                level = newLevel;
-            }
-        }
-        return level;
-    }
+	public int match(Expression node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			int newLevel = this.patternLocators[i].match(node, nodeSet);
+			if (newLevel > level) {
+				if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
+				level = newLevel;
+			}
+		}
+		return level;
+	}
 
-    public int match(FieldDeclaration node, MatchingNodeSet nodeSet) {
-	int level = IMPOSSIBLE_MATCH;
-	for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+	public int match(FieldDeclaration node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			int newLevel = this.patternLocators[i].match(node, nodeSet);
+			if (newLevel > level) {
+				if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
+				level = newLevel;
+			}
+		}
+		return level;
+	}
+
+	public int match(LambdaExpression node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
 		int newLevel = this.patternLocators[i].match(node, nodeSet);
 		if (newLevel > level) {
 			if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
@@ -167,6 +183,18 @@ public int match(Reference node, MatchingNodeSet nodeSet) {
 	}
 	return level;
 }
+
+	public int match(ReferenceExpression node, MatchingNodeSet nodeSet) {
+		int level = IMPOSSIBLE_MATCH;
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			int newLevel = this.patternLocators[i].match(node, nodeSet);
+			if (newLevel > level) {
+				if (newLevel == ACCURATE_MATCH) return ACCURATE_MATCH;
+				level = newLevel;
+			}
+		}
+		return level;
+	}
 public int match(TypeDeclaration node, MatchingNodeSet nodeSet) {
 	int level = IMPOSSIBLE_MATCH;
 	for (int i = 0, length = this.patternLocators.length; i < length; i++) {
@@ -242,8 +270,9 @@ protected void matchLevelAndReportImportRef(ImportReference importRef, Binding b
 		closestPattern.matchLevelAndReportImportRef(importRef, binding, locator);
 	}
 }
-protected void matchReportImportRef(ImportReference importRef, Binding binding, IJavaElement element, int accuracy, MatchLocator locator) throws
-                                                                                                                                          CoreException {
+
+	protected void matchReportImportRef(ImportReference importRef, Binding binding, IJavaElement element, int accuracy,
+										MatchLocator locator) throws CoreException {
 	PatternLocator closestPattern = null;
 	int level = IMPOSSIBLE_MATCH;
 	for (int i = 0, length = this.patternLocators.length; i < length; i++) {
@@ -257,8 +286,9 @@ protected void matchReportImportRef(ImportReference importRef, Binding binding, 
 	if (closestPattern != null)
 		closestPattern.matchReportImportRef(importRef, binding, element, accuracy, locator);
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                                                                                  CoreException {
+
+	protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements,
+										Binding elementBinding, int accuracy, MatchLocator locator) throws CoreException {
 	PatternLocator closestPattern = null;
 	int level = IMPOSSIBLE_MATCH;
 	for (int i = 0, length = this.patternLocators.length; i < length; i++) {
@@ -273,8 +303,10 @@ protected void matchReportReference(ASTNode reference, IJavaElement element, IJa
 	if (closestPattern != null)
 		closestPattern.matchReportReference(reference, element, localElement, otherElements, elementBinding, accuracy, locator);
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                         CoreException {
+
+	protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator
+			locator)
+			throws CoreException {
 	matchReportReference(reference, element, null, null, elementBinding, accuracy, locator);
 }
 public SearchMatch newDeclarationMatch(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, int length, MatchLocator locator) {
@@ -318,7 +350,7 @@ public int resolveLevel(Binding binding) {
 	return level;
 }
 /* (non-Javadoc)
- * @see PatternLocator#setFlavors(int)
+ * @see org.eclipse.jdt.internal.core.search.matching.PatternLocator#setFlavors(int)
  */
 void setFlavors(int flavors) {
 	for (int i = 0, length = this.patternLocators.length; i < length; i++) {
@@ -326,4 +358,9 @@ void setFlavors(int flavors) {
 	}
 }
 
+	public void recordResolution(QualifiedTypeReference typeReference, TypeBinding resolution) {
+		for (int i = 0, length = this.patternLocators.length; i < length; i++) {
+			this.patternLocators[i].recordResolution(typeReference, resolution);
+		}
+	}
 }

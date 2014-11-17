@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2012 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,277 +79,281 @@ import java.io.IOException;
  */
 public abstract class SearchPattern {
 
-    // Rules for pattern matching: (exact, prefix, pattern) [ | case sensitive]
-    /**
-     * Match rule: The search pattern matches exactly the search result,
-     * that is, the source of the search result equals the search pattern.
-     */
-    public static final int R_EXACT_MATCH = 0;
+	// Rules for pattern matching: (exact, prefix, pattern) [ | case sensitive]
+	/**
+	 * Match rule: The search pattern matches exactly the search result,
+	 * that is, the source of the search result equals the search pattern.
+	 */
+	public static final int R_EXACT_MATCH = 0;
 
-    /**
-     * Match rule: The search pattern is a prefix of the search result.
-     */
-    public static final int R_PREFIX_MATCH = 0x0001;
+	/**
+	 * Match rule: The search pattern is a prefix of the search result.
+	 */
+	public static final int R_PREFIX_MATCH = 0x0001;
 
-    /**
-     * Match rule: The search pattern contains one or more wild cards ('*' or '?').
-     * A '*' wild-card can replace 0 or more characters in the search result.
-     * A '?' wild-card replaces exactly 1 character in the search result.
-     */
-    public static final int R_PATTERN_MATCH = 0x0002;
+	/**
+	 * Match rule: The search pattern contains one or more wild cards ('*' or '?').
+	 * A '*' wild-card can replace 0 or more characters in the search result.
+	 * A '?' wild-card replaces exactly 1 character in the search result.
+	 */
+	public static final int R_PATTERN_MATCH = 0x0002;
 
-    /**
-     * Match rule: The search pattern contains a regular expression.
-     * <p><b>Warning:</b> The support for this rule is <b>not yet implemented</b></p>
-     */
-    public static final int R_REGEXP_MATCH = 0x0004;
+	/**
+	 * Match rule: The search pattern contains a regular expression.
+	 * <p><b>Warning:</b> The support for this rule is <b>not yet implemented</b></p>
+	 */
+	public static final int R_REGEXP_MATCH = 0x0004;
 
-    /**
-     * Match rule: The search pattern matches the search result only if cases are the same.
-     * Can be combined to previous rules, e.g. {@link #R_EXACT_MATCH} | {@link #R_CASE_SENSITIVE}
-     */
-    public static final int R_CASE_SENSITIVE = 0x0008;
+	/**
+	 * Match rule: The search pattern matches the search result only if cases are the same.
+	 * Can be combined to previous rules, e.g. {@link #R_EXACT_MATCH} | {@link #R_CASE_SENSITIVE}
+	 */
+	public static final int R_CASE_SENSITIVE = 0x0008;
 
-    /**
-     * Match rule: The search pattern matches search results as raw/parameterized types/methods with same erasure.
-     * This mode has no effect on other java elements search.<br>
-     * Type search example:
-     * 	<ul>
-     * 	<li>pattern: <code>List&lt;Exception&gt;</code></li>
-     * 	<li>match: <code>List&lt;Object&gt;</code></li>
-     * 	</ul>
-     * Method search example:
-     * 	<ul>
-     * 	<li>declaration: <code>&lt;T&gt;foo(T t)</code></li>
-     * 	<li>pattern: <code>&lt;Exception&gt;foo(new Exception())</code></li>
-     * 	<li>match: <code>&lt;Object&gt;foo(new Object())</code></li>
-     * 	</ul>
-     * Can be combined to all other match rules, e.g. {@link #R_CASE_SENSITIVE} | {@link #R_ERASURE_MATCH}
-     * This rule is not activated by default, so raw types or parameterized types with same erasure will not be found
-     * for pattern List&lt;String&gt;,
-     * Note that with this pattern, the match selection will be only on the erasure even for parameterized types.
-     * @since 3.1
-     */
-    public static final int R_ERASURE_MATCH = 0x0010;
+	/**
+	 * Match rule: The search pattern matches search results as raw/parameterized types/methods with same erasure.
+	 * This mode has no effect on other java elements search.<br>
+	 * Type search example:
+	 * <ul>
+	 * <li>pattern: <code>List&lt;Exception&gt;</code></li>
+	 * <li>match: <code>List&lt;Object&gt;</code></li>
+	 * </ul>
+	 * Method search example:
+	 * <ul>
+	 * <li>declaration: <code>&lt;T&gt;foo(T t)</code></li>
+	 * <li>pattern: <code>&lt;Exception&gt;foo(new Exception())</code></li>
+	 * <li>match: <code>&lt;Object&gt;foo(new Object())</code></li>
+	 * </ul>
+	 * Can be combined to all other match rules, e.g. {@link #R_CASE_SENSITIVE} | {@link #R_ERASURE_MATCH}
+	 * This rule is not activated by default, so raw types or parameterized types with same erasure will not be found
+	 * for pattern List&lt;String&gt;,
+	 * Note that with this pattern, the match selection will be only on the erasure even for parameterized types.
+	 *
+	 * @since 3.1
+	 */
+	public static final int R_ERASURE_MATCH = 0x0010;
 
-    /**
-     * Match rule: The search pattern matches search results as raw/parameterized types/methods with equivalent type parameters.
-     * This mode has no effect on other java elements search.<br>
-     * Type search example:
-     * <ul>
-     * 	<li>pattern: <code>List&lt;Exception&gt;</code></li>
-     * 	<li>match:
-     * 		<ul>
-     * 		<li><code>List&lt;? extends Throwable&gt;</code></li>
-     * 		<li><code>List&lt;? super RuntimeException&gt;</code></li>
-     * 		<li><code>List&lt;?&gt;</code></li>
-     *			</ul>
-     * 	</li>
-     * 	</ul>
-     * Method search example:
-     * 	<ul>
-     * 	<li>declaration: <code>&lt;T&gt;foo(T t)</code></li>
-     * 	<li>pattern: <code>&lt;Exception&gt;foo(new Exception())</code></li>
-     * 	<li>match:
-     * 		<ul>
-     * 		<li><code>&lt;? extends Throwable&gt;foo(new Exception())</code></li>
-     * 		<li><code>&lt;? super RuntimeException&gt;foo(new Exception())</code></li>
-     * 		<li><code>foo(new Exception())</code></li>
-     *			</ul>
-     * 	</ul>
-     * Can be combined to all other match rules, e.g. {@link #R_CASE_SENSITIVE} | {@link #R_EQUIVALENT_MATCH}
-     * This rule is not activated by default, so raw types or equivalent parameterized types will not be found
-     * for pattern List&lt;String&gt;,
-     * This mode is overridden by {@link  #R_ERASURE_MATCH} as erasure matches obviously include equivalent ones.
-     * That means that pattern with rule set to {@link #R_EQUIVALENT_MATCH} | {@link  #R_ERASURE_MATCH}
-     * will return same results than rule only set with {@link  #R_ERASURE_MATCH}.
-     * @since 3.1
-     */
-    public static final int R_EQUIVALENT_MATCH = 0x0020;
+	/**
+	 * Match rule: The search pattern matches search results as raw/parameterized types/methods with equivalent type parameters.
+	 * This mode has no effect on other java elements search.<br>
+	 * Type search example:
+	 * <ul>
+	 * 	<li>pattern: <code>List&lt;Exception&gt;</code></li>
+	 * 	<li>match:
+	 * 		<ul>
+	 * 		<li><code>List&lt;? extends Throwable&gt;</code></li>
+	 * 		<li><code>List&lt;? super RuntimeException&gt;</code></li>
+	 * 		<li><code>List&lt;?&gt;</code></li>
+	 *			</ul>
+	 * 	</li>
+	 * 	</ul>
+	 * Method search example:
+	 * 	<ul>
+	 * 	<li>declaration: <code>&lt;T&gt;foo(T t)</code></li>
+	 * 	<li>pattern: <code>&lt;Exception&gt;foo(new Exception())</code></li>
+	 * 	<li>match:
+	 * 		<ul>
+	 * 		<li><code>&lt;? extends Throwable&gt;foo(new Exception())</code></li>
+	 * 		<li><code>&lt;? super RuntimeException&gt;foo(new Exception())</code></li>
+	 * 		<li><code>foo(new Exception())</code></li>
+	 *			</ul>
+	 * 	</ul>
+	 * Can be combined to all other match rules, e.g. {@link #R_CASE_SENSITIVE} | {@link #R_EQUIVALENT_MATCH}
+	 * This rule is not activated by default, so raw types or equivalent parameterized types will not be found
+	 * for pattern List&lt;String&gt;,
+	 * This mode is overridden by {@link  #R_ERASURE_MATCH} as erasure matches obviously include equivalent ones.
+	 * That means that pattern with rule set to {@link #R_EQUIVALENT_MATCH} | {@link  #R_ERASURE_MATCH}
+	 * will return same results than rule only set with {@link  #R_ERASURE_MATCH}.
+	 * @since 3.1
+	 */
+	public static final int R_EQUIVALENT_MATCH = 0x0020;
 
-    /**
-     * Match rule: The search pattern matches exactly the search result,
-     * that is, the source of the search result equals the search pattern.
-     * @since 3.1
-     */
-    public static final int R_FULL_MATCH = 0x0040;
+	/**
+	 * Match rule: The search pattern matches exactly the search result,
+	 * that is, the source of the search result equals the search pattern.
+	 * @since 3.1
+	 */
+	public static final int R_FULL_MATCH = 0x0040;
 
-    /**
-     * Match rule: The search pattern contains a Camel Case expression.
-     * <p>
-     * Examples:
-     * <ul>
-     * 	<li>'NPE' type string pattern will match
-     * 		'NullPointerException' and 'NoPermissionException' types,</li>
-     * 	<li>'NuPoEx' type string pattern will only match
-     * 		'NullPointerException' type.</li>
-     * </ul>
-     *
-     * This rule is not intended to be combined with any other match rule. In case
-     * of other match rule flags are combined with this one, then match rule validation
-     * will return a modified rule in order to perform a better appropriate search request
-     * (see {@link #validateMatchRule(String, int)} for more details).
-     * <p>
-     * @see #camelCaseMatch(String, String) for a detailed explanation of Camel
-     * 	Case matching.
-     *
-     * @since 3.2
-     */
-    public static final int R_CAMELCASE_MATCH = 0x0080;
+	/**
+	 * Match rule: The search pattern contains a Camel Case expression.
+	 * <p>
+	 * Examples:
+	 * <ul>
+	 * 	<li>'NPE' type string pattern will match
+	 * 		'NullPointerException' and 'NoPermissionException' types,</li>
+	 * 	<li>'NuPoEx' type string pattern will only match
+	 * 		'NullPointerException' type.</li>
+	 * </ul>
+	 *
+	 * This rule is not intended to be combined with any other match rule. In case
+	 * of other match rule flags are combined with this one, then match rule validation
+	 * will return a modified rule in order to perform a better appropriate search request
+	 * (see {@link #validateMatchRule(String, int)} for more details).
+	 * <p>
+	 * @see #camelCaseMatch(String, String) for a detailed explanation of Camel
+	 * 	Case matching.
+	 *
+	 * @since 3.2
+	 */
+	public static final int R_CAMELCASE_MATCH = 0x0080;
 
-    /**
-     * Match rule: The search pattern contains a Camel Case expression with
-     * a strict expected number of parts.
-     * <br>
-     * Examples:
-     * <ul>
-     * 	<li>'HM' type string pattern will match 'HashMap' and 'HtmlMapper' types,
-     * 		but not 'HashMapEntry'
-     * 	</li>
-     * 	<li>'HMap' type string pattern will still match previous 'HashMap' and
-     * 		'HtmlMapper' types, but not 'HighMagnitude'
-     * 	</li>
-     * </ul>
-     *
-     * This rule is not intended to be combined with any other match rule. In case
-     * of other match rule flags are combined with this one, then match rule validation
-     * will return a modified rule in order to perform a better appropriate search request
-     * (see {@link #validateMatchRule(String, int)} for more details).
-     * <p>
-     * @see org.eclipse.jdt.core.compiler.CharOperation#camelCaseMatch(char[], char[], boolean) for a detailed
-     * explanation of Camel Case matching.
-     *<p>
-     * @since 3.4
-     */
-    public static final int R_CAMELCASE_SAME_PART_COUNT_MATCH = 0x0100;
+	/**
+	 * Match rule: The search pattern contains a Camel Case expression with
+	 * a strict expected number of parts.
+	 * <br>
+	 * Examples:
+	 * <ul>
+	 * 	<li>'HM' type string pattern will match 'HashMap' and 'HtmlMapper' types,
+	 * 		but not 'HashMapEntry'
+	 * 	</li>
+	 * 	<li>'HMap' type string pattern will still match previous 'HashMap' and
+	 * 		'HtmlMapper' types, but not 'HighMagnitude'
+	 * 	</li>
+	 * </ul>
+	 *
+	 * This rule is not intended to be combined with any other match rule. In case
+	 * of other match rule flags are combined with this one, then match rule validation
+	 * will return a modified rule in order to perform a better appropriate search request
+	 * (see {@link #validateMatchRule(String, int)} for more details).
+	 * <p>
+	 * @see CharOperation#camelCaseMatch(char[], char[], boolean) for a detailed
+	 * explanation of Camel Case matching.
+	 *<p>
+	 * @since 3.4
+	 */
+	public static final int R_CAMELCASE_SAME_PART_COUNT_MATCH = 0x0100;
 
-    private static final int MODE_MASK = R_EXACT_MATCH
-                                         | R_PREFIX_MATCH
-                                         | R_PATTERN_MATCH
-                                         | R_REGEXP_MATCH
-                                         | R_CAMELCASE_MATCH
-                                         | R_CAMELCASE_SAME_PART_COUNT_MATCH;
+	private static final int MODE_MASK = R_EXACT_MATCH
+										 | R_PREFIX_MATCH
+										 | R_PATTERN_MATCH
+										 | R_REGEXP_MATCH
+										 | R_CAMELCASE_MATCH
+										 | R_CAMELCASE_SAME_PART_COUNT_MATCH;
 
-    private int matchRule;
+	private int matchRule;
 
-    /**
-     * The focus element (used for reference patterns)
-     * @noreference This field is not intended to be referenced by clients.
-     */
-    public IJavaElement focus;
+	/**
+	 * The focus element (used for reference patterns)
+	 * @noreference This field is not intended to be referenced by clients.
+	 */
+	public IJavaElement focus;
 
-    /**
-     * @noreference This field is not intended to be referenced by clients.
-     */
-    public int kind;
+	/**
+	 * @noreference This field is not intended to be referenced by clients.
+	 */
+	public int kind;
 
-    /**
-     * @noreference This field is not intended to be referenced by clients.
-     */
-    public boolean mustResolve = true;
+	/**
+	 * @noreference This field is not intended to be referenced by clients.
+	 */
+	public boolean mustResolve = true;
 
-    /**
-     * Creates a search pattern with the rule to apply for matching index keys.
-     * It can be exact match, prefix match, pattern match or regexp match.
-     * Rule can also be combined with a case sensitivity flag.
-     *
-     * @param matchRule one of following match rule
-     * 	<ul>
-     * 		<li>{@link #R_EXACT_MATCH}</li>
-     * 		<li>{@link #R_PREFIX_MATCH}</li>
-     * 		<li>{@link #R_PATTERN_MATCH}</li>
-     * 		<li>{@link #R_REGEXP_MATCH}</li>
-     * 		<li>{@link #R_CAMELCASE_MATCH}</li>
-     * 		<li>{@link #R_CAMELCASE_SAME_PART_COUNT_MATCH}</li>
-     * 	</ul>
-     * 	which may be also combined with one of following flag:
-     * 	<ul>
-     * 		<li>{@link #R_CASE_SENSITIVE}</li>
-     * 		<li>{@link #R_ERASURE_MATCH}</li>
-     * 		<li>{@link #R_EQUIVALENT_MATCH}</li>
-     * 	</ul>
-     *		For example,
-     *		<ul>
-     *			<li>{@link #R_EXACT_MATCH} | {@link #R_CASE_SENSITIVE}: if an exact
-     *				and case sensitive match is requested,</li>
-     *			<li>{@link #R_PREFIX_MATCH} if a case insensitive prefix match is requested</li>
-     *			<li>{@link #R_EXACT_MATCH} | {@link #R_ERASURE_MATCH}: if a case
-     *				insensitive and erasure match is requested.</li>
-     *		</ul>
-     * 	Note that {@link #R_ERASURE_MATCH} or {@link #R_EQUIVALENT_MATCH} has no effect
-     * 	on non-generic types/methods search.
-     * 	<p>
-     * 	Note also that default behavior for generic types/methods search is to find exact matches.
-     */
-    public SearchPattern(int matchRule) {
-        this.matchRule = matchRule;
-        // Set full match implicit mode
-        if ((matchRule & (R_EQUIVALENT_MATCH | R_ERASURE_MATCH)) == 0) {
-            this.matchRule |= R_FULL_MATCH;
-        }
-        // reset other incompatible flags
-        if ((matchRule & R_CAMELCASE_MATCH) != 0) {
-            this.matchRule &= ~R_CAMELCASE_SAME_PART_COUNT_MATCH;
-            this.matchRule &= ~R_PREFIX_MATCH;
-        } else if ((matchRule & R_CAMELCASE_SAME_PART_COUNT_MATCH) != 0) {
-            this.matchRule &= ~R_PREFIX_MATCH;
-        }
-    }
-
-    /**
-     * @noreference This method is not intended to be referenced by clients.
-     * @nooverride This method is not intended to be re-implemented or extended by clients.
-     */
-    public void acceptMatch(String relativePath, String containerPath, char separator, SearchPattern pattern,
-                            IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope) {
-        acceptMatch(relativePath, containerPath, separator, pattern, requestor, participant, scope, null);
-    }
-
-    /**
-     * @noreference This method is not intended to be referenced by clients.
-     * @nooverride This method is not intended to be re-implemented or extended by clients.
-     */
-    public void acceptMatch(String relativePath, String containerPath, char separator, SearchPattern pattern,
-                            IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope,
-                            IProgressMonitor monitor) {
-
-        if (scope instanceof JavaSearchScope) {
-            JavaSearchScope javaSearchScope = (JavaSearchScope)scope;
-            // Get document path access restriction from java search scope
-            // Note that requestor has to verify if needed whether the document violates the access restriction or not
-            AccessRuleSet access = javaSearchScope.getAccessRuleSet(relativePath, containerPath);
-            if (access != JavaSearchScope.NOT_ENCLOSED) { // scope encloses the document path
-                StringBuffer documentPath = new StringBuffer(containerPath.length() + 1 + relativePath.length());
-                documentPath.append(containerPath);
-                documentPath.append(separator);
-			documentPath.append(relativePath);
-			if (!requestor.acceptIndexMatch(documentPath.toString(), pattern, participant, access))
-				throw new OperationCanceledException();
+	/**
+	 * Creates a search pattern with the rule to apply for matching index keys.
+	 * It can be exact match, prefix match, pattern match or regexp match.
+	 * Rule can also be combined with a case sensitivity flag.
+	 *
+	 * @param matchRule
+	 *         one of following match rule
+	 *         <ul>
+	 *         <li>{@link #R_EXACT_MATCH}</li>
+	 *         <li>{@link #R_PREFIX_MATCH}</li>
+	 *         <li>{@link #R_PATTERN_MATCH}</li>
+	 *         <li>{@link #R_REGEXP_MATCH}</li>
+	 *         <li>{@link #R_CAMELCASE_MATCH}</li>
+	 *         <li>{@link #R_CAMELCASE_SAME_PART_COUNT_MATCH}</li>
+	 *         </ul>
+	 *         which may be also combined with one of following flag:
+	 *         <ul>
+	 *         <li>{@link #R_CASE_SENSITIVE}</li>
+	 *         <li>{@link #R_ERASURE_MATCH}</li>
+	 *         <li>{@link #R_EQUIVALENT_MATCH}</li>
+	 *         </ul>
+	 *         For example,
+	 *         <ul>
+	 *         <li>{@link #R_EXACT_MATCH} | {@link #R_CASE_SENSITIVE}: if an exact
+	 *         and case sensitive match is requested,</li>
+	 *         <li>{@link #R_PREFIX_MATCH} if a case insensitive prefix match is requested</li>
+	 *         <li>{@link #R_EXACT_MATCH} | {@link #R_ERASURE_MATCH}: if a case
+	 *         insensitive and erasure match is requested.</li>
+	 *         </ul>
+	 *         Note that {@link #R_ERASURE_MATCH} or {@link #R_EQUIVALENT_MATCH} has no effect
+	 *         on non-generic types/methods search.
+	 *         <p/>
+	 *         Note also that default behavior for generic types/methods search is to find exact matches.
+	 */
+	public SearchPattern(int matchRule) {
+		this.matchRule = matchRule;
+		// Set full match implicit mode
+		if ((matchRule & (R_EQUIVALENT_MATCH | R_ERASURE_MATCH)) == 0) {
+			this.matchRule |= R_FULL_MATCH;
 		}
-	} else {
-		StringBuffer buffer = new StringBuffer(containerPath.length() + 1 + relativePath.length());
-		buffer.append(containerPath);
-		buffer.append(separator);
-		buffer.append(relativePath);
-		String documentPath = buffer.toString();
-		boolean encloses = (scope instanceof HierarchyScope) ? ((HierarchyScope)scope).encloses(documentPath, monitor)
-							: scope.encloses(documentPath);
-		if (encloses)
-			if (!requestor.acceptIndexMatch(documentPath, pattern, participant, null))
-				throw new OperationCanceledException();
-
+		// reset other incompatible flags
+		if ((matchRule & R_CAMELCASE_MATCH) != 0) {
+			this.matchRule &= ~R_CAMELCASE_SAME_PART_COUNT_MATCH;
+			this.matchRule &= ~R_PREFIX_MATCH;
+		} else if ((matchRule & R_CAMELCASE_SAME_PART_COUNT_MATCH) != 0) {
+			this.matchRule &= ~R_PREFIX_MATCH;
+		}
 	}
-}
-/**
- * @noreference This method is not intended to be referenced by clients.
- * @nooverride This method is not intended to be re-implemented or extended by clients.
- */
-public SearchPattern currentPattern() {
-	return this;
-}
-/**
- * Answers true if the pattern matches the given name using CamelCase rules, or
- * false otherwise. char[] CamelCase matching does NOT accept explicit wild-cards
+
+	/**
+	 * @noreference This method is not intended to be referenced by clients.
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 */
+	public void acceptMatch(String relativePath, String containerPath, char separator, SearchPattern pattern,
+							IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope) {
+		acceptMatch(relativePath, containerPath, separator, pattern, requestor, participant, scope, null);
+	}
+
+	/**
+	 * @noreference This method is not intended to be referenced by clients.
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 */
+	public void acceptMatch(String relativePath, String containerPath, char separator, SearchPattern pattern,
+							IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope,
+							IProgressMonitor monitor) {
+
+		if (scope instanceof JavaSearchScope) {
+			JavaSearchScope javaSearchScope = (JavaSearchScope)scope;
+			// Get document path access restriction from java search scope
+			// Note that requestor has to verify if needed whether the document violates the access restriction or not
+			AccessRuleSet access = javaSearchScope.getAccessRuleSet(relativePath, containerPath);
+			if (access != JavaSearchScope.NOT_ENCLOSED) { // scope encloses the document path
+				StringBuffer documentPath = new StringBuffer(containerPath.length() + 1 + relativePath.length());
+				documentPath.append(containerPath);
+				documentPath.append(separator);
+				documentPath.append(relativePath);
+				if (!requestor.acceptIndexMatch(documentPath.toString(), pattern, participant, access))
+					throw new OperationCanceledException();
+			}
+		} else {
+			StringBuffer buffer = new StringBuffer(containerPath.length() + 1 + relativePath.length());
+			buffer.append(containerPath);
+			buffer.append(separator);
+			buffer.append(relativePath);
+			String documentPath = buffer.toString();
+			boolean encloses = (scope instanceof HierarchyScope) ? ((HierarchyScope)scope).encloses(documentPath, monitor)
+																 : scope.encloses(documentPath);
+			if (encloses)
+				if (!requestor.acceptIndexMatch(documentPath, pattern, participant, null))
+					throw new OperationCanceledException();
+
+		}
+	}
+
+	/**
+	 * @noreference This method is not intended to be referenced by clients.
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 */
+	public SearchPattern currentPattern() {
+		return this;
+	}
+
+	/**
+	 * Answers true if the pattern matches the given name using CamelCase rules, or
+	 * false otherwise. char[] CamelCase matching does NOT accept explicit wild-cards
  * '*' and '?' and is inherently case sensitive.
  * <p>
  * CamelCase denotes the convention of writing compound names without spaces,
@@ -686,7 +690,7 @@ public static final boolean camelCaseMatch(String pattern, int patternStart, int
  *  result => (samePartCount == false)</li>
  * </ol></pre>
  *
- * @see org.eclipse.jdt.core.compiler.CharOperation#camelCaseMatch(char[], int, int, char[], int, int, boolean)
+ * @see CharOperation#camelCaseMatch(char[], int, int, char[], int, int, boolean)
  * 	from which algorithm implementation has been entirely copied.
  *
  * @param pattern the given pattern
@@ -707,7 +711,8 @@ public static final boolean camelCaseMatch(String pattern, int patternStart, int
  * @return true if a sub-pattern matches the sub-part of the given name, false otherwise
  * @since 3.4
  */
-public static final boolean camelCaseMatch(String pattern, int patternStart, int patternEnd, String name, int nameStart, int nameEnd, boolean samePartCount) {
+public static final boolean camelCaseMatch(String pattern, int patternStart, int patternEnd, String name, int nameStart, int nameEnd,
+										   boolean samePartCount) {
 	return StringOperation.getCamelCaseMatchingRegions(pattern, patternStart, patternEnd, name, nameStart, nameEnd, samePartCount) != null;
 }
 
@@ -767,7 +772,7 @@ public static final boolean camelCaseMatch(String pattern, int patternStart, int
  *
  * @see #camelCaseMatch(String, String, boolean) for more details on the
  * 	camel case behavior
- * @see org.eclipse.jdt.core.compiler.CharOperation#match(char[], char[], boolean) for more details on the
+ * @see CharOperation#match(char[], char[], boolean) for more details on the
  * 	pattern match behavior
  *
  * @param pattern the given pattern. If <code>null</code>,
@@ -858,7 +863,8 @@ public static final int[] getMatchingRegions(String pattern, String name, int ma
 				}
 			}
 			break;
-		case SearchPattern.R_CAMELCASE_SAME_PART_COUNT_MATCH | SearchPattern.R_CASE_SENSITIVE:
+		case SearchPattern.R_CAMELCASE_SAME_PART_COUNT_MATCH | SearchPattern
+				.R_CASE_SENSITIVE:
 			countMatch = true;
 			//$FALL-THROUGH$
 		case SearchPattern.R_CAMELCASE_MATCH | SearchPattern.R_CASE_SENSITIVE:
@@ -970,7 +976,7 @@ private static SearchPattern createFieldPattern(String patternString, int limitT
 			declaringTypeQualification = CharOperation.subarray(declaringTypePart, 0, lastDotPosition);
 			if (declaringTypeQualification.length == 1 && declaringTypeQualification[0] == '*')
 				declaringTypeQualification = null;
-			declaringTypeSimpleName = CharOperation.subarray(declaringTypePart, lastDotPosition + 1, declaringTypePart.length);
+			declaringTypeSimpleName = CharOperation.subarray(declaringTypePart, lastDotPosition+1, declaringTypePart.length);
 		} else {
 			declaringTypeSimpleName = declaringTypePart;
 		}
@@ -989,7 +995,7 @@ private static SearchPattern createFieldPattern(String patternString, int limitT
 				// prefix with a '*' as the full qualification could be bigger (because of an import)
 				typeQualification = CharOperation.concat(IIndexConstants.ONE_STAR, typeQualification);
 			}
-			typeSimpleName = CharOperation.subarray(typePart, lastDotPosition + 1, typePart.length);
+			typeSimpleName = CharOperation.subarray(typePart, lastDotPosition+1, typePart.length);
 		} else {
 			typeSimpleName = typePart;
 		}
@@ -1265,7 +1271,7 @@ private static SearchPattern createMethodOrConstructorPattern(String patternStri
 			declaringTypeQualification = CharOperation.subarray(declaringTypePart, 0, lastDotPosition);
 			if (declaringTypeQualification.length == 1 && declaringTypeQualification[0] == '*')
 				declaringTypeQualification = null;
-			declaringTypeSimpleName = CharOperation.subarray(declaringTypePart, lastDotPosition + 1, declaringTypePart.length);
+			declaringTypeSimpleName = CharOperation.subarray(declaringTypePart, lastDotPosition+1, declaringTypePart.length);
 		} else {
 			declaringTypeSimpleName = declaringTypePart;
 		}
@@ -1303,7 +1309,7 @@ private static SearchPattern createMethodOrConstructorPattern(String patternStri
 					// prefix with a '*' as the full qualification could be bigger (because of an import)
 					parameterTypeQualifications[i] = CharOperation.concat(IIndexConstants.ONE_STAR, parameterTypeQualifications[i]);
 				}
-				parameterTypeSimpleNames[i] = CharOperation.subarray(parameterTypePart, lastDotPosition + 1, parameterTypePart.length);
+				parameterTypeSimpleNames[i] = CharOperation.subarray(parameterTypePart, lastDotPosition+1, parameterTypePart.length);
 			} else {
 				parameterTypeQualifications[i] = null;
 				parameterTypeSimpleNames[i] = parameterTypePart;
@@ -1337,7 +1343,7 @@ private static SearchPattern createMethodOrConstructorPattern(String patternStri
 				// because of an import
 				returnTypeQualification = CharOperation.concat(IIndexConstants.ONE_STAR, returnTypeQualification);
 			}
-			returnTypeSimpleName = CharOperation.subarray(returnTypePart, lastDotPosition + 1, returnTypePart.length);
+			returnTypeSimpleName = CharOperation.subarray(returnTypePart, lastDotPosition+1, returnTypePart.length);
 		} else {
 			returnTypeSimpleName = returnTypePart;
 		}
@@ -1572,6 +1578,9 @@ private static SearchPattern createPackagePattern(String patternString, int limi
  *     			<tr>
  *         		<td>{@link IJavaSearchConstants#IMPLICIT_THIS_REFERENCE IMPLICIT_THIS_REFERENCE}
  *         		<td>Return only field accesses or method invocations without any qualification.
+ *				<tr>
+ *         		<td>{@link IJavaSearchConstants#METHOD_REFERENCE_EXPRESSION METHOD_REFERENCE_EXPRESSION}
+ *         		<td>Return only method reference expressions (e.g. <code>A :: foo</code>).
  * 			</table>
  *		</li>
  *	</ul>
@@ -1612,6 +1621,7 @@ public static SearchPattern createPattern(String stringPattern, int searchFor, i
 
 	// Ignore additional nature flags
 	limitTo &= ~(IJavaSearchConstants.IGNORE_DECLARING_TYPE+ IJavaSearchConstants.IGNORE_RETURN_TYPE);
+
 
 	switch (searchFor) {
 		case IJavaSearchConstants.CLASS:
@@ -1749,7 +1759,10 @@ public static SearchPattern createPattern(String stringPattern, int searchFor, i
  *     			<tr>
  *         		<td>{@link IJavaSearchConstants#IMPLICIT_THIS_REFERENCE IMPLICIT_THIS_REFERENCE}
  *         		<td>Return only field accesses or method invocations without any qualification.
- * 			</table>
+*				<tr>
+ *         		<td>{@link IJavaSearchConstants#METHOD_REFERENCE_EXPRESSION METHOD_REFERENCE_EXPRESSION}
+ *         		<td>Return only method reference expressions (e.g. <code>A :: foo</code>).
+* 			</table>
  *		</li>
  *	</ul>
  * @return a search pattern for a Java element or <code>null</code> if the given element is ill-formed
@@ -1858,6 +1871,9 @@ public static SearchPattern createPattern(IJavaElement element, int limitTo) {
  *     			<tr>
  *         		<td>{@link IJavaSearchConstants#IMPLICIT_THIS_REFERENCE IMPLICIT_THIS_REFERENCE}
  *         		<td>Return only field accesses or method invocations without any qualification.
+ *     			<tr>
+ *         		<td>{@link IJavaSearchConstants#METHOD_REFERENCE_EXPRESSION METHOD_REFERENCE_EXPRESSION}
+ *         		<td>Return only method reference expressions (e.g. <code>A :: foo</code>).
  * 			</table>
  * 	</li>
  *	</ul>
@@ -1895,7 +1911,8 @@ public static SearchPattern createPattern(IJavaElement element, int limitTo, int
 	int lastDot;
 	boolean ignoreDeclaringType = false;
 	boolean ignoreReturnType = false;
-	int maskedLimitTo = limitTo & ~(IJavaSearchConstants.IGNORE_DECLARING_TYPE+ IJavaSearchConstants.IGNORE_RETURN_TYPE);
+	int maskedLimitTo = limitTo & ~(IJavaSearchConstants.IGNORE_DECLARING_TYPE+
+									IJavaSearchConstants.IGNORE_RETURN_TYPE);
 	if (maskedLimitTo == IJavaSearchConstants.DECLARATIONS || maskedLimitTo == IJavaSearchConstants.ALL_OCCURRENCES) {
 		ignoreDeclaringType = (limitTo & IJavaSearchConstants.IGNORE_DECLARING_TYPE) != 0;
 		ignoreReturnType = (limitTo & IJavaSearchConstants.IGNORE_RETURN_TYPE) != 0;
@@ -1907,15 +1924,14 @@ public static SearchPattern createPattern(IJavaElement element, int limitTo, int
 	char[] declaringQualification = null;
 	switch (element.getElementType()) {
 		case IJavaElement.FIELD :
-			IField field = (IField) element;
+			IField field = (IField)element;
 			if (!ignoreDeclaringType) {
 				IType declaringClass = field.getDeclaringType();
 				declaringSimpleName = declaringClass.getElementName().toCharArray();
 				declaringQualification = declaringClass.getPackageFragment().getElementName().toCharArray();
 				char[][] enclosingNames = enclosingTypeNames(declaringClass);
 				if (enclosingNames.length > 0) {
-					declaringQualification = CharOperation
-                            .concat(declaringQualification, CharOperation.concatWith(enclosingNames, '.'), '.');
+					declaringQualification = CharOperation.concat(declaringQualification, CharOperation.concatWith(enclosingNames, '.'), '.');
 				}
 			}
 			char[] name = field.getElementName().toCharArray();
@@ -2012,8 +2028,7 @@ public static SearchPattern createPattern(IJavaElement element, int limitTo, int
 				declaringQualification = declaringClass.getPackageFragment().getElementName().toCharArray();
 				char[][] enclosingNames = enclosingTypeNames(declaringClass);
 				if (enclosingNames.length > 0) {
-					declaringQualification = CharOperation
-                            .concat(declaringQualification, CharOperation.concatWith(enclosingNames, '.'), '.');
+					declaringQualification = CharOperation.concat(declaringQualification, CharOperation.concatWith(enclosingNames, '.'), '.');
 				}
 			}
 			char[] selector = method.getElementName().toCharArray();
@@ -2246,7 +2261,7 @@ private static SearchPattern createTypePattern(String patternString, int limitTo
 		qualificationChars = CharOperation.subarray(typePart, 0, lastDotPosition);
 		if (qualificationChars.length == 1 && qualificationChars[0] == '*')
 			qualificationChars = null;
-		typeChars = CharOperation.subarray(typePart, lastDotPosition + 1, typePart.length);
+		typeChars = CharOperation.subarray(typePart, lastDotPosition+1, typePart.length);
 	} else {
 		typeChars = typePart;
 	}
@@ -2256,14 +2271,13 @@ private static SearchPattern createTypePattern(String patternString, int limitTo
 	switch (limitTo) {
 		case IJavaSearchConstants.DECLARATIONS : // cannot search for explicit member types
 			return new QualifiedTypeDeclarationPattern(qualificationChars, typeChars, indexSuffix, matchRule);
-		case IJavaSearchConstants.REFERENCES :
+		case IJavaSearchConstants.REFERENCES:
 			return new TypeReferencePattern(qualificationChars, typeChars, typeSignature, indexSuffix, matchRule);
-		case IJavaSearchConstants.IMPLEMENTORS :
+		case IJavaSearchConstants.IMPLEMENTORS:
 			return new SuperTypeReferencePattern(qualificationChars, typeChars, SuperTypeReferencePattern.ONLY_SUPER_INTERFACES, indexSuffix, matchRule);
 		case IJavaSearchConstants.ALL_OCCURRENCES :
 			return new OrPattern(
-				new QualifiedTypeDeclarationPattern(qualificationChars, typeChars, indexSuffix, matchRule),// cannot search for explicit
-				// member types
+				new QualifiedTypeDeclarationPattern(qualificationChars, typeChars, indexSuffix, matchRule),// cannot search for explicit member types
 				new TypeReferencePattern(qualificationChars, typeChars, typeSignature, indexSuffix, matchRule));
 		default:
 			return new TypeReferencePattern(qualificationChars, typeChars, typeSignature, limitTo, indexSuffix, matchRule);
@@ -2281,8 +2295,8 @@ private static char[][] enclosingTypeNames(IType type) {
 			IType declaringType = type.getDeclaringType();
 			if (declaringType == null) return CharOperation.NO_CHAR_CHAR;
 			return CharOperation.arrayConcat(
-                    enclosingTypeNames(declaringType),
-                    declaringType.getElementName().toCharArray());
+					enclosingTypeNames(declaringType),
+					declaringType.getElementName().toCharArray());
 		case IJavaElement.COMPILATION_UNIT:
 			return CharOperation.NO_CHAR_CHAR;
 		case IJavaElement.FIELD:
@@ -2290,12 +2304,12 @@ private static char[][] enclosingTypeNames(IType type) {
 		case IJavaElement.METHOD:
 			IType declaringClass = ((IMember) parent).getDeclaringType();
 			return CharOperation.arrayConcat(
-                    enclosingTypeNames(declaringClass),
-                    new char[][]{declaringClass.getElementName().toCharArray(), IIndexConstants.ONE_STAR});
+					enclosingTypeNames(declaringClass),
+					new char[][]{declaringClass.getElementName().toCharArray(), IIndexConstants.ONE_STAR});
 		case IJavaElement.TYPE:
 			return CharOperation.arrayConcat(
-                    enclosingTypeNames((IType)parent),
-                    parent.getElementName().toCharArray());
+					enclosingTypeNames((IType)parent),
+					parent.getElementName().toCharArray());
 		default:
 			return null;
 	}

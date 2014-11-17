@@ -20,29 +20,29 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 
 public class VariableLocator extends PatternLocator {
 
-    protected VariablePattern pattern;
+	protected VariablePattern pattern;
 
-    public VariableLocator(VariablePattern pattern) {
-        super(pattern);
+	public VariableLocator(VariablePattern pattern) {
+		super(pattern);
 
-        this.pattern = pattern;
-    }
+		this.pattern = pattern;
+	}
 
-    public int match(Expression node, MatchingNodeSet nodeSet) { // interested in Assignment
-        if (this.pattern.writeAccess) {
-            if (this.pattern.readAccess) return IMPOSSIBLE_MATCH; // already checked the lhs in match(Reference...) before we reached here
+	public int match(Expression node, MatchingNodeSet nodeSet) { // interested in Assignment
+		if (this.pattern.writeAccess) {
+			if (this.pattern.readAccess) return IMPOSSIBLE_MATCH; // already checked the lhs in match(Reference...) before we reached here
 
-            if (node instanceof Assignment) {
-                Expression lhs = ((Assignment)node).lhs;
-                if (lhs instanceof Reference)
-                    return matchReference((Reference)lhs, nodeSet, true);
-            }
-        } else if (this.pattern.readAccess || this.pattern.fineGrain != 0) {
-            if (node instanceof Assignment && !(node instanceof CompoundAssignment)) {
-                // the lhs of a simple assignment may be added in match(Reference...) before we reach here
-                // for example, the fieldRef to 'this.x' in the statement this.x = x; is not considered a readAccess
-                char[] lastToken = null;
-                Expression lhs = ((Assignment) node).lhs;
+			if (node instanceof Assignment) {
+				Expression lhs = ((Assignment)node).lhs;
+				if (lhs instanceof Reference)
+					return matchReference((Reference)lhs, nodeSet, true);
+			}
+		} else if (this.pattern.readAccess || this.pattern.fineGrain != 0) {
+			if (node instanceof Assignment && !(node instanceof CompoundAssignment)) {
+				// the lhs of a simple assignment may be added in match(Reference...) before we reach here
+				// for example, the fieldRef to 'this.x' in the statement this.x = x; is not considered a readAccess
+				char[] lastToken = null;
+				Expression lhs = ((Assignment)node).lhs;
 			if (lhs instanceof QualifiedNameReference) {
 				char[][] tokens = ((QualifiedNameReference)lhs).tokens;
 				lastToken = tokens[tokens.length-1];

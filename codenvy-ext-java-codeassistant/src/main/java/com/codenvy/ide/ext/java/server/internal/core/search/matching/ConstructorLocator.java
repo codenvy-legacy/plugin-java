@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.JavadocMessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedAllocationExpression;
+import org.eclipse.jdt.internal.compiler.ast.ReferenceExpression;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -37,43 +38,48 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 public class ConstructorLocator extends PatternLocator {
 
-    protected ConstructorPattern pattern;
+	protected ConstructorPattern pattern;
 
-    public ConstructorLocator(ConstructorPattern pattern) {
-        super(pattern);
+	public ConstructorLocator(ConstructorPattern pattern) {
+		super(pattern);
 
-        this.pattern = pattern;
-    }
+		this.pattern = pattern;
+	}
 
-    public int match(ASTNode node, MatchingNodeSet nodeSet) { // interested in ExplicitConstructorCall
-        if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
-        if (!(node instanceof ExplicitConstructorCall)) return IMPOSSIBLE_MATCH;
+	protected int fineGrain() {
+		return this.pattern.fineGrain;
+	}
 
-        if (!matchParametersCount(node, ((ExplicitConstructorCall)node).arguments)) return IMPOSSIBLE_MATCH;
+	public int match(ASTNode node, MatchingNodeSet nodeSet) { // interested in ExplicitConstructorCall
+		if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
+		if (!(node instanceof ExplicitConstructorCall)) return IMPOSSIBLE_MATCH;
 
-        return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
-    }
+		if (!matchParametersCount(node, ((ExplicitConstructorCall)node).arguments)) return IMPOSSIBLE_MATCH;
 
-    public int match(ConstructorDeclaration node, MatchingNodeSet nodeSet) {
-        int referencesLevel = this.pattern.findReferences ? matchLevelForReferences(node) : IMPOSSIBLE_MATCH;
-        int declarationsLevel = this.pattern.findDeclarations ? matchLevelForDeclarations(node) : IMPOSSIBLE_MATCH;
+		return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
+	}
 
-        return nodeSet.addMatch(node, referencesLevel >= declarationsLevel ? referencesLevel : declarationsLevel); // use the stronger match
-    }
+	public int match(ConstructorDeclaration node, MatchingNodeSet nodeSet) {
+		int referencesLevel = this.pattern.findReferences ? matchLevelForReferences(node) : IMPOSSIBLE_MATCH;
+		int declarationsLevel = this.pattern.findDeclarations ? matchLevelForDeclarations(node) : IMPOSSIBLE_MATCH;
 
-    public int match(Expression node, MatchingNodeSet nodeSet) { // interested in AllocationExpression
-        if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
-        if (!(node instanceof AllocationExpression)) return IMPOSSIBLE_MATCH;
+		return nodeSet.addMatch(node, referencesLevel >= declarationsLevel ? referencesLevel : declarationsLevel); // use the stronger
+		// match
+	}
 
-        // constructor name is simple type name
-        AllocationExpression allocation = (AllocationExpression)node;
-        char[][] typeName = allocation.type.getTypeName();
-        if (this.pattern.declaringSimpleName != null && !matchesName(this.pattern.declaringSimpleName, typeName[typeName.length - 1]))
-            return IMPOSSIBLE_MATCH;
+	public int match(Expression node, MatchingNodeSet nodeSet) { // interested in AllocationExpression
+		if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
+		if (!(node instanceof AllocationExpression)) return IMPOSSIBLE_MATCH;
 
-        if (!matchParametersCount(node, allocation.arguments)) return IMPOSSIBLE_MATCH;
+		// constructor name is simple type name
+		AllocationExpression allocation = (AllocationExpression)node;
+		char[][] typeName = allocation.type.getTypeName();
+		if (this.pattern.declaringSimpleName != null && !matchesName(this.pattern.declaringSimpleName, typeName[typeName.length - 1]))
+			return IMPOSSIBLE_MATCH;
 
-        return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
+		if (!matchParametersCount(node, allocation.arguments)) return IMPOSSIBLE_MATCH;
+
+		return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
 }
 public int match(FieldDeclaration field, MatchingNodeSet nodeSet) {
 	if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
@@ -92,17 +98,24 @@ public int match(FieldDeclaration field, MatchingNodeSet nodeSet) {
 }
 //public int match(MethodDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 /**
- * Special case for message send in javadoc comment. They can be in fact bound to a contructor.
+ * Special case for message send in javadoc comment. They can be in fact bound to a constructor.
  * @see "http://bugs.eclipse.org/bugs/show_bug.cgi?id=83285"
  */
 public int match(MessageSend msgSend, MatchingNodeSet nodeSet)  {
 	if ((msgSend.bits & ASTNode.InsideJavadoc) == 0) return IMPOSSIBLE_MATCH;
+	if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
 	if (this.pattern.declaringSimpleName == null || CharOperation.equals(msgSend.selector, this.pattern.declaringSimpleName)) {
 		return nodeSet.addMatch(msgSend, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
 	}
 	return IMPOSSIBLE_MATCH;
 }
-//public int match(Reference node, MatchingNodeSet nodeSet) - SKIP IT
+
+	public int match(ReferenceExpression node, MatchingNodeSet nodeSet) {
+		if (!this.pattern.findReferences || node.isMethodReference()) return IMPOSSIBLE_MATCH;
+		return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
+	}
+
+	//public int match(Reference node, MatchingNodeSet nodeSet) - SKIP IT
 public int match(TypeDeclaration node, MatchingNodeSet nodeSet) {
 	if (!this.pattern.findReferences) return IMPOSSIBLE_MATCH;
 
@@ -193,10 +206,12 @@ boolean matchParametersCount(ASTNode node, Expression[] args) {
 	}
 	return true;
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                         CoreException {
 
-	MethodBinding constructorBinding = null;
+	protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator
+			locator)
+			throws CoreException {
+
+		MethodBinding constructorBinding = null;
 	boolean isSynthetic = false;
 	if (reference instanceof ExplicitConstructorCall) {
 		ExplicitConstructorCall call = (ExplicitConstructorCall) reference;
@@ -317,6 +332,9 @@ public int resolveLevel(ASTNode node) {
 			return resolveLevel((FieldDeclaration) node);
 		if (node instanceof JavadocMessageSend) {
 			return resolveLevel(((JavadocMessageSend)node).binding);
+		}
+		if (node instanceof ReferenceExpression) {
+			return resolveLevel(((ReferenceExpression)node).getMethodBinding());
 		}
 	}
 	if (node instanceof ConstructorDeclaration)

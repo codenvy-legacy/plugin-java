@@ -10,9 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.icon.Icon;
@@ -29,6 +26,9 @@ import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
@@ -165,7 +165,7 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
         }
         this.eventLogger.log(this, "Autocompleting");
         final FileNode file = editor.getEditorInput().getFile();
-        final String projectPath = file.getPath().substring(1).split("/")[0];
+        final String projectPath = file.getProject().getPath();
         this.worker.computeCAProposals(textEditor.getDocument().getContents(), offset, file.getName(), projectPath,
                                   new JavaParserWorker.WorkerCallback<WorkerProposal>() {
                                       @Override

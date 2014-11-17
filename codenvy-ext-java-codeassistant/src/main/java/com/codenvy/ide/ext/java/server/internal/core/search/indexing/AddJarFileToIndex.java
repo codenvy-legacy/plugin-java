@@ -14,6 +14,7 @@ import com.codenvy.ide.ext.java.server.core.search.IJavaSearchScope;
 import com.codenvy.ide.ext.java.server.core.search.SearchEngine;
 import com.codenvy.ide.ext.java.server.core.search.SearchParticipant;
 import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
+import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.JavaSearchDocument;
 import com.codenvy.ide.ext.java.server.internal.core.search.processing.JobManager;
 
@@ -42,11 +43,12 @@ import java.util.zip.ZipFile;
 
 class AddJarFileToIndex extends IndexRequest {
 
-    private static final char JAR_SEPARATOR = IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR.charAt(0);
-    IFile   resource;
-    Scanner scanner;
-    private       IndexLocation indexFileURL;
-    private final boolean       forceIndexUpdate;
+	private static final char JAR_SEPARATOR = IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR.charAt(0);
+	IFile   resource;
+	Scanner scanner;
+	private       IndexLocation indexFileURL;
+	private final boolean       forceIndexUpdate;
+	private       JavaProject   javaProject;
 
 //    public AddJarFileToIndex(IFile resource, IndexLocation indexFile,IndexManager manager) {
 //        this(resource, indexFile, manager, false);
@@ -60,50 +62,52 @@ class AddJarFileToIndex extends IndexRequest {
 //        this.forceIndexUpdate = updateIndex;
 //    }
 
-    public AddJarFileToIndex(IPath jarPath, IndexLocation indexFile, IndexManager manager) {
-        this(jarPath, indexFile, manager, false);
-    }
+//    public AddJarFileToIndex(IPath jarPath, IndexLocation indexFile, IndexManager manager) {
+//        this(jarPath, indexFile, manager, false);
+//    }
 
-    public AddJarFileToIndex(IPath jarPath, IndexLocation indexFile, IndexManager manager,
-                             final boolean updateIndex) {
-        // external JAR scenario - no resource
-        super(jarPath, manager);
-        this.indexFileURL = indexFile;
-        this.forceIndexUpdate = updateIndex;
-    }
+	public AddJarFileToIndex(IPath jarPath, IndexLocation indexFile, IndexManager manager,
+							 final boolean updateIndex, JavaProject javaProject) {
+		// external JAR scenario - no resource
+		super(jarPath, manager);
+		this.indexFileURL = indexFile;
+		this.forceIndexUpdate = updateIndex;
+		this.javaProject = javaProject;
+	}
 
-    public boolean equals(Object o) {
-        if (o instanceof AddJarFileToIndex) {
-            if (this.resource != null)
-                return this.resource.equals(((AddJarFileToIndex)o).resource);
-            if (this.containerPath != null)
-                return this.containerPath.equals(((AddJarFileToIndex)o).containerPath);
-        }
-        return false;
-    }
+	public boolean equals(Object o) {
+		if (o instanceof AddJarFileToIndex) {
+			if (this.resource != null)
+				return this.resource.equals(((AddJarFileToIndex)o).resource);
+			if (this.containerPath != null)
+				return this.containerPath.equals(((AddJarFileToIndex)o).containerPath);
+		}
+		return false;
+	}
 
-    public int hashCode() {
-        if (this.resource != null)
-            return this.resource.hashCode();
-        if (this.containerPath != null)
-            return this.containerPath.hashCode();
-        return -1;
-    }
+	public int hashCode() {
+		if (this.resource != null)
+			return this.resource.hashCode();
+		if (this.containerPath != null)
+			return this.containerPath.hashCode();
+		return -1;
+	}
 
-    public boolean execute(IProgressMonitor progressMonitor) {
+	public boolean execute(IProgressMonitor progressMonitor) {
 
-        if (this.isCancelled || progressMonitor != null && progressMonitor.isCanceled()) return true;
+		if (this.isCancelled || progressMonitor != null && progressMonitor.isCanceled()) return true;
 
-        if (hasPreBuiltIndex()) {
-            boolean added = this.manager.addIndex(this.containerPath, this.indexFileURL);
-            if (added) return true;
-            this.indexFileURL = null;
-        }
+		if (hasPreBuiltIndex()) {
+			boolean added = this.manager.addIndex(this.containerPath, this.indexFileURL);
+			if (added) return true;
+			this.indexFileURL = null;
+		}
 
-        try {
-            // if index is already cached, then do not perform any check
-            // MUST reset the IndexManager if a jar file is changed
-			Index index = this.manager.getIndexForUpdate(this.containerPath, false, /*do not reuse index file*/ false /*do not create if none*/);
+		try {
+			// if index is already cached, then do not perform any check
+			// MUST reset the IndexManager if a jar file is changed
+			Index index = this.manager.getIndexForUpdate(this.containerPath, false, /*do not reuse index file*/ false /*do not create if
+			none*/);
 			if (index != null) {
 				if (JobManager.VERBOSE)
 					org.eclipse.jdt.internal.core.util.Util.verbose("-> no indexing required (index already exists) for " + this.containerPath); //$NON-NLS-1$
@@ -214,7 +218,7 @@ class AddJarFileToIndex extends IndexRequest {
 
 				// Index the jar for the first time or reindex the jar in case the previous index file has been corrupted
 				// index already existed: recreate it so that we forget about previous entries
-				SearchParticipant participant = SearchEngine.getDefaultSearchParticipant(manager);
+				SearchParticipant participant = SearchEngine.getDefaultSearchParticipant(manager, javaProject);
 				if (!this.manager.resetIndex(this.containerPath)) {
 					// failed to recreate index, see 73330
 					this.manager.removeIndex(this.containerPath);

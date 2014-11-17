@@ -15,17 +15,19 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 
 /**
- * A match collected while {@link SearchEngine searching} for
- * all type names methods using a {@link TypeNameRequestor requestor}.
+ * A match collected while {@link org.eclipse.jdt.core.search.SearchEngine searching} for
+ * all type names methods using a {@link org.eclipse.jdt.core.search.TypeNameRequestor requestor}.
  * <p>
  * The type of this match is available from {@link #getType()}.
  * </p>
  *
  * @noextend This class is not intended to be subclassed by clients.
  *
- * @see TypeNameMatchRequestor
- * @see SearchEngine#searchAllTypeNames(char[], int, char[], int, int, IJavaSearchScope, TypeNameMatchRequestor, int, org.eclipse.core.runtime.IProgressMonitor)
- * @see SearchEngine#searchAllTypeNames(char[][], char[][], IJavaSearchScope, TypeNameMatchRequestor, int, org.eclipse.core.runtime.IProgressMonitor)
+ * @see org.eclipse.jdt.core.search.TypeNameMatchRequestor
+ * @see org.eclipse.jdt.core.search.SearchEngine#searchAllTypeNames(char[], int, char[], int, int, org.eclipse.jdt.core.search
+ * .IJavaSearchScope, org.eclipse.jdt.core.search.TypeNameMatchRequestor, int, org.eclipse.core.runtime.IProgressMonitor)
+ * @see org.eclipse.jdt.core.search.SearchEngine#searchAllTypeNames(char[][], char[][], org.eclipse.jdt.core.search.IJavaSearchScope, org
+ * .eclipse.jdt.core.search.TypeNameMatchRequestor, int, org.eclipse.core.runtime.IProgressMonitor)
  * @since 3.3
  */
 public abstract class TypeNameMatch {

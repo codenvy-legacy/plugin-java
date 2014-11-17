@@ -205,8 +205,8 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 			}
 		}
 
-	 	// consider that A$B is a member type: so replace '$' with '.'
-	 	// (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=40116)
+		// consider that A$B is a member type: so replace '$' with '.'
+		// (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=40116)
 		typeName = CharOperation.replaceOnCopy(typeName, '$', '.'); // copy it so the original is not modified
 
 		super.addTypeReference(typeName);
@@ -268,7 +268,7 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 
 				case 'I':
 					if (arrayDim > 0)
-					return convertToArrayType(INT, arrayDim);
+						return convertToArrayType(INT, arrayDim);
 					return INT;
 
 				case 'J':
@@ -280,9 +280,9 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 					int indexOfSemiColon = CharOperation.indexOf(';', signature, i + 1);
 					if (indexOfSemiColon == -1) throw new ClassFormatException(ClassFormatException.ErrInvalidMethodSignature);
 					if (arrayDim > 0) {
-						return convertToArrayType(replace('/','.', CharOperation.subarray(signature, i + 1, indexOfSemiColon)), arrayDim);
+						return convertToArrayType(replace('/', '.', CharOperation.subarray(signature, i + 1, indexOfSemiColon)), arrayDim);
 					}
-					return replace('/','.', CharOperation.subarray(signature, i + 1, indexOfSemiColon));
+					return replace('/', '.', CharOperation.subarray(signature, i + 1, indexOfSemiColon));
 
 				case 'S':
 					if (arrayDim > 0)
@@ -380,8 +380,8 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 						// skip first synthetic parameter
 						firstIsSynthetic = false;
 					} else {
-						parameterTypes[parameterTypesCounter++] = replace('/','.',
-                                                                          CharOperation.subarray(signature, i + 1, indexOfSemiColon));
+						parameterTypes[parameterTypesCounter++] =
+								replace('/', '.', CharOperation.subarray(signature, i + 1, indexOfSemiColon));
 						if (arrayDim > 0)
 							convertToArrayType(parameterTypes, parameterTypesCounter-1, arrayDim);
 					}
@@ -457,9 +457,9 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 					int indexOfSemiColon = CharOperation.indexOf(';', signature, i + 1);
 					if (indexOfSemiColon == -1) throw new ClassFormatException(ClassFormatException.ErrInvalidMethodSignature);
 					if (arrayDim > 0) {
-						return convertToArrayType(replace('/','.', CharOperation.subarray(signature, i + 1, indexOfSemiColon)), arrayDim);
+						return convertToArrayType(replace('/', '.', CharOperation.subarray(signature, i + 1, indexOfSemiColon)), arrayDim);
 					}
-					return replace('/','.', CharOperation.subarray(signature, i + 1, indexOfSemiColon));
+					return replace('/', '.', CharOperation.subarray(signature, i + 1, indexOfSemiColon));
 
 				case 'S':
 					if (arrayDim > 0)
@@ -713,7 +713,7 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 			if (tagBits != 0) {
 				addBinaryStandardAnnotations(tagBits);
 			}
-			
+
 			int extraFlags = ExtraFlags.getExtraFlags(reader);
 
 			// first reference all methods declarations and field declarations
@@ -740,7 +740,7 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 						addConstructorDeclaration(
 								name,
 								parameterTypes == null ? 0 : parameterTypes.length,
-								signature,	
+								signature,
 								parameterTypes,
 								method.getArgumentNames(),
 								method.getModifiers(),
@@ -797,17 +797,20 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 			// ignore
 			this.document.removeAllIndexEntries();
 			Util.log(IStatus.WARNING, "The Java indexing could not index " + this.document.getPath() +
-                                      ". This .class file doesn't follow the class file format specification. Please report this issue against the .class file vendor"); //$NON-NLS-1$ //$NON-NLS-2$
+									  ". This .class file doesn't follow the class file format specification. Please report this issue " +
+									  "against the .class file vendor"); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (RuntimeException e) {
 			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=182154
 			// logging the entry that could not be indexed and continue with the next one
 			// we remove all entries relative to the boggus document
 			this.document.removeAllIndexEntries();
 			Util.log(IStatus.WARNING, "The Java indexing could not index " + this.document.getPath() +
-                                      ". This .class file doesn't follow the class file format specification. Please report this issue against the .class file vendor"); //$NON-NLS-1$ //$NON-NLS-2$
+									  ". This .class file doesn't follow the class file format specification. Please report this issue " +
+									  "again" +
+									  "st the .class file vendor"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
-	
+
 	private char[] removeFirstSyntheticParameter(char[] descriptor) {
 		if (descriptor == null) return null;
 		if (descriptor.length < 3) return descriptor;

@@ -28,57 +28,57 @@ import org.eclipse.jdt.internal.core.util.Util;
 
 public class PossibleMatch implements ICompilationUnit {
 
-    public static final String NO_SOURCE_FILE_NAME = "NO SOURCE FILE NAME"; //$NON-NLS-1$
-    public static final char[] NO_SOURCE_FILE      = new char[0];
+	public static final String NO_SOURCE_FILE_NAME = "NO SOURCE FILE NAME"; //$NON-NLS-1$
+	public static final char[] NO_SOURCE_FILE      = new char[0];
 
-    public IResource       resource;
-    public Openable        openable;
-    public MatchingNodeSet nodeSet;
-    public char[][]        compoundName;
-    CompilationUnitDeclaration parsedUnit;
-    public  SearchDocument document;
-    private String         sourceFileName;
-    private char[]         source;
-    private PossibleMatch  similarMatch;
+	public IResource       resource;
+	public Openable        openable;
+	public MatchingNodeSet nodeSet;
+	public char[][]        compoundName;
+	CompilationUnitDeclaration parsedUnit;
+	public  SearchDocument document;
+	private String         sourceFileName;
+	private char[]         source;
+	private PossibleMatch  similarMatch;
 
-    public PossibleMatch(MatchLocator locator, IResource resource, Openable openable, SearchDocument document, boolean mustResolve) {
-        this.resource = resource;
-        this.openable = openable;
-        this.document = document;
-        this.nodeSet = new MatchingNodeSet(mustResolve);
-        char[] qualifiedName = getQualifiedName();
-        if (qualifiedName != null)
-            this.compoundName = CharOperation.splitOn('.', qualifiedName);
-    }
+	public PossibleMatch(MatchLocator locator, IResource resource, Openable openable, SearchDocument document, boolean mustResolve) {
+		this.resource = resource;
+		this.openable = openable;
+		this.document = document;
+		this.nodeSet = new MatchingNodeSet(mustResolve);
+		char[] qualifiedName = getQualifiedName();
+		if (qualifiedName != null)
+			this.compoundName = CharOperation.splitOn('.', qualifiedName);
+	}
 
-    public void cleanUp() {
-        this.source = null;
-        if (this.parsedUnit != null) {
-            this.parsedUnit.cleanUp();
-            this.parsedUnit = null;
-        }
-        this.nodeSet = null;
-    }
+	public void cleanUp() {
+		this.source = null;
+		if (this.parsedUnit != null) {
+			this.parsedUnit.cleanUp();
+			this.parsedUnit = null;
+		}
+		this.nodeSet = null;
+	}
 
-    public boolean equals(Object obj) {
-        if (this.compoundName == null) return super.equals(obj);
-        if (!(obj instanceof PossibleMatch)) return false;
+	public boolean equals(Object obj) {
+		if (this.compoundName == null) return super.equals(obj);
+		if (!(obj instanceof PossibleMatch)) return false;
 
-        // By using the compoundName of the source file, multiple .class files (A, A$M...) are considered equal
-        // Even .class files for secondary types and their nested types
-        return CharOperation.equals(this.compoundName, ((PossibleMatch)obj).compoundName);
-    }
+		// By using the compoundName of the source file, multiple .class files (A, A$M...) are considered equal
+		// Even .class files for secondary types and their nested types
+		return CharOperation.equals(this.compoundName, ((PossibleMatch)obj).compoundName);
+	}
 
-    public char[] getContents() {
-        char[] contents = (this.source == NO_SOURCE_FILE) ? null : this.source;
-        if (this.source == null) {
-            if (this.openable instanceof ClassFile) {
-                String fileName = getSourceFileName();
-                if (fileName == NO_SOURCE_FILE_NAME) return CharOperation.NO_CHAR;
+	public char[] getContents() {
+		char[] contents = (this.source == NO_SOURCE_FILE) ? null : this.source;
+		if (this.source == null) {
+			if (this.openable instanceof ClassFile) {
+				String fileName = getSourceFileName();
+				if (fileName == NO_SOURCE_FILE_NAME) return CharOperation.NO_CHAR;
 
-			SourceMapper sourceMapper = this.openable.getSourceMapper();
-			if (sourceMapper != null) {
-				IType type = ((ClassFile) this.openable).getType();
+				SourceMapper sourceMapper = this.openable.getSourceMapper();
+				if (sourceMapper != null) {
+					IType type = ((ClassFile)this.openable).getType();
 				contents = sourceMapper.findSource(type, fileName);
 			}
 		} else {

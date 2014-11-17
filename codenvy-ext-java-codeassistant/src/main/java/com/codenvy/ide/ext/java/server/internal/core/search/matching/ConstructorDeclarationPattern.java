@@ -30,7 +30,7 @@ public class ConstructorDeclarationPattern extends ConstructorPattern {
 public ConstructorDeclarationPattern(char[] declaringPackageName, char[] declaringSimpleName, int matchRule) {
 	this(matchRule);
 	this.declaringSimpleName = (this.isCaseSensitive || this.isCamelCase) ? declaringSimpleName : CharOperation
-            .toLowerCase(declaringSimpleName);
+			.toLowerCase(declaringSimpleName);
 	this.declaringPackageName = declaringPackageName;
 	this.findDeclarations = true;
 	this.findReferences = false;
@@ -139,7 +139,7 @@ public char[][] getIndexCategories() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	ConstructorDeclarationPattern
-            pattern = (ConstructorDeclarationPattern) decodedPattern;
+			pattern = (ConstructorDeclarationPattern)decodedPattern;
 	
 	// only top level types
 	if ((pattern.extraFlags & ExtraFlags.IsMemberType) != 0) return false;

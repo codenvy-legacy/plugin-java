@@ -20,28 +20,35 @@ import org.eclipse.jdt.core.IJavaElement;
  */
 public abstract class ReferenceMatch extends SearchMatch {
 
-    IJavaElement localElement;
+	IJavaElement localElement;
 
-    /**
-     * Creates a new reference match.
-     *
-     * @param enclosingElement the inner-most enclosing member that references this java element
-     * @param accuracy one of {@link #A_ACCURATE} or {@link #A_INACCURATE}
-     * @param offset the offset the match starts at, or -1 if unknown
-     * @param length the length of the match, or -1 if unknown
-     * @param insideDocComment <code>true</code> if this search match is inside a doc
-     * 		comment, and <code>false</code> otherwise
-     * @param participant the search participant that created the match
-     * @param resource the resource of the element
-     */
-    public ReferenceMatch(IJavaElement enclosingElement, int accuracy, int offset, int length, boolean insideDocComment,
-                          SearchParticipant participant, IResource resource) {
-        super(enclosingElement, accuracy, offset, length, participant, resource);
-        setInsideDocComment(insideDocComment);
-    }
+	/**
+	 * Creates a new reference match.
+	 *
+	 * @param enclosingElement
+	 *         the inner-most enclosing member that references this java element
+	 * @param accuracy
+	 *         one of {@link #A_ACCURATE} or {@link #A_INACCURATE}
+	 * @param offset
+	 *         the offset the match starts at, or -1 if unknown
+	 * @param length
+	 *         the length of the match, or -1 if unknown
+	 * @param insideDocComment
+	 *         <code>true</code> if this search match is inside a doc
+	 *         comment, and <code>false</code> otherwise
+	 * @param participant
+	 *         the search participant that created the match
+	 * @param resource
+	 *         the resource of the element
+	 */
+	public ReferenceMatch(IJavaElement enclosingElement, int accuracy, int offset, int length, boolean insideDocComment,
+						  SearchParticipant participant, IResource resource) {
+		super(enclosingElement, accuracy, offset, length, participant, resource);
+		setInsideDocComment(insideDocComment);
+	}
 
-    /**
-     * Returns the local element of this search match, or <code>null</code> if none.
+	/**
+	 * Returns the local element of this search match, or <code>null</code> if none.
  * A local element is the inner-most element that contains the reference and that is
  * not reachable by navigating from the root of the {@link org.eclipse.jdt.core.IJavaModel} using
  * {@link org.eclipse.jdt.core.IParent#getChildren()}.
@@ -57,31 +64,31 @@ public abstract class ReferenceMatch extends SearchMatch {
  * The local element being an {@link org.eclipse.jdt.core.IAnnotation} is the most usual case. For example,
  * <ul>
  * 	<li>searching for the references to the method <code>Annot.clazz()</code> in
- * 			<pre>
- *             public class Test {
- *                 void method() {
- *                     &#0064;Annot(clazz=Test.class) int x;
- *                 }
- *             }</pre>
- * 			will return one {@link MethodReferenceMatch} match whose local element
+	 * 			<pre>
+	 *             public class Test {
+	 *                 void method() {
+	 *                     &#0064;Annot(clazz=Test.class) int x;
+	 *                 }
+	 *             }</pre>
+	 * 			will return one {@link org.eclipse.jdt.core.search.MethodReferenceMatch} match whose local element
  * 			is the {@link org.eclipse.jdt.core.IAnnotation} '<code>Annot</code>'.<br><br>
  * 	</li>
  *		<li>searching for the references to the type <code>Deprecated</code> in
- *				<pre>
- *             public class Test {
- *                &#0064;Deprecated void method() {}
- *             }</pre>
- * 			will return one {@link TypeReferenceMatch} match whose local element
+	 *				<pre>
+	 *             public class Test {
+	 *                &#0064;Deprecated void method() {}
+	 *             }</pre>
+	 * 			will return one {@link org.eclipse.jdt.core.search.TypeReferenceMatch} match whose local element
  * 			is the {@link org.eclipse.jdt.core.IAnnotation} '<code>Deprecated</code>'.<br><br>
  * 	</li>
  * 	<li>searching for the references to the field <code>CONST</code> in
  * 			<pre>
  *              &#0064;Num(number= Num.CONST)
- *              &#0064;interface Num {
- *                  public static final int CONST= 42;
- *                  int number();
- *              }</pre>
- * 			will return one {@link FieldReferenceMatch} match whose local element
+	 *              &#0064;interface Num {
+	 *                  public static final int CONST= 42;
+	 *                  int number();
+	 *              }</pre>
+	 * 			will return one {@link org.eclipse.jdt.core.search.FieldReferenceMatch} match whose local element
  * 			is the {@link org.eclipse.jdt.core.IAnnotation} '<code>Num</code>'.<br><br>
  * 	</li>
  * </ul>
@@ -90,13 +97,13 @@ public abstract class ReferenceMatch extends SearchMatch {
  * type. For example,
  * <ul>
  * 	<li>searching for the references to the type <code>Test</code> in
- * 		<pre>
- *         public class Test {
- *             void foo() {
- *                Test local;
- *             }
- *         }</pre>
- * 		will return one {@link TypeReferenceMatch} match whose local element
+	 * 		<pre>
+	 *         public class Test {
+	 *             void foo() {
+	 *                Test local;
+	 *             }
+	 *         }</pre>
+	 * 		will return one {@link org.eclipse.jdt.core.search.TypeReferenceMatch} match whose local element
  * 		is the {@link org.eclipse.jdt.core.ILocalVariable} '<code>local</code>'.<br><br>
  * 	</li>
  * </ul>
@@ -104,10 +111,10 @@ public abstract class ReferenceMatch extends SearchMatch {
  * type. For example,
  * <ul>
  * 	<li>searching for the references to the type <code>Test</code> in
- * 		<pre>
- *         public class X&lt; T extends Test&gt; {
- *         }</pre>
- * 		will return one {@link TypeReferenceMatch} match whose local element
+	 * 		<pre>
+	 *         public class X&lt; T extends Test&gt; {
+	 *         }</pre>
+	 * 		will return one {@link org.eclipse.jdt.core.search.TypeReferenceMatch} match whose local element
  * 		is the {@link org.eclipse.jdt.core.ITypeParameter} '<code>T</code>'.<br><br>
  * </ul>
  * </p>

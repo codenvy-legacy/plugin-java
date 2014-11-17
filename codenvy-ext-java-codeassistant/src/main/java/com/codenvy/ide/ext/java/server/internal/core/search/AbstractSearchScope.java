@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
-
 import com.codenvy.ide.ext.java.server.core.search.IJavaSearchScope;
 
 import org.eclipse.jdt.core.IJavaElementDelta;

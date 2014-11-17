@@ -42,66 +42,69 @@ import org.eclipse.jdt.internal.core.search.indexing.IIndexConstants;
 
 public class ClassFileMatchLocator implements IIndexConstants {
 
-    private static final long   TARGET_ANNOTATION_BITS           =
-            TagBits.AnnotationForType |
-            TagBits.AnnotationForParameter |
-            TagBits.AnnotationForPackage |
-            TagBits.AnnotationForMethod |
-            TagBits.AnnotationForLocalVariable |
-            TagBits.AnnotationForField |
-            TagBits.AnnotationForConstructor |
-            TagBits.AnnotationForAnnotationType;
-    private static final char[] JAVA_LANG_ANNOTATION_ELEMENTTYPE =
-            CharOperation.concatWith(TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE, '.');
+	private static final long   TARGET_ANNOTATION_BITS           =
+			TagBits.AnnotationForType |
+			TagBits.AnnotationForParameter |
+			TagBits.AnnotationForPackage |
+			TagBits.AnnotationForMethod |
+			TagBits.AnnotationForLocalVariable |
+			TagBits.AnnotationForField |
+			TagBits.AnnotationForConstructor |
+			TagBits.AnnotationForAnnotationType;
+	private static final char[] JAVA_LANG_ANNOTATION_ELEMENTTYPE =
+			CharOperation.concatWith(TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE, '.');
 
-    public static char[] convertClassFileFormat(char[] name) {
-        return CharOperation.replaceOnCopy(name, '/', '.');
-    }
+	public static char[] convertClassFileFormat(char[] name) {
+		return CharOperation.replaceOnCopy(name, '/', '.');
+	}
 
-    private boolean checkAnnotation(IBinaryAnnotation annotation, TypeReferencePattern pattern) {
-        if (checkTypeName(pattern.simpleName, pattern.qualification,
-                          convertClassFileFormat(Signature.toCharArray(annotation.getTypeName())), pattern.isCaseSensitive,
-                          pattern.isCamelCase)) {
-            return true;
-        }
-        IBinaryElementValuePair[] valuePairs = annotation.getElementValuePairs();
-        if (valuePairs != null) {
-            for (int j = 0, vpLength = valuePairs.length; j < vpLength; j++) {
-                IBinaryElementValuePair valuePair = valuePairs[j];
-                Object pairValue = valuePair.getValue();
-                if (pairValue instanceof IBinaryAnnotation) {
-                    if (checkAnnotation((IBinaryAnnotation)pairValue, pattern)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
+	private boolean checkAnnotation(IBinaryAnnotation annotation, TypeReferencePattern pattern) {
+		if (checkTypeName(pattern.simpleName, pattern.qualification,
+						  convertClassFileFormat(Signature.toCharArray(annotation.getTypeName())), pattern.isCaseSensitive,
+						  pattern.isCamelCase)) {
+			return true;
+		}
+		IBinaryElementValuePair[] valuePairs = annotation.getElementValuePairs();
+		if (valuePairs != null) {
+			for (int j = 0, vpLength = valuePairs.length; j < vpLength; j++) {
+				IBinaryElementValuePair valuePair = valuePairs[j];
+				Object pairValue = valuePair.getValue();
+				if (pairValue instanceof IBinaryAnnotation) {
+					if (checkAnnotation((IBinaryAnnotation)pairValue, pattern)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
-    private boolean checkAnnotations(TypeReferencePattern pattern, IBinaryAnnotation[] annotations, long tagBits) {
-        if (annotations != null) {
-            for (int a = 0, length = annotations.length; a < length; a++) {
-                IBinaryAnnotation annotation = annotations[a];
-                if (checkAnnotation(annotation, pattern)) {
-                    return true;
-                }
-            }
-        }
-        if ((tagBits & TagBits.AllStandardAnnotationsMask) != 0 && checkStandardAnnotations(tagBits, pattern)) {
-            return true;
-        }
-        return false;
-}
-private boolean checkAnnotationTypeReference(char[] fullyQualifiedName, TypeReferencePattern pattern) {
-	return checkTypeName(pattern.simpleName, pattern.qualification, fullyQualifiedName, pattern.isCaseSensitive, pattern.isCamelCase);
-}
-private boolean checkDeclaringType(IBinaryType enclosingBinaryType, char[] simpleName, char[] qualification, boolean isCaseSensitive, boolean isCamelCase) {
-	if (simpleName == null && qualification == null) return true;
-	if (enclosingBinaryType == null) return true;
+	private boolean checkAnnotations(TypeReferencePattern pattern, IBinaryAnnotation[] annotations, long tagBits) {
+		if (annotations != null) {
+			for (int a = 0, length = annotations.length; a < length; a++) {
+				IBinaryAnnotation annotation = annotations[a];
+				if (checkAnnotation(annotation, pattern)) {
+					return true;
+				}
+			}
+		}
+		if ((tagBits & TagBits.AllStandardAnnotationsMask) != 0 && checkStandardAnnotations(tagBits, pattern)) {
+			return true;
+		}
+		return false;
+	}
 
-	char[] declaringTypeName = convertClassFileFormat(enclosingBinaryType.getName());
-	return checkTypeName(simpleName, qualification, declaringTypeName, isCaseSensitive, isCamelCase);
+	private boolean checkAnnotationTypeReference(char[] fullyQualifiedName, TypeReferencePattern pattern) {
+		return checkTypeName(pattern.simpleName, pattern.qualification, fullyQualifiedName, pattern.isCaseSensitive, pattern.isCamelCase);
+	}
+
+	private boolean checkDeclaringType(IBinaryType enclosingBinaryType, char[] simpleName, char[] qualification, boolean isCaseSensitive,
+									   boolean isCamelCase) {
+		if (simpleName == null && qualification == null) return true;
+		if (enclosingBinaryType == null) return true;
+
+		char[] declaringTypeName = convertClassFileFormat(enclosingBinaryType.getName());
+		return checkTypeName(simpleName, qualification, declaringTypeName, isCaseSensitive, isCamelCase);
 }
 private boolean checkParameters(char[] methodDescriptor, char[][] parameterSimpleNames, char[][] parameterQualifications, boolean isCaseSensitive, boolean isCamelCase) {
 	char[][] arguments = Signature.getParameterTypes(methodDescriptor);
@@ -119,8 +122,8 @@ private boolean checkStandardAnnotations(long annotationTagBits, TypeReferencePa
 	if ((annotationTagBits & TagBits.AnnotationTargetMASK) != 0) {
 		char[][] compoundName = TypeConstants.JAVA_LANG_ANNOTATION_TARGET;
 		if (checkAnnotationTypeReference(CharOperation.concatWith(compoundName, '.'), pattern) ||
-			((annotationTagBits & TARGET_ANNOTATION_BITS) != 0 && checkAnnotationTypeReference(JAVA_LANG_ANNOTATION_ELEMENTTYPE, pattern)
-            )) {
+			((annotationTagBits & TARGET_ANNOTATION_BITS) != 0 &&
+			 checkAnnotationTypeReference(JAVA_LANG_ANNOTATION_ELEMENTTYPE, pattern))) {
 			return true;
 		}
 	}
@@ -177,7 +180,7 @@ private boolean checkStandardAnnotations(long annotationTagBits, TypeReferencePa
 }
 private boolean checkTypeName(char[] simpleName, char[] qualification, char[] fullyQualifiedTypeName, boolean isCaseSensitive, boolean isCamelCase) {
 	// NOTE: if case insensitive then simpleName & qualification are assumed to be lowercase
-	char[] wildcardPattern = PatternLocator.qualifiedPattern(simpleName, qualification);
+	char[] wildcardPattern = org.eclipse.jdt.internal.core.search.matching.PatternLocator.qualifiedPattern(simpleName, qualification);
 	if (wildcardPattern == null) return true;
 	return CharOperation.match(wildcardPattern, fullyQualifiedTypeName, isCaseSensitive);
 }
@@ -231,11 +234,14 @@ public void locateMatches(MatchLocator locator, ClassFile classFile, IBinaryType
 
 				// Report the match if possible
 				int level = locator.patternLocator.resolveLevel(method);
-				if (level != PatternLocator.IMPOSSIBLE_MATCH) {
+				if (level != org.eclipse.jdt.internal.core.search.matching.PatternLocator.IMPOSSIBLE_MATCH) {
 					IMethod methodHandle = binaryType.getMethod(
 						new String(method.isConstructor() ? binding.compoundName[binding.compoundName.length-1] : method.selector),
 						CharOperation.toStrings(Signature.getParameterTypes(convertClassFileFormat(methodSignature))));
-					accuracy = level == PatternLocator.ACCURATE_MATCH ? SearchMatch.A_ACCURATE : SearchMatch.A_INACCURATE;
+					accuracy = level == org.eclipse.jdt.internal.core.search.matching.PatternLocator.ACCURATE_MATCH ? SearchMatch
+							.A_ACCURATE
+																													: SearchMatch
+									   .A_INACCURATE;
 					locator.reportBinaryMemberDeclaration(null, methodHandle, method, info, accuracy);
 				}
 
@@ -252,10 +258,10 @@ public void locateMatches(MatchLocator locator, ClassFile classFile, IBinaryType
 					}
 					for (int j=0; j<bMethodsLength; j++) {
 						if (CharOperation.equals(binaryMethods[j].getSelector(), method.selector) && CharOperation
-                                .equals(binaryMethodSignatures[j], methodSignature)) {
+								.equals(binaryMethodSignatures[j], methodSignature)) {
 							if (unresolvedMethods == null) {
 								System.arraycopy(binaryMethods, 0, unresolvedMethods = new IBinaryMethod[bMethodsLength], 0,
-                                                 bMethodsLength);
+												 bMethodsLength);
 							}
 							unresolvedMethods[j] = null;
 							break;
@@ -273,7 +279,7 @@ public void locateMatches(MatchLocator locator, ClassFile classFile, IBinaryType
 
 				// Report the match if possible
 				int level = locator.patternLocator.resolveLevel(field);
-				if (level != PatternLocator.IMPOSSIBLE_MATCH) {
+				if (level != org.eclipse.jdt.internal.core.search.matching.PatternLocator.IMPOSSIBLE_MATCH) {
 					IField fieldHandle = binaryType.getField(new String(field.name));
 					accuracy = level == PatternLocator.ACCURATE_MATCH ? SearchMatch.A_ACCURATE : SearchMatch.A_INACCURATE;
 					locator.reportBinaryMemberDeclaration(null, fieldHandle, field, info, accuracy);
@@ -346,8 +352,8 @@ public void locateMatches(MatchLocator locator, ClassFile classFile, IBinaryType
 /*
  * Look for annotations references
  */
-private void matchAnnotations(SearchPattern pattern, MatchLocator locator, ClassFile classFile, IBinaryType binaryType) throws
-                                                                                                                        CoreException {
+private void matchAnnotations(SearchPattern pattern, MatchLocator locator, ClassFile classFile, IBinaryType binaryType)
+		throws CoreException {
 	// Only process TypeReference patterns
 	switch (pattern.kind) {
 		case TYPE_REF_PATTERN:
@@ -368,9 +374,11 @@ private void matchAnnotations(SearchPattern pattern, MatchLocator locator, Class
 	BinaryType classFileBinaryType = (BinaryType) classFile.getType();
 	BinaryTypeBinding binaryTypeBinding = null;
 	if (checkAnnotations(typeReferencePattern, annotations, binaryType.getTagBits())) {
-		classFileBinaryType = new ResolvedBinaryType((JavaElement) classFileBinaryType.getParent(), classFileBinaryType.getElementName(), classFileBinaryType.getKey());
+		classFileBinaryType = new ResolvedBinaryType((JavaElement)classFileBinaryType.getParent(), classFileBinaryType.getElementName(),
+													 classFileBinaryType.getKey());
 		TypeReferenceMatch
-                match = new TypeReferenceMatch(classFileBinaryType, SearchMatch.A_ACCURATE, -1, 0, false, locator.getParticipant(), locator.currentPossibleMatch.resource);
+				match = new TypeReferenceMatch(classFileBinaryType, SearchMatch.A_ACCURATE, -1, 0, false, locator.getParticipant(),
+											   locator.currentPossibleMatch.resource);
 		// TODO 3.4 M7 (frederic) - bug 209996: see how create the annotation handle from the binary and put it in the local element
 		match.setLocalElement(null);
 		locator.report(match);
@@ -387,7 +395,8 @@ private void matchAnnotations(SearchPattern pattern, MatchLocator locator, Class
 						new String(method.isConstructor() ? binaryTypeBinding.compoundName[binaryTypeBinding.compoundName.length-1] : method.getSelector()),
 						CharOperation.toStrings(Signature.getParameterTypes(convertClassFileFormat(method.getMethodDescriptor()))));
 					TypeReferenceMatch
-                            match = new TypeReferenceMatch(methodHandle, SearchMatch.A_ACCURATE, -1, 0, false, locator.getParticipant(), locator.currentPossibleMatch.resource);
+							match = new TypeReferenceMatch(methodHandle, SearchMatch.A_ACCURATE, -1, 0, false, locator.getParticipant(),
+														   locator.currentPossibleMatch.resource);
 					// TODO 3.4 M7 (frederic) - bug 209996: see how create the annotation handle from the binary and put it in the local element
 					match.setLocalElement(null);
 					locator.report(match);
@@ -403,7 +412,8 @@ private void matchAnnotations(SearchPattern pattern, MatchLocator locator, Class
 			if (checkAnnotations(typeReferencePattern, field.getAnnotations(), field.getTagBits())) {
 					IField fieldHandle = classFileBinaryType.getField(new String(field.getName()));
 					TypeReferenceMatch
-                            match = new TypeReferenceMatch(fieldHandle, SearchMatch.A_ACCURATE, -1, 0, false, locator.getParticipant(), locator.currentPossibleMatch.resource);
+							match = new TypeReferenceMatch(fieldHandle, SearchMatch.A_ACCURATE, -1, 0, false, locator.getParticipant(),
+														   locator.currentPossibleMatch.resource);
 					// TODO 3.4 M7 (frederic) - bug 209996: see how create the annotation handle from the binary and put it in the local element
 					match.setLocalElement(null);
 					locator.report(match);

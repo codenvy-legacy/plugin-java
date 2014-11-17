@@ -16,33 +16,33 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 
 public class QualifiedTypeDeclarationPattern extends TypeDeclarationPattern {
 
-    public char[] qualification;
-    PackageDeclarationPattern packagePattern;
-    public int packageIndex = -1;
+	public char[] qualification;
+	PackageDeclarationPattern packagePattern;
+	public int packageIndex = -1;
 
-    public QualifiedTypeDeclarationPattern(char[] qualification, char[] simpleName, char typeSuffix, int matchRule) {
-        this(matchRule);
+	public QualifiedTypeDeclarationPattern(char[] qualification, char[] simpleName, char typeSuffix, int matchRule) {
+		this(matchRule);
 
-        this.qualification = this.isCaseSensitive ? qualification : CharOperation.toLowerCase(qualification);
-        this.simpleName = (this.isCaseSensitive || this.isCamelCase) ? simpleName : CharOperation.toLowerCase(simpleName);
-        this.typeSuffix = typeSuffix;
+		this.qualification = this.isCaseSensitive ? qualification : CharOperation.toLowerCase(qualification);
+		this.simpleName = (this.isCaseSensitive || this.isCamelCase) ? simpleName : CharOperation.toLowerCase(simpleName);
+		this.typeSuffix = typeSuffix;
 
-        this.mustResolve = this.qualification != null || typeSuffix != TYPE_SUFFIX;
-    }
+		this.mustResolve = this.qualification != null || typeSuffix != TYPE_SUFFIX;
+	}
 
-    public QualifiedTypeDeclarationPattern(char[] qualification, int qualificationMatchRule, char[] simpleName, char typeSuffix,
-                                           int matchRule) {
-        this(qualification, simpleName, typeSuffix, matchRule);
-        this.packagePattern = new PackageDeclarationPattern(qualification, qualificationMatchRule);
-    }
+	public QualifiedTypeDeclarationPattern(char[] qualification, int qualificationMatchRule, char[] simpleName, char typeSuffix,
+										   int matchRule) {
+		this(qualification, simpleName, typeSuffix, matchRule);
+		this.packagePattern = new PackageDeclarationPattern(qualification, qualificationMatchRule);
+	}
 
-    QualifiedTypeDeclarationPattern(int matchRule) {
-        super(matchRule);
-    }
+	QualifiedTypeDeclarationPattern(int matchRule) {
+		super(matchRule);
+	}
 
-    public void decodeIndexKey(char[] key) {
-        int slash = CharOperation.indexOf(SEPARATOR, key, 0);
-        this.simpleName = CharOperation.subarray(key, 0, slash);
+	public void decodeIndexKey(char[] key) {
+		int slash = CharOperation.indexOf(SEPARATOR, key, 0);
+		this.simpleName = CharOperation.subarray(key, 0, slash);
 
 	int start = ++slash;
 	if (key[start] == SEPARATOR) {
@@ -86,7 +86,7 @@ public SearchPattern getBlankPattern() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	QualifiedTypeDeclarationPattern
-            pattern = (QualifiedTypeDeclarationPattern) decodedPattern;
+			pattern = (QualifiedTypeDeclarationPattern)decodedPattern;
 
 	// check type suffix
 	if (this.typeSuffix != pattern.typeSuffix && this.typeSuffix != TYPE_SUFFIX) {

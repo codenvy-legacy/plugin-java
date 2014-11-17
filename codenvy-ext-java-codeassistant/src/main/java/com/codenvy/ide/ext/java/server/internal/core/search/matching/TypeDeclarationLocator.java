@@ -19,36 +19,37 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 public class TypeDeclarationLocator extends PatternLocator {
 
-    protected TypeDeclarationPattern pattern; // can be a QualifiedTypeDeclarationPattern
+	protected TypeDeclarationPattern pattern; // can be a QualifiedTypeDeclarationPattern
 
-    public TypeDeclarationLocator(TypeDeclarationPattern pattern) {
-        super(pattern);
+	public TypeDeclarationLocator(TypeDeclarationPattern pattern) {
+		super(pattern);
 
-        this.pattern = pattern;
-    }
+		this.pattern = pattern;
+	}
 
-    //public int match(ASTNode node, MatchingNodeSet nodeSet) - SKIP IT
+	//public int match(ASTNode node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(ConstructorDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(Expression node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(FieldDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(MethodDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(MessageSend node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(Reference node, MatchingNodeSet nodeSet) - SKIP IT
-    public int match(TypeDeclaration node, MatchingNodeSet nodeSet) {
-        if (this.pattern.simpleName == null || matchesName(this.pattern.simpleName, node.name))
-            return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
+	public int match(TypeDeclaration node, MatchingNodeSet nodeSet) {
+		if (this.pattern.simpleName == null || matchesName(this.pattern.simpleName, node.name))
+			return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
 
-        return IMPOSSIBLE_MATCH;
-    }
+		return IMPOSSIBLE_MATCH;
+	}
 //public int match(TypeReference node, MatchingNodeSet nodeSet) - SKIP IT
 
-    public int resolveLevel(ASTNode node) {
-        if (!(node instanceof TypeDeclaration)) return IMPOSSIBLE_MATCH;
+	public int resolveLevel(ASTNode node) {
+		if (!(node instanceof TypeDeclaration)) return IMPOSSIBLE_MATCH;
 
-        return resolveLevel(((TypeDeclaration) node).binding);
-}
-public int resolveLevel(Binding binding) {
-	if (binding == null) return INACCURATE_MATCH;
+		return resolveLevel(((TypeDeclaration)node).binding);
+	}
+
+	public int resolveLevel(Binding binding) {
+		if (binding == null) return INACCURATE_MATCH;
 	if (!(binding instanceof TypeBinding)) return IMPOSSIBLE_MATCH;
 
 	TypeBinding type = (TypeBinding) binding;
@@ -84,7 +85,7 @@ public int resolveLevel(Binding binding) {
 		return resolveLevelForType(qualifiedPattern.simpleName, qualifiedPattern.qualification, type);
 	} else {
 		char[] enclosingTypeName = this.pattern.enclosingTypeNames == null ? null : CharOperation
-                .concatWith(this.pattern.enclosingTypeNames, '.');
+				.concatWith(this.pattern.enclosingTypeNames, '.');
 		return resolveLevelForType(this.pattern.simpleName, this.pattern.pkg, enclosingTypeName, type);
 	}
 }

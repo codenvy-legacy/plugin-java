@@ -232,7 +232,7 @@ public char[][] getIndexCategories() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	SuperTypeReferencePattern
-            pattern = (SuperTypeReferencePattern) decodedPattern;
+			pattern = (SuperTypeReferencePattern)decodedPattern;
 	if (this.superRefKind == ONLY_SUPER_CLASSES && pattern.enclosingTypeName != ONE_ZERO/*not an anonymous*/)
 		// consider enumerations as classes, reject interfaces and annotations
 		if (pattern.superClassOrInterface == INTERFACE_SUFFIX

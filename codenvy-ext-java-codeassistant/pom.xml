@@ -74,7 +74,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.core</groupId>
-            <artifactId>org.eclipse.core.contenttype</artifactId>
+            <artifactId>contenttype</artifactId>
             <version>${org.eclipse.core.contenttype.version}</version>
         </dependency>
         <dependency>
@@ -109,6 +109,7 @@
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/JREContainer.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/LibraryInfo.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/LibraryLocation.java</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/core/launching/StandardVMType.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/search/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/format/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/builder/**</exclude>

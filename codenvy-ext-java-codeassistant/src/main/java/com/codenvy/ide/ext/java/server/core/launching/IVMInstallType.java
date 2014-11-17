@@ -26,7 +26,6 @@ import java.io.File;
  * to the <code>"org.eclipse.jdt.launching.vmInstallTypes"</code> extension point.
  * </p>
  * 
- * @see	IVMInstall
  */
 public interface IVMInstallType {
 //	/**

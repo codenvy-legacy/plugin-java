@@ -44,38 +44,38 @@ import org.eclipse.jdt.internal.compiler.util.Util;
 
 public class PackageReferenceLocator extends PatternLocator {
 
-    protected PackageReferencePattern pattern;
+	protected PackageReferencePattern pattern;
 
-    // check that referenced type is actually defined in this package fragment
-    public static boolean isDeclaringPackageFragment(IPackageFragment packageFragment, ReferenceBinding typeBinding) {
-        char[] fileName = typeBinding.getFileName();
-        if (fileName != null) {
-            // retrieve the actual file name from the full path (sources are generally only containing it already)
-            fileName = CharOperation.replaceOnCopy(fileName, '/',
-                                                   '\\'); // ensure to not do any side effect on file name (see https://bugs.eclipse
-                                                   // .org/bugs/show_bug.cgi?id=136016)
-            fileName = CharOperation.lastSegment(fileName, '\\');
+	// check that referenced type is actually defined in this package fragment
+	public static boolean isDeclaringPackageFragment(IPackageFragment packageFragment, ReferenceBinding typeBinding) {
+		char[] fileName = typeBinding.getFileName();
+		if (fileName != null) {
+			// retrieve the actual file name from the full path (sources are generally only containing it already)
+			fileName = CharOperation.replaceOnCopy(fileName, '/',
+												   '\\'); // ensure to not do any side effect on file name (see https://bugs.eclipse
+			// .org/bugs/show_bug.cgi?id=136016)
+			fileName = CharOperation.lastSegment(fileName, '\\');
 
-            try {
-                switch (packageFragment.getKind()) {
-                    case IPackageFragmentRoot.K_SOURCE:
-                        if (!org.eclipse.jdt.internal.core.util.Util.isJavaLikeFileName(fileName) ||
-                            !packageFragment.getCompilationUnit(new String(fileName)).exists()) {
-                            return false; // unit doesn't live in selected package
-                        }
-                        break;
-                    case IPackageFragmentRoot.K_BINARY:
+			try {
+				switch (packageFragment.getKind()) {
+					case IPackageFragmentRoot.K_SOURCE:
+						if (!org.eclipse.jdt.internal.core.util.Util.isJavaLikeFileName(fileName) ||
+							!packageFragment.getCompilationUnit(new String(fileName)).exists()) {
+							return false; // unit doesn't live in selected package
+						}
+						break;
+					case IPackageFragmentRoot.K_BINARY:
 //					if (Util.isJavaFileName(fileName)) { // binary with attached source
 //						int length = fileName.length;
 //						System.arraycopy(fileName, 0, fileName = new char[length], 0, length - 4); // copy all but extension
 //						System.arraycopy(SuffixConstants.SUFFIX_class, 0, fileName, length - 4, 4);
 //					}
-                        if (!Util.isClassFileName(fileName) || !packageFragment.getClassFile(new String(fileName)).exists()) {
-						return false; // classfile doesn't live in selected package
-					}
-					break;
-			}
-		} catch(JavaModelException e) {
+						if (!Util.isClassFileName(fileName) || !packageFragment.getClassFile(new String(fileName)).exists()) {
+							return false; // classfile doesn't live in selected package
+						}
+						break;
+				}
+			} catch (JavaModelException e) {
 			// unable to determine kind; tolerate this match
 		}
 	}
@@ -162,7 +162,8 @@ protected int matchLevelForTokens(char[][] tokens) {
 	return IMPOSSIBLE_MATCH;
 }
 /* (non-Javadoc)
- * @see PatternLocator#matchLevelAndReportImportRef(org.eclipse.jdt.internal.compiler.ast.ImportReference, org.eclipse.jdt.internal.compiler.lookup.Binding, MatchLocator)
+ * @see org.eclipse.jdt.internal.core.search.matching.PatternLocator#matchLevelAndReportImportRef(org.eclipse.jdt.internal.compiler.ast
+ * .ImportReference, org.eclipse.jdt.internal.compiler.lookup.Binding, org.eclipse.jdt.internal.core.search.matching.MatchLocator)
  */
 protected void matchLevelAndReportImportRef(ImportReference importRef, Binding binding, MatchLocator locator) throws CoreException {
 	Binding refBinding = binding;
@@ -184,8 +185,9 @@ protected void matchLevelAndReportImportRef(ImportReference importRef, Binding b
 	}
 	super.matchLevelAndReportImportRef(importRef, refBinding, locator);
 }
-protected void matchReportImportRef(ImportReference importRef, Binding binding, IJavaElement element, int accuracy, MatchLocator locator) throws
-                                                                                                                                          CoreException {
+
+	protected void matchReportImportRef(ImportReference importRef, Binding binding, IJavaElement element, int accuracy,
+										MatchLocator locator) throws CoreException {
 	if (binding == null) {
 		this.matchReportReference(importRef, element, null/*no binding*/, accuracy, locator);
 	} else {
@@ -208,12 +210,15 @@ protected void matchReportImportRef(ImportReference importRef, Binding binding, 
 		}
 	}
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                         CoreException {
+
+	protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator
+			locator)
+			throws CoreException {
 	matchReportReference(reference, element, null, null, elementBinding, accuracy, locator);
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                                                                                  CoreException {
+
+	protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements,
+										Binding elementBinding, int accuracy, MatchLocator locator) throws CoreException {
 	long[] positions = null;
 	int last = -1;
 	if (reference instanceof ImportReference) {

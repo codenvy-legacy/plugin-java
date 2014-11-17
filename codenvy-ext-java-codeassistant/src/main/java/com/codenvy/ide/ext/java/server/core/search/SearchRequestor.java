@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 /**
  * Collects the results from a search engine query.
  * Clients implement a subclass to pass to <code>SearchEngine.search</code>
- * and implement the {@link #acceptSearchMatch(SearchMatch)} method, and
+ * and implement the {@link #acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)} method, and
  * possibly override other life cycle methods.
  * <p>
  * The search engine calls <code>beginReporting()</code> when a search starts,
@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.CoreException;
  * in an order that would be more meaningful to the user.
  * </p>
  *
- * @see SearchEngine
+ * @see org.eclipse.jdt.core.search.SearchEngine
  * @since 3.0
  */
 public abstract class SearchRequestor {
@@ -35,7 +35,7 @@ public abstract class SearchRequestor {
 	 * Accepts the given search match.
 	 *
 	 * @param match the found match
-	 * @throws org.eclipse.core.runtime.CoreException
+	 * @throws CoreException
 	 */
 	public abstract void acceptSearchMatch(SearchMatch match) throws CoreException;
 
@@ -55,7 +55,7 @@ public abstract class SearchRequestor {
 	/**
 	 * Notification sent after having completed the search action.
 	 * Typically, this would tell a search requestor collector that no more
-	 * results will be forthcomping in this search.
+	 * results will be forthcoming in this search.
 	 * <p>
 	 * The default implementation of this method does nothing. Subclasses
 	 * may override.

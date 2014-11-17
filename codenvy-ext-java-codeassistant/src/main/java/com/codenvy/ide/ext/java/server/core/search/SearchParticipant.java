@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,14 +39,15 @@ import org.eclipse.jdt.internal.core.index.IndexLocation;
  * This class is intended to be subclassed by clients. During the indexing phase,
  * a subclass will be called with the following requests in order:
  * <ul>
- * <li>{@link #scheduleDocumentIndexing(SearchDocument, org.eclipse.core.runtime.IPath)}</li>
- * <li>{@link #indexDocument(SearchDocument, org.eclipse.core.runtime.IPath)}</li>
+ * <li>{@link #scheduleDocumentIndexing(org.eclipse.jdt.core.search.SearchDocument, IPath)}</li>
+ * <li>{@link #indexDocument(org.eclipse.jdt.core.search.SearchDocument, IPath)}</li>
  * </ul>
  * During the search phase, a subclass will be called with the following requests in order:
  * <ul>
- * <li>{@link #selectIndexes(SearchPattern, IJavaSearchScope)}</li>
+ * <li>{@link #selectIndexes(org.eclipse.jdt.core.search.SearchPattern, org.eclipse.jdt.core.search.IJavaSearchScope)}</li>
  * <li>one or more {@link #getDocument(String)}</li>
- * <li>{@link #locateMatches(SearchDocument[], SearchPattern, IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)}</li>
+ * <li>{@link #locateMatches(org.eclipse.jdt.core.search.SearchDocument[], org.eclipse.jdt.core.search.SearchPattern, org.eclipse.jdt
+ * .core.search.IJavaSearchScope, org.eclipse.jdt.core.search.SearchRequestor, IProgressMonitor)}</li>
  * </ul>
  * </p>
  *
@@ -54,98 +55,129 @@ import org.eclipse.jdt.internal.core.index.IndexLocation;
  */
 public abstract class SearchParticipant {
 
-    private IPath lastIndexLocation;
+	private IPath lastIndexLocation;
 
-    /**
-     * Creates a new search participant.
-     */
-    protected SearchParticipant() {
-        // do nothing
-    }
+	/**
+	 * Creates a new search participant.
+	 */
+	protected SearchParticipant() {
+		// do nothing
+	}
 
-    /**
-     * Notification that this participant's help is needed in a search.
-     * <p>
-     * This method should be re-implemented in subclasses that need to do something
-     * when the participant is needed in a search.
-     * </p>
-     */
-    public void beginSearching() {
-        // do nothing
-    }
+	/**
+	 * Notification that this participant's help is needed in a search.
+	 * <p>
+	 * This method should be re-implemented in subclasses that need to do something
+	 * when the participant is needed in a search.
+	 * </p>
+	 */
+	public void beginSearching() {
+		// do nothing
+	}
 
-    /**
-     * Notification that this participant's help is no longer needed.
-     * <p>
-     * This method should be re-implemented in subclasses that need to do something
-     * when the participant is no longer needed in a search.
-     * </p>
-     */
-    public void doneSearching() {
-        // do nothing
-    }
+	/**
+	 * Notification that this participant's help is no longer needed.
+	 * <p>
+	 * This method should be re-implemented in subclasses that need to do something
+	 * when the participant is no longer needed in a search.
+	 * </p>
+	 */
+	public void doneSearching() {
+		// do nothing
+	}
 
-    /**
-     * Returns a displayable name of this search participant.
-     * <p>
-     * This method should be re-implemented in subclasses that need to
-     * display a meaningfull name.
-     * </p>
-     *
-     * @return the displayable name of this search participant
-     */
-    public String getDescription() {
-        return "Search participant"; //$NON-NLS-1$
-    }
+	/**
+	 * Returns a displayable name of this search participant.
+	 * <p>
+	 * This method should be re-implemented in subclasses that need to
+	 * display a meaningful name.
+	 * </p>
+	 *
+	 * @return the displayable name of this search participant
+	 */
+	public String getDescription() {
+		return "Search participant"; //$NON-NLS-1$
+	}
 
-    /**
-     * Returns a search document for the given path.
-     * The given document path is a string that uniquely identifies the document.
-     * Most of the time it is a workspace-relative path, but it can also be a file system path, or a path inside a zip file.
-     * <p>
-     * Implementors of this method can either create an instance of their own subclass of
-     * {@link SearchDocument} or return an existing instance of such a subclass.
-     * </p>
-     *
-     * @param documentPath the path of the document.
-     * @return a search document
-     */
-    public abstract SearchDocument getDocument(String documentPath);
+	/**
+	 * Returns a search document for the given path.
+	 * The given document path is a string that uniquely identifies the document.
+	 * Most of the time it is a workspace-relative path, but it can also be a file system path, or a path inside a zip file.
+	 * <p>
+	 * Implementors of this method can either create an instance of their own subclass of
+	 * {@link org.eclipse.jdt.core.search.SearchDocument} or return an existing instance of such a subclass.
+	 * </p>
+	 *
+	 * @param documentPath
+	 *         the path of the document.
+	 * @return a search document
+	 */
+	public abstract SearchDocument getDocument(String documentPath);
 
-    /**
-     * Indexes the given document in the given index. A search participant
-     * asked to index a document should parse it and call
-     * {@link SearchDocument#addIndexEntry(char[], char[])} as many times as
-     * needed to add index entries to the index. If delegating to another
-     * participant, it should use the original index location (and not the
-     * delegatee's one). In the particular case of delegating to the default
-     * search participant (see {@link SearchEngine#getDefaultSearchParticipant()}),
-     * the provided document's path must be a path ending with one of the
-     * {@link org.eclipse.jdt.core.JavaCore#getJavaLikeExtensions() Java-like extensions}
-     * or with '.class'.
-     * <p>
-     * The given index location must represent a path in the file system to a file that
-     * either already exists or is going to be created. If it exists, it must be an index file,
-     * otherwise its data might be overwritten.
-     * </p><p>
-     * Clients are not expected to call this method.
-     * </p>
-     *
-     * @param document the document to index
-     * @param indexLocation the location in the file system to the index
-     */
-    public abstract void indexDocument(SearchDocument document, IPath indexLocation);
+	/**
+	 * Indexes the given document in the given index. A search participant
+	 * asked to index a document should parse it and call
+	 * {@link org.eclipse.jdt.core.search.SearchDocument#addIndexEntry(char[], char[])} as many times as
+	 * needed to add index entries to the index. If delegating to another
+	 * participant, it should use the original index location (and not the
+	 * delegatee's one). In the particular case of delegating to the default
+	 * search participant (see {@link org.eclipse.jdt.core.search.SearchEngine#getDefaultSearchParticipant()}),
+	 * the provided document's path must be a path ending with one of the
+	 * {@link org.eclipse.jdt.core.JavaCore#getJavaLikeExtensions() Java-like extensions}
+	 * or with '.class'.
+	 * <p>
+	 * The given index location must represent a path in the file system to a file that
+	 * either already exists or is going to be created. If it exists, it must be an index file,
+	 * otherwise its data might be overwritten.
+	 * </p><p>
+	 * Clients are not expected to call this method.
+	 * </p>
+	 *
+	 * @param document the document to index
+	 * @param indexLocation the location in the file system to the index
+	 */
+	public abstract void indexDocument(SearchDocument document, IPath indexLocation);
 
-    /**
-     * Locates the matches in the given documents using the given search pattern
-     * and search scope, and reports them to the givenn search requestor. This
+	/**
+	 * Indexes the given resolved document in the given index. A search participant
+	 * asked to index a resolved document should process it and call
+	 * {@link org.eclipse.jdt.core.search.SearchDocument#addIndexEntry(char[], char[])} as many times as
+	 * needed to add only those additional index entries which could not have been originally added
+	 * to the index during a call to {@link org.eclipse.jdt.core.search.SearchParticipant#indexDocument}. If delegating to another
+	 * participant, it should use the original index location (and not the
+	 * delegatee's one). In the particular case of delegating to the default
+	 * search participant (see {@link org.eclipse.jdt.core.search.SearchEngine#getDefaultSearchParticipant()}),
+	 * the provided document's path must be a path ending with one of the
+	 * {@link org.eclipse.jdt.core.JavaCore#getJavaLikeExtensions() Java-like extensions}
+	 * or with '.class'.
+	 * <p>
+	 * The given index location must represent a path in the file system to a file that
+	 * either already exists or is going to be created. If it exists, it must be an index file,
+	 * otherwise its data might be overwritten.
+	 * </p><p>
+	 * Clients are not expected to call this method.
+	 * </p>
+	 *
+	 * @param document
+	 *         the document to index
+	 * @param indexLocation
+	 *         the location in the file system to the index
+	 * @since 3.10
+	 */
+	public void indexResolvedDocument(SearchDocument document, IPath indexLocation) {
+		// do nothing, subtypes should do the "appropriate thing"
+	}
+
+	/**
+	 * Locates the matches in the given documents using the given search pattern
+	 * and search scope, and reports them to the given search requestor. This
 	 * method is called by the search engine once it has search documents
 	 * matching the given pattern in the given search scope.
 	 * <p>
 	 * Note that a participant (e.g. a JSP participant) can pre-process the contents of the given documents,
 	 * create its own documents whose contents are Java compilation units and delegate the match location
-	 * to the default participant (see {@link SearchEngine#getDefaultSearchParticipant()}). Passing its own
-	 * {@link SearchRequestor} this particpant can then map the match positions back to the original
+	 * to the default participant (see {@link org.eclipse.jdt.core.search.SearchEngine#getDefaultSearchParticipant()}). Passing its own
+	 * {@link org.eclipse.jdt.core.search.SearchRequestor} this participant can then map the match positions back to the original
 	 * contents, create its own matches and report them to the original requestor.
 	 * </p><p>
 	 * Implementors of this method should check the progress monitor
@@ -160,10 +192,9 @@ public abstract class SearchParticipant {
 	 * @param requestor the requestor to report matches to
 	 * @param monitor the progress monitor to report progress to,
 	 * or <code>null</code> if no progress should be reported
-	 * @throws org.eclipse.core.runtime.CoreException if the requestor had problem accepting one of the matches
+	 * @throws CoreException if the requestor had problem accepting one of the matches
 	 */
-	public abstract void locateMatches(SearchDocument[] documents, SearchPattern pattern, IJavaSearchScope scope, SearchRequestor requestor, IProgressMonitor monitor) throws
-                                                                                                                                                                       CoreException;
+	public abstract void locateMatches(SearchDocument[] documents, SearchPattern pattern, IJavaSearchScope scope, SearchRequestor requestor, IProgressMonitor monitor) throws CoreException;
 
 	/**
 	 * Removes the index for a given path.
@@ -178,23 +209,40 @@ public abstract class SearchParticipant {
 	 * @param indexLocation the location in the file system to the index
 	 * @since 3.2
 	 */
-	public void removeIndex(IPath indexLocation){
-        //todo index manager
-		IndexManager manager = null;//JavaModelManager.getIndexManager();
-		manager.removeIndexPath(indexLocation);
+	public void removeIndex(IPath indexLocation) {
+//		IndexManager manager = JavaModelManager.getIndexManager();
+//		manager.removeIndexPath(indexLocation);
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Resolves the given document. A search participant asked to resolve a document should parse it and
+	 * resolve the types and preserve enough state to be able to tend to a indexResolvedDocument call
+	 * subsequently. This API is invoked without holding any index related locks or monitors.
+	 * <p>
+	 * Clients are not expected to call this method.
+	 * </p>
+	 *
+	 * @param document the document to resolve
+	 * @since 3.10
+	 * @see org.eclipse.jdt.core.search.SearchParticipant#indexResolvedDocument
+	 * @see org.eclipse.jdt.core.search.SearchDocument#requireIndexingResolvedDocument
+	 */
+	public void resolveDocument(SearchDocument document) {
+		// do nothing, subtypes should do the "appropriate thing"
 	}
 
 	/**
 	 * Schedules the indexing of the given document.
 	 * Once the document is ready to be indexed,
-	 * {@link #indexDocument(SearchDocument, org.eclipse.core.runtime.IPath) indexDocument(document, indexPath)}
+	 * {@link #indexDocument(org.eclipse.jdt.core.search.SearchDocument, IPath) indexDocument(document, indexPath)}
 	 * will be called in a different thread than the caller's thread.
 	 * <p>
 	 * The given index location must represent a path in the file system to a file that
 	 * either already exists or is going to be created. If it exists, it must be an index file,
 	 * otherwise its data might be overwritten.
 	 * </p><p>
-	 * When the index is no longer needed, clients should use {@link #removeIndex(org.eclipse.core.runtime.IPath) }
+	 * When the index is no longer needed, clients should use {@link #removeIndex(IPath) }
 	 * to discard it.
 	 * </p>
 	 *
@@ -211,7 +259,7 @@ public abstract class SearchParticipant {
 			containerPath = documentPath.removeLastSegments(1);
 		}
         //todo index manager
-		IndexManager manager = null; //JavaModelManager.getIndexManager();
+		IndexManager manager = null;//JavaModelManager.getIndexManager();
 		// TODO (frederic) should not have to create index manually, should expose API that recreates index instead
 		IndexLocation indexLocation;
 		indexLocation = new FileIndexLocation(indexPath.toFile(), true);

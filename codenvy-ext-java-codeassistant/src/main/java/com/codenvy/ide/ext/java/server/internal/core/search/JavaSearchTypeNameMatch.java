@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
-
 import com.codenvy.ide.ext.java.server.core.search.TypeNameMatch;
 
 import org.eclipse.jdt.core.IAccessRule;
@@ -23,37 +22,37 @@ import org.eclipse.jdt.core.IType;
  */
 public class JavaSearchTypeNameMatch extends TypeNameMatch {
 
-    private IType type;
-    private int modifiers = -1; // store modifiers to avoid java model population
+	private IType type;
+	private int modifiers = -1; // store modifiers to avoid java model population
 
-    private int accessibility = IAccessRule.K_ACCESSIBLE;
+	private int accessibility = IAccessRule.K_ACCESSIBLE;
 
-    /**
-     * Creates a new Java Search type name match.
-     */
-    public JavaSearchTypeNameMatch(IType type, int modifiers) {
-        this.type = type;
-        this.modifiers = modifiers;
-    }
+	/**
+	 * Creates a new Java Search type name match.
+	 */
+	public JavaSearchTypeNameMatch(IType type, int modifiers) {
+		this.type = type;
+		this.modifiers = modifiers;
+	}
 
-    /* (non-Javadoc)
-     * Returns whether the matched type is equals to the given object or not.
+	/* (non-Javadoc)
+	 * Returns whether the matched type is equals to the given object or not.
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals(Object obj) {
-        if (obj == this) return true; // avoid unnecessary calls for identical objects
-        if (obj instanceof TypeNameMatch) {
-            TypeNameMatch match = (TypeNameMatch)obj;
-            if (this.type == null) {
-                return match.getType() == null && match.getModifiers() == this.modifiers;
-            }
-            return this.type.equals(match.getType()) && match.getModifiers() == this.modifiers;
-        }
-        return false;
-    }
+	public boolean equals(Object obj) {
+		if (obj == this) return true; // avoid unnecessary calls for identical objects
+		if (obj instanceof TypeNameMatch) {
+			TypeNameMatch match = (TypeNameMatch)obj;
+			if (this.type == null) {
+				return match.getType() == null && match.getModifiers() == this.modifiers;
+			}
+			return this.type.equals(match.getType()) && match.getModifiers() == this.modifiers;
+		}
+		return false;
+	}
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jdt.core.search.TypeNameMatch#getAccessibility()
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.core.search.TypeNameMatch#getAccessibility()
      */
 public int getAccessibility() {
 	return this.accessibility;

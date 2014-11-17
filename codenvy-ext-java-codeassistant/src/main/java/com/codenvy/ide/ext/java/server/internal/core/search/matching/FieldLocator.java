@@ -142,7 +142,8 @@ protected int matchField(FieldBinding field, boolean matchName) {
 	return declaringLevel > typeLevel ? typeLevel : declaringLevel; // return the weaker match
 }
 /* (non-Javadoc)
- * @see PatternLocator#matchLevelAndReportImportRef(org.eclipse.jdt.internal.compiler.ast.ImportReference, org.eclipse.jdt.internal.compiler.lookup.Binding, MatchLocator)
+ * @see org.eclipse.jdt.internal.core.search.matching.PatternLocator#matchLevelAndReportImportRef(org.eclipse.jdt.internal.compiler.ast
+ * .ImportReference, org.eclipse.jdt.internal.compiler.lookup.Binding, org.eclipse.jdt.internal.core.search.matching.MatchLocator)
  * Accept to report match of static field on static import
  */
 protected void matchLevelAndReportImportRef(ImportReference importRef, Binding binding, MatchLocator locator) throws CoreException {
@@ -158,13 +159,15 @@ protected int matchReference(Reference node, MatchingNodeSet nodeSet, boolean wr
 	}
 	return super.matchReference(node, nodeSet, writeOnlyAccess);
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
 
-                                                                                                                                         CoreException {
+	protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator
+			locator)
+			throws CoreException {
 	matchReportReference(reference, element, null, null, elementBinding, accuracy, locator);
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements,Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                                                                                 CoreException {
+
+	protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements,
+										Binding elementBinding, int accuracy, MatchLocator locator) throws CoreException {
 	if (this.isDeclarationOfAccessedFieldsPattern) {
 		// need exact match to be able to open on type ref
 		if (accuracy != SearchMatch.A_ACCURATE) return;
@@ -263,7 +266,8 @@ protected void matchReportReference(ASTNode reference, IJavaElement element, IJa
 }
 /* (non-Javadoc)
  * Overridden to reject unexact matches.
- * @see PatternLocator#updateMatch(org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding, char[][][], MatchLocator)
+ * @see org.eclipse.jdt.internal.core.search.matching.PatternLocator#updateMatch(org.eclipse.jdt.internal.compiler.lookup
+ * .ParameterizedTypeBinding, char[][][], org.eclipse.jdt.internal.core.search.matching.MatchLocator)
  *
  */
 protected void updateMatch(ParameterizedTypeBinding parameterizedBinding, char[][][] patternTypeArguments, MatchLocator locator) {

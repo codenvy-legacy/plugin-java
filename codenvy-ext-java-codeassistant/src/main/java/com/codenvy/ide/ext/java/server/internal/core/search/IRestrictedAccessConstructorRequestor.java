@@ -19,16 +19,16 @@ import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 public interface IRestrictedAccessConstructorRequestor {
 
 	public void acceptConstructor(
-            int modifiers,
-            char[] simpleTypeName,
-            int parameterCount,
-            char[] signature,
-            char[][] parameterTypes,
-            char[][] parameterNames,
-            int typeModifiers,
-            char[] packageName,
-            int extraFlags,
-            String path,
-            AccessRestriction access);
+			int modifiers,
+			char[] simpleTypeName,
+			int parameterCount,
+			char[] signature,
+			char[][] parameterTypes,
+			char[][] parameterNames,
+			int typeModifiers,
+			char[] packageName,
+			int extraFlags,
+			String path,
+			AccessRestriction access);
 
 }

@@ -45,9 +45,10 @@ public int match(LocalDeclaration node, MatchingNodeSet nodeSet) {
 private LocalVariable getLocalVariable() {
 	return ((LocalVariablePattern) this.pattern).localVariable;
 }
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
 
-                                                                                                                                         CoreException {
+	protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator
+			locator)
+			throws CoreException {
 	int offset = -1;
 	int length = -1;
 	if (reference instanceof SingleNameReference) {

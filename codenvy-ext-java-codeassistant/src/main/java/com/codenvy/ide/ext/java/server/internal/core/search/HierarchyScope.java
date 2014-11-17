@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,56 +44,57 @@ import java.util.Iterator;
 /**
  * Scope limited to the subtype and supertype hierarchy of a given type.
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class HierarchyScope extends AbstractSearchScope implements SuffixConstants {
 
-    public  IType            focusType;
-    private String           focusPath;
-    private WorkingCopyOwner owner;
+	public  IType            focusType;
+	private String           focusPath;
+	private WorkingCopyOwner owner;
 
-    private ITypeHierarchy hierarchy;
-    private HashSet        resourcePaths;
-    private IPath[]        enclosingProjectsAndJars;
+	private ITypeHierarchy hierarchy;
+	private HashSet        resourcePaths;
+	private IPath[]        enclosingProjectsAndJars;
 
-    protected IResource[] elements;
-    protected int         elementCount;
+	protected IResource[] elements;
+	protected int         elementCount;
 
-    public boolean needsRefresh;
+	public boolean needsRefresh;
 
-    private HashSet      subTypes                     = null; // null means: don't filter for subTypes
-    private IJavaProject javaProject                  = null; // null means: don't constrain the search to a project
-    private boolean      allowMemberAndEnclosingTypes = true;
-    private boolean      includeFocusType             = true;
+	private HashSet      subTypes                     = null; // null means: don't filter for subTypes
+	private IJavaProject javaProject                  = null; // null means: don't constrain the search to a project
+	private boolean      allowMemberAndEnclosingTypes = true;
+	private boolean      includeFocusType             = true;
 
-    /* (non-Javadoc)
-     * Adds the given resource to this search scope.
-     */
-    public void add(IResource element) {
-        if (this.elementCount == this.elements.length) {
-            System.arraycopy(
-                    this.elements,
-                    0,
-                    this.elements = new IResource[this.elementCount * 2],
-                    0,
-                    this.elementCount);
-        }
-        this.elements[this.elementCount++] = element;
-    }
+	/* (non-Javadoc)
+	 * Adds the given resource to this search scope.
+	 */
+	public void add(IResource element) {
+		if (this.elementCount == this.elements.length) {
+			System.arraycopy(
+					this.elements,
+					0,
+					this.elements = new IResource[this.elementCount * 2],
+					0,
+					this.elementCount);
+		}
+		this.elements[this.elementCount++] = element;
+	}
 
-    /**
-     * Creates a new hierarchy scope for the given type with the given configuration options.
-     * @param project      constrain the search result to this project,
-     *                     or <code>null</code> if search should consider all types in the workspace
-     * @param type         the focus type of the hierarchy
-     * @param owner       the owner of working copies that take precedence over original compilation units,
-     *                     or <code>null</code> if the primary working copy owner should be used
-     * @param onlySubtypes if true search only subtypes of 'type'
-     * @param noMembersOrEnclosingTypes if true the hierarchy is strict,
-     * 					   i.e., no additional member types or enclosing types of types spanning the hierarchy are included,
-     * 					   otherwise all member and enclosing types of types in the hierarchy are included.
-     * @param includeFocusType if true the focus type <code>type</code> is included in the resulting scope, otherwise it is excluded
+	/**
+	 * Creates a new hierarchy scope for the given type with the given configuration options.
+	 * @param project      constrain the search result to this project, 
+	 *                     or <code>null</code> if search should consider all types in the workspace 
+	 * @param type         the focus type of the hierarchy
+	 * @param owner       the owner of working copies that take precedence over original compilation units,
+	 *                     or <code>null</code> if the primary working copy owner should be used
+	 * @param onlySubtypes if true search only subtypes of 'type'
+	 * @param noMembersOrEnclosingTypes if true the hierarchy is strict, 
+	 * 					   i.e., no additional member types or enclosing types of types spanning the hierarchy are included,
+	 * 					   otherwise all member and enclosing types of types in the hierarchy are included.
+	 * @param includeFocusType if true the focus type <code>type</code> is included in the resulting scope, otherwise it is excluded
 	 */
 	public HierarchyScope(IJavaProject project, IType type, WorkingCopyOwner owner, boolean onlySubtypes, boolean noMembersOrEnclosingTypes, boolean includeFocusType) throws
-                                                                                                                                                                       JavaModelException {
+																																									   JavaModelException {
 		this(type, owner);
 		this.javaProject = project;
 		if (onlySubtypes) {

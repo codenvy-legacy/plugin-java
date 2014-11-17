@@ -23,39 +23,39 @@ import java.io.IOException;
 
 public class OrPattern extends SearchPattern implements IIndexConstants {
 
-    protected SearchPattern[] patterns;
+	protected SearchPattern[] patterns;
 
-    /**
-     * One of {@link #R_ERASURE_MATCH}, {@link #R_EQUIVALENT_MATCH}, {@link #R_FULL_MATCH}.
-     */
-    int matchCompatibility;
+	/**
+	 * One of {@link #R_ERASURE_MATCH}, {@link #R_EQUIVALENT_MATCH}, {@link #R_FULL_MATCH}.
+	 */
+	int matchCompatibility;
 
-    public OrPattern(SearchPattern leftPattern, SearchPattern rightPattern) {
-        super(Math.max(leftPattern.getMatchRule(), rightPattern.getMatchRule()));
-        this.kind = OR_PATTERN;
-        this.mustResolve = leftPattern.mustResolve || rightPattern.mustResolve;
+	public OrPattern(SearchPattern leftPattern, SearchPattern rightPattern) {
+		super(Math.max(leftPattern.getMatchRule(), rightPattern.getMatchRule()));
+		this.kind = OR_PATTERN;
+		this.mustResolve = leftPattern.mustResolve || rightPattern.mustResolve;
 
-        SearchPattern[] leftPatterns = leftPattern instanceof OrPattern
-                                       ? ((OrPattern)leftPattern).patterns : null;
-        SearchPattern[] rightPatterns = rightPattern instanceof OrPattern
-                                        ? ((OrPattern)rightPattern).patterns : null;
-        int leftSize = leftPatterns == null ? 1 : leftPatterns.length;
-        int rightSize = rightPatterns == null ? 1 : rightPatterns.length;
-        this.patterns = new SearchPattern[leftSize + rightSize];
+		SearchPattern[] leftPatterns = leftPattern instanceof OrPattern
+									   ? ((OrPattern)leftPattern).patterns : null;
+		SearchPattern[] rightPatterns = rightPattern instanceof OrPattern
+										? ((OrPattern)rightPattern).patterns : null;
+		int leftSize = leftPatterns == null ? 1 : leftPatterns.length;
+		int rightSize = rightPatterns == null ? 1 : rightPatterns.length;
+		this.patterns = new SearchPattern[leftSize + rightSize];
 
-        if (leftPatterns == null)
-            this.patterns[0] = leftPattern;
-        else
-            System.arraycopy(leftPatterns, 0, this.patterns, 0, leftSize);
-        if (rightPatterns == null)
-            this.patterns[leftSize] = rightPattern;
-        else
+		if (leftPatterns == null)
+			this.patterns[0] = leftPattern;
+		else
+			System.arraycopy(leftPatterns, 0, this.patterns, 0, leftSize);
+		if (rightPatterns == null)
+			this.patterns[leftSize] = rightPattern;
+		else
 			System.arraycopy(rightPatterns, 0, this.patterns, leftSize, rightSize);
 
 		// Store erasure match
 		this.matchCompatibility = 0;
 		for (int i = 0, length = this.patterns.length; i < length; i++) {
-			this.matchCompatibility |= ((JavaSearchPattern) this.patterns[i]).matchCompatibility;
+			this.matchCompatibility |= ((JavaSearchPattern)this.patterns[i]).matchCompatibility;
 		}
 	}
 	public void findIndexMatches(Index index, IndexQueryRequestor requestor, SearchParticipant participant, IJavaSearchScope scope, IProgressMonitor progressMonitor) throws IOException {
