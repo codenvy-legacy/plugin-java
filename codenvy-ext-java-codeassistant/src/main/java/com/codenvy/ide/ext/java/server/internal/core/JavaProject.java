@@ -134,13 +134,12 @@ public class JavaProject extends Openable implements IJavaProject {
                         paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), null, null));
                     }
                 }
-                rawClassPath = paths.toArray(new IClasspathEntry[paths.size()]);
             }
 
         } catch (IOException e) {
             LOG.error("Can't find jar dependency's: ", e);
         }
-
+        rawClassPath = paths.toArray(new IClasspathEntry[paths.size()]);
         indexManager = new IndexManager(tempDir + "/indexes/" + ws + projectPath + "/");
         indexManager.reset();
         indexManager.indexAll(this);
