@@ -16,7 +16,7 @@
     <parent>
         <artifactId>codenvy-plugin-java-parent</artifactId>
         <groupId>com.codenvy.plugin-java</groupId>
-        <version>1.2.2-SNAPSHOT</version>
+        <version>1.2.2</version>
     </parent>
     <artifactId>codenvy-builder-ant</artifactId>
     <packaging>jar</packaging>
