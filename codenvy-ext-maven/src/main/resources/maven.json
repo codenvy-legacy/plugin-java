@@ -72,9 +72,9 @@
         }
     },
     {
-        "displayName": "Java Console",
+        "displayName": "Maven Java Console",
         "category": "Samples - Hello World",
-        "description": "A simple JAR project.",
+        "description": "A simple JAR project based on Maven.",
         "source": {
             "type": "git",
             "location": "https://github.com/codenvy-templates/desktop-console-java.git",
