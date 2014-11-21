@@ -4,17 +4,12 @@
     <property location="${basedir}/build" name="build"/>
     <property location="${build}/classes" name="build.classes"/>
     <property location="${basedir}/src" name="src.dir"/>
-    <path id="libs.dir">
-        <fileset dir="lib" includes="**/*.jar"/>
-    </path>
     <!--Application build-->
     <target depends="clean" description="Builds the application" name="build">
         <!--Create directory-->
         <mkdir dir="${build.classes}"/>
         <!--Compile source code-->
-        <javac debug="false" deprecation="true" destdir="${build.classes}" includeantruntime="true" optimize="true" srcdir="${src.dir}">
-            <classpath refid="libs.dir"/>
-        </javac>
+        <javac debug="false" deprecation="true" destdir="${build.classes}" includeantruntime="true" optimize="true" srcdir="${src.dir}"/>
         <!--Copy necessary files-->
         <copy todir="${build.classes}">
             <fileset dir="${src.dir}" excludes="**/*.java" includes="**/*.*"/>
