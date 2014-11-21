@@ -62,7 +62,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                 fillMavenProject(projectType, project);
                 return true;
             }
-            return true;
+            return false;//project configure in initial source
         } catch (ForbiddenException | IOException | ConflictException e) {
             throw new ServerException("An error occurred when trying to resolve maven project.", e);
         }
