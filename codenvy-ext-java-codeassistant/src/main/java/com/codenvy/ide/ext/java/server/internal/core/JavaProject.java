@@ -139,9 +139,7 @@ public class JavaProject extends Openable implements IJavaProject {
         } catch (IOException e) {
             LOG.error("Can't find jar dependency's: ", e);
         }
-
         rawClassPath = paths.toArray(new IClasspathEntry[paths.size()]);
-
         indexManager = new IndexManager(tempDir + "/indexes/" + ws + projectPath + "/", this);
         indexManager.reset();
         indexManager.indexAll(this);

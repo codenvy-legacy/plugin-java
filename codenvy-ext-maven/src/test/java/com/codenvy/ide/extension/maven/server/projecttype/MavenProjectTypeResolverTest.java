@@ -61,9 +61,23 @@ public class MavenProjectTypeResolverTest {
             "    <artifactId>codenvy-sdk-parent</artifactId>\n" +
             "    <version>3.1.0-SNAPSHOT</version>\n" +
             "    <packaging>pom</packaging>\n" +
-            "    <modules>"+
+            "    <modules>" +
             "      <module>module1</module>" +
             "      <module>module2</module>" +
+            "   </modules>" +
+            "</project>";
+
+    private String pomWithNestingModule =
+            "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\">\n" +
+            "    <modelVersion>4.0.0</modelVersion>\n" +
+            "    <groupId>com.codenvy.sdk</groupId>\n" +
+            "    <artifactId>codenvy-sdk-parent</artifactId>\n" +
+            "    <version>3.1.0-SNAPSHOT</version>\n" +
+            "    <packaging>pom</packaging>\n" +
+            "    <modules>" +
+            "      <module>../module2</module>" +
+            "      <module>../module3</module>" +
             "   </modules>" +
             "</project>";
 
@@ -129,9 +143,9 @@ public class MavenProjectTypeResolverTest {
         Assert.assertNotNull(projectManager.getProject(workspace, "test"));
         Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription());
         Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription().getProjectType());
-        Assert.assertEquals("maven",projectManager.getProject(workspace, "test").getDescription().getProjectType().getId());
+        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getDescription().getProjectType().getId());
         Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription().getBuilders());
-        Assert.assertEquals("maven",projectManager.getProject(workspace, "test").getDescription().getBuilders().getDefault());
+        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getDescription().getBuilders().getDefault());
     }
 
 
@@ -178,5 +192,32 @@ public class MavenProjectTypeResolverTest {
         Assert.assertNull(projectManager.getProject(workspace, "test/moduleNotDescribedInParentPom"));
     }
 
+    @Test
+    public void withPomXmlMultiModuleWithNesting() throws Exception {
+        //test for multi module project in which the modules are specified in format: <module>../module</module>
+        FolderEntry rootProject = projectManager.getProjectsRoot(workspace).createFolder("rootProject");
+        rootProject.createFile("pom.xml", pom.getBytes(), "text/xml");
+
+        FolderEntry module1 = rootProject.createFolder("module1");
+        module1.createFile("pom.xml", pomWithNestingModule.getBytes(), "text/xml");
+
+        FolderEntry module2 = rootProject.createFolder("module2");
+        module2.createFile("pom.xml", pom.getBytes(), "text/xml");
+
+        FolderEntry module3 = rootProject.createFolder("module3");
+        module3.createFile("pom.xml", pom.getBytes(), "text/xml");
+
+        FolderEntry moduleNotDescribedInParentPom = rootProject.createFolder("moduleNotDescribedInParentPom");
+        moduleNotDescribedInParentPom.createFile("pom.xml", pom.getBytes(), "text/xml");
+
+
+        boolean resolve = mavenProjectTypeResolver.resolve(rootProject);
+        Assert.assertTrue(resolve);
+        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject"));
+        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject/module1"));
+        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject/module2"));
+        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject/module3"));
+        Assert.assertNull(projectManager.getProject(workspace, "rootProject/test/moduleNotDescribedInParentPom"));
+    }
 
 }

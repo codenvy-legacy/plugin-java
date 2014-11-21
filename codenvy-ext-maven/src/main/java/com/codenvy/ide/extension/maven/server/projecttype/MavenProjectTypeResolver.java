@@ -69,9 +69,11 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
             throws ServerException, ForbiddenException, ConflictException, IOException {
         List<String> modules = model.getModules();
         for (String module : modules) {
-            FolderEntry moduleEntry = (FolderEntry)parentProject.getBaseFolder().getChild(module);
+            FolderEntry parentFolder = getParentFolder(module, parentProject);
+            module = module.replaceAll("\\.{2}/", "");
+            FolderEntry moduleEntry = (FolderEntry)parentFolder.getChild(module);
             if (moduleEntry != null && moduleEntry.getVirtualFile().getChild("pom.xml") != null) {
-                Project project = projectManager.getProject(ws, parentProject.getPath() + "/" + module);
+                Project project = projectManager.getProject(ws, parentFolder.getPath() + "/" + module);
                 if (project == null) {
                     project = new Project(moduleEntry, projectManager);
                     project.getMisc().setCreationDate(System.currentTimeMillis());
@@ -80,6 +82,16 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                 project.updateDescription(createProjectDescriptor(projectType));
             }
         }
+    }
+
+    private FolderEntry getParentFolder(String module, Project parentProject) {
+        FolderEntry parentFolder = parentProject.getBaseFolder();
+        int level = module.split("\\.{2}/").length - 1;
+        while (level != 0 && parentFolder != null) {
+            parentFolder = parentFolder.getParent();
+            level--;
+        }
+        return parentFolder;
     }
 
     private void fillMavenProject(ProjectType projectType, Project project)
