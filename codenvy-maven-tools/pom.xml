@@ -23,6 +23,11 @@
     <name>Codenvy Maven Tools</name>
     <dependencies>
         <dependency>
+            <groupId>com.codenvy.commons</groupId>
+            <artifactId>codenvy-commons-xml</artifactId>
+            <version>${codenvy.commons.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.codenvy.platform-api</groupId>
             <artifactId>codenvy-api-vfs</artifactId>
             <version>${codenvy.platform-api.version}</version>

@@ -10,12 +10,41 @@
  *******************************************************************************/
 package com.codenvy.ide.maven.tools;
 
+import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.ServerException;
+import com.codenvy.api.vfs.server.VirtualFile;
+import com.codenvy.commons.xml.Element;
+import com.codenvy.commons.xml.FromElementFunction;
+import com.codenvy.commons.xml.XMLTree;
+
+import java.io.File;
+import java.io.IOException;
+
 /**
+ * TODO update tree in setters
  * The <code>&lt;project&gt;</code> element is the root of
  * the descriptor.
  * The following table lists all of the possible child elements.
  */
 public class Model {
+
+    public static Model readModel(File file) throws IOException {
+        return fetchModel(XMLTree.from(file));
+    }
+
+    public static Model readModel(VirtualFile file) throws ServerException, ForbiddenException, IOException {
+        return fetchModel(XMLTree.from(file.getContent().getStream()));
+    }
+
+    private static final ToParentFunction     TO_PARENT_FUNCTION     = new ToParentFunction();
+    private static final ToDependencyFunction TO_DEPENDENCY_FUNCTION = new ToDependencyFunction();
+    private static final ToExclusionFunction  TO_EXCLUSION_FUNCTION  = new ToExclusionFunction();
+
+    private XMLTree tree;
+
+    public Model(XMLTree tree) {
+        this.tree = tree;
+    }
 
     /**
      * Declares to which version of project descriptor this POM conforms.
@@ -261,11 +290,9 @@ public class Model {
      * version and other values from this section are
      * used for that dependency if they were not
      * already specified.
-     *
-     * @return DependencyManagement
      */
     public DependencyManagement getDependencyManagement() {
-        return this.dependencyManagement;
+        return dependencyManagement;
     }
 
     /**
@@ -496,5 +523,97 @@ public class Model {
     @Override
     public String toString() {
         return getId();
+    }
+
+    private static Model fetchModel(XMLTree tree) {
+        final Model model = new Model(tree);
+        //required
+        model.setModelVersion(tree.getSingleText("/project/modelVersion"));
+        model.setArtifactId(tree.getSingleText("/project/artifactId"));
+        model.setGroupId(tree.getSingleText("/project/groupId"));
+        model.setVersion(tree.getSingleText("/project/version"));
+        //not required
+        final Element root = tree.getRoot();
+        if (root.hasChild("parent")) {
+            model.setParent(root.getSingleChild("parent").mapTo(TO_PARENT_FUNCTION));
+        }
+        if (root.hasChild("name")) {
+            model.setName(root.getSingleChild("name").getText());
+        }
+        if (root.hasChild("description")) {
+            model.setDescription(root.getSingleChild("description").getText());
+        }
+        if (root.hasChild("packaging")) {
+            model.setPackaging(root.getSingleChild("packaging").getText());
+        }
+        if (root.hasChild("dependencies")) {
+            model.setDependencies(tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION));
+        }
+        if (root.hasChild("dependencyManagement")) {
+            final DependencyManagement dm = new DependencyManagement();
+            model.setDependencyManagement(dm);
+            if (root.getSingleChild("dependencyManagement").hasChildren()) {
+                dm.setDependencies(tree.getElements("/project/dependencyManagement/dependency", TO_DEPENDENCY_FUNCTION));
+            }
+        }
+        return model;
+    }
+
+    private static class ToDependencyFunction implements FromElementFunction<Dependency> {
+
+        @Override
+        public Dependency apply(Element element) {
+            final Dependency dependency = new Dependency();
+            //required
+            dependency.setArtifactId(element.getSingleChild("artifactId").getText());
+            dependency.setGroupId(element.getSingleChild("groupId").getText());
+            dependency.setVersion(element.getSingleChild("version").getText());
+            //not required
+            if (element.hasChild("scope")) {
+                dependency.setScope(element.getSingleChild("scope").getText());
+            }
+            if (element.hasChild("classifier")) {
+                dependency.setClassifier(element.getSingleChild("classifier").getText());
+            }
+            if (element.hasChild("optional")) {
+                dependency.setOptional(element.getSingleSibling("optional").getText());
+            }
+            if (element.hasChild("systemPath")) {
+                dependency.setSystemPath(element.getSingleChild("systemPath").getText());
+            }
+            if (element.hasChild("type")) {
+                dependency.setType(element.getSingleChild("type").getText());
+            }
+            if (element.hasChild("exclusions")) {
+                final Element exclusions = element.getSingleChild("exclusions");
+                dependency.setExclusions(exclusions.getChildren(TO_EXCLUSION_FUNCTION));
+            }
+            return dependency;
+        }
+    }
+
+    private static class ToParentFunction implements FromElementFunction<Parent> {
+
+        //TODO check for not required fields
+        @Override
+        public Parent apply(Element element) {
+            final Parent parent = new Parent();
+            parent.setArtifactId(element.getSingleChild("artifactId").getText());
+            parent.setGroupId(element.getSingleChild("groupId").getText());
+            parent.setVersion(element.getSingleChild("version").getText());
+            parent.setRelativePath(element.getSingleChild("relativePath").getText());
+            return parent;
+        }
+    }
+
+    private static class ToExclusionFunction implements FromElementFunction<Exclusion> {
+
+        @Override
+        public Exclusion apply(Element element) {
+            final Exclusion exclusion = new Exclusion();
+            exclusion.setArtifactId(element.getSingleChild("artifactId").getText());
+            exclusion.setGroupId(element.getSingleChild("groupId").getText());
+            return exclusion;
+        }
     }
 }
