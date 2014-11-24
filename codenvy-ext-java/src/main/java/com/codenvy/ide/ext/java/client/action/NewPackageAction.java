@@ -42,7 +42,6 @@ public class NewPackageAction extends AbstractNewResourceAction {
     public NewPackageAction(JavaResources javaResources, JavaLocalizationConstant localizationConstant) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
-              null,
               javaResources.packageIcon());
         this.localizationConstant = localizationConstant;
     }
@@ -77,7 +76,7 @@ public class NewPackageAction extends AbstractNewResourceAction {
     }
 
     @Override
-    public void update(ActionEvent e) {
+    public void updateProjectAction(ActionEvent e) {
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {

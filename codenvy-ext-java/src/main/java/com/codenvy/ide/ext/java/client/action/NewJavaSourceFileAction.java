@@ -11,8 +11,8 @@
 package com.codenvy.ide.ext.java.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
@@ -29,10 +29,10 @@ import com.google.inject.Singleton;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class NewJavaSourceFileAction extends Action {
+public class NewJavaSourceFileAction extends ProjectAction {
+    private final AnalyticsEventLogger       eventLogger;
     private       SelectionAgent             selectionAgent;
     private       NewJavaSourceFilePresenter newJavaSourceFilePresenter;
-    private final AnalyticsEventLogger       eventLogger;
 
     @Inject
     public NewJavaSourceFileAction(SelectionAgent selectionAgent,
@@ -40,7 +40,7 @@ public class NewJavaSourceFileAction extends Action {
                                    JavaLocalizationConstant constant,
                                    JavaResources resources,
                                    AnalyticsEventLogger eventLogger) {
-        super(constant.actionNewClassTitle(), constant.actionNewClassDescription(), null, resources.javaFile());
+        super(constant.actionNewClassTitle(), constant.actionNewClassDescription(), resources.javaFile());
         this.newJavaSourceFilePresenter = newJavaSourceFilePresenter;
         this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
@@ -53,7 +53,7 @@ public class NewJavaSourceFileAction extends Action {
     }
 
     @Override
-    public void update(ActionEvent e) {
+    public void updateProjectAction(ActionEvent e) {
         boolean visible = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {

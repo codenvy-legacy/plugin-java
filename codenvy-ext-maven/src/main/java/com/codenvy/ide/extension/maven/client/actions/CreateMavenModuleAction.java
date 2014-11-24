@@ -11,50 +11,36 @@
 
 package com.codenvy.ide.extension.maven.client.actions;
 
-import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
-import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.app.CurrentProject;
-import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.module.CreateMavenModulePresenter;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-/**
- * @author Evgen Vidolob
- */
+/** @author Evgen Vidolob */
 @Singleton
-public class CreateMavenModuleAction extends Action {
+public class CreateMavenModuleAction extends ProjectAction {
 
-
-    private AppContext                 context;
     private CreateMavenModulePresenter presenter;
 
     @Inject
-    public CreateMavenModuleAction(AppContext context, MavenLocalizationConstant constant, CreateMavenModulePresenter presenter) {
+    public CreateMavenModuleAction(MavenLocalizationConstant constant, CreateMavenModulePresenter presenter) {
         super(constant.actionCreateMavenModuleText(), constant.actionCreateMavenModuleDescription());
-        this.context = context;
         this.presenter = presenter;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (context.getCurrentProject() != null) {
-            presenter.showDialog(context.getCurrentProject());
+        if (appContext.getCurrentProject() != null) {
+            presenter.showDialog(appContext.getCurrentProject());
         }
     }
 
     @Override
-    public void update(ActionEvent e) {
-        CurrentProject currentProject = context.getCurrentProject();
-        if (currentProject != null &&
-            Constants.MAVEN_ID.equals(currentProject.getProjectDescription().getType())) {
-            e.getPresentation().setVisible(true);
-            e.getPresentation().setEnabled("pom".equals(currentProject.getAttributeValue(MavenAttributes.PACKAGING)));
-        } else {
-            e.getPresentation().setEnabledAndVisible(false);
-        }
+    public void updateProjectAction(ActionEvent e) {
+        e.getPresentation().setVisible(true);
+        e.getPresentation().setEnabled("pom".equals(appContext.getCurrentProject().getAttributeValue(MavenAttributes.PACKAGING)));
     }
 }
