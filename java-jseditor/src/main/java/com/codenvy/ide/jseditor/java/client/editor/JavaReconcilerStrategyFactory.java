@@ -18,7 +18,7 @@ import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
  * Factory of reconciler factories for java documents.
  */
 public interface JavaReconcilerStrategyFactory {
-    JavaReconcilerStrategy create(EmbeddedTextEditorPresenter editor,
+    JavaReconcilerStrategy create(EmbeddedTextEditorPresenter< ? > editor,
                                   OutlineModel outlineModel,
                                   JavaCodeAssistProcessor codeAssistProcessor,
                                   AnnotationModel annotationModel);
