@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Nikolay Botev - Bug 348507
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
@@ -58,8 +57,8 @@ public class IndexSelector {
 
 	IJavaSearchScope searchScope;
 	SearchPattern    pattern;
-	private IndexManager indexManager;
 	IndexLocation[] indexLocations; // cache of the keys for looking index up
+	private IndexManager indexManager;
 
 	public IndexSelector(
 			IJavaSearchScope searchScope,
@@ -210,9 +209,21 @@ private static IJavaElement[] getFocusedElementsAndTypes(SearchPattern pattern, 
 	return new IJavaElement[] { focusElement };
 }
 
-/*
- *  Compute the list of paths which are keying index files.
- */
+	/**
+	 * Returns the java project that corresponds to the given path.
+	 * Returns null if the path doesn't correspond to a project.
+	 */
+	private static IJavaProject getJavaProject(IPath path, IJavaModel model) {
+		IJavaProject project = model.getJavaProject(path.lastSegment());
+		if (project.exists()) {
+			return project;
+		}
+		return null;
+	}
+
+	/*
+     *  Compute the list of paths which are keying index files.
+     */
 private void initializeIndexLocations() {
 	IPath[] projectsAndJars = this.searchScope.enclosingProjectsAndJars();
 	// use a linked set to preserve the order during search: see bug 348507
@@ -229,7 +240,7 @@ private void initializeIndexLocations() {
 	} else {
 		try {
 			// See whether the state builder might be used to reduce the number of index locations
-		
+
 			// find the projects from projectsAndJars that see the focus then walk those projects looking for the jars from projectsAndJars
 			int length = projectsAndJars.length;
 			JavaProject[] projectsCanSeeFocus = new JavaProject[length];
@@ -311,18 +322,6 @@ public IndexLocation[] getIndexLocations() {
 		initializeIndexLocations();
 	}
 	return this.indexLocations;
-}
-
-/**
- * Returns the java project that corresponds to the given path.
- * Returns null if the path doesn't correspond to a project.
- */
-private static IJavaProject getJavaProject(IPath path, IJavaModel model) {
-	IJavaProject project = model.getJavaProject(path.lastSegment());
-	if (project.exists()) {
-		return project;
-	}
-	return null;
 }
 
 private char[][][] getQualifiedNames(ObjectVector types) {

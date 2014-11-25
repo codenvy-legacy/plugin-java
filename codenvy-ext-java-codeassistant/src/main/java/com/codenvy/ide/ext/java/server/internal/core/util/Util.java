@@ -1,17 +1,23 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- ******************************************************************************/
+ *    IBM Corporation - initial API and implementation
+ *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.util;
 
+import com.codenvy.ide.ext.java.server.internal.core.Annotation;
+import com.codenvy.ide.ext.java.server.internal.core.JavaElement;
+import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
+import com.codenvy.ide.ext.java.server.internal.core.MemberValuePair;
 import com.codenvy.ide.runtime.Assert;
 
+import org.eclipse.jdt.core.IAnnotation;
+import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -19,6 +25,11 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.UnionTypeReference;
+import org.eclipse.jdt.internal.compiler.env.ClassSignature;
+import org.eclipse.jdt.internal.compiler.env.EnumConstantSignature;
+import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
+import org.eclipse.jdt.internal.compiler.impl.Constant;
+import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.parser.ScannerHelper;
 import org.eclipse.jdt.internal.compiler.util.SuffixConstants;
 import org.eclipse.jdt.internal.core.util.KeyToSignature;
@@ -30,39 +41,18 @@ import java.util.Iterator;
 /** Provides convenient utility methods to other types in this package. */
 public class Util {
 
-    public interface Comparable {
-        /** Returns 0 if this and c are equal, >0 if this is greater than c, or <0 if this is less than c. */
-        int compareTo(Comparable c);
-    }
-
-    public interface Comparer {
-        /** Returns 0 if a and b are equal, >0 if a is greater than b, or <0 if a is less than b. */
-        int compare(Object a, Object b);
-    }
-
     private static final char ARGUMENTS_DELIMITER = '#';
-
     private static final String EMPTY_ARGUMENT = "   "; //$NON-NLS-1$
-
-    private static char[][] JAVA_LIKE_EXTENSIONS;
-
     private static final char[] BOOLEAN = "boolean".toCharArray(); //$NON-NLS-1$
-
     private static final char[] BYTE = "byte".toCharArray(); //$NON-NLS-1$
-
     private static final char[] CHAR = "char".toCharArray(); //$NON-NLS-1$
-
     private static final char[] DOUBLE = "double".toCharArray(); //$NON-NLS-1$
-
     private static final char[] FLOAT = "float".toCharArray(); //$NON-NLS-1$
-
     private static final char[] INT = "int".toCharArray(); //$NON-NLS-1$
-
     private static final char[] LONG = "long".toCharArray(); //$NON-NLS-1$
-
     private static final char[] SHORT = "short".toCharArray(); //$NON-NLS-1$
-
     private static final char[] VOID = "void".toCharArray(); //$NON-NLS-1$
+    private static char[][] JAVA_LIKE_EXTENSIONS;
 
     private Util() {
         // cannot be instantiated
@@ -804,15 +794,6 @@ public class Util {
         buffer.delete(0, buffer.length());
         return result;
     }
-//
-//    /* Returns the signature of the given type. */
-//    public static String getSignature(Type type) {
-//        StringBuffer buffer = new StringBuffer();
-//        getFullyQualifiedName(type, buffer);
-//        return Signature.createTypeSignature(buffer.toString(), false/*
-//                                                                    * not resolved in source
-//                                                                    */);
-//    }
 
     /*
      * Returns the declaring type signature of the element represented by the given binding key. Returns the signature of the
@@ -823,6 +804,34 @@ public class Util {
         KeyToSignature keyToSignature = new KeyToSignature(key, KeyToSignature.DECLARING_TYPE);
         keyToSignature.parse();
         return keyToSignature.signature.toString();
+    }
+
+    /** Returns a trimmed version the simples names returned by Signature. */
+    public static String[] getTrimmedSimpleNames(String name) {
+        String[] result = Signature.getSimpleNames(name);
+        for (int i = 0, length = result.length; i < length; i++) {
+            result[i] = result[i].trim();
+        }
+        return result;
+    }
+//
+//    /* Returns the signature of the given type. */
+//    public static String getSignature(Type type) {
+//        StringBuffer buffer = new StringBuffer();
+//        getFullyQualifiedName(type, buffer);
+//        return Signature.createTypeSignature(buffer.toString(), false/*
+//                                                                    * not resolved in source
+//                                                                    */);
+//    }
+
+    /**
+     * Returns true if the given name ends with one of the known java like extension.
+     * (implementation is not creating extra strings)
+     */
+    public final static boolean isJavaLikeFileName(String name) {
+        if (name == null)
+            return false;
+        return indexOfJavaLikeExtension(name) != -1;
     }
 
 //    /*
@@ -878,25 +887,6 @@ public class Util {
 //                break;
 //        }
 //    }
-
-    /** Returns a trimmed version the simples names returned by Signature. */
-    public static String[] getTrimmedSimpleNames(String name) {
-        String[] result = Signature.getSimpleNames(name);
-        for (int i = 0, length = result.length; i < length; i++) {
-            result[i] = result[i].trim();
-        }
-        return result;
-    }
-
-    /**
-     * Returns true if the given name ends with one of the known java like extension.
-     * (implementation is not creating extra strings)
-     */
-    public final static boolean isJavaLikeFileName(String name) {
-        if (name == null)
-            return false;
-        return indexOfJavaLikeExtension(name) != -1;
-    }
 
     /**
      * Returns the index of the Java like extension of the given file name or -1 if it doesn't end with a known Java like
@@ -1793,5 +1783,137 @@ public class Util {
         int result[] = new int[array.length];
         System.arraycopy(array, 0, result, 0, array.length);
         return result;
+    }
+
+    public static IAnnotation getAnnotation(JavaElement parent, JavaModelManager manager, IBinaryAnnotation binaryAnnotation, String memberValuePairName) {
+        char[] typeName = org.eclipse.jdt.core.Signature.toCharArray(CharOperation.replaceOnCopy(binaryAnnotation.getTypeName(), '/', '.'));
+        return new Annotation(parent,manager, new String(typeName), memberValuePairName);
+    }
+
+    public static Object getAnnotationMemberValue(JavaElement parent, JavaModelManager manager, MemberValuePair memberValuePair, Object binaryValue) {
+        if (binaryValue instanceof Constant) {
+            return getAnnotationMemberValue(memberValuePair, (Constant) binaryValue);
+        } else if (binaryValue instanceof IBinaryAnnotation) {
+            memberValuePair.valueKind = IMemberValuePair.K_ANNOTATION;
+            return getAnnotation(parent,manager, (IBinaryAnnotation) binaryValue, memberValuePair.getMemberName());
+        } else if (binaryValue instanceof ClassSignature) {
+            memberValuePair.valueKind = IMemberValuePair.K_CLASS;
+            char[] className = Signature.toCharArray(CharOperation.replaceOnCopy(((ClassSignature) binaryValue).getTypeName(), '/', '.'));
+            return new String(className);
+        } else if (binaryValue instanceof EnumConstantSignature) {
+            memberValuePair.valueKind = IMemberValuePair.K_QUALIFIED_NAME;
+            EnumConstantSignature enumConstant = (EnumConstantSignature) binaryValue;
+            char[] enumName = Signature.toCharArray(CharOperation.replaceOnCopy(enumConstant.getTypeName(), '/', '.'));
+            char[] qualifiedName = CharOperation.concat(enumName, enumConstant.getEnumConstantName(), '.');
+            return new String(qualifiedName);
+        } else if (binaryValue instanceof Object[]) {
+            memberValuePair.valueKind = -1; // modified below by the first call to getMemberValue(...)
+            Object[] binaryValues = (Object[]) binaryValue;
+            int length = binaryValues.length;
+            Object[] values = new Object[length];
+            for (int i = 0; i < length; i++) {
+                int previousValueKind = memberValuePair.valueKind;
+                Object value = getAnnotationMemberValue(parent,manager, memberValuePair, binaryValues[i]);
+                if (previousValueKind != -1 && memberValuePair.valueKind != previousValueKind) {
+                    // values are heterogeneous, value kind is thus unknown
+                    memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+                }
+                if (value instanceof Annotation) {
+                    Annotation annotation = (Annotation) value;
+                    for (int j = 0; j < i; j++) {
+                        if (annotation.equals(values[j])) {
+                            annotation.occurrenceCount++;
+                        }
+                    }
+                }
+                values[i] = value;
+            }
+            if (memberValuePair.valueKind == -1)
+                memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+            return values;
+        } else {
+            memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+            return null;
+        }
+    }
+
+    /*
+     * Creates a member value from the given constant, and sets the valueKind on the given memberValuePair
+     */
+    public static Object getAnnotationMemberValue(MemberValuePair memberValuePair, Constant constant) {
+        if (constant == null) {
+            memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+            return null;
+        }
+        switch (constant.typeID()) {
+            case TypeIds.T_int :
+                memberValuePair.valueKind = IMemberValuePair.K_INT;
+                return new Integer(constant.intValue());
+            case TypeIds.T_byte :
+                memberValuePair.valueKind = IMemberValuePair.K_BYTE;
+                return new Byte(constant.byteValue());
+            case TypeIds.T_short :
+                memberValuePair.valueKind = IMemberValuePair.K_SHORT;
+                return new Short(constant.shortValue());
+            case TypeIds.T_char :
+                memberValuePair.valueKind = IMemberValuePair.K_CHAR;
+                return new Character(constant.charValue());
+            case TypeIds.T_float :
+                memberValuePair.valueKind = IMemberValuePair.K_FLOAT;
+                return new Float(constant.floatValue());
+            case TypeIds.T_double :
+                memberValuePair.valueKind = IMemberValuePair.K_DOUBLE;
+                return new Double(constant.doubleValue());
+            case TypeIds.T_boolean :
+                memberValuePair.valueKind = IMemberValuePair.K_BOOLEAN;
+                return Boolean.valueOf(constant.booleanValue());
+            case TypeIds.T_long :
+                memberValuePair.valueKind = IMemberValuePair.K_LONG;
+                return new Long(constant.longValue());
+            case TypeIds.T_JavaLangString :
+                memberValuePair.valueKind = IMemberValuePair.K_STRING;
+                return constant.stringValue();
+            default:
+                memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+                return null;
+        }
+    }
+
+    /*
+     * Creates a member value from the given constant in case of negative numerals,
+     * and sets the valueKind on the given memberValuePair
+     */
+    public static Object getNegativeAnnotationMemberValue(MemberValuePair memberValuePair, Constant constant) {
+        if (constant == null) {
+            memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+            return null;
+        }
+        switch (constant.typeID()) {
+            case TypeIds.T_int :
+                memberValuePair.valueKind = IMemberValuePair.K_INT;
+                return new Integer(constant.intValue() * -1);
+            case TypeIds.T_float :
+                memberValuePair.valueKind = IMemberValuePair.K_FLOAT;
+                return new Float(constant.floatValue() * -1.0f);
+            case TypeIds.T_double :
+                memberValuePair.valueKind = IMemberValuePair.K_DOUBLE;
+                return new Double(constant.doubleValue() * -1.0);
+            case TypeIds.T_long :
+                memberValuePair.valueKind = IMemberValuePair.K_LONG;
+                return new Long(constant.longValue() * -1L);
+            default:
+                memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
+                return null;
+        }
+    }
+
+    public interface Comparable {
+        /** Returns 0 if this and c are equal, >0 if this is greater than c, or <0 if this is less than c. */
+        int compareTo(Comparable c);
+    }
+
+    public interface Comparer {
+        /** Returns 0 if a and b are equal, >0 if a is greater than b, or <0 if a is less than b. */
+        int compare(Object a, Object b);
     }
 }

@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
+
 package com.codenvy.ide.ext.java.server.internal.core;
 
 import com.codenvy.api.project.server.Builders;
@@ -33,7 +34,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaModelStatus;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IRegion;
@@ -45,7 +45,6 @@ import org.eclipse.jdt.core.eval.IEvaluationContext;
 import org.eclipse.jdt.internal.compiler.util.ObjectVector;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
 import org.eclipse.jdt.internal.core.NameLookup;
-import org.eclipse.jdt.internal.core.OpenableElementInfo;
 import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.slf4j.Logger;
@@ -87,7 +86,7 @@ public class JavaProject extends Openable implements IJavaProject {
     private IndexManager        indexManager;
 
     public JavaProject(File root, String projectPath, String tempDir, String ws, Map<String, String> options) {
-        super(null);
+        super(null, new JavaModelManager());
         this.projectPath = projectPath;
         this.tempDir = tempDir;
         wsId = ws;
@@ -131,7 +130,13 @@ public class JavaProject extends Openable implements IJavaProject {
                              Files.newDirectoryStream(depDir.toPath(), jarFilter)) {
 
                     for (java.nio.file.Path dep : deps) {
-                        paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), null, null));
+                        String name = dep.getFileName().toString();
+                        File srcJar = new File(dep.getParent().toFile(), "sources/" + name.substring(0, name.lastIndexOf('.')) + "-sources.jar");
+                        IPath srcPath = null;
+                        if(srcJar.exists()){
+                            srcPath = new Path(srcJar.getAbsolutePath());
+                        }
+                        paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), srcPath, null));
                     }
                 }
             }
@@ -646,7 +651,7 @@ public class JavaProject extends Openable implements IJavaProject {
                 if (target instanceof File) {
                     // external target
                     if (JavaModelManager.isFile(target)) {
-                        root = new JarPackageFragmentRoot((File)target, this);
+                        root = new JarPackageFragmentRoot((File)target, this, manager);
                     } else if (((File)target).isDirectory()) {
                         root = getPackageFragmentRoot((File)target, entryPath);
 //                        root = new ExternalPackageFragmentRoot(entryPath, this);
@@ -699,9 +704,9 @@ public class JavaProject extends Openable implements IJavaProject {
         if (resource.isDirectory()) {
 //            if (ExternalFoldersManager.isInternalPathForExternalFolder(resource.getFullPath()))
 //                return new ExternalPackageFragmentRoot(resource, entryPath, this);
-            return new PackageFragmentRoot(resource, this);
+            return new PackageFragmentRoot(resource, this, manager);
         } else {
-            return new JarPackageFragmentRoot(resource, this);
+            return new JarPackageFragmentRoot(resource, this, manager);
         }
 //        return null;
 
@@ -769,7 +774,7 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     @Override
-    protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, IResource underlyingResource)
+    protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, File underlyingResource)
             throws JavaModelException {
         return false;
     }
@@ -779,10 +784,10 @@ public class JavaProject extends Openable implements IJavaProject {
         return false;
     }
 
-    @Override
-    public IJavaElement getAncestor(int ancestorType) {
-        return null;
-    }
+//    @Override
+//    public IJavaElement getAncestor(int ancestorType) {
+//        return null;
+//    }
 
     @Override
     public String getAttachedJavadoc(IProgressMonitor monitor) throws JavaModelException {
@@ -796,7 +801,7 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public String getElementName() {
-        return null;
+        return projectName;
     }
 
     @Override
@@ -806,7 +811,7 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public int getElementType() {
-        return 0;
+        return IJavaElement.JAVA_PROJECT;
     }
 
     @Override
@@ -821,21 +826,6 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IJavaModel getJavaModel() {
-        return null;
-    }
-
-    @Override
-    public IJavaProject getJavaProject() {
-        return null;
-    }
-
-    @Override
-    public IOpenable getOpenable() {
-        return null;
-    }
-
-    @Override
-    public IJavaElement getParent() {
         return null;
     }
 
@@ -854,8 +844,8 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     @Override
-    protected IResource resource(org.eclipse.jdt.internal.core.PackageFragmentRoot root) {
-        return null;
+    protected File resource(PackageFragmentRoot root) {
+        return projectDir;
     }
 
     @Override
@@ -893,6 +883,7 @@ public class JavaProject extends Openable implements IJavaProject {
         if (list == null || list.length == 0) {
             file.delete();
         }
+        super.close();
     }
 
     @Override
@@ -936,19 +927,25 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     @Override
-    protected IStatus validateExistence(IResource underlyingResource) {
-        return null;
+    protected IStatus validateExistence(File underlyingResource) {
+        return JavaModelStatus.VERIFIED_OK;
+    }
+    /**
+     * @see org.eclipse.jdt.internal.core.JavaElement#getHandleMemento(StringBuffer)
+     */
+    protected void getHandleMemento(StringBuffer buff) {
+        buff.append(getElementName());
     }
 
-    @Override
-    public IJavaElement[] getChildren() throws JavaModelException {
-        return new IJavaElement[0];
-    }
-
-    @Override
-    public boolean hasChildren() throws JavaModelException {
-        return false;
-    }
+//    @Override
+//    public IJavaElement[] getChildren() throws JavaModelException {
+//        return new IJavaElement[0];
+//    }
+//
+//    @Override
+//    public boolean hasChildren() throws JavaModelException {
+//        return false;
+//    }
 
     private void addToResult(IClasspathEntry rawEntry, IClasspathEntry resolvedEntry, ResolvedClasspath result,
                              LinkedHashSet<IClasspathEntry> resolvedEntries) {
@@ -976,6 +973,10 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public String getVfsId() {
         return wsId;
+    }
+
+    public JavaModelManager getJavaModelManager() {
+        return manager;
     }
 
     public static class ResolvedClasspath {

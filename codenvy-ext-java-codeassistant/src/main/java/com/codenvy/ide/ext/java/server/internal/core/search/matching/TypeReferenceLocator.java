@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -65,10 +65,10 @@ import java.util.Map;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class TypeReferenceLocator extends PatternLocator {
 
+	private final int fineGrain;
 	protected TypeReferencePattern pattern;
 	protected boolean              isDeclarationOfReferencedTypesPattern;
-
-	private final int fineGrain;
+	private Map/*<QualifiedTypeReference, List<TypeBinding>>*/ recordedResolutions = new HashMap();
 
 	public TypeReferenceLocator(TypeReferencePattern pattern) {
 
@@ -127,6 +127,7 @@ public class TypeReferenceLocator extends PatternLocator {
 
 	return IMPOSSIBLE_MATCH;
 }
+
 //public int match(TypeDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 public int match(TypeReference node, MatchingNodeSet nodeSet) {
 	if (this.pattern.simpleName == null)
@@ -213,6 +214,7 @@ protected int matchLevel(ImportReference importRef) {
 	}
 	return IMPOSSIBLE_MATCH;
 }
+
 /* (non-Javadoc)
  * @see org.eclipse.jdt.internal.core.search.matching.PatternLocator#matchLevelAndReportImportRef(org.eclipse.jdt.internal.compiler.ast
  * .ImportReference, org.eclipse.jdt.internal.compiler.lookup.Binding, org.eclipse.jdt.internal.core.search.matching.MatchLocator)
@@ -359,6 +361,7 @@ protected void matchLevelAndReportImportRef(ImportReference importRef, Binding b
 	}
 	locator.reportAccurateTypeReference(this.match, arrayRef, this.pattern.simpleName);
 }
+
 /**
  * Reports the match of the given reference.
  */
@@ -366,6 +369,7 @@ protected void matchReportReference(ASTNode reference, IJavaElement element, Bin
 		throws CoreException {
 	matchReportReference(reference, element, null, null, elementBinding, accuracy, locator);
 }
+
 /**
  * Reports the match of the given reference. Also provide a local and other elements to eventually report in match.
  */
@@ -513,6 +517,7 @@ protected void matchReportReference(ASTNode reference, IJavaElement element, IJa
 	}
 	locator.reportAccurateTypeReference(this.match, qTypeRef, this.pattern.simpleName);
 }
+
 void matchReportReference(Expression expr, int lastIndex, TypeBinding refBinding, MatchLocator locator) throws CoreException {
 
 	// Look if there's a need to special report for parameterized type
@@ -570,9 +575,11 @@ void matchReportReference(Expression expr, int lastIndex, TypeBinding refBinding
 	}
 	locator.report(this.match);
 }
+
 protected int referenceType() {
 	return IJavaElement.TYPE;
 }
+
 protected void reportDeclaration(ASTNode reference, IJavaElement element, MatchLocator locator, SimpleSet knownTypes) throws CoreException {
 	int maxType = -1;
 	TypeBinding typeBinding = null;
@@ -663,6 +670,7 @@ protected void reportDeclaration(ASTNode reference, IJavaElement element, MatchL
 		maxType--;
 	}
 }
+
 public int resolveLevel(ASTNode node) {
 	if (node instanceof TypeReference)
 		return resolveLevel((TypeReference) node);
@@ -671,6 +679,7 @@ public int resolveLevel(ASTNode node) {
 //	if (node instanceof ImportReference) - Not called when resolve is true, see MatchingNodeSet.reportMatching(unit)
 	return IMPOSSIBLE_MATCH;
 }
+
 public int resolveLevel(Binding binding) {
 	if (binding == null) return INACCURATE_MATCH;
 	if (!(binding instanceof TypeBinding)) return IMPOSSIBLE_MATCH;
@@ -683,6 +692,7 @@ public int resolveLevel(Binding binding) {
 
 	return resolveLevelForTypeOrEnclosingTypes(this.pattern.simpleName, this.pattern.qualification, typeBinding);
 }
+
 protected int resolveLevel(NameReference nameRef) {
 	Binding binding = nameRef.binding;
 
@@ -730,6 +740,7 @@ protected int resolveLevel(NameReference nameRef) {
 	}
 	return resolveLevel(typeBinding);
 }
+
 protected int resolveLevel(TypeReference typeRef) {
 	TypeBinding typeBinding = typeRef.resolvedType;
 	if (typeBinding instanceof ArrayBinding)
@@ -742,6 +753,7 @@ protected int resolveLevel(TypeReference typeRef) {
 	} else
 		return resolveLevelForTypeOrQualifyingTypes(typeRef, typeBinding);
 }
+
 /* (non-Javadoc)
  * Resolve level for type with a given binding.
  * This is just an helper to avoid call of method with all parameters...
@@ -781,6 +793,7 @@ protected int resolveLevelForType(TypeBinding typeBinding) {
 						0,
 						typeBinding);
 }
+
 /**
  * Returns whether the given type binding or one of its enclosing types
  * matches the given simple name pattern and qualification pattern.
@@ -802,8 +815,6 @@ protected int resolveLevelForTypeOrEnclosingTypes(char[] simpleNamePattern, char
 	}
 	return IMPOSSIBLE_MATCH;
 }
-
-	private Map/*<QualifiedTypeReference, List<TypeBinding>>*/ recordedResolutions = new HashMap();
 
 	int resolveLevelForTypeOrQualifyingTypes(TypeReference typeRef, TypeBinding typeBinding) {
 		if (typeBinding == null || !typeBinding.isValidBinding()) return INACCURATE_MATCH;

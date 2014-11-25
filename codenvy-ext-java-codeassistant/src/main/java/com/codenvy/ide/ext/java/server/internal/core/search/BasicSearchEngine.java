@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Stephan Herrmann - Contributions for bug 215139 and bug 295894
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
@@ -18,7 +17,6 @@ import com.codenvy.ide.ext.java.server.core.search.SearchParticipant;
 import com.codenvy.ide.ext.java.server.core.search.SearchPattern;
 import com.codenvy.ide.ext.java.server.core.search.SearchRequestor;
 import com.codenvy.ide.ext.java.server.core.search.TypeNameMatch;
-import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.ConstructorDeclarationPattern;
@@ -418,7 +416,8 @@ public class BasicSearchEngine {
 		ICompilationUnit[] copies;
 		if (this.workingCopies != null) {
 			if (this.workingCopyOwner == null) {
-				copies = JavaModelManager.getJavaModelManager().getWorkingCopies(DefaultWorkingCopyOwner.PRIMARY, false/*don't add primary WCs a second time*/);
+				copies = javaProject.getJavaModelManager().getWorkingCopies(DefaultWorkingCopyOwner.PRIMARY, false/*don't add primary WCs
+				a second time*/);
 				if (copies == null) {
 					copies = this.workingCopies;
 				} else {
@@ -439,9 +438,9 @@ public class BasicSearchEngine {
 				copies = this.workingCopies;
 			}
 		} else if (this.workingCopyOwner != null) {
-			copies = JavaModelManager.getJavaModelManager().getWorkingCopies(this.workingCopyOwner, true/*add primary WCs*/);
+			copies = javaProject.getJavaModelManager().getWorkingCopies(this.workingCopyOwner, true/*add primary WCs*/);
 		} else {
-			copies = JavaModelManager
+			copies = javaProject
 					.getJavaModelManager().getWorkingCopies(DefaultWorkingCopyOwner.PRIMARY, false/*don't add primary WCs a second time*/);
 		}
 		if (copies == null) return null;

@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2012 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -47,43 +47,6 @@ import org.eclipse.jdt.internal.core.util.Util;
  */
 public class SuperTypeNamesCollector {
 
-	/**
-	 * An ast visitor that visits type declarations and member type declarations
-	 * collecting their super type names.
-	 */
-	public class TypeDeclarationVisitor extends ASTVisitor {
-		public boolean visit(TypeDeclaration typeDeclaration, BlockScope scope) {
-			ReferenceBinding binding = typeDeclaration.binding;
-			if (SuperTypeNamesCollector.this.matches(binding))
-				collectSuperTypeNames(binding, binding.compoundName);
-			return true;
-		}
-		public boolean visit(TypeDeclaration typeDeclaration, CompilationUnitScope scope) {
-			ReferenceBinding binding = typeDeclaration.binding;
-			if (SuperTypeNamesCollector.this.matches(binding))
-				collectSuperTypeNames(binding, binding.compoundName);
-			return true;
-		}
-		public boolean visit(TypeDeclaration memberTypeDeclaration, ClassScope scope) {
-			ReferenceBinding binding = memberTypeDeclaration.binding;
-			if (SuperTypeNamesCollector.this.matches(binding))
-				collectSuperTypeNames(binding, binding.compoundName);
-			return true;
-		}
-		public boolean visit(FieldDeclaration fieldDeclaration, MethodScope scope) {
-			return false; // don't visit field declarations
-		}
-		public boolean visit(Initializer initializer, MethodScope scope) {
-			return false; // don't visit initializers
-		}
-		public boolean visit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
-			return false; // don't visit constructor declarations
-		}
-		public boolean visit(MethodDeclaration methodDeclaration, ClassScope scope) {
-			return false; // don't visit method declarations
-		}
-	}
-
 	SearchPattern    pattern;
 	char[]           typeSimpleName;
 	char[]           typeQualification;
@@ -92,10 +55,8 @@ public class SuperTypeNamesCollector {
 	IProgressMonitor progressMonitor;
 	char[][][]       result;
 	int              resultIndex;
-
 	char[][][] samePackageSuperTypeName; // set only if focus is null
 	int        samePackageIndex;
-
 	public SuperTypeNamesCollector(
 			SearchPattern pattern,
 			char[] typeSimpleName,
@@ -238,6 +199,7 @@ public class SuperTypeNamesCollector {
 		System.arraycopy(this.result, 0, this.result = new char[this.resultIndex][][], 0, this.resultIndex);
 	return this.result;
 }
+
 /**
  * Collects the names of all the supertypes of the given type.
  */
@@ -261,6 +223,7 @@ protected void collectSuperTypeNames(ReferenceBinding binding, char[][] path) {
 		}
 	}
 }
+
 protected String[] getPathsOfDeclaringType() {
 //	if (this.typeQualification == null && this.typeSimpleName == null) return null;
 //
@@ -296,9 +259,11 @@ protected String[] getPathsOfDeclaringType() {
 //	return pathCollector.getPaths();
 	throw new UnsupportedOperationException();
 }
+
 public char[][][] getSamePackageSuperTypeNames() {
 	return this.samePackageSuperTypeName;
 }
+
 protected boolean matches(char[][] compoundName) {
 	int length = compoundName.length;
 	if (length == 0) return false;
@@ -321,7 +286,45 @@ protected boolean matches(char[][] compoundName) {
 	compoundName[length] = CharOperation.subarray(simpleName, dollar + 1, simpleName.length);
 	return this.matches(compoundName);
 }
+
 protected boolean matches(ReferenceBinding binding) {
 	return binding != null && binding.compoundName != null && this.matches(binding.compoundName);
 }
+
+	/**
+	 * An ast visitor that visits type declarations and member type declarations
+	 * collecting their super type names.
+	 */
+	public class TypeDeclarationVisitor extends ASTVisitor {
+		public boolean visit(TypeDeclaration typeDeclaration, BlockScope scope) {
+			ReferenceBinding binding = typeDeclaration.binding;
+			if (SuperTypeNamesCollector.this.matches(binding))
+				collectSuperTypeNames(binding, binding.compoundName);
+			return true;
+		}
+		public boolean visit(TypeDeclaration typeDeclaration, CompilationUnitScope scope) {
+			ReferenceBinding binding = typeDeclaration.binding;
+			if (SuperTypeNamesCollector.this.matches(binding))
+				collectSuperTypeNames(binding, binding.compoundName);
+			return true;
+		}
+		public boolean visit(TypeDeclaration memberTypeDeclaration, ClassScope scope) {
+			ReferenceBinding binding = memberTypeDeclaration.binding;
+			if (SuperTypeNamesCollector.this.matches(binding))
+				collectSuperTypeNames(binding, binding.compoundName);
+			return true;
+		}
+		public boolean visit(FieldDeclaration fieldDeclaration, MethodScope scope) {
+			return false; // don't visit field declarations
+		}
+		public boolean visit(Initializer initializer, MethodScope scope) {
+			return false; // don't visit initializers
+		}
+		public boolean visit(ConstructorDeclaration constructorDeclaration, ClassScope scope) {
+			return false; // don't visit constructor declarations
+		}
+		public boolean visit(MethodDeclaration methodDeclaration, ClassScope scope) {
+			return false; // don't visit method declarations
+		}
+	}
 }

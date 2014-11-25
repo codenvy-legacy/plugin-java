@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
+
 package com.codenvy.ide.ext.java.server.internal.core;
 
 import org.eclipse.core.runtime.CoreException;
@@ -15,16 +16,24 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IParent;
+import org.eclipse.jdt.core.IProblemRequestor;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.util.Messages;
+import org.eclipse.jdt.internal.core.util.WeakHashSet;
+import org.eclipse.jdt.internal.core.util.WeakHashSetOfCharArray;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipException;
@@ -35,27 +44,33 @@ import java.util.zip.ZipFile;
  */
 public class JavaModelManager {
 
-    public static  boolean          ZIP_ACCESS_VERBOSE             = false;
+    public static boolean       ZIP_ACCESS_VERBOSE             = false;
+    public static boolean VERBOSE = false;
     /**
      * A set of java.io.Files used as a cache of external jars that
      * are known to be existing.
      * Note this cache is kept for the whole session.
      */
-    public static  HashSet<File>    existingExternalFiles          = new HashSet<>();
+    public static HashSet<File> existingExternalFiles          = new HashSet<>();
     /**
      * A set of external files ({@link #existingExternalFiles}) which have
      * been confirmed as file (i.e. which returns true to {@link java.io.File#isFile()}.
      * Note this cache is kept for the whole session.
      */
-    public static  HashSet<File>    existingExternalConfirmedFiles = new HashSet<>();
-    /**
-     * The singleton manager
-     */
-    private static JavaModelManager MANAGER                        = new JavaModelManager();
+    public static HashSet<File> existingExternalConfirmedFiles = new HashSet<>();
+//    /**
+//     * The singleton manager
+//     */
+//    private static JavaModelManager MANAGER                        = new JavaModelManager();
     /**
      * List of IPath of jars that are known to be invalid - such as not being a valid/known format
      */
     private Set<IPath> invalidArchives;
+
+    /**
+     * Set of elements which are out of sync with their buffers.
+     */
+    protected HashSet elementsOutOfSynchWithBuffers = new HashSet(11);
 
     /**
      * A cache of opened zip files per thread.
@@ -63,8 +78,67 @@ public class JavaModelManager {
      */
     private ThreadLocal<ZipCache> zipFiles = new ThreadLocal<>();
 
-    public static JavaModelManager getJavaModelManager() {
-        return MANAGER;
+    /*
+ * Temporary cache of newly opened elements
+ */
+    private ThreadLocal            temporaryCache   = new ThreadLocal();
+
+    /* whether an AbortCompilationUnit should be thrown when the source of a compilation unit cannot be retrieved */
+    public ThreadLocal abortOnMissingSource = new ThreadLocal();
+
+    /*
+     * Pools of symbols used in the Java model.
+     * Used as a replacement for String#intern() that could prevent garbage collection of strings on some VMs.
+     */
+    private WeakHashSet            stringSymbols    = new WeakHashSet(5);
+    private WeakHashSetOfCharArray charArraySymbols = new WeakHashSetOfCharArray(5);
+    /**
+     * Infos cache.
+     */
+    private JavaModelCache cache;
+
+    /**
+     * Table from WorkingCopyOwner to a table of ICompilationUnit (working copy handle) to PerWorkingCopyInfo.
+     * NOTE: this object itself is used as a lock to synchronize creation/removal of per working copy infos
+     */
+    protected Map perWorkingCopyInfos = new HashMap(5);
+
+//    public static JavaModelManager getJavaModelManager() {
+//        return MANAGER;
+//    }
+
+    public JavaModelManager() {
+        // initialize Java model cache
+        this.cache = new JavaModelCache();
+    }
+
+    public synchronized char[] intern(char[] array) {
+        return this.charArraySymbols.add(array);
+    }
+
+    public synchronized String intern(String s) {
+        // make sure to copy the string (so that it doesn't hold on the underlying char[] that might be much bigger than necessary)
+        return (String)this.stringSymbols.add(new String(s));
+
+        // Note1: String#intern() cannot be used as on some VMs this prevents the string from being garbage collected
+        // Note 2: Instead of using a WeakHashset, one could use a WeakHashMap with the following implementation
+        // 			   This would costs more per entry (one Entry object and one WeakReference more))
+
+		/*
+		WeakReference reference = (WeakReference) this.symbols.get(s);
+		String existing;
+		if (reference != null && (existing = (String) reference.get()) != null)
+			return existing;
+		this.symbols.put(s, new WeakReference(s));
+		return s;
+		*/
+    }
+
+    /**
+     * Returns the set of elements which are out of synch with their buffers.
+     */
+    protected HashSet getElementsOutOfSynchWithBuffers() {
+        return this.elementsOutOfSynchWithBuffers;
     }
 
     /**
@@ -229,6 +303,220 @@ public class JavaModelManager {
     }
 
     /**
+     *  Returns the info for the element.
+     */
+    public synchronized Object getInfo(IJavaElement element) {
+        HashMap tempCache = (HashMap)this.temporaryCache.get();
+        if (tempCache != null) {
+            Object result = tempCache.get(element);
+            if (result != null) {
+                return result;
+            }
+        }
+        return this.cache.getInfo(element);
+    }
+
+    /**
+     *  Returns the info for this element without
+     *  disturbing the cache ordering.
+     */
+    protected synchronized Object peekAtInfo(IJavaElement element) {
+        HashMap tempCache = (HashMap)this.temporaryCache.get();
+        if (tempCache != null) {
+            Object result = tempCache.get(element);
+            if (result != null) {
+                return result;
+            }
+        }
+        return this.cache.peekAtInfo(element);
+    }
+
+    /*
+	 * Removes all cached info for the given element (including all children)
+	 * from the cache.
+	 * Returns the info for the given element, or null if it was closed.
+	 */
+    public synchronized Object removeInfoAndChildren(JavaElement element) throws JavaModelException {
+        Object info = this.cache.peekAtInfo(element);
+        if (info != null) {
+            boolean wasVerbose = false;
+            try {
+                if (org.eclipse.jdt.internal.core.JavaModelCache.VERBOSE) {
+                    String elementType;
+                    switch (element.getElementType()) {
+                        case IJavaElement.JAVA_PROJECT:
+                            elementType = "project"; //$NON-NLS-1$
+                            break;
+                        case IJavaElement.PACKAGE_FRAGMENT_ROOT:
+                            elementType = "root"; //$NON-NLS-1$
+                            break;
+                        case IJavaElement.PACKAGE_FRAGMENT:
+                            elementType = "package"; //$NON-NLS-1$
+                            break;
+                        case IJavaElement.CLASS_FILE:
+                            elementType = "class file"; //$NON-NLS-1$
+                            break;
+                        case IJavaElement.COMPILATION_UNIT:
+                            elementType = "compilation unit"; //$NON-NLS-1$
+                            break;
+                        default:
+                            elementType = "element"; //$NON-NLS-1$
+                    }
+                    System.out.println(Thread.currentThread() + " CLOSING "+ elementType + " " + element.toStringWithAncestors());  //$NON-NLS-1$//$NON-NLS-2$
+                    wasVerbose = true;
+                    JavaModelCache.VERBOSE = false;
+                }
+                element.closing(info);
+                if (element instanceof IParent) {
+                    closeChildren(info);
+                }
+                this.cache.removeInfo(element);
+                if (wasVerbose) {
+                    System.out.println(this.cache.toStringFillingRation("-> ")); //$NON-NLS-1$
+                }
+            } finally {
+                JavaModelCache.VERBOSE = wasVerbose;
+            }
+            return info;
+        }
+        return null;
+    }
+
+    /*
+ * Returns whether there is a temporary cache for the current thread.
+ */
+    public boolean hasTemporaryCache() {
+        return this.temporaryCache.get() != null;
+    }
+
+    /**
+     * Returns the temporary cache for newly opened elements for the current thread.
+     * Creates it if not already created.
+     */
+    public HashMap getTemporaryCache() {
+        HashMap result = (HashMap)this.temporaryCache.get();
+        if (result == null) {
+            result = new HashMap();
+            this.temporaryCache.set(result);
+        }
+        return result;
+    }
+
+    /*
+	 * Puts the infos in the given map (keys are IJavaElements and values are JavaElementInfos)
+	 * in the Java model cache in an atomic way if the info is not already present in the cache.
+	 * If the info is already present in the cache, it depends upon the forceAdd parameter.
+	 * If forceAdd is false it just returns the existing info and if true, this element and it's children are closed and then
+	 * this particular info is added to the cache.
+	 */
+    protected synchronized Object putInfos(IJavaElement openedElement, Object newInfo, boolean forceAdd, Map newElements) {
+        // remove existing children as the are replaced with the new children contained in newElements
+        Object existingInfo = this.cache.peekAtInfo(openedElement);
+        if (existingInfo != null && !forceAdd) {
+            // If forceAdd is false, then it could mean that the particular element
+            // wasn't in cache at that point of time, but would have got added through
+            // another thread. In that case, removing the children could remove it's own
+            // children. So, we should not remove the children but return the already existing
+            // info.
+            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=372687
+            return existingInfo;
+        }
+        if (openedElement instanceof IParent) {
+            closeChildren(existingInfo);
+        }
+
+        // Need to put any JarPackageFragmentRoot in first.
+        // This is due to the way the LRU cache flushes entries.
+        // When a JarPackageFragment is flushed from the LRU cache, the entire
+        // jar is flushed by removing the JarPackageFragmentRoot and all of its
+        // children (see ElementCache.close()). If we flush the JarPackageFragment
+        // when its JarPackageFragmentRoot is not in the cache and the root is about to be
+        // added (during the 'while' loop), we will end up in an inconsistent state.
+        // Subsequent resolution against package in the jar would fail as a result.
+        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=102422
+        // (theodora)
+        for(Iterator it = newElements.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry)it.next();
+            IJavaElement element = (IJavaElement)entry.getKey();
+            if (element instanceof JarPackageFragmentRoot) {
+                Object info = entry.getValue();
+                it.remove();
+                this.cache.putInfo(element, info);
+            }
+        }
+
+        Iterator iterator = newElements.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            this.cache.putInfo((IJavaElement) entry.getKey(), entry.getValue());
+        }
+        return newInfo;
+    }
+    private void closeChildren(Object info) {
+        if (info instanceof JavaElementInfo) {
+            IJavaElement[] children = ((JavaElementInfo)info).getChildren();
+            for (int i = 0, size = children.length; i < size; ++i) {
+                JavaElement child = (JavaElement) children[i];
+                try {
+                    child.close();
+                } catch (JavaModelException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+    /*
+ * Returns the per-working copy info for the given working copy at the given path.
+ * If it doesn't exist and if create, add a new per-working copy info with the given problem requestor.
+ * If recordUsage, increment the per-working copy info's use count.
+ * Returns null if it doesn't exist and not create.
+ */
+    public PerWorkingCopyInfo getPerWorkingCopyInfo(CompilationUnit workingCopy,boolean create, boolean recordUsage, IProblemRequestor problemRequestor) {
+        synchronized(this.perWorkingCopyInfos) { // use the perWorkingCopyInfo collection as its own lock
+            WorkingCopyOwner owner = workingCopy.owner;
+            Map workingCopyToInfos = (Map)this.perWorkingCopyInfos.get(owner);
+            if (workingCopyToInfos == null && create) {
+                workingCopyToInfos = new HashMap();
+                this.perWorkingCopyInfos.put(owner, workingCopyToInfos);
+            }
+
+            PerWorkingCopyInfo info = workingCopyToInfos == null ? null : (PerWorkingCopyInfo) workingCopyToInfos.get(workingCopy);
+            if (info == null && create) {
+                info= new PerWorkingCopyInfo(workingCopy, problemRequestor);
+                workingCopyToInfos.put(workingCopy, info);
+            }
+            if (info != null && recordUsage) info.useCount++;
+            return info;
+        }
+    }
+
+    /*
+ * Resets the temporary cache for newly created elements to null.
+ */
+    public void resetTemporaryCache() {
+        this.temporaryCache.set(null);
+    }
+
+    public synchronized String cacheToString(String prefix) {
+        return this.cache.toStringFillingRation(prefix);
+    }
+
+    public void closeZipFile(ZipFile zipFile) {
+        if (zipFile == null) return;
+        if (this.zipFiles.get() != null) {
+            return; // zip file will be closed by call to flushZipFiles
+        }
+        try {
+            if (JavaModelManager.ZIP_ACCESS_VERBOSE) {
+                System.out.println("(" + Thread.currentThread() + ") [JavaModelManager.closeZipFile(ZipFile)] Closing ZipFile on " +zipFile.getName()); //$NON-NLS-1$	//$NON-NLS-2$
+            }
+            zipFile.close();
+        } catch (IOException e) {
+            // problem occured closing zip file: cannot do much more
+        }
+    }
+
+    /**
      * Define a zip cache object.
      */
     static class ZipCache {
@@ -261,6 +549,67 @@ public class JavaModelManager {
 
         public void setCache(IPath path, ZipFile zipFile) {
             this.map.put(path, zipFile);
+        }
+    }
+
+    public static class PerWorkingCopyInfo implements IProblemRequestor {
+        int useCount = 0;
+        IProblemRequestor                             problemRequestor;
+        CompilationUnit workingCopy;
+
+        public PerWorkingCopyInfo(CompilationUnit workingCopy, IProblemRequestor problemRequestor) {
+            this.workingCopy = workingCopy;
+            this.problemRequestor = problemRequestor;
+        }
+
+        public void acceptProblem(IProblem problem) {
+            IProblemRequestor requestor = getProblemRequestor();
+            if (requestor == null) return;
+            requestor.acceptProblem(problem);
+        }
+
+        public void beginReporting() {
+            IProblemRequestor requestor = getProblemRequestor();
+            if (requestor == null) return;
+            requestor.beginReporting();
+        }
+
+        public void endReporting() {
+            IProblemRequestor requestor = getProblemRequestor();
+            if (requestor == null) return;
+            requestor.endReporting();
+        }
+
+        public IProblemRequestor getProblemRequestor() {
+            if (this.problemRequestor == null && this.workingCopy.owner != null) {
+                return this.workingCopy.owner.getProblemRequestor(this.workingCopy);
+            }
+            return this.problemRequestor;
+        }
+
+        public ICompilationUnit getWorkingCopy() {
+            return this.workingCopy;
+        }
+
+        public boolean isActive() {
+            IProblemRequestor requestor = getProblemRequestor();
+            return requestor != null && requestor.isActive();
+        }
+
+        public String toString() {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("Info for "); //$NON-NLS-1$
+            buffer.append(((JavaElement)this.workingCopy).toStringWithAncestors());
+            buffer.append("\nUse count = "); //$NON-NLS-1$
+            buffer.append(this.useCount);
+            buffer.append("\nProblem requestor:\n  "); //$NON-NLS-1$
+            buffer.append(this.problemRequestor);
+            if (this.problemRequestor == null) {
+                IProblemRequestor requestor = getProblemRequestor();
+                buffer.append("\nOwner problem requestor:\n  "); //$NON-NLS-1$
+                buffer.append(requestor);
+            }
+            return buffer.toString();
         }
     }
 }

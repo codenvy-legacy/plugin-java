@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.indexing;
 
@@ -63,13 +63,13 @@ import org.eclipse.jdt.internal.core.search.indexing.IIndexConstants;
  */
 public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, SuffixConstants {
 
+	private static final boolean DEBUG = false;
+	public ISourceElementRequestor requestor;
 	private LookupEnvironment          lookupEnvironment;
 	private CompilerOptions            options;
-	public  ISourceElementRequestor    requestor;
 	private Parser                     basicParser;
 	private CompilationUnit            compilationUnit;
 	private CompilationUnitDeclaration cud;
-	private static final boolean DEBUG = false;
 	private IndexManager indexManager;
 	private JavaProject  javaProject;
 

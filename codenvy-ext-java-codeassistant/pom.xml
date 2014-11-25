@@ -87,8 +87,39 @@
             <artifactId>org.eclipse.osgi</artifactId>
             <version>${org.eclipse.osgi.version}</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <version>${org.easytesting.fest-assert.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${org.mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <outputDirectory>target/classes</outputDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>com.mycila</groupId>
@@ -105,6 +136,10 @@
                         <exclude>**/*.rsc</exclude>
                         <exclude>**/readableNames</exclude>
                         <exclude>**/project</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/javadoc/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/dom/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/corext/util/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/internal/core/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/IVMInstallType.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/JREContainer.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/LibraryInfo.java</exclude>
