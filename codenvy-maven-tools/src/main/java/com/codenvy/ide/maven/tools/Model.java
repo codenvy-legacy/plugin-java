@@ -40,10 +40,11 @@ public class Model {
         return fetchModel(XMLTree.from(file.getContent().getStream()));
     }
 
-    private static final ToParentFunction     TO_PARENT_FUNCTION     = new ToParentFunction();
     private static final ToDependencyFunction TO_DEPENDENCY_FUNCTION = new ToDependencyFunction();
     private static final ToExclusionFunction  TO_EXCLUSION_FUNCTION  = new ToExclusionFunction();
+    private static final ToParentFunction     TO_PARENT_FUNCTION     = new ToParentFunction();
     private static final ToModuleFunction     TO_MODULE_FUNCTION     = new ToModuleFunction();
+    private static final ToBuildFunction      TO_BUILD_FUNCTION      = new ToBuildFunction();
     private static final ToPropertiesFunction TO_PROPERTIES_FUNCTION = new ToPropertiesFunction();
 
     private String               modelVersion;
@@ -54,11 +55,13 @@ public class Model {
     private String               name;
     private String               description;
     private Parent               parent;
+    private Build                build;
     private DependencyManagement dependencyManagement;
     private Map<String, String>  properties;
     private List<String>         modules;
     private List<Dependency>     dependencies;
-    private XMLTree              tree;
+
+    private final XMLTree tree;
 
     public Model(XMLTree tree) {
         this.tree = tree;
@@ -154,6 +157,10 @@ public class Model {
         return this.version;
     }
 
+    public Build getBuild() {
+        return build;
+    }
+
     /**
      * Method addDependency.
      */
@@ -241,6 +248,11 @@ public class Model {
      */
     public void removeModule(String string) {
         getModules().remove(string);
+    }
+
+
+    public void setBuild(Build build) {
+        this.build = build;
     }
 
     /**
@@ -383,7 +395,7 @@ public class Model {
      */
     public void setVersion(String version) {
         this.version = version;
-    } //-- void setVersion( String )
+    }
 
     /**
      * @return the model id as <code>groupId:artifactId:packaging:version</code>
@@ -441,6 +453,9 @@ public class Model {
         }
         if (root.hasChild("properties")) {
             model.setProperties(root.getSingleChild("properties").mapTo(TO_PROPERTIES_FUNCTION));
+        }
+        if (root.hasChild("build")) {
+            model.setBuild(root.getSingleChild("build").mapTo(TO_BUILD_FUNCTION));
         }
         return model;
     }
@@ -501,6 +516,30 @@ public class Model {
             exclusion.setArtifactId(element.getSingleChild("artifactId").getText());
             exclusion.setGroupId(element.getSingleChild("groupId").getText());
             return exclusion;
+        }
+    }
+
+    private static class ToBuildFunction implements FromElementFunction<Build> {
+
+        @Override
+        public Build apply(Element element) {
+            final Build build = new Build();
+            if (element.hasChild("sourceDirectory")) {
+                build.setSourceDirectory(element.getSingleChild("sourceDirectory").getText());
+            }
+            if (element.hasChild("testSourceDirectory")) {
+                build.setSourceDirectory(element.getSingleChild("testSourceDirectory").getText());
+            }
+            if (element.hasChild("outputDirectory")) {
+                build.setOutputDirectory(element.getSingleChild("outputDirectory").getText());
+            }
+            if (element.hasChild("testOutputDirectory")) {
+                build.setTestOutputDirectory(element.getSingleChild("testOutputDirectory").getText());
+            }
+            if (element.hasChild("scriptSourceDirectory")) {
+                build.setScriptSourceDirectory(element.getSingleChild("scriptSourceDirectory").getText());
+            }
+            return build;
         }
     }
 
