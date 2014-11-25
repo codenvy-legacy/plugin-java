@@ -19,6 +19,10 @@ import com.codenvy.commons.xml.XMLTree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * TODO update tree in setters
@@ -39,106 +43,27 @@ public class Model {
     private static final ToParentFunction     TO_PARENT_FUNCTION     = new ToParentFunction();
     private static final ToDependencyFunction TO_DEPENDENCY_FUNCTION = new ToDependencyFunction();
     private static final ToExclusionFunction  TO_EXCLUSION_FUNCTION  = new ToExclusionFunction();
+    private static final ToModuleFunction     TO_MODULE_FUNCTION     = new ToModuleFunction();
+    private static final ToPropertiesFunction TO_PROPERTIES_FUNCTION = new ToPropertiesFunction();
 
-    private XMLTree tree;
+    private String               modelVersion;
+    private String               groupId;
+    private String               artifactId;
+    private String               version;
+    private String               packaging;
+    private String               name;
+    private String               description;
+    private Parent               parent;
+    private DependencyManagement dependencyManagement;
+    private Map<String, String>  properties;
+    private List<String>         modules;
+    private List<Dependency>     dependencies;
+    private XMLTree              tree;
 
     public Model(XMLTree tree) {
         this.tree = tree;
+        packaging = "jar";
     }
-
-    /**
-     * Declares to which version of project descriptor this POM conforms.
-     */
-    private String modelVersion;
-
-    /**
-     * The location of the parent project, if one exists. Values
-     * from the parent
-     * project will be the default for this project if
-     * they are left unspecified. The location
-     * is given as a group ID, artifact ID and version.
-     */
-    private Parent parent;
-
-    /**
-     * A universally unique identifier for a project.
-     * It is normal to
-     * use a fully-qualified package name to
-     * distinguish it from other
-     * projects with a similar name (eg.
-     * <code>org.apache.maven</code>).
-     */
-    private String groupId;
-
-    /**
-     * The identifier for this artifact that is unique within the
-     * group given by the
-     * group ID. An artifact is something that is
-     * either produced or used by a project.
-     * Examples of artifacts produced by Maven for a
-     * project include: JARs, source and binary
-     * distributions, and WARs.
-     */
-    private String artifactId;
-
-    /**
-     * The current version of the artifact produced by this project.
-     */
-    private String version;
-
-    /**
-     * The type of artifact this project produces, for
-     * example <code>jar</code>
-     * <code>war</code>
-     * <code>ear</code>
-     * <code>pom</code>.
-     * Plugins can create their own packaging, and
-     * therefore their own packaging types,
-     * so this list does not contain all possible
-     * types.
-     */
-    private String packaging = "jar";
-
-    /**
-     * The full name of the project.
-     */
-    private String name;
-
-    /**
-     * A detailed description of the project, used by Maven
-     * whenever it needs to
-     * describe the project, such as on the web site.
-     * While this element can be specified as
-     * CDATA to enable the use of HTML tags within the
-     * description, it is discouraged to allow
-     * plain text representation. If you need to modify
-     * the index page of the generated web
-     * site, you are able to specify your own instead
-     * of adjusting this text.
-     */
-    private String description;
-
-    /**
-     * Field modules.
-     */
-    private java.util.List<String> modules;
-
-    private java.util.Properties properties;
-
-    /**
-     * Default dependency information for projects that inherit
-     * from this one. The
-     * dependencies in this section are not immediately
-     * resolved. Instead, when a POM derived
-     * from this one declares a dependency described by
-     * a matching groupId and artifactId, the
-     * version and other values from this section are
-     * used for that dependency if they were not
-     * already specified.
-     */
-    private DependencyManagement dependencyManagement;
-
-    private java.util.List<Dependency> dependencies;
 
     /**
      * Get the identifier for this artifact that is unique within
@@ -148,8 +73,6 @@ public class Model {
      * Examples of artifacts produced by Maven for a
      * project include: JARs, source and binary
      * distributions, and WARs.
-     *
-     * @return String
      */
     public String getArtifactId() {
         return this.artifactId;
@@ -166,8 +89,6 @@ public class Model {
      * the index page of the generated web
      * site, you are able to specify your own instead
      * of adjusting this text.
-     *
-     * @return String
      */
     public String getDescription() {
         return this.description;
@@ -180,18 +101,13 @@ public class Model {
      * distinguish it from other
      * projects with a similar name (eg.
      * <code>org.apache.maven</code>).
-     *
-     * @return String
      */
     public String getGroupId() {
         return this.groupId;
     }
 
     /**
-     * Get declares to which version of project descriptor this POM
-     * conforms.
-     *
-     * @return String
+     * Get declares to which version of project descriptor this POM conforms.
      */
     public String getModelVersion() {
         return this.modelVersion;
@@ -199,8 +115,6 @@ public class Model {
 
     /**
      * Get the full name of the project.
-     *
-     * @return String
      */
     public String getName() {
         return this.name;
@@ -216,8 +130,6 @@ public class Model {
      * therefore their own packaging types,
      * so this list does not contain all possible
      * types.
-     *
-     * @return String
      */
     public String getPackaging() {
         return this.packaging;
@@ -229,8 +141,6 @@ public class Model {
      * project will be the default for this project if
      * they are left unspecified. The location
      * is given as a group ID, artifact ID and version.
-     *
-     * @return Parent
      */
     public Parent getParent() {
         return this.parent;
@@ -239,8 +149,6 @@ public class Model {
     /**
      * Get the current version of the artifact produced by this
      * project.
-     *
-     * @return String
      */
     public String getVersion() {
         return this.version;
@@ -274,7 +182,8 @@ public class Model {
      */
     public java.util.List<Dependency> getDependencies() {
         if (this.dependencies == null) {
-            this.dependencies = new java.util.ArrayList<>();
+            this.dependencies = new
+                    ArrayList<>();
         }
 
         return this.dependencies;
@@ -302,7 +211,7 @@ public class Model {
      */
     public java.util.List<String> getModules() {
         if (this.modules == null) {
-            this.modules = new java.util.ArrayList<>();
+            this.modules = new ArrayList<>();
         }
 
         return this.modules;
@@ -313,9 +222,9 @@ public class Model {
      *
      * @return Properties
      */
-    public java.util.Properties getProperties() {
+    public Map<String, String> getProperties() {
         if (this.properties == null) {
-            this.properties = new java.util.Properties();
+            this.properties = new HashMap<>();
         }
         return this.properties;
     }
@@ -383,7 +292,7 @@ public class Model {
      * The format is
      * <code>&lt;name&gt;value&lt;/name&gt;</code>.
      */
-    public void setProperties(java.util.Properties properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
@@ -476,40 +385,6 @@ public class Model {
         this.version = version;
     } //-- void setVersion( String )
 
-
-    private void cloneHook(Model copy) {
-        copy.pomFile = pomFile;
-    }
-
-    /**
-     * The POM from which this model originated. This is transient runtime state and therefore not managed by Modello.
-     */
-    private java.io.File pomFile;
-
-    /**
-     * Gets the POM file for the corresponding project (if any).
-     *
-     * @return The POM file from which this model originated or {@code null} if this model does not belong to a local
-     * project (e.g. describes the metadata of some artifact from the repository).
-     */
-    public java.io.File getPomFile() {
-        return pomFile;
-    }
-
-    public void setPomFile(java.io.File pomFile) {
-        this.pomFile = (pomFile != null) ? pomFile.getAbsoluteFile() : null;
-    }
-
-    /**
-     * Gets the base directory for the corresponding project (if any).
-     *
-     * @return The base directory for the corresponding project or {@code null} if this model does not belong to a local
-     * project (e.g. describes the metadata of some artifact from the repository).
-     */
-    public java.io.File getProjectDirectory() {
-        return (pomFile != null) ? pomFile.getParentFile() : null;
-    }
-
     /**
      * @return the model id as <code>groupId:artifactId:packaging:version</code>
      */
@@ -518,6 +393,10 @@ public class Model {
                getArtifactId() + ':' +
                getPackaging() + ':' +
                ((getVersion() == null) ? "[inherited]" : getVersion());
+    }
+
+    public void save(File file) throws IOException {
+        tree.writeTo(file);
     }
 
     @Override
@@ -555,6 +434,13 @@ public class Model {
             if (root.getSingleChild("dependencyManagement").hasChildren()) {
                 dm.setDependencies(tree.getElements("/project/dependencyManagement/dependency", TO_DEPENDENCY_FUNCTION));
             }
+        }
+        if (root.hasChild("modules")) {
+            final Element modules = root.getSingleChild("modules");
+            model.setModules(modules.getChildren(TO_MODULE_FUNCTION));
+        }
+        if (root.hasChild("properties")) {
+            model.setProperties(root.getSingleChild("properties").mapTo(TO_PROPERTIES_FUNCTION));
         }
         return model;
     }
@@ -594,14 +480,15 @@ public class Model {
 
     private static class ToParentFunction implements FromElementFunction<Parent> {
 
-        //TODO check for not required fields
         @Override
         public Parent apply(Element element) {
             final Parent parent = new Parent();
             parent.setArtifactId(element.getSingleChild("artifactId").getText());
             parent.setGroupId(element.getSingleChild("groupId").getText());
             parent.setVersion(element.getSingleChild("version").getText());
-            parent.setRelativePath(element.getSingleChild("relativePath").getText());
+            if (element.hasChild("relativePath")) {
+                parent.setRelativePath(element.getSingleChild("relativePath").getText());
+            }
             return parent;
         }
     }
@@ -614,6 +501,26 @@ public class Model {
             exclusion.setArtifactId(element.getSingleChild("artifactId").getText());
             exclusion.setGroupId(element.getSingleChild("groupId").getText());
             return exclusion;
+        }
+    }
+
+    private static class ToModuleFunction implements FromElementFunction<String> {
+
+        @Override
+        public String apply(Element element) {
+            return element.getText();
+        }
+    }
+
+    private static class ToPropertiesFunction implements FromElementFunction<Map<String, String>> {
+
+        @Override
+        public Map<String, String> apply(Element propertiesElement) {
+            final Map<String, String> properties = new HashMap<>();
+            for (Element property : propertiesElement.getChildren()) {
+                properties.put(property.getName(), property.getText());
+            }
+            return properties;
         }
     }
 }
