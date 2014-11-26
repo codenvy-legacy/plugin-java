@@ -10,34 +10,44 @@
  *******************************************************************************/
 package com.codenvy.ide.maven.tools;
 
+import com.codenvy.commons.xml.Element;
+import com.codenvy.commons.xml.FromElementFunction;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Section for management of default dependency information for use in a group of POMs.
  */
 public class DependencyManagement {
 
-    private java.util.List<Dependency> dependencies;
+    private List<Dependency> dependencies;
 
-    /**
-     * Method addDependency.
-     */
+    private Element element;
+
+    public DependencyManagement() {}
+
+    DependencyManagement(Element element) {
+        this.element = element;
+        dependencies = element.getChildren(new FromElementFunction<Dependency>() {
+            @Override
+            public Dependency apply(Element element) {
+                return new Dependency(element);
+            }
+        });
+    }
+
     public void addDependency(Dependency dependency) {
         getDependencies().add(dependency);
     }
 
-    /**
-     * Method getDependencies.
-     */
     public java.util.List<Dependency> getDependencies() {
-        if (this.dependencies == null) {
-            this.dependencies = new java.util.ArrayList<>();
+        if (dependencies == null) {
+            dependencies = new ArrayList<>();
         }
-
-        return this.dependencies;
+        return dependencies;
     }
 
-    /**
-     * Method removeDependency.
-     */
     public void removeDependency(Dependency dependency) {
         getDependencies().remove(dependency);
     }

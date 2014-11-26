@@ -17,6 +17,7 @@ import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.FromElementFunction;
 import com.codenvy.commons.xml.XMLTree;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,12 +41,8 @@ public class Model {
         return fetchModel(XMLTree.from(file.getContent().getStream()));
     }
 
-    private static final ToDependencyFunction TO_DEPENDENCY_FUNCTION = new ToDependencyFunction();
-    private static final ToExclusionFunction  TO_EXCLUSION_FUNCTION  = new ToExclusionFunction();
-    private static final ToParentFunction     TO_PARENT_FUNCTION     = new ToParentFunction();
     private static final ToModuleFunction     TO_MODULE_FUNCTION     = new ToModuleFunction();
-    private static final ToBuildFunction      TO_BUILD_FUNCTION      = new ToBuildFunction();
-    private static final ToPropertiesFunction TO_PROPERTIES_FUNCTION = new ToPropertiesFunction();
+    private static final ToDependencyFunction TO_DEPENDENCY_FUNCTION = new ToDependencyFunction();
 
     private String               modelVersion;
     private String               groupId;
@@ -65,7 +62,6 @@ public class Model {
 
     public Model(XMLTree tree) {
         this.tree = tree;
-        packaging = "jar";
     }
 
     /**
@@ -78,7 +74,7 @@ public class Model {
      * distributions, and WARs.
      */
     public String getArtifactId() {
-        return this.artifactId;
+        return artifactId;
     }
 
     /**
@@ -94,7 +90,7 @@ public class Model {
      * of adjusting this text.
      */
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     /**
@@ -106,21 +102,21 @@ public class Model {
      * <code>org.apache.maven</code>).
      */
     public String getGroupId() {
-        return this.groupId;
+        return groupId;
     }
 
     /**
      * Get declares to which version of project descriptor this POM conforms.
      */
     public String getModelVersion() {
-        return this.modelVersion;
+        return modelVersion;
     }
 
     /**
      * Get the full name of the project.
      */
     public String getName() {
-        return this.name;
+        return name;
     }
 
     /**
@@ -135,7 +131,7 @@ public class Model {
      * types.
      */
     public String getPackaging() {
-        return this.packaging;
+        return packaging;
     }
 
     /**
@@ -146,15 +142,14 @@ public class Model {
      * is given as a group ID, artifact ID and version.
      */
     public Parent getParent() {
-        return this.parent;
+        return parent;
     }
 
     /**
-     * Get the current version of the artifact produced by this
-     * project.
+     * Get the current version of the artifact produced by this project.
      */
     public String getVersion() {
-        return this.version;
+        return version;
     }
 
     public Build getBuild() {
@@ -188,12 +183,11 @@ public class Model {
      * @return List
      */
     public java.util.List<Dependency> getDependencies() {
-        if (this.dependencies == null) {
-            this.dependencies = new
-                    ArrayList<>();
+        if (dependencies == null) {
+            dependencies = new ArrayList<>();
         }
 
-        return this.dependencies;
+        return dependencies;
     }
 
     /**
@@ -217,11 +211,11 @@ public class Model {
      * @return List
      */
     public java.util.List<String> getModules() {
-        if (this.modules == null) {
-            this.modules = new ArrayList<>();
+        if (modules == null) {
+            modules = new ArrayList<>();
         }
 
-        return this.modules;
+        return modules;
     }
 
     /**
@@ -230,10 +224,10 @@ public class Model {
      * @return Properties
      */
     public Map<String, String> getProperties() {
-        if (this.properties == null) {
-            this.properties = new HashMap<>();
+        if (properties == null) {
+            properties = new HashMap<>();
         }
-        return this.properties;
+        return properties;
     }
 
     /**
@@ -401,10 +395,13 @@ public class Model {
      * @return the model id as <code>groupId:artifactId:packaging:version</code>
      */
     public String getId() {
-        return ((getGroupId() == null) ? "[inherited]" : getGroupId()) + ':' +
-               getArtifactId() + ':' +
-               getPackaging() + ':' +
-               ((getVersion() == null) ? "[inherited]" : getVersion());
+        return (version == null ? "[inherited]" : groupId) +
+               ':' +
+               artifactId +
+               ':' +
+               packaging +
+               ':' +
+               (version == null ? "[inherited]" : version);
     }
 
     public void save(File file) throws IOException {
@@ -416,130 +413,58 @@ public class Model {
         return getId();
     }
 
+    public void writeTo(File file) throws IOException {
+        tree.writeTo(file);
+    }
+
+    public void writeTo(VirtualFile file) throws ServerException, ForbiddenException {
+        file.updateContent(new ByteArrayInputStream(tree.getBytes()), null);
+    }
+
     private static Model fetchModel(XMLTree tree) {
         final Model model = new Model(tree);
-        //required
-        model.setModelVersion(tree.getSingleText("/project/modelVersion"));
-        model.setArtifactId(tree.getSingleText("/project/artifactId"));
-        model.setGroupId(tree.getSingleText("/project/groupId"));
-        model.setVersion(tree.getSingleText("/project/version"));
-        //not required
         final Element root = tree.getRoot();
-        if (root.hasChild("parent")) {
-            model.setParent(root.getSingleChild("parent").mapTo(TO_PARENT_FUNCTION));
+        model.modelVersion = root.getChildText("modelVersion");
+        model.artifactId = root.getChildText("artifactId");
+        model.groupId = root.getChildText("groupId");
+        model.version = root.getChildText("version");
+        model.name = root.getChildText("name");
+        model.description = root.getChildText("description");
+        model.packaging = root.getChildText("packaging");
+        if (root.hasSingleChild("parent")) {
+            model.parent = new Parent(root.getSingleChild("parent"));
         }
-        if (root.hasChild("name")) {
-            model.setName(root.getSingleChild("name").getText());
+        if (root.hasSingleChild("dependencyManagement")) {
+            model.dependencyManagement = new DependencyManagement(root.getSingleChild("dependencyManagement"));
         }
-        if (root.hasChild("description")) {
-            model.setDescription(root.getSingleChild("description").getText());
+        if (root.hasSingleChild("build")) {
+            model.build = new Build(root.getSingleChild("build"));
         }
-        if (root.hasChild("packaging")) {
-            model.setPackaging(root.getSingleChild("packaging").getText());
+        if (root.hasSingleChild("dependencies")) {
+            model.dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION);
         }
-        if (root.hasChild("dependencies")) {
-            model.setDependencies(tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION));
+        if (root.hasSingleChild("modules")) {
+            model.modules = tree.getElements("/project/modules/module", TO_MODULE_FUNCTION);
         }
-        if (root.hasChild("dependencyManagement")) {
-            final DependencyManagement dm = new DependencyManagement();
-            model.setDependencyManagement(dm);
-            if (root.getSingleChild("dependencyManagement").hasChildren()) {
-                dm.setDependencies(tree.getElements("/project/dependencyManagement/dependency", TO_DEPENDENCY_FUNCTION));
-            }
-        }
-        if (root.hasChild("modules")) {
-            final Element modules = root.getSingleChild("modules");
-            model.setModules(modules.getChildren(TO_MODULE_FUNCTION));
-        }
-        if (root.hasChild("properties")) {
-            model.setProperties(root.getSingleChild("properties").mapTo(TO_PROPERTIES_FUNCTION));
-        }
-        if (root.hasChild("build")) {
-            model.setBuild(root.getSingleChild("build").mapTo(TO_BUILD_FUNCTION));
+        if (root.hasSingleChild("properties")) {
+            model.properties = fetchProperties(root.getSingleChild("properties"));
         }
         return model;
+    }
+
+    private static Map<String, String> fetchProperties(Element propertiesElement) {
+        final Map<String, String> properties = new HashMap<>();
+        for (Element property : propertiesElement.getChildren()) {
+            properties.put(property.getName(), property.getText());
+        }
+        return properties;
     }
 
     private static class ToDependencyFunction implements FromElementFunction<Dependency> {
 
         @Override
         public Dependency apply(Element element) {
-            final Dependency dependency = new Dependency();
-            //required
-            dependency.setArtifactId(element.getSingleChild("artifactId").getText());
-            dependency.setGroupId(element.getSingleChild("groupId").getText());
-            dependency.setVersion(element.getSingleChild("version").getText());
-            //not required
-            if (element.hasChild("scope")) {
-                dependency.setScope(element.getSingleChild("scope").getText());
-            }
-            if (element.hasChild("classifier")) {
-                dependency.setClassifier(element.getSingleChild("classifier").getText());
-            }
-            if (element.hasChild("optional")) {
-                dependency.setOptional(element.getSingleSibling("optional").getText());
-            }
-            if (element.hasChild("systemPath")) {
-                dependency.setSystemPath(element.getSingleChild("systemPath").getText());
-            }
-            if (element.hasChild("type")) {
-                dependency.setType(element.getSingleChild("type").getText());
-            }
-            if (element.hasChild("exclusions")) {
-                final Element exclusions = element.getSingleChild("exclusions");
-                dependency.setExclusions(exclusions.getChildren(TO_EXCLUSION_FUNCTION));
-            }
-            return dependency;
-        }
-    }
-
-    private static class ToParentFunction implements FromElementFunction<Parent> {
-
-        @Override
-        public Parent apply(Element element) {
-            final Parent parent = new Parent();
-            parent.setArtifactId(element.getSingleChild("artifactId").getText());
-            parent.setGroupId(element.getSingleChild("groupId").getText());
-            parent.setVersion(element.getSingleChild("version").getText());
-            if (element.hasChild("relativePath")) {
-                parent.setRelativePath(element.getSingleChild("relativePath").getText());
-            }
-            return parent;
-        }
-    }
-
-    private static class ToExclusionFunction implements FromElementFunction<Exclusion> {
-
-        @Override
-        public Exclusion apply(Element element) {
-            final Exclusion exclusion = new Exclusion();
-            exclusion.setArtifactId(element.getSingleChild("artifactId").getText());
-            exclusion.setGroupId(element.getSingleChild("groupId").getText());
-            return exclusion;
-        }
-    }
-
-    private static class ToBuildFunction implements FromElementFunction<Build> {
-
-        @Override
-        public Build apply(Element element) {
-            final Build build = new Build();
-            if (element.hasChild("sourceDirectory")) {
-                build.setSourceDirectory(element.getSingleChild("sourceDirectory").getText());
-            }
-            if (element.hasChild("testSourceDirectory")) {
-                build.setSourceDirectory(element.getSingleChild("testSourceDirectory").getText());
-            }
-            if (element.hasChild("outputDirectory")) {
-                build.setOutputDirectory(element.getSingleChild("outputDirectory").getText());
-            }
-            if (element.hasChild("testOutputDirectory")) {
-                build.setTestOutputDirectory(element.getSingleChild("testOutputDirectory").getText());
-            }
-            if (element.hasChild("scriptSourceDirectory")) {
-                build.setScriptSourceDirectory(element.getSingleChild("scriptSourceDirectory").getText());
-            }
-            return build;
+            return new Dependency(element);
         }
     }
 
@@ -548,18 +473,6 @@ public class Model {
         @Override
         public String apply(Element element) {
             return element.getText();
-        }
-    }
-
-    private static class ToPropertiesFunction implements FromElementFunction<Map<String, String>> {
-
-        @Override
-        public Map<String, String> apply(Element propertiesElement) {
-            final Map<String, String> properties = new HashMap<>();
-            for (Element property : propertiesElement.getChildren()) {
-                properties.put(property.getName(), property.getText());
-            }
-            return properties;
         }
     }
 }

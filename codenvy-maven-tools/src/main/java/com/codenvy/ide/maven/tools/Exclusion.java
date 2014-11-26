@@ -10,34 +10,38 @@
  *******************************************************************************/
 package com.codenvy.ide.maven.tools;
 
+import com.codenvy.commons.xml.Element;
+
 /**
  * The <code>&lt;exclusion&gt;</code> element contains
  * information required to exclude an artifact to the project.
  */
 public class Exclusion {
 
-    /**
-     * The artifact ID of the project to exclude.
-     */
-    private String artifactId;
+    private String  artifactId;
+    private String  groupId;
+    private Element element;
 
-    /**
-     * The group ID of the project to exclude.
-     */
-    private String groupId;
+    public Exclusion() {}
+
+    Exclusion(Element element) {
+        this.element = element;
+        artifactId = element.getChildText("artifactId");
+        groupId = element.getChildText("groupId");
+    }
 
     /**
      * Get the artifact ID of the project to exclude.
      */
     public String getArtifactId() {
-        return this.artifactId;
+        return artifactId;
     }
 
     /**
      * Get the group ID of the project to exclude.
      */
     public String getGroupId() {
-        return this.groupId;
+        return groupId;
     }
 
     /**
@@ -45,6 +49,7 @@ public class Exclusion {
      */
     public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
+        //TODO use element
     }
 
     /**
@@ -52,5 +57,6 @@ public class Exclusion {
      */
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+        //TODO use element
     }
 }

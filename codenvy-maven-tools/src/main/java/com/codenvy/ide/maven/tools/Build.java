@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.maven.tools;
 
+import com.codenvy.commons.xml.Element;
+
 /**
  * The <code>&lt;project&gt;</code> element is the root of
  * the descriptor.
@@ -17,17 +19,24 @@ package com.codenvy.ide.maven.tools;
  */
 public class Build {
 
-    private String sourceDirectory;
-    private String scriptSourceDirectory;
-    private String testSourceDirectory;
-    private String outputDirectory;
-    private String testOutputDirectory;
+    private String  sourceDirectory;
+    private String  scriptSourceDirectory;
+    private String  testSourceDirectory;
+    private String  outputDirectory;
+    private String  testOutputDirectory;
+    private Element element;
+
+    public Build() {}
+
+    Build(Element element) {
+        this.element = element;
+    }
 
     /**
      * Get the directory where compiled application classes are placed.
      */
     public String getOutputDirectory() {
-        return this.outputDirectory;
+        return outputDirectory;
     }
 
     /**
@@ -40,7 +49,7 @@ public class Build {
      * interpreted rather than compiled).
      */
     public String getScriptSourceDirectory() {
-        return this.scriptSourceDirectory;
+        return scriptSourceDirectory;
     }
 
     /**
@@ -52,14 +61,14 @@ public class Build {
      * descriptor.
      */
     public String getSourceDirectory() {
-        return this.sourceDirectory;
+        return sourceDirectory;
     }
 
     /**
      * Get the directory where compiled test classes are placed.
      */
     public String getTestOutputDirectory() {
-        return this.testOutputDirectory;
+        return testOutputDirectory;
     }
 
     /**
@@ -71,7 +80,7 @@ public class Build {
      * project descriptor.
      */
     public String getTestSourceDirectory() {
-        return this.testSourceDirectory;
+        return testSourceDirectory;
     }
 
     /**
