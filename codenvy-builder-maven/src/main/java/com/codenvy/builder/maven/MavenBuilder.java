@@ -270,7 +270,7 @@ public class MavenBuilder extends Builder {
                         final java.io.File[] a = new java.io.File(child.getProjectDirectory(), "target").listFiles(new FilenameFilter() {
                             @Override
                             public boolean accept(java.io.File dir, String name) {
-                                return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                                return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar") && name.endsWith(fileExt);
                             }
                         });
                         if (a != null && a.length > 0) {
@@ -284,13 +284,13 @@ public class MavenBuilder extends Builder {
                     if (ext == null) {
                         ext = packaging.equals("jar")
                               && config.getRequest().isIncludeDependencies()
-                              && !MavenUtils.isCodenvyExtensionProject(model) ? ".zip" : ('.' + packaging);
+                              && !MavenUtils.isCodenvyExtensionProject(model) ? "jar-with-dependencies.zip" : ('.' + packaging);
                     }
                     fileExt = ext;
                     files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
                         @Override
                         public boolean accept(java.io.File dir, String name) {
-                            return !name.endsWith("-sources.jar") && name.endsWith(fileExt);
+                            return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar") && name.endsWith(fileExt);
                         }
                     });
                 }
