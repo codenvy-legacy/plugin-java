@@ -26,6 +26,7 @@ import com.codenvy.ide.jseditor.client.codeassist.CodeAssistCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
 import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
+import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -166,24 +167,28 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
         this.eventLogger.log(this, "Autocompleting");
         final FileNode file = editor.getEditorInput().getFile();
         final String projectPath = file.getPath().substring(1).split("/")[0];
-        this.worker.computeCAProposals(textEditor.getDocument().getContents(), offset, file.getName(), projectPath,
-                                  new JavaParserWorker.WorkerCallback<WorkerProposal>() {
-                                      @Override
-                                      public void onResult(final Array<WorkerProposal> problems) {
-                                          final List<CompletionProposal> proposals = new ArrayList<>(problems.size());
-                                          for (final WorkerProposal proposal : problems.asIterable()) {
-                                              final CompletionProposal completionProposal =
-                                                  new JavaCompletionProposal(proposal.id(),
-                                                                             insertStyle(javaResources, proposal.displayText()),
-                                                                             new Icon("",
-                                                                                      getImage(javaResources, proposal.image())),
-                                                                             worker);
-                                              proposals.add(completionProposal);
-                                          }
+        this.worker.computeCAProposals(textEditor.getDocument().getContents(),
+                                       offset, file.getName(), projectPath,
+                                       new JavaParserWorker.WorkerCallback<WorkerProposal>() {
+                                           @Override
+                                           public void onResult(final Array<WorkerProposal> problems) {
+                                               handleCAResponse(callback, problems);
+                                           }
+                                       });
+    }
 
-                                          callback.proposalComputed(proposals);
-                                      }
-                                  });
+    private void handleCAResponse(final CodeAssistCallback callback, final Array<WorkerProposal> problems) {
+        final List<CompletionProposal> proposals = new ArrayList<>(problems.size());
+          for (final WorkerProposal proposal : problems.asIterable()) {
+              final CompletionProposal completionProposal =
+                  new JavaCompletionProposal(proposal.id(),
+                                             insertStyle(javaResources, proposal.displayText()),
+                                             new Icon("", getImage(javaResources, proposal.image())),
+                                             worker);
+              proposals.add(completionProposal);
+          }
+
+          callback.proposalComputed(proposals);
     }
 
     @Override
