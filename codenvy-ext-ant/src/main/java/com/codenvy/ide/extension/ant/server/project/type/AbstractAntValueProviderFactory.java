@@ -10,10 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.server.project.type;
 
-import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
@@ -21,17 +19,12 @@ import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.ant.tools.AntUtils;
-import com.codenvy.ide.ant.tools.buildfile.BuildFileGenerator;
-import com.codenvy.ide.extension.ant.shared.AntAttributes;
-import com.codenvy.vfs.impl.fs.VirtualFileImpl;
 
-import org.apache.tools.ant.helper.ProjectHelper2;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.BUILD_FILE;
 
 /**
  * Provide value for specific property from Ant project.
@@ -42,7 +35,7 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
 
     /**
      * Try to find build.xml in project root directory and parse it into {@link org.apache.tools.ant.Project} to ba able to obtain various
-     * information from Ant build file. Otherwise if no build.xml was found try to create default one.
+     * information from Ant build file.
      *
      * @param project
      *         current opened project in Codenvy
@@ -51,19 +44,13 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
      *         if error occurred while getting file on server side
      * @throws ForbiddenException
      *         if access to build file is forbidden
+     * @throws ValueStorageException
      */
-    protected VirtualFile getOrCreateBuildXml(Project project) throws ServerException, ForbiddenException {
-        VirtualFileEntry buildXml = project.getBaseFolder().getChild(AntAttributes.BUILD_FILE);
+    protected VirtualFile getBuildXml(Project project) throws ServerException, ForbiddenException, ValueStorageException {
+        VirtualFileEntry buildXml = project.getBaseFolder().getChild(BUILD_FILE);
         if (buildXml == null) {
-            final byte[] buildXmlContent = new BuildFileGenerator(project.getName()).getBuildFileContent().getBytes();
-            try {
-                buildXml = project.getBaseFolder().createFile(AntAttributes.BUILD_FILE, buildXmlContent, null);
-            } catch (ConflictException e) {
-                // File existence was checked before create so not expected to be here.
-                throw new ServerException(e.getServiceError());
-            }
+            throw new ValueStorageException(BUILD_FILE + " does not exist.");
         }
-
         return buildXml.getVirtualFile();
     }
 
@@ -92,7 +79,7 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
         @Override
         public List<String> getValues() throws ValueStorageException {
             try {
-                org.apache.tools.ant.Project antProject = AntUtils.readProject(getOrCreateBuildXml(project));
+                org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(project));
                 return Collections.unmodifiableList(getValues(antProject));
             } catch (IOException | ForbiddenException | ServerException e) {
                 throw readException(e);
