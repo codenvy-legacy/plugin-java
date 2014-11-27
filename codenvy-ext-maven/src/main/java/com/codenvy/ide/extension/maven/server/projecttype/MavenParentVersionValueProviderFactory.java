@@ -52,8 +52,10 @@ public class MavenParentVersionValueProviderFactory extends AbstractMavenValuePr
                     return;
                 }
                 try {
-                    VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setParentVersion(pom, value.get(0));
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        MavenUtils.setParentVersion(pom, value.get(0));
+                    }
                 } catch (ServerException | ForbiddenException | IOException e) {
                     throwWriteException(e);
                 }

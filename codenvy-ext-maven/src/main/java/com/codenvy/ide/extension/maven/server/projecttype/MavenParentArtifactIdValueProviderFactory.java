@@ -54,14 +54,14 @@ public class MavenParentArtifactIdValueProviderFactory extends AbstractMavenValu
                     return;
                 }
                 try {
-
-                    VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setParentArtifactId(pom, value.get(0));
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        MavenUtils.setParentArtifactId(pom, value.get(0));
+                    }
                 } catch (ServerException | ForbiddenException | IOException e) {
                     throwWriteException(e);
                 }
             }
-
         };
     }
 }

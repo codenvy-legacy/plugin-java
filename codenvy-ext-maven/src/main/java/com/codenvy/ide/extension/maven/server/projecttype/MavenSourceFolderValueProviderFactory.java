@@ -14,8 +14,8 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueProvider;
+import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
@@ -66,20 +66,19 @@ public class MavenSourceFolderValueProviderFactory extends AbstractMavenValuePro
 
                 try {
                     String srcPath = strings.get(0);
-                    if (project.getBaseFolder().getChild(srcPath) == null) {
-                        project.getBaseFolder().createFolder(srcPath);
-
-                    }
+//                    if (project.getBaseFolder().getChild(srcPath) == null) {
+//                        project.getBaseFolder().createFolder(srcPath);
+//                    }
                     if(!"src/main/java".equals(srcPath)) {
-                        VirtualFile pom = getOrCreatePom(project);
-                        MavenUtils.setSourceFolder(pom, srcPath);
+                        VirtualFile pom = getPom(project);
+                        if (pom != null) {
+                            MavenUtils.setSourceFolder(pom, srcPath);
+                        }
                     }
-                } catch (ForbiddenException | ServerException | ConflictException | IOException e) {
+                } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);
                 }
             }
-
-
         };
     }
 }

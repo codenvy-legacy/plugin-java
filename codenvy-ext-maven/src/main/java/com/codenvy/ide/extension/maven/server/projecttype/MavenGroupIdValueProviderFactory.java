@@ -55,11 +55,12 @@ public class MavenGroupIdValueProviderFactory extends AbstractMavenValueProvider
                     return;
                 }
                 try {
-                    VirtualFile pom = getOrCreatePom(project);
-                    Model model = MavenUtils.readModel(pom);
-
-                    if(!groupId.equals(model.getGroupId())) {
-                        MavenUtils.setGroupId(pom, groupId);
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        Model model = MavenUtils.readModel(pom);
+                        if(!groupId.equals(model.getGroupId())) {
+                            MavenUtils.setGroupId(pom, groupId);
+                        }
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {
                    throwWriteException(e);
