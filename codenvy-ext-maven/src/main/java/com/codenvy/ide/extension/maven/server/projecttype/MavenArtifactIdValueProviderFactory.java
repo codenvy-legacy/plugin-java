@@ -50,8 +50,10 @@ public class MavenArtifactIdValueProviderFactory extends AbstractMavenValueProvi
                     throw new ValueStorageException("Maven ArtifactId must be only one value.");
                 }
                 try {
-                    VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setArtifactId(pom, value.get(0));
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        MavenUtils.setArtifactId(pom, value.get(0));
+                    }
                 } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);
                 }

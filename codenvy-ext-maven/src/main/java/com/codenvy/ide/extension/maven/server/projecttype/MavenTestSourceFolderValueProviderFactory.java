@@ -60,15 +60,16 @@ public class MavenTestSourceFolderValueProviderFactory extends AbstractMavenValu
 
                 try {
                     String srcPath = value.get(0);
-                    if (project.getBaseFolder().getChild(srcPath) == null) {
-                        project.getBaseFolder().createFolder(srcPath);
-
-                    }
+//                    if (project.getBaseFolder().getChild(srcPath) == null) {
+//                        project.getBaseFolder().createFolder(srcPath);
+//                    }
                     if(!"src/test/java".equals(srcPath)) {
-                        VirtualFile pom = getOrCreatePom(project);
-                        MavenUtils.setTestSourceFolder(pom, srcPath);
+                        VirtualFile pom = getPom(project);
+                        if (pom != null) {
+                            MavenUtils.setTestSourceFolder(pom, srcPath);
+                        }
                     }
-                } catch (ForbiddenException | ServerException | ConflictException | IOException e) {
+                } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);
                 }
             }

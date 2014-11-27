@@ -53,8 +53,10 @@ public class MavenParentGroupIdValueProviderFactory extends AbstractMavenValuePr
                 }
 
                 try {
-                    VirtualFile pom = getOrCreatePom(project);
-                    MavenUtils.setParentGroupId(pom, value.get(0));
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        MavenUtils.setParentGroupId(pom, value.get(0));
+                    }
                 } catch (ServerException | ForbiddenException | IOException e) {
                     throwWriteException(e);
                 }
