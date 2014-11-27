@@ -50,7 +50,7 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     private final ChangeInterceptorProvider changeInterceptors;
 
     @AssistedInject
-    public JsJavaEditorConfiguration(@Assisted final EmbeddedTextEditorPresenter editor,
+    public JsJavaEditorConfiguration(@Assisted final EmbeddedTextEditorPresenter< ? > editor,
                                      final UserActivityManager userActivityManager,
                                      final JavaResources javaResources,
                                      final JavaCodeAssistProcessorFactory codeAssistProcessorFactory,

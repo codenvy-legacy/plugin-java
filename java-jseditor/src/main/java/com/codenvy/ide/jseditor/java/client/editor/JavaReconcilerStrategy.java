@@ -39,7 +39,7 @@ import com.google.inject.assistedinject.AssistedInject;
 
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 
-    private final EmbeddedTextEditorPresenter editor;
+    private final EmbeddedTextEditorPresenter< ? > editor;
     private final JavaParserWorker worker;
     private final OutlineModel outlineModel;
     private final NotificationManager notificationManager;
@@ -53,7 +53,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private Notification notification;
 
     @AssistedInject
-    public JavaReconcilerStrategy(@Assisted @NotNull final EmbeddedTextEditorPresenter editor,
+    public JavaReconcilerStrategy(@Assisted @NotNull final EmbeddedTextEditorPresenter< ? > editor,
                                   @Assisted final OutlineModel outlineModel,
                                   @Assisted final JavaCodeAssistProcessor codeAssistProcessor,
                                   @Assisted final AnnotationModel annotationModel,

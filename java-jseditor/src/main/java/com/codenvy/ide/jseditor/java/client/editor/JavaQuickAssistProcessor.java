@@ -42,6 +42,7 @@ import com.codenvy.ide.jseditor.client.quickfix.QuickAssistInvocationContext;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import com.codenvy.ide.jseditor.client.text.LinearRange;
 import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
+import com.codenvy.ide.util.loging.Log;
 
 /**
  * {@link QuickAssistProcessor} for java files.
@@ -82,7 +83,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
                     return false;
                 } else {
                     JavaAnnotation javaAnnotation = (JavaAnnotation)annotation;
-                    return !javaAnnotation.isMarkedDeleted() && JavaAnnotationUtil.hasCorrections(annotation);
+                    return (!javaAnnotation.isMarkedDeleted()) && JavaAnnotationUtil.hasCorrections(annotation);
                 }
             }
         };
@@ -202,9 +203,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             for (final Annotation annotation : annotations.keySet()) {
                 if (JavaAnnotationUtil.isQuickFixableType(annotation)) {
                     final Position pos = annotations.get(annotation);
-                    if (pos != null && isInside(lineRange.getStartOffset(), pos.offset, pos.offset + pos.length)) {
-                        result.put(annotation, pos);
-                    }
+                    result.put(annotation, pos);
                 }
             }
             if (result.isEmpty()) {

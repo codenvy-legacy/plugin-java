@@ -126,7 +126,7 @@ public class DependenciesUpdater {
                                                           @Override
                                                           public void onIteration(String s, EditorPartPresenter editorPartPresenter) {
                                                               if (editorPartPresenter instanceof EmbeddedTextEditorPresenter) {
-                                                                  final EmbeddedTextEditorPresenter editor = (EmbeddedTextEditorPresenter)editorPartPresenter;
+                                                                  final EmbeddedTextEditorPresenter<?> editor = (EmbeddedTextEditorPresenter<?>)editorPartPresenter;
                                                                   editor.refreshEditor();
                                                               }
                                                           }
