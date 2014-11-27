@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
@@ -26,13 +27,13 @@ import com.codenvy.ide.jseditor.client.codeassist.CodeAssistCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
 import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
-import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
+    private final BuildContext buildContext;
     private final EditorPartPresenter editor;
     private final JavaParserWorker worker;
     private final JavaResources javaResources;
@@ -42,9 +43,11 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
     @AssistedInject
     public JavaCodeAssistProcessor(@Assisted final EditorPartPresenter editor,
+                                   final BuildContext buildContext,
                                    final JavaParserWorker worker,
                                    final JavaResources javaResources,
                                    final AnalyticsEventLogger eventLogger) {
+        this.buildContext = buildContext;
         this.editor = editor;
         this.worker = worker;
         this.javaResources = javaResources;
@@ -161,6 +164,11 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
     @Override
     public void computeCompletionProposals(final TextEditor textEditor, final int offset,
                                            final CodeAssistCallback callback) {
+        if (buildContext.isBuilding()) {
+            errorMessage = "Code Assistant currently unavailable due to project build.";
+        } else {
+            errorMessage = null;
+        }
         if (errorMessage != null) {
             return;
         }
@@ -179,16 +187,17 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
     private void handleCAResponse(final CodeAssistCallback callback, final Array<WorkerProposal> problems) {
         final List<CompletionProposal> proposals = new ArrayList<>(problems.size());
-          for (final WorkerProposal proposal : problems.asIterable()) {
-              final CompletionProposal completionProposal =
-                  new JavaCompletionProposal(proposal.id(),
-                                             insertStyle(javaResources, proposal.displayText()),
-                                             new Icon("", getImage(javaResources, proposal.image())),
-                                             worker);
-              proposals.add(completionProposal);
-          }
+        for (final WorkerProposal proposal : problems.asIterable()) {
+            final CompletionProposal completionProposal =
+                                                          new JavaCompletionProposal(
+                                                                                     proposal.id(),
+                                                                                     insertStyle(javaResources, proposal.displayText()),
+                                                                                     new Icon("", getImage(javaResources, proposal.image())),
+                                                                                     worker);
+            proposals.add(completionProposal);
+        }
 
-          callback.proposalComputed(proposals);
+        callback.proposalComputed(proposals);
     }
 
     @Override
