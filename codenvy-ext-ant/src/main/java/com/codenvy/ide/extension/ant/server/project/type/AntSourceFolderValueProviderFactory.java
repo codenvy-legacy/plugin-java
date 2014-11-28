@@ -10,9 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.server.project.type;
 
-import com.codenvy.api.core.ConflictException;
-import com.codenvy.api.core.ForbiddenException;
-import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.InvalidValueException;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
@@ -55,21 +52,6 @@ public class AntSourceFolderValueProviderFactory extends AbstractAntValueProvide
             /** {@inheritDoc} */
             @Override
             public void setValues(List<String> value) throws ValueStorageException, InvalidValueException {
-                if (value == null || value.isEmpty()) {
-                    return;
-                }
-                if (value.size() > 1) {
-                    throw new IllegalArgumentException("Must be only one source folder");
-                }
-                try {
-                    String srcPath = value.get(0);
-                    if (project.getBaseFolder().getChild(srcPath) == null) {
-                        project.getBaseFolder().createFolder(srcPath);
-                    }
-                    // updating of build.xml is not supported yet
-                } catch (ForbiddenException | ServerException | ConflictException e) {
-                    throw writeException(e);
-                }
             }
         };
     }

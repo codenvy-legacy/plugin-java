@@ -88,7 +88,7 @@ public class FileWatcher {
             @Override
             public void onIteration(final String s, final EditorPartPresenter editorPartPresenter) {
                 if (editorPartPresenter instanceof EmbeddedTextEditorPresenter) {
-                    final EmbeddedTextEditorPresenter editor = (EmbeddedTextEditorPresenter)editorPartPresenter;
+                    final EmbeddedTextEditorPresenter< ? > editor = (EmbeddedTextEditorPresenter< ? >)editorPartPresenter;
                     editor.refreshEditor();
                 }
             }

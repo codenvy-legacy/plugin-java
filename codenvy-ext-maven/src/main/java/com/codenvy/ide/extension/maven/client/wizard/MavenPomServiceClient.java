@@ -34,7 +34,7 @@ public class MavenPomServiceClient {
                                  AsyncRequestLoader loader,
                                  AsyncRequestFactory asyncRequestFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
-        this.baseUrl = baseUrl + "/maven/pom/" + workspaceId;
+        this.baseUrl = baseUrl + "/maven/" + workspaceId + "/pom";
         this.loader = loader;
     }
 
