@@ -43,8 +43,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.eval.IEvaluationContext;
 import org.eclipse.jdt.internal.compiler.util.ObjectVector;
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
-import org.eclipse.jdt.internal.core.NameLookup;
 import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.slf4j.Logger;
@@ -67,6 +67,10 @@ import java.util.Map;
  */
 public class JavaProject extends Openable implements IJavaProject {
 
+    /**
+     * Value of the project's raw classpath if the .classpath file contains invalid entries.
+     */
+    public static final IClasspathEntry[] INVALID_CLASSPATH = new IClasspathEntry[0];
     private static final Logger                                     LOG       = LoggerFactory.getLogger(JavaProject.class);
     private final        DirectoryStream.Filter<java.nio.file.Path> jarFilter = new DirectoryStream.Filter<java.nio.file.Path>() {
         @Override
@@ -149,6 +153,7 @@ public class JavaProject extends Openable implements IJavaProject {
         indexManager.reset();
         indexManager.indexAll(this);
         indexManager.saveIndexes();
+        manager.setIndexManager(indexManager);
         nameEnvironment = new JavaSearchNameEnvironment(this, null);
     }
 
@@ -469,43 +474,113 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IType findType(String fullyQualifiedName) throws JavaModelException {
-        return null;
+        return findType(fullyQualifiedName, DefaultWorkingCopyOwner.PRIMARY);
     }
 
     @Override
     public IType findType(String fullyQualifiedName, IProgressMonitor progressMonitor) throws JavaModelException {
-        return null;
+        return findType(fullyQualifiedName, DefaultWorkingCopyOwner.PRIMARY, progressMonitor);
+    }
+
+    /*
+ * Internal findType with instanciated name lookup
+ */
+    IType findType(String fullyQualifiedName, NameLookup lookup, boolean considerSecondaryTypes, IProgressMonitor progressMonitor)
+            throws JavaModelException {
+        NameLookup.Answer answer = lookup.findType(
+                fullyQualifiedName,
+                false,
+                org.eclipse.jdt.internal.core.NameLookup.ACCEPT_ALL,
+                considerSecondaryTypes,
+                true, /* wait for indexes (only if consider secondary types)*/
+                false/*don't check restrictions*/,
+                progressMonitor);
+        if (answer == null) {
+            // try to find enclosing type
+            int lastDot = fullyQualifiedName.lastIndexOf('.');
+            if (lastDot == -1) return null;
+            IType type = findType(fullyQualifiedName.substring(0, lastDot), lookup, considerSecondaryTypes, progressMonitor);
+            if (type != null) {
+                type = type.getType(fullyQualifiedName.substring(lastDot + 1));
+                if (!type.exists()) {
+                    return null;
+                }
+            }
+            return type;
+        }
+        return answer.type;
     }
 
     @Override
     public IType findType(String fullyQualifiedName, WorkingCopyOwner owner) throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(fullyQualifiedName, lookup, false, null);
     }
 
     @Override
     public IType findType(String fullyQualifiedName, WorkingCopyOwner owner, IProgressMonitor progressMonitor) throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(fullyQualifiedName, lookup, true, progressMonitor);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName) throws JavaModelException {
-        return null;
+        return findType(packageName, typeQualifiedName, DefaultWorkingCopyOwner.PRIMARY);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName, IProgressMonitor progressMonitor) throws JavaModelException {
-        return null;
+        return findType(packageName, typeQualifiedName, DefaultWorkingCopyOwner.PRIMARY, progressMonitor);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName, WorkingCopyOwner owner) throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(
+                packageName,
+                typeQualifiedName,
+                lookup,
+                false, // do not consider secondary types
+                null);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName, WorkingCopyOwner owner, IProgressMonitor progressMonitor)
             throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(
+                packageName,
+                typeQualifiedName,
+                lookup,
+                true, // consider secondary types
+                progressMonitor);
+    }
+
+    /*
+ * Internal findType with instanciated name lookup
+ */
+    IType findType(String packageName, String typeQualifiedName, NameLookup lookup, boolean considerSecondaryTypes,
+                   IProgressMonitor progressMonitor) throws JavaModelException {
+        NameLookup.Answer answer = lookup.findType(
+                typeQualifiedName,
+                packageName,
+                false,
+                NameLookup.ACCEPT_ALL,
+                considerSecondaryTypes,
+                true, // wait for indexes (in case we need to consider secondary types)
+                false/*don't check restrictions*/,
+                progressMonitor);
+        return answer == null ? null : answer.type;
+    }
+
+    /*
+ * Returns a new name lookup. This name lookup first looks in the working copies of the given owner.
+ */
+    public NameLookup newNameLookup(WorkingCopyOwner owner) throws JavaModelException {
+
+//        JavaModelManager manager = org.eclipse.jdt.internal.core.JavaModelManager.getJavaModelManager();
+        ICompilationUnit[] workingCopies = owner == null ? null : manager.getWorkingCopies(owner, true/*add primary WCs*/);
+        return newNameLookup(workingCopies);
     }
 
     @Override
@@ -806,6 +881,25 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IJavaElement getHandleFromMemento(String token, MementoTokenizer memento, WorkingCopyOwner owner) {
+        switch (token.charAt(0)) {
+            case JEM_PACKAGEFRAGMENTROOT:
+                String rootPath = IPackageFragmentRoot.DEFAULT_PACKAGEROOT_PATH;
+                token = null;
+                while (memento.hasMoreTokens()) {
+                    token = memento.nextToken();
+                    // https://bugs.eclipse.org/bugs/show_bug.cgi?id=331821
+                    if (token == MementoTokenizer.PACKAGEFRAGMENT || token == MementoTokenizer.COUNT) {
+                        break;
+                    }
+                    rootPath += token;
+                }
+                JavaElement root = (JavaElement)getPackageFragmentRoot(new File(rootPath));
+                if (token != null && token.charAt(0) == JEM_PACKAGEFRAGMENT) {
+                    return root.getHandleFromMemento(token, memento, owner);
+                } else {
+                    return root.getHandleFromMemento(memento, owner);
+                }
+        }
         return null;
     }
 
@@ -815,13 +909,8 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     @Override
-    public String getHandleIdentifier() {
-        return null;
-    }
-
-    @Override
     protected char getHandleMementoDelimiter() {
-        return 0;
+        return JEM_JAVAPROJECT;
     }
 
     @Override
@@ -926,6 +1015,31 @@ public class JavaProject extends Openable implements IJavaProject {
 
     }
 
+    /**
+     * The path is known to match a source/library folder entry.
+     *
+     * @param path
+     *         IPath
+     * @return IPackageFragmentRoot
+     */
+    public IPackageFragmentRoot getFolderPackageFragmentRoot(IPath path) {
+        if (path.segmentCount() == 1) { // default project root
+            return getPackageFragmentRoot();
+        }
+        return getPackageFragmentRoot(path.toFile());
+    }
+
+    public JavaProjectElementInfo.ProjectCache getProjectCache() throws JavaModelException {
+        return ((JavaProjectElementInfo)getElementInfo()).getProjectCache(this);
+    }
+
+    /**
+     * Returns a new element info for this element.
+     */
+    protected Object createElementInfo() {
+        return new JavaProjectElementInfo();
+    }
+
     @Override
     protected IStatus validateExistence(File underlyingResource) {
         return JavaModelStatus.VERIFIED_OK;
@@ -963,8 +1077,17 @@ public class JavaProject extends Openable implements IJavaProject {
         return indexManager;
     }
 
-    public NameLookup newNameLookup(ICompilationUnit[] workingCopies) {
-        return null;
+    /**
+     * Convenience method that returns the specific type of info for a Java project.
+     */
+    protected JavaProjectElementInfo getJavaProjectElementInfo()
+            throws JavaModelException {
+
+        return (JavaProjectElementInfo)getElementInfo();
+    }
+
+    public NameLookup newNameLookup(ICompilationUnit[] workingCopies) throws JavaModelException {
+        return getJavaProjectElementInfo().newNameLookup(this, workingCopies);
     }
 
     public SearchableEnvironment newSearchableNameEnvironment(ICompilationUnit[] workingCopies) {

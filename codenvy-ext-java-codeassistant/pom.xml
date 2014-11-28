@@ -88,6 +88,12 @@
             <version>${org.eclipse.osgi.version}</version>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${ch.qos.logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
@@ -172,6 +178,7 @@
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/search/TypeNameRequestorWrapper.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/util/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/ClasspathEntry.java</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/internal/corext/CorextMessages.properties</exclude>
                     </excludes>
                 </configuration>
             </plugin>

@@ -6,8 +6,12 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CharacterLiteral;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.NameQualifiedType;
+import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 
 /**
@@ -75,4 +79,32 @@ public class ASTNodes {
             }
         });
     }
+
+    /**
+     * For {@link Name} or {@link org.eclipse.jdt.core.dom.Type} nodes, returns the topmost {@link org.eclipse.jdt.core.dom.Type} node
+     * that shares the same type binding as the given node.
+     *
+     * @param node
+     *         an ASTNode
+     * @return the normalized {@link org.eclipse.jdt.core.dom.Type} node or the original node
+     */
+    public static ASTNode getNormalizedNode(ASTNode node) {
+        ASTNode current = node;
+        // normalize name
+        if (QualifiedName.NAME_PROPERTY.equals(current.getLocationInParent())) {
+            current = current.getParent();
+        }
+        // normalize type
+        if (QualifiedType.NAME_PROPERTY.equals(current.getLocationInParent())
+            || SimpleType.NAME_PROPERTY.equals(current.getLocationInParent())
+            || NameQualifiedType.NAME_PROPERTY.equals(current.getLocationInParent())) {
+            current = current.getParent();
+        }
+        // normalize parameterized types
+        if (ParameterizedType.TYPE_PROPERTY.equals(current.getLocationInParent())) {
+            current = current.getParent();
+        }
+        return current;
+    }
+
 }

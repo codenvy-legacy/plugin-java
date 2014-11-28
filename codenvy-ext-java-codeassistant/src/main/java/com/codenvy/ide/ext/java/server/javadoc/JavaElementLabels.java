@@ -271,4 +271,20 @@ public class JavaElementLabels {
     public static void getElementLabel(IJavaElement element, long flags, StringBuffer buf) {
         new JavaElementLabelComposer(buf).appendElementLabel(element, flags);
     }
+
+
+    /**
+     * Returns the label for a Java element with the flags as defined by this class.
+     *
+     * @param element
+     *         the element to render
+     * @param flags
+     *         the rendering flags
+     * @return the label of the Java element
+     */
+    public static String getElementLabel(IJavaElement element, long flags) {
+        StringBuffer result = new StringBuffer();
+        getElementLabel(element, flags, result);
+        return result.toString(); // Strings.markJavaElementLabelLTR(result.toString());
+    }
 }

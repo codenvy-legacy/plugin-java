@@ -11,6 +11,8 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.ext.java.server.internal.core.util.Util;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IJavaElement;
@@ -21,7 +23,6 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
 import org.eclipse.jdt.internal.compiler.lookup.TagBits;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.eclipse.jdt.internal.core.Annotation;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
 
 import java.util.ArrayList;
@@ -46,26 +47,24 @@ public void copy(IJavaElement container, IJavaElement sibling, String rename, bo
 	throw new JavaModelException(new JavaModelStatus(IJavaModelStatusConstants.READ_ONLY, this));
 }
 protected IAnnotation[] getAnnotations(IBinaryAnnotation[] binaryAnnotations, long tagBits) {
-//	IAnnotation[] standardAnnotations = getStandardAnnotations(tagBits);
-//	if (binaryAnnotations == null)
-//		return standardAnnotations;
-//	int length = binaryAnnotations.length;
-//	int standardLength = standardAnnotations.length;
-//	int fullLength = length + standardLength;
-//	if (fullLength == 0) {
-//		return Annotation.NO_ANNOTATIONS;
-//	}
-//	IAnnotation[] annotations = new IAnnotation[fullLength];
-//	for (int i = 0; i < length; i++) {
-//		annotations[i] = Util.getAnnotation(this, binaryAnnotations[i], null);
-//	}
-//	System.arraycopy(standardAnnotations, 0, annotations, length, standardLength);
-//	return annotations;
-	throw new UnsupportedOperationException();
+	IAnnotation[] standardAnnotations = getStandardAnnotations(tagBits);
+	if (binaryAnnotations == null)
+		return standardAnnotations;
+	int length = binaryAnnotations.length;
+	int standardLength = standardAnnotations.length;
+	int fullLength = length + standardLength;
+	if (fullLength == 0) {
+		return Annotation.NO_ANNOTATIONS;
+	}
+	IAnnotation[] annotations = new IAnnotation[fullLength];
+	for (int i = 0; i < length; i++) {
+		annotations[i] = Util.getAnnotation(this, manager, binaryAnnotations[i], null);
+	}
+	System.arraycopy(standardAnnotations, 0, annotations, length, standardLength);
+	return annotations;
 }
 private IAnnotation getAnnotation(char[][] annotationName) {
-//	return new Annotation(this, new String(CharOperation.concatWith(annotationName, '.')));
-	throw new UnsupportedOperationException();
+	return new Annotation(this, manager, new String(CharOperation.concatWith(annotationName, '.')));
 }
 protected IAnnotation[] getStandardAnnotations(long tagBits) {
 	if ((tagBits & TagBits.AllStandardAnnotationsMask) == 0)

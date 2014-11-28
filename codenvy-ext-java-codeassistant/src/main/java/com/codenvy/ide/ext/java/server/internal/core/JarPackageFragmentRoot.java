@@ -105,7 +105,7 @@ public class JarPackageFragmentRoot extends PackageFragmentRoot {
                 throw new JavaModelException(e);
             }
         } finally {
-            org.eclipse.jdt.internal.core.JavaModelManager.getJavaModelManager().closeZipFile(jar);
+           manager.closeZipFile(jar);
         }
 
         info.setChildren(children);

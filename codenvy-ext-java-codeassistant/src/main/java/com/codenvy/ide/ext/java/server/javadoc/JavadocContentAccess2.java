@@ -73,7 +73,6 @@ import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -124,8 +123,10 @@ public class JavadocContentAccess2 {
     private       StringBuffer                  fReturnDescription;
     private       StringBuffer[]                fParamDescriptions;
     private       HashMap<String, StringBuffer> fExceptionDescriptions;
+    private String urlPrefix;
 
-    private JavadocContentAccess2(IMethod method, Javadoc javadoc, String source, JavadocLookup lookup) {
+    private JavadocContentAccess2(IMethod method, Javadoc javadoc, String source, JavadocLookup lookup, String urlPrefix) {
+        this.urlPrefix = urlPrefix;
         Assert.isNotNull(method);
         fElement = method;
         fMethod = method;
@@ -134,7 +135,8 @@ public class JavadocContentAccess2 {
         fJavadocLookup = lookup;
     }
 
-    private JavadocContentAccess2(IJavaElement element, Javadoc javadoc, String source) {
+    private JavadocContentAccess2(IJavaElement element, Javadoc javadoc, String source, String urlPrefix) {
+        this.urlPrefix = urlPrefix;
         Assert.isTrue(element instanceof IMember || element instanceof IPackageFragment);
         fElement = element;
         fMethod = null;
@@ -158,8 +160,8 @@ public class JavadocContentAccess2 {
      * @throws org.eclipse.jdt.core.JavaModelException
      *         is thrown when the element's Javadoc cannot be accessed
      */
-    public static String getHTMLContent(IMember member, boolean useAttachedJavadoc) throws JavaModelException {
-        String sourceJavadoc = getHTMLContentFromSource(member);
+    public static String getHTMLContent(IMember member, boolean useAttachedJavadoc, String urlPrefix) throws JavaModelException {
+        String sourceJavadoc = getHTMLContentFromSource(member, urlPrefix);
         if (sourceJavadoc == null || sourceJavadoc.length() == 0 || sourceJavadoc.trim().equals("{@inheritDoc}")) { //$NON-NLS-1$
             if (useAttachedJavadoc) {
                 if (member.getOpenable().getBuffer() == null) { // only if no source available
@@ -237,30 +239,30 @@ public class JavadocContentAccess2 {
         throw new UnsupportedOperationException();
     }
 
-    private static String createMethodInTypeLinks(IMethod overridden) {
-        CharSequence methodLink = createSimpleMemberLink(overridden);
-        CharSequence typeLink = createSimpleMemberLink(overridden.getDeclaringType());
-        String methodInType =
-                MessageFormat.format(JavaDocMessages.JavaDoc2HTMLTextReader_method_in_type, new Object[]{methodLink, typeLink});
-        return methodInType;
-    }
+//    private static String createMethodInTypeLinks(IMethod overridden) {
+//        CharSequence methodLink = createSimpleMemberLink(overridden);
+//        CharSequence typeLink = createSimpleMemberLink(overridden.getDeclaringType());
+//        String methodInType =
+//                MessageFormat.format(JavaDocMessages.JavaDoc2HTMLTextReader_method_in_type, new Object[]{methodLink, typeLink});
+//        return methodInType;
+//    }
 
-    private static CharSequence createSimpleMemberLink(IMember member) {
-        StringBuffer buf = new StringBuffer();
-        buf.append("<a href='"); //$NON-NLS-1$
-        try {
-            String uri = JavaElementLinks.createURI(JavaElementLinks.JAVADOC_SCHEME, member);
-            buf.append(uri);
-        } catch (URISyntaxException e) {
-            LOG.error(e.getMessage(), e);
-        }
-        buf.append("'>"); //$NON-NLS-1$
-        JavaElementLabels.getElementLabel(member, 0, buf);
-        buf.append("</a>"); //$NON-NLS-1$
-        return buf;
-    }
+//    private static CharSequence createSimpleMemberLink(IMember member) {
+//        StringBuffer buf = new StringBuffer();
+//        buf.append("<a href='"); //$NON-NLS-1$
+//        try {
+//            String uri = JavaElementLinks.createURI(, member);
+//            buf.append(uri);
+//        } catch (URISyntaxException e) {
+//            LOG.error(e.getMessage(), e);
+//        }
+//        buf.append("'>"); //$NON-NLS-1$
+//        JavaElementLabels.getElementLabel(member, 0, buf);
+//        buf.append("</a>"); //$NON-NLS-1$
+//        return buf;
+//    }
 
-    private static String getHTMLContentFromSource(IMember member) throws JavaModelException {
+    private static String getHTMLContentFromSource(IMember member, String urlPrefix) throws JavaModelException {
         IBuffer buf = member.getOpenable().getBuffer();
         if (buf == null) {
             return null; // no source attachment found
@@ -270,7 +272,7 @@ public class JavadocContentAccess2 {
         if (javadocRange == null) {
             if (canInheritJavadoc(member)) {
                 // Try to use the inheritDoc algorithm.
-                String inheritedJavadoc = javadoc2HTML(member, "/***/"); //$NON-NLS-1$
+                String inheritedJavadoc = javadoc2HTML(member, "/***/", urlPrefix); //$NON-NLS-1$
                 if (inheritedJavadoc != null && inheritedJavadoc.length() > 0) {
                     return inheritedJavadoc;
                 }
@@ -279,47 +281,47 @@ public class JavadocContentAccess2 {
         }
 
         String rawJavadoc = buf.getText(javadocRange.getOffset(), javadocRange.getLength());
-        return javadoc2HTML(member, rawJavadoc);
+        return javadoc2HTML(member, rawJavadoc, urlPrefix);
     }
 
-    private static String getJavaFxPropertyDoc(IMember member) throws JavaModelException {
-        // XXX: should not do this by default (but we don't have settings for Javadoc, see https://bugs.eclipse.org/424283 )
-        if (member instanceof IMethod) {
-            String name = member.getElementName();
-            boolean isGetter = name.startsWith("get") && name.length() > 3; //$NON-NLS-1$
-            boolean isBooleanGetter = name.startsWith("is") && name.length() > 2; //$NON-NLS-1$
-            boolean isSetter = name.startsWith("set") && name.length() > 3; //$NON-NLS-1$
-
-            if (isGetter || isBooleanGetter || isSetter) {
-                String propertyName = firstToLower(name.substring(isBooleanGetter ? 2 : 3));
-                IType type = member.getDeclaringType();
-                IMethod method = type.getMethod(propertyName + "Property", new String[0]); //$NON-NLS-1$
-
-                if (method.exists()) {
-                    String content = getHTMLContentFromSource(method);
-                    if (content != null) {
-                        if (isSetter) {
-                            content = MessageFormat.format(JavaDocMessages.JavadocContentAccess2_setproperty_message,
-                                                           new Object[]{propertyName, content});
-                        } else {
-                            content = MessageFormat.format(JavaDocMessages.JavadocContentAccess2_getproperty_message,
-                                                           new Object[]{propertyName, content});
-                        }
-                    }
-                    return content;
-                }
-            } else if (name.endsWith("Property")) { //$NON-NLS-1$
-                String propertyName = name.substring(0, name.length() - 8);
-
-                IType type = member.getDeclaringType();
-                IField field = type.getField(propertyName);
-                if (field.exists()) {
-                    return getHTMLContentFromSource(field);
-                }
-            }
-        }
-        return null;
-    }
+//    private static String getJavaFxPropertyDoc(IMember member) throws JavaModelException {
+//        // XXX: should not do this by default (but we don't have settings for Javadoc, see https://bugs.eclipse.org/424283 )
+//        if (member instanceof IMethod) {
+//            String name = member.getElementName();
+//            boolean isGetter = name.startsWith("get") && name.length() > 3; //$NON-NLS-1$
+//            boolean isBooleanGetter = name.startsWith("is") && name.length() > 2; //$NON-NLS-1$
+//            boolean isSetter = name.startsWith("set") && name.length() > 3; //$NON-NLS-1$
+//
+//            if (isGetter || isBooleanGetter || isSetter) {
+//                String propertyName = firstToLower(name.substring(isBooleanGetter ? 2 : 3));
+//                IType type = member.getDeclaringType();
+//                IMethod method = type.getMethod(propertyName + "Property", new String[0]); //$NON-NLS-1$
+//
+//                if (method.exists()) {
+//                    String content = getHTMLContentFromSource(method, urlPrefix);
+//                    if (content != null) {
+//                        if (isSetter) {
+//                            content = MessageFormat.format(JavaDocMessages.JavadocContentAccess2_setproperty_message,
+//                                                           new Object[]{propertyName, content});
+//                        } else {
+//                            content = MessageFormat.format(JavaDocMessages.JavadocContentAccess2_getproperty_message,
+//                                                           new Object[]{propertyName, content});
+//                        }
+//                    }
+//                    return content;
+//                }
+//            } else if (name.endsWith("Property")) { //$NON-NLS-1$
+//                String propertyName = name.substring(0, name.length() - 8);
+//
+//                IType type = member.getDeclaringType();
+//                IField field = type.getField(propertyName);
+//                if (field.exists()) {
+//                    return getHTMLContentFromSource(field, urlPrefix);
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     private static String firstToLower(String propertyName) {
         char[] c = propertyName.toCharArray();
@@ -369,7 +371,7 @@ public class JavadocContentAccess2 {
         return (CompilationUnit)parser.createAST(null);
     }
 
-    private static String javadoc2HTML(IMember member, String rawJavadoc) {
+    private static String javadoc2HTML(IMember member, String rawJavadoc, String urlPrefix) {
         Javadoc javadoc = getJavadocNode(member, rawJavadoc);
 
         if (javadoc == null) {
@@ -395,9 +397,9 @@ public class JavadocContentAccess2 {
 
         if (canInheritJavadoc(member)) {
             IMethod method = (IMethod)member;
-            return new JavadocContentAccess2(method, javadoc, rawJavadoc, new JavadocLookup(method.getDeclaringType())).toHTML();
+            return new JavadocContentAccess2(method, javadoc, rawJavadoc, new JavadocLookup(method.getDeclaringType()), urlPrefix).toHTML();
         }
-        return new JavadocContentAccess2(member, javadoc, rawJavadoc).toHTML();
+        return new JavadocContentAccess2(member, javadoc, rawJavadoc, urlPrefix).toHTML();
     }
 
     private static boolean canInheritJavadoc(IMember member) {
@@ -522,19 +524,19 @@ public class JavadocContentAccess2 {
         }
     }
 
-    private static String getHTMLContentFromAttachedSource(IPackageFragmentRoot root, IPackageFragment packageFragment)
-            throws CoreException {
-        String filePath = packageFragment.getElementName().replace('.', '/') + '/' + JavaModelUtil.PACKAGE_INFO_JAVA;
-        String contents = getFileContentFromAttachedSource(root, filePath);
-        if (contents != null) {
-            Javadoc packageJavadocNode = getPackageJavadocNode(packageFragment, contents);
-            if (packageJavadocNode != null)
-                return new JavadocContentAccess2(packageFragment, packageJavadocNode, contents).toHTML();
-
-        }
-        filePath = packageFragment.getElementName().replace('.', '/') + '/' + JavaModelUtil.PACKAGE_HTML;
-        return getFileContentFromAttachedSource(root, filePath);
-    }
+//    private static String getHTMLContentFromAttachedSource(IPackageFragmentRoot root, IPackageFragment packageFragment)
+//            throws CoreException {
+//        String filePath = packageFragment.getElementName().replace('.', '/') + '/' + JavaModelUtil.PACKAGE_INFO_JAVA;
+//        String contents = getFileContentFromAttachedSource(root, filePath);
+//        if (contents != null) {
+//            Javadoc packageJavadocNode = getPackageJavadocNode(packageFragment, contents);
+//            if (packageJavadocNode != null)
+//                return new JavadocContentAccess2(packageFragment, packageJavadocNode, contents).toHTML();
+//
+//        }
+//        filePath = packageFragment.getElementName().replace('.', '/') + '/' + JavaModelUtil.PACKAGE_HTML;
+//        return getFileContentFromAttachedSource(root, filePath);
+//    }
 
     private static String getFileContentFromAttachedSource(IPackageFragmentRoot root, String filePath) throws CoreException {
         IPath sourceAttachmentPath = root.getSourceAttachmentPath();
@@ -1212,7 +1214,7 @@ public class JavadocContentAccess2 {
             if (link) {
                 String uri;
                 try {
-                    uri = JavaElementLinks.createURI(JavaElementLinks.JAVADOC_SCHEME, field);
+                    uri = JavaElementLinks.createURI(urlPrefix, field);
                     fBuf.append(JavaElementLinks.createLink(uri, text));
                 } catch (URISyntaxException e) {
                     LOG.error(e.getMessage(), e);
@@ -1627,7 +1629,7 @@ public class JavadocContentAccess2 {
             if (refTypeName != null) {
                 fBuf.append("<a href='"); //$NON-NLS-1$
                 try {
-                    String scheme = JavaElementLinks.JAVADOC_SCHEME;
+                    String scheme = urlPrefix;
                     String uri = JavaElementLinks.createURI(scheme, fElement, refTypeName, refMemberName, refMethodParamTypes);
                     fBuf.append(uri);
                 } catch (URISyntaxException e) {
@@ -1974,44 +1976,44 @@ public class JavadocContentAccess2 {
             throw new UnsupportedOperationException();
         }
 
-        /**
-         * @param method
-         *         the method
-         * @return the Javadoc content access for the given method, or
-         * <code>null</code> if no Javadoc could be found in source
-         * @throws org.eclipse.jdt.core.JavaModelException
-         *         unexpected problem
-         */
-        private JavadocContentAccess2 getJavadocContentAccess(IMethod method) throws JavaModelException {
-            Object cached = fContentAccesses.get(method);
-            if (cached != null)
-                return (JavadocContentAccess2)cached;
-            if (fContentAccesses.containsKey(method))
-                return null;
-
-            IBuffer buf = method.getOpenable().getBuffer();
-            if (buf == null) { // no source attachment found
-                fContentAccesses.put(method, null);
-                return null;
-            }
-
-            ISourceRange javadocRange = method.getJavadocRange();
-            if (javadocRange == null) {
-                fContentAccesses.put(method, null);
-                return null;
-            }
-
-            String rawJavadoc = buf.getText(javadocRange.getOffset(), javadocRange.getLength());
-            Javadoc javadoc = getJavadocNode(method, rawJavadoc);
-            if (javadoc == null) {
-                fContentAccesses.put(method, null);
-                return null;
-            }
-
-            JavadocContentAccess2 contentAccess = new JavadocContentAccess2(method, javadoc, rawJavadoc, this);
-            fContentAccesses.put(method, contentAccess);
-            return contentAccess;
-        }
+//        /**
+//         * @param method
+//         *         the method
+//         * @return the Javadoc content access for the given method, or
+//         * <code>null</code> if no Javadoc could be found in source
+//         * @throws org.eclipse.jdt.core.JavaModelException
+//         *         unexpected problem
+//         */
+//        private JavadocContentAccess2 getJavadocContentAccess(IMethod method) throws JavaModelException {
+//            Object cached = fContentAccesses.get(method);
+//            if (cached != null)
+//                return (JavadocContentAccess2)cached;
+//            if (fContentAccesses.containsKey(method))
+//                return null;
+//
+//            IBuffer buf = method.getOpenable().getBuffer();
+//            if (buf == null) { // no source attachment found
+//                fContentAccesses.put(method, null);
+//                return null;
+//            }
+//
+//            ISourceRange javadocRange = method.getJavadocRange();
+//            if (javadocRange == null) {
+//                fContentAccesses.put(method, null);
+//                return null;
+//            }
+//
+//            String rawJavadoc = buf.getText(javadocRange.getOffset(), javadocRange.getLength());
+//            Javadoc javadoc = getJavadocNode(method, rawJavadoc);
+//            if (javadoc == null) {
+//                fContentAccesses.put(method, null);
+//                return null;
+//            }
+//
+//            JavadocContentAccess2 contentAccess = new JavadocContentAccess2(method, javadoc, rawJavadoc, this);
+//            fContentAccesses.put(method, contentAccess);
+//            return contentAccess;
+//        }
 
         private ITypeHierarchy getTypeHierarchy() throws JavaModelException {
 //			if (fTypeHierarchy == null)

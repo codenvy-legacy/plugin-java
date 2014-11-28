@@ -43,10 +43,10 @@ public abstract class Openable extends JavaElement implements IOpenable, IBuffer
         super(parent, manager);
     }
 
-    @Override
-    public String toString() {
-        return String.valueOf(hashCode());
-    }
+//    @Override
+//    public String toString() {
+//        return String.valueOf(hashCode());
+//    }
     /**
      * The buffer associated with this element has changed. Registers
      * this element as being out of synch with its buffer's contents.
@@ -322,7 +322,7 @@ public abstract class Openable extends JavaElement implements IOpenable, IBuffer
      * Returns the buffer manager for this element.
      */
     protected BufferManager getBufferManager() {
-        return BufferManager.getDefaultBufferManager();
+        return manager.getDefaultBufferManager();
     }
     /**
      * Return my underlying resource. Elements that may not have a

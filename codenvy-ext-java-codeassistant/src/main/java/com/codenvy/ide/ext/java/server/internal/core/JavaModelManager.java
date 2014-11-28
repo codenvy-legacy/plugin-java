@@ -11,19 +11,38 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.ext.java.server.internal.core.search.BasicSearchEngine;
+import com.codenvy.ide.ext.java.server.internal.core.search.IRestrictedAccessTypeRequestor;
+import com.codenvy.ide.ext.java.server.internal.core.search.Util;
+import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaModelStatus;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IParent;
 import org.eclipse.jdt.core.IProblemRequestor;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.core.compiler.IProblem;
+import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
+import org.eclipse.jdt.internal.core.JavaModelStatus;
+import org.eclipse.jdt.internal.core.util.HashtableOfArrayToObject;
+import org.eclipse.jdt.internal.core.util.LRUCache;
 import org.eclipse.jdt.internal.core.util.Messages;
 import org.eclipse.jdt.internal.core.util.WeakHashSet;
 import org.eclipse.jdt.internal.core.util.WeakHashSetOfCharArray;
@@ -33,6 +52,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -44,48 +64,49 @@ import java.util.zip.ZipFile;
  */
 public class JavaModelManager {
 
-    public static boolean       ZIP_ACCESS_VERBOSE             = false;
-    public static boolean VERBOSE = false;
+    private final static String        INDEXED_SECONDARY_TYPES        = "#@*_indexing secondary cache_*@#"; //$NON-NLS-1$
+    public static        boolean       ZIP_ACCESS_VERBOSE             = false;
+    public static        boolean       VERBOSE                        = false;
     /**
      * A set of java.io.Files used as a cache of external jars that
      * are known to be existing.
      * Note this cache is kept for the whole session.
      */
-    public static HashSet<File> existingExternalFiles          = new HashSet<>();
-    /**
-     * A set of external files ({@link #existingExternalFiles}) which have
-     * been confirmed as file (i.e. which returns true to {@link java.io.File#isFile()}.
-     * Note this cache is kept for the whole session.
-     */
-    public static HashSet<File> existingExternalConfirmedFiles = new HashSet<>();
+    public static        HashSet<File> existingExternalFiles          = new HashSet<>();
 //    /**
 //     * The singleton manager
 //     */
 //    private static JavaModelManager MANAGER                        = new JavaModelManager();
     /**
-     * List of IPath of jars that are known to be invalid - such as not being a valid/known format
+     * A set of external files ({@link #existingExternalFiles}) which have
+     * been confirmed as file (i.e. which returns true to {@link java.io.File#isFile()}.
+     * Note this cache is kept for the whole session.
      */
-    private Set<IPath> invalidArchives;
-
+    public static        HashSet<File> existingExternalConfirmedFiles = new HashSet<>();
+    /* whether an AbortCompilationUnit should be thrown when the source of a compilation unit cannot be retrieved */
+    public               ThreadLocal   abortOnMissingSource           = new ThreadLocal();
     /**
      * Set of elements which are out of sync with their buffers.
      */
-    protected HashSet elementsOutOfSynchWithBuffers = new HashSet(11);
-
+    protected            HashSet       elementsOutOfSynchWithBuffers  = new HashSet(11);
+    /**
+     * Table from WorkingCopyOwner to a table of ICompilationUnit (working copy handle) to PerWorkingCopyInfo.
+     * NOTE: this object itself is used as a lock to synchronize creation/removal of per working copy infos
+     */
+    protected            Map           perWorkingCopyInfos            = new HashMap(5);
+    /**
+     * List of IPath of jars that are known to be invalid - such as not being a valid/known format
+     */
+    private Set<IPath> invalidArchives;
     /**
      * A cache of opened zip files per thread.
      * (for a given thread, the object value is a HashMap from IPath to java.io.ZipFile)
      */
-    private ThreadLocal<ZipCache> zipFiles = new ThreadLocal<>();
-
+    private ThreadLocal<ZipCache>  zipFiles         = new ThreadLocal<>();
     /*
  * Temporary cache of newly opened elements
  */
     private ThreadLocal            temporaryCache   = new ThreadLocal();
-
-    /* whether an AbortCompilationUnit should be thrown when the source of a compilation unit cannot be retrieved */
-    public ThreadLocal abortOnMissingSource = new ThreadLocal();
-
     /*
      * Pools of symbols used in the Java model.
      * Used as a replacement for String#intern() that could prevent garbage collection of strings on some VMs.
@@ -96,12 +117,9 @@ public class JavaModelManager {
      * Infos cache.
      */
     private JavaModelCache cache;
-
-    /**
-     * Table from WorkingCopyOwner to a table of ICompilationUnit (working copy handle) to PerWorkingCopyInfo.
-     * NOTE: this object itself is used as a lock to synchronize creation/removal of per working copy infos
-     */
-    protected Map perWorkingCopyInfos = new HashMap(5);
+    private IndexManager   indexManager;
+    private PerProjectInfo info;
+    private BufferManager  DEFAULT_BUFFER_MANAGER;
 
 //    public static JavaModelManager getJavaModelManager() {
 //        return MANAGER;
@@ -110,35 +128,6 @@ public class JavaModelManager {
     public JavaModelManager() {
         // initialize Java model cache
         this.cache = new JavaModelCache();
-    }
-
-    public synchronized char[] intern(char[] array) {
-        return this.charArraySymbols.add(array);
-    }
-
-    public synchronized String intern(String s) {
-        // make sure to copy the string (so that it doesn't hold on the underlying char[] that might be much bigger than necessary)
-        return (String)this.stringSymbols.add(new String(s));
-
-        // Note1: String#intern() cannot be used as on some VMs this prevents the string from being garbage collected
-        // Note 2: Instead of using a WeakHashset, one could use a WeakHashMap with the following implementation
-        // 			   This would costs more per entry (one Entry object and one WeakReference more))
-
-		/*
-		WeakReference reference = (WeakReference) this.symbols.get(s);
-		String existing;
-		if (reference != null && (existing = (String) reference.get()) != null)
-			return existing;
-		this.symbols.put(s, new WeakReference(s));
-		return s;
-		*/
-    }
-
-    /**
-     * Returns the set of elements which are out of synch with their buffers.
-     */
-    protected HashSet getElementsOutOfSynchWithBuffers() {
-        return this.elementsOutOfSynchWithBuffers;
     }
 
     /**
@@ -210,6 +199,134 @@ public class JavaModelManager {
         }
 
         return null;
+    }
+
+    /**
+     * Creates and returns a compilation unit element for the given <code>.java</code>
+     * file, its project being the given project. Returns <code>null</code> if unable
+     * to recognize the compilation unit.
+     */
+    public static ICompilationUnit createCompilationUnitFrom(File file, IJavaProject project) {
+
+        if (file == null) return null;
+
+//        if (project == null) {
+//            project = JavaCore.create(file.getProject());
+//        }
+        IPackageFragment pkg = (IPackageFragment)determineIfOnClasspath(file, (JavaProject)project);
+        if (pkg == null) {
+            // not on classpath - make the root its folder, and a default package
+            PackageFragmentRoot root = (PackageFragmentRoot)project.getPackageFragmentRoot(file.getParent());
+            pkg = root.getPackageFragment(CharOperation.NO_STRINGS);
+
+            if (VERBOSE) {
+                System.out.println("WARNING : creating unit element outside classpath (" + Thread.currentThread() + "): " +
+                                   file.getAbsolutePath()); //$NON-NLS-1$//$NON-NLS-2$
+            }
+        }
+        return pkg.getCompilationUnit(file.getName());
+    }
+
+    /**
+     * Returns the package fragment root represented by the resource, or
+     * the package fragment the given resource is located in, or <code>null</code>
+     * if the given resource is not on the classpath of the given project.
+     */
+    public static IJavaElement determineIfOnClasspath(File resource, JavaProject project) {
+        IPath resourcePath = new Path(resource.getAbsolutePath());
+        boolean isExternal = false; //ExternalFoldersManager.isInternalPathForExternalFolder(resourcePath);
+//        if (isExternal)
+//            resourcePath = resource.getLocation();
+
+        try {
+            JavaProjectElementInfo projectInfo = (JavaProjectElementInfo)((JavaProject)project).manager.getInfo(project);
+            JavaProjectElementInfo.ProjectCache projectCache = projectInfo == null ? null : projectInfo.projectCache;
+            HashtableOfArrayToObject allPkgFragmentsCache = projectCache == null ? null : projectCache.allPkgFragmentsCache;
+            boolean isJavaLike = Util.isJavaLikeFileName(resourcePath.lastSegment());
+            IClasspathEntry[] entries =
+                    isJavaLike ? project.getRawClasspath() // JAVA file can only live inside SRC folder (on the raw path)
+                               : ((JavaProject)project).getResolvedClasspath();
+
+            int length = entries.length;
+            if (length > 0) {
+                String sourceLevel = project.getOption(JavaCore.COMPILER_SOURCE, true);
+                String complianceLevel = project.getOption(JavaCore.COMPILER_COMPLIANCE, true);
+                for (int i = 0; i < length; i++) {
+                    IClasspathEntry entry = entries[i];
+                    if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT) continue;
+                    IPath rootPath = entry.getPath();
+                    if (rootPath.equals(resourcePath)) {
+                        if (isJavaLike)
+                            return null;
+                        return project.getPackageFragmentRoot(resource);
+                    } else if (rootPath.isPrefixOf(resourcePath)) {
+                        // allow creation of package fragment if it contains a .java file that is included
+                        if (!Util
+                                .isExcluded(resourcePath, ((ClasspathEntry)entry).fullInclusionPatternChars(),
+                                            ((ClasspathEntry)entry).fullExclusionPatternChars(), true)) {
+                            // given we have a resource child of the root, it cannot be a JAR pkg root
+                            PackageFragmentRoot root =
+//                                    isExternal ?
+//                                    new ExternalPackageFragmentRoot(rootPath, (JavaProject) project) :
+                                    (PackageFragmentRoot)((JavaProject)project).getFolderPackageFragmentRoot(rootPath);
+                            if (root == null) return null;
+                            IPath pkgPath = resourcePath.removeFirstSegments(rootPath.segmentCount());
+
+                            if (resource.isFile()) {
+                                // if the resource is a file, then remove the last segment which
+                                // is the file name in the package
+                                pkgPath = pkgPath.removeLastSegments(1);
+                            }
+                            String[] pkgName = pkgPath.segments();
+
+                            // if package name is in the cache, then it has already been validated
+                            // (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=133141)
+                            if (allPkgFragmentsCache != null && allPkgFragmentsCache.containsKey(pkgName))
+                                return root.getPackageFragment(pkgName);
+
+                            if (pkgName.length != 0 && JavaConventions.validatePackageName(
+                                    Util.packageName(pkgPath, sourceLevel, complianceLevel), sourceLevel,
+                                    complianceLevel).getSeverity() == IStatus.ERROR) {
+                                return null;
+                            }
+                            return root.getPackageFragment(pkgName);
+                        }
+                    }
+                }
+            }
+        } catch (JavaModelException npe) {
+            return null;
+        }
+        return null;
+    }
+
+    public synchronized char[] intern(char[] array) {
+        return this.charArraySymbols.add(array);
+    }
+
+    public synchronized String intern(String s) {
+        // make sure to copy the string (so that it doesn't hold on the underlying char[] that might be much bigger than necessary)
+        return (String)this.stringSymbols.add(new String(s));
+
+        // Note1: String#intern() cannot be used as on some VMs this prevents the string from being garbage collected
+        // Note 2: Instead of using a WeakHashset, one could use a WeakHashMap with the following implementation
+        // 			   This would costs more per entry (one Entry object and one WeakReference more))
+
+		/*
+        WeakReference reference = (WeakReference) this.symbols.get(s);
+		String existing;
+		if (reference != null && (existing = (String) reference.get()) != null)
+			return existing;
+		this.symbols.put(s, new WeakReference(s));
+		return s;
+		*/
+    }
+
+    /**
+     * Returns the set of elements which are out of synch with their buffers.
+     */
+    protected HashSet getElementsOutOfSynchWithBuffers() {
+        return this.elementsOutOfSynchWithBuffers;
     }
 
     /**
@@ -303,7 +420,7 @@ public class JavaModelManager {
     }
 
     /**
-     *  Returns the info for the element.
+     * Returns the info for the element.
      */
     public synchronized Object getInfo(IJavaElement element) {
         HashMap tempCache = (HashMap)this.temporaryCache.get();
@@ -317,8 +434,8 @@ public class JavaModelManager {
     }
 
     /**
-     *  Returns the info for this element without
-     *  disturbing the cache ordering.
+     * Returns the info for this element without
+     * disturbing the cache ordering.
      */
     protected synchronized Object peekAtInfo(IJavaElement element) {
         HashMap tempCache = (HashMap)this.temporaryCache.get();
@@ -341,7 +458,7 @@ public class JavaModelManager {
         if (info != null) {
             boolean wasVerbose = false;
             try {
-                if (org.eclipse.jdt.internal.core.JavaModelCache.VERBOSE) {
+                if (JavaModelCache.VERBOSE) {
                     String elementType;
                     switch (element.getElementType()) {
                         case IJavaElement.JAVA_PROJECT:
@@ -362,7 +479,8 @@ public class JavaModelManager {
                         default:
                             elementType = "element"; //$NON-NLS-1$
                     }
-                    System.out.println(Thread.currentThread() + " CLOSING "+ elementType + " " + element.toStringWithAncestors());  //$NON-NLS-1$//$NON-NLS-2$
+                    System.out.println(Thread.currentThread() + " CLOSING " + elementType + " " +
+                                       element.toStringWithAncestors());  //$NON-NLS-1$//$NON-NLS-2$
                     wasVerbose = true;
                     JavaModelCache.VERBOSE = false;
                 }
@@ -435,7 +553,7 @@ public class JavaModelManager {
         // Subsequent resolution against package in the jar would fail as a result.
         // https://bugs.eclipse.org/bugs/show_bug.cgi?id=102422
         // (theodora)
-        for(Iterator it = newElements.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = newElements.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry entry = (Map.Entry)it.next();
             IJavaElement element = (IJavaElement)entry.getKey();
             if (element instanceof JarPackageFragmentRoot) {
@@ -447,16 +565,17 @@ public class JavaModelManager {
 
         Iterator iterator = newElements.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            this.cache.putInfo((IJavaElement) entry.getKey(), entry.getValue());
+            Map.Entry entry = (Map.Entry)iterator.next();
+            this.cache.putInfo((IJavaElement)entry.getKey(), entry.getValue());
         }
         return newInfo;
     }
+
     private void closeChildren(Object info) {
         if (info instanceof JavaElementInfo) {
             IJavaElement[] children = ((JavaElementInfo)info).getChildren();
             for (int i = 0, size = children.length; i < size; ++i) {
-                JavaElement child = (JavaElement) children[i];
+                JavaElement child = (JavaElement)children[i];
                 try {
                     child.close();
                 } catch (JavaModelException e) {
@@ -465,14 +584,16 @@ public class JavaModelManager {
             }
         }
     }
+
     /*
  * Returns the per-working copy info for the given working copy at the given path.
  * If it doesn't exist and if create, add a new per-working copy info with the given problem requestor.
  * If recordUsage, increment the per-working copy info's use count.
  * Returns null if it doesn't exist and not create.
  */
-    public PerWorkingCopyInfo getPerWorkingCopyInfo(CompilationUnit workingCopy,boolean create, boolean recordUsage, IProblemRequestor problemRequestor) {
-        synchronized(this.perWorkingCopyInfos) { // use the perWorkingCopyInfo collection as its own lock
+    public PerWorkingCopyInfo getPerWorkingCopyInfo(CompilationUnit workingCopy, boolean create, boolean recordUsage,
+                                                    IProblemRequestor problemRequestor) {
+        synchronized (this.perWorkingCopyInfos) { // use the perWorkingCopyInfo collection as its own lock
             WorkingCopyOwner owner = workingCopy.owner;
             Map workingCopyToInfos = (Map)this.perWorkingCopyInfos.get(owner);
             if (workingCopyToInfos == null && create) {
@@ -480,14 +601,405 @@ public class JavaModelManager {
                 this.perWorkingCopyInfos.put(owner, workingCopyToInfos);
             }
 
-            PerWorkingCopyInfo info = workingCopyToInfos == null ? null : (PerWorkingCopyInfo) workingCopyToInfos.get(workingCopy);
+            PerWorkingCopyInfo info = workingCopyToInfos == null ? null : (PerWorkingCopyInfo)workingCopyToInfos.get(workingCopy);
             if (info == null && create) {
-                info= new PerWorkingCopyInfo(workingCopy, problemRequestor);
+                info = new PerWorkingCopyInfo(workingCopy, problemRequestor);
                 workingCopyToInfos.put(workingCopy, info);
             }
             if (info != null && recordUsage) info.useCount++;
             return info;
         }
+    }
+
+    /*
+ * Returns the per-project info for the given project. If specified, create the info if the info doesn't exist.
+ */
+    public PerProjectInfo getPerProjectInfo(boolean create) {
+//        synchronized(this.perProjectInfos) { // use the perProjectInfo collection as its own lock
+//            PerProjectInfo info= (PerProjectInfo) this.perProjectInfos.get(project);
+        if (info == null && create) {
+            info = new PerProjectInfo();
+//                this.perProjectInfos.put(project, info);
+        }
+        return info;
+//        }
+    }
+
+    /*
+     * Returns  the per-project info for the given project.
+     * If the info doesn't exist, check for the project existence and create the info.
+     * @throws JavaModelException if the project doesn't exist.
+     */
+    public PerProjectInfo getPerProjectInfoCheckExistence() throws JavaModelException {
+        JavaModelManager.PerProjectInfo info = getPerProjectInfo(false /* don't create info */);
+        if (info == null) {
+//            if (!JavaProject.hasJavaNature(project)) {
+//                throw ((JavaProject)JavaCore.create(project)).newNotPresentException();
+//            }
+            info = getPerProjectInfo(true /* create info */);
+        }
+        return info;
+    }
+
+    /**
+     * Get all secondary types for a project and store result in per project info cache.
+     * <p>
+     * This cache is an <code>Hashtable&lt;String, HashMap&lt;String, IType&gt;&gt;</code>:
+     * <ul>
+     * <li>key: package name
+     * <li>value:
+     * <ul>
+     * <li>key: type name
+     * <li>value: java model handle for the secondary type
+     * </ul>
+     * </ul>
+     * Hashtable was used to protect callers from possible concurrent access.
+     * </p>
+     * Note that this map may have a specific entry which key is {@link #INDEXED_SECONDARY_TYPES }
+     * and value is a map containing all secondary types created during indexing.
+     * When this key is in cache and indexing is finished, returned map is merged
+     * with the value of this special key. If indexing is not finished and caller does
+     * not wait for the end of indexing, returned map is the current secondary
+     * types cache content which may be invalid...
+     *
+     * @param project
+     *         Project we want get secondary types from
+     * @return HashMap Table of secondary type names->path for given project
+     */
+    public Map secondaryTypes(IJavaProject project, boolean waitForIndexes, IProgressMonitor monitor) throws JavaModelException {
+        if (VERBOSE) {
+            StringBuffer buffer = new StringBuffer("JavaModelManager.secondaryTypes("); //$NON-NLS-1$
+            buffer.append(project.getElementName());
+            buffer.append(',');
+            buffer.append(waitForIndexes);
+            buffer.append(')');
+            Util.verbose(buffer.toString());
+        }
+
+        // Return cache if not empty and there's no new secondary types created during indexing
+        final PerProjectInfo projectInfo = getPerProjectInfoCheckExistence();
+        Map indexingSecondaryCache =
+                projectInfo.secondaryTypes == null ? null : (Map)projectInfo.secondaryTypes.get(INDEXED_SECONDARY_TYPES);
+        if (projectInfo.secondaryTypes != null && indexingSecondaryCache == null) {
+            return projectInfo.secondaryTypes;
+        }
+
+        // Perform search request only if secondary types cache is not initialized yet (this will happen only once!)
+        if (projectInfo.secondaryTypes == null) {
+            return secondaryTypesSearching(project, waitForIndexes, monitor, projectInfo);
+        }
+
+        // New secondary types have been created while indexing secondary types cache
+        // => need to know whether the indexing is finished or not
+        boolean indexing = this.indexManager.awaitingJobsCount() > 0;
+        if (indexing) {
+            if (!waitForIndexes) {
+                // Indexing is running but caller cannot wait => return current cache
+                return projectInfo.secondaryTypes;
+            }
+
+            // Wait for the end of indexing or a cancel
+            while (this.indexManager.awaitingJobsCount() > 0) {
+                if (monitor != null && monitor.isCanceled()) {
+                    return projectInfo.secondaryTypes;
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    return projectInfo.secondaryTypes;
+                }
+            }
+        }
+
+        // Indexing is finished => merge caches and return result
+        return secondaryTypesMerging(projectInfo.secondaryTypes);
+    }
+
+    /*
+     * Return secondary types cache merged with new secondary types created while indexing
+     * Note that merge result is directly stored in given parameter map.
+     */
+    private Hashtable secondaryTypesMerging(Hashtable secondaryTypes) {
+        if (VERBOSE) {
+            Util.verbose("JavaModelManager.getSecondaryTypesMerged()"); //$NON-NLS-1$
+            Util.verbose("	- current cache to merge:"); //$NON-NLS-1$
+            Iterator entries = secondaryTypes.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry)entries.next();
+                String packName = (String)entry.getKey();
+                Util.verbose("		+ " + packName + ':' + entry.getValue()); //$NON-NLS-1$
+            }
+        }
+
+        // Return current cache if there's no indexing cache (double check, this should not happen)
+        HashMap indexedSecondaryTypes = (HashMap)secondaryTypes.remove(INDEXED_SECONDARY_TYPES);
+        if (indexedSecondaryTypes == null) {
+            return secondaryTypes;
+        }
+
+        // Merge indexing cache in secondary types one
+        Iterator entries = indexedSecondaryTypes.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry entry = (Map.Entry)entries.next();
+            File file = (File)entry.getKey();
+
+            // Remove all secondary types of indexed file from cache
+            secondaryTypesRemoving(secondaryTypes, file);
+
+            // Add all indexing file secondary types in given secondary types cache
+            HashMap fileSecondaryTypes = (HashMap)entry.getValue();
+            Iterator entries2 = fileSecondaryTypes.entrySet().iterator();
+            while (entries2.hasNext()) {
+                Map.Entry entry2 = (Map.Entry)entries2.next();
+                String packageName = (String)entry2.getKey();
+                HashMap cachedTypes = (HashMap)secondaryTypes.get(packageName);
+                if (cachedTypes == null) {
+                    secondaryTypes.put(packageName, entry2.getValue());
+                } else {
+                    HashMap types = (HashMap)entry2.getValue();
+                    Iterator entries3 = types.entrySet().iterator();
+                    while (entries3.hasNext()) {
+                        Map.Entry entry3 = (Map.Entry)entries3.next();
+                        String typeName = (String)entry3.getKey();
+                        cachedTypes.put(typeName, entry3.getValue());
+                    }
+                }
+            }
+        }
+        if (VERBOSE) {
+            Util.verbose("	- secondary types cache merged:"); //$NON-NLS-1$
+            entries = secondaryTypes.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry)entries.next();
+                String packName = (String)entry.getKey();
+                Util.verbose("		+ " + packName + ':' + entry.getValue()); //$NON-NLS-1$
+            }
+        }
+        return secondaryTypes;
+    }
+
+    /**
+     * Remove from secondary types cache all types belonging to a given file.
+     * Clean secondary types cache built while indexing if requested.
+     * <p/>
+     * Project's secondary types cache is found using file location.
+     *
+     * @param file
+     *         File to remove
+     */
+    public void secondaryTypesRemoving(File file, boolean cleanIndexCache) {
+        if (VERBOSE) {
+            StringBuffer buffer = new StringBuffer("JavaModelManager.removeFromSecondaryTypesCache("); //$NON-NLS-1$
+            buffer.append(file.getName());
+            buffer.append(')');
+            Util.verbose(buffer.toString());
+        }
+        if (file != null) {
+            PerProjectInfo projectInfo = getPerProjectInfo(false);
+            if (projectInfo != null && projectInfo.secondaryTypes != null) {
+                if (VERBOSE) {
+                    Util.verbose("-> remove file from cache of project: " + file.getAbsolutePath()); //$NON-NLS-1$
+                }
+
+                // Clean current cache
+                secondaryTypesRemoving(projectInfo.secondaryTypes, file);
+
+                // Clean indexing cache if necessary
+                HashMap indexingCache = (HashMap)projectInfo.secondaryTypes.get(INDEXED_SECONDARY_TYPES);
+                if (!cleanIndexCache) {
+                    if (indexingCache == null) {
+                        // Need to signify that secondary types indexing will happen before any request happens
+                        // see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=152841
+                        projectInfo.secondaryTypes.put(INDEXED_SECONDARY_TYPES, new HashMap());
+                    }
+                    return;
+                }
+                if (indexingCache != null) {
+                    Set keys = indexingCache.keySet();
+                    int filesSize = keys.size(), filesCount = 0;
+                    File[] removed = null;
+                    Iterator cachedFiles = keys.iterator();
+                    while (cachedFiles.hasNext()) {
+                        File cachedFile = (File)cachedFiles.next();
+                        if (file.equals(cachedFile)) {
+                            if (removed == null) removed = new File[filesSize];
+                            filesSize--;
+                            removed[filesCount++] = cachedFile;
+                        }
+                    }
+                    if (removed != null) {
+                        for (int i = 0; i < filesCount; i++) {
+                            indexingCache.remove(removed[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Remove from a given cache map all secondary types belonging to a given file.
+	 * Note that there can have several secondary types per file...
+	 */
+    private void secondaryTypesRemoving(Hashtable secondaryTypesMap, File file) {
+        if (VERBOSE) {
+            StringBuffer buffer = new StringBuffer("JavaModelManager.removeSecondaryTypesFromMap("); //$NON-NLS-1$
+            Iterator entries = secondaryTypesMap.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry)entries.next();
+                String qualifiedName = (String)entry.getKey();
+                buffer.append(qualifiedName + ':' + entry.getValue());
+            }
+            buffer.append(',');
+            buffer.append(file.getAbsolutePath());
+            buffer.append(')');
+            Util.verbose(buffer.toString());
+        }
+        Set packageEntries = secondaryTypesMap.entrySet();
+        int packagesSize = packageEntries.size(), removedPackagesCount = 0;
+        String[] removedPackages = null;
+        Iterator packages = packageEntries.iterator();
+        while (packages.hasNext()) {
+            Map.Entry entry = (Map.Entry)packages.next();
+            String packName = (String)entry.getKey();
+            if (packName != INDEXED_SECONDARY_TYPES) { // skip indexing cache entry if present (!= is intentional)
+                HashMap types = (HashMap)entry.getValue();
+                Set nameEntries = types.entrySet();
+                int namesSize = nameEntries.size(), removedNamesCount = 0;
+                String[] removedNames = null;
+                Iterator names = nameEntries.iterator();
+                while (names.hasNext()) {
+                    Map.Entry entry2 = (Map.Entry)names.next();
+                    String typeName = (String)entry2.getKey();
+                    JavaElement type = (JavaElement)entry2.getValue();
+                    if (file.equals(type.resource())) {
+                        if (removedNames == null) removedNames = new String[namesSize];
+                        namesSize--;
+                        removedNames[removedNamesCount++] = typeName;
+                    }
+                }
+                if (removedNames != null) {
+                    for (int i = 0; i < removedNamesCount; i++) {
+                        types.remove(removedNames[i]);
+                    }
+                }
+                if (types.size() == 0) {
+                    if (removedPackages == null) removedPackages = new String[packagesSize];
+                    packagesSize--;
+                    removedPackages[removedPackagesCount++] = packName;
+                }
+            }
+        }
+        if (removedPackages != null) {
+            for (int i = 0; i < removedPackagesCount; i++) {
+                secondaryTypesMap.remove(removedPackages[i]);
+            }
+        }
+        if (VERBOSE) {
+            Util.verbose("	- new secondary types map:"); //$NON-NLS-1$
+            Iterator entries = secondaryTypesMap.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry)entries.next();
+                String qualifiedName = (String)entry.getKey();
+                Util.verbose("		+ " + qualifiedName + ':' + entry.getValue()); //$NON-NLS-1$
+            }
+        }
+    }
+
+    /**
+     * Returns the existing element in the cache that is equal to the given element.
+     */
+    public synchronized IJavaElement getExistingElement(IJavaElement element) {
+        return this.cache.getExistingElement(element);
+    }
+
+    /**
+     * Remember the info for the jar binary type
+     */
+    protected synchronized void putJarTypeInfo(IJavaElement type, Object info) {
+        this.cache.jarTypeCache.put(type, info);
+    }
+
+    /*
+     * Perform search request to get all secondary types of a given project.
+     * If not waiting for indexes and indexing is running, will return types found in current built indexes...
+     */
+    private Map secondaryTypesSearching(IJavaProject project, boolean waitForIndexes, IProgressMonitor monitor,
+                                        final PerProjectInfo projectInfo) throws JavaModelException {
+        if (VERBOSE || BasicSearchEngine.VERBOSE) {
+            StringBuffer buffer = new StringBuffer("JavaModelManager.secondaryTypesSearch("); //$NON-NLS-1$
+            buffer.append(project.getElementName());
+            buffer.append(',');
+            buffer.append(waitForIndexes);
+            buffer.append(')');
+            Util.verbose(buffer.toString());
+        }
+
+        final Hashtable secondaryTypes = new Hashtable(3);
+        IRestrictedAccessTypeRequestor nameRequestor = new IRestrictedAccessTypeRequestor() {
+            public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
+                                   AccessRestriction access) {
+                String key = packageName == null ? "" : new String(packageName); //$NON-NLS-1$
+                HashMap types = (HashMap)secondaryTypes.get(key);
+                if (types == null) types = new HashMap(3);
+                types.put(new String(simpleTypeName), path);
+                secondaryTypes.put(key, types);
+            }
+        };
+
+        // Build scope using prereq projects but only source folders
+        IPackageFragmentRoot[] allRoots = project.getAllPackageFragmentRoots();
+        int length = allRoots.length, size = 0;
+        IPackageFragmentRoot[] allSourceFolders = new IPackageFragmentRoot[length];
+        for (int i = 0; i < length; i++) {
+            if (allRoots[i].getKind() == IPackageFragmentRoot.K_SOURCE) {
+                allSourceFolders[size++] = allRoots[i];
+            }
+        }
+        if (size < length) {
+            System.arraycopy(allSourceFolders, 0, allSourceFolders = new IPackageFragmentRoot[size], 0, size);
+        }
+
+        // Search all secondary types on scope
+        new BasicSearchEngine(indexManager, (JavaProject)project)
+                .searchAllSecondaryTypeNames(allSourceFolders, nameRequestor, waitForIndexes, monitor);
+
+        // Build types from paths
+        Iterator packages = secondaryTypes.values().iterator();
+        while (packages.hasNext()) {
+            HashMap types = (HashMap)packages.next();
+            HashMap tempTypes = new HashMap(types.size());
+            Iterator names = types.entrySet().iterator();
+            while (names.hasNext()) {
+                Map.Entry entry = (Map.Entry)names.next();
+                String typeName = (String)entry.getKey();
+                String path = (String)entry.getValue();
+                names.remove();
+                if (Util.isJavaLikeFileName(path)) {
+                    File file = new File(path);// ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path));
+                    ICompilationUnit unit = JavaModelManager.createCompilationUnitFrom(file, null);
+                    IType type = unit.getType(typeName);
+                    tempTypes.put(typeName, type);
+                }
+            }
+            types.putAll(tempTypes);
+        }
+
+        // Store result in per project info cache if still null or there's still an indexing cache (may have been set by another thread...)
+        if (projectInfo.secondaryTypes == null || projectInfo.secondaryTypes.get(INDEXED_SECONDARY_TYPES) != null) {
+            projectInfo.secondaryTypes = secondaryTypes;
+            if (VERBOSE || BasicSearchEngine.VERBOSE) {
+                System.out.print(Thread.currentThread() + "	-> secondary paths stored in cache: ");  //$NON-NLS-1$
+                System.out.println();
+                Iterator entries = secondaryTypes.entrySet().iterator();
+                while (entries.hasNext()) {
+                    Map.Entry entry = (Map.Entry)entries.next();
+                    String qualifiedName = (String)entry.getKey();
+                    Util.verbose("		- " + qualifiedName + '-' + entry.getValue()); //$NON-NLS-1$
+                }
+            }
+        }
+        return projectInfo.secondaryTypes;
     }
 
     /*
@@ -508,12 +1020,24 @@ public class JavaModelManager {
         }
         try {
             if (JavaModelManager.ZIP_ACCESS_VERBOSE) {
-                System.out.println("(" + Thread.currentThread() + ") [JavaModelManager.closeZipFile(ZipFile)] Closing ZipFile on " +zipFile.getName()); //$NON-NLS-1$	//$NON-NLS-2$
+                System.out.println("(" + Thread.currentThread() + ") [JavaModelManager.closeZipFile(ZipFile)] Closing ZipFile on " +
+                                   zipFile.getName()); //$NON-NLS-1$	//$NON-NLS-2$
             }
             zipFile.close();
         } catch (IOException e) {
             // problem occured closing zip file: cannot do much more
         }
+    }
+
+    public void setIndexManager(IndexManager indexManager) {
+        this.indexManager = indexManager;
+    }
+
+    public synchronized BufferManager getDefaultBufferManager() {
+        if (DEFAULT_BUFFER_MANAGER == null) {
+            DEFAULT_BUFFER_MANAGER = new BufferManager();
+        }
+        return DEFAULT_BUFFER_MANAGER;
     }
 
     /**
@@ -552,10 +1076,289 @@ public class JavaModelManager {
         }
     }
 
+    public static class PerProjectInfo {
+        static final         IJavaModelStatus NEED_RESOLUTION            = new JavaModelStatus();
+        private static final int              JAVADOC_CACHE_INITIAL_SIZE = 10;
+        //        public IProject          project;
+        public Object            savedState;
+        public boolean           triedRead;
+        public IClasspathEntry[] rawClasspath;
+        public IClasspathEntry[] referencedEntries;
+        public IJavaModelStatus  rawClasspathStatus;
+        public int     rawTimeStamp         = 0;
+        public boolean writtingRawClasspath = false;
+        public IClasspathEntry[] resolvedClasspath;
+        public IJavaModelStatus  unresolvedEntryStatus;
+        public Map               rootPathToRawEntries; // reverse map from a package fragment root's path to the raw entry
+        public Map               rootPathToResolvedEntries; // map from a package fragment root's path to the resolved entry
+        public IPath             outputLocation;
+
+        //        public IEclipsePreferences preferences;
+        public Hashtable options;
+        public Hashtable secondaryTypes;
+        public LRUCache  javadocCache;
+
+        public PerProjectInfo(/*IProject project*/) {
+
+            this.triedRead = false;
+            this.savedState = null;
+//            this.project = project;
+            this.javadocCache = new LRUCache(JAVADOC_CACHE_INITIAL_SIZE);
+        }
+
+        public synchronized IClasspathEntry[] getResolvedClasspath() {
+            if (this.unresolvedEntryStatus == NEED_RESOLUTION)
+                return null;
+            return this.resolvedClasspath;
+        }
+
+        public void forgetExternalTimestampsAndIndexes() {
+//            IClasspathEntry[] classpath = this.resolvedClasspath;
+//            if (classpath == null) return;
+//            JavaModelManager manager = JavaModelManager.getJavaModelManager();
+//            IndexManager indexManager = manager.indexManager;
+//            Map externalTimeStamps = manager.deltaState.getExternalLibTimeStamps();
+//            HashMap rootInfos = JavaModelManager.getDeltaState().otherRoots;
+//            for (int i = 0, length = classpath.length; i < length; i++) {
+//                IClasspathEntry entry = classpath[i];
+//                if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+//                    IPath path = entry.getPath();
+//                    if (rootInfos.get(path) == null) {
+//                        externalTimeStamps.remove(path);
+//                        indexManager.removeIndex(
+//                                path); // force reindexing on next reference (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=250083 )
+//                    }
+//                }
+//            }
+            throw new UnsupportedOperationException();
+        }
+
+        public void rememberExternalLibTimestamps() {
+//            IClasspathEntry[] classpath = this.resolvedClasspath;
+//            if (classpath == null) return;
+//            Map externalTimeStamps = JavaModelManager.getJavaModelManager().deltaState.getExternalLibTimeStamps();
+//            for (int i = 0, length = classpath.length; i < length; i++) {
+//                IClasspathEntry entry = classpath[i];
+//                if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+//                    IPath path = entry.getPath();
+//                    if (externalTimeStamps.get(path) == null) {
+//                        Object target = JavaModel.getExternalTarget(path, true);
+//                        if (target instanceof File) {
+//                            long timestamp = DeltaProcessor.getTimeStamp((java.io.File)target);
+//                            externalTimeStamps.put(path, new Long(timestamp));
+//                        }
+//                    }
+//                }
+//            }
+            throw new UnsupportedOperationException();
+        }
+
+//        public synchronized ClasspathChange resetResolvedClasspath() {
+//            // clear non-chaining jars cache and invalid jars cache
+//            JavaModelManager.getJavaModelManager().resetClasspathListCache();
+//
+//            // null out resolved information
+//            return setResolvedClasspath(null, null, null, null, this.rawTimeStamp, true/*add classpath change*/);
+//            throw new UnsupportedOperationException();
+//        }
+
+//        private ClasspathChange setClasspath(IClasspathEntry[] newRawClasspath, IClasspathEntry[] referencedEntries,
+//                                             IPath newOutputLocation, IJavaModelStatus newRawClasspathStatus,
+//                                             IClasspathEntry[] newResolvedClasspath, Map newRootPathToRawEntries,
+//                                             Map newRootPathToResolvedEntries, IJavaModelStatus newUnresolvedEntryStatus,
+//                                             boolean addClasspathChange) {
+//            ClasspathChange classpathChange = addClasspathChange ? addClasspathChange() : null;
+//
+//            if (referencedEntries != null) this.referencedEntries = referencedEntries;
+//            if (this.referencedEntries == null) this.referencedEntries = org.eclipse.jdt.internal.core.ClasspathEntry.NO_ENTRIES;
+//            this.rawClasspath = newRawClasspath;
+//            this.outputLocation = newOutputLocation;
+//            this.rawClasspathStatus = newRawClasspathStatus;
+//            this.resolvedClasspath = newResolvedClasspath;
+//            this.rootPathToRawEntries = newRootPathToRawEntries;
+//            this.rootPathToResolvedEntries = newRootPathToResolvedEntries;
+//            this.unresolvedEntryStatus = newUnresolvedEntryStatus;
+//            this.javadocCache = new LRUCache(JAVADOC_CACHE_INITIAL_SIZE);
+//
+//            return classpathChange;
+//        }
+//
+//        protected ClasspathChange addClasspathChange() {
+////            // remember old info
+////            JavaModelManager manager = JavaModelManager.getJavaModelManager();
+////            ClasspathChange classpathChange =
+////                    manager.deltaState.addClasspathChange(this.project, this.rawClasspath, this.outputLocation, this.resolvedClasspath);
+////            return classpathChange;
+//            throw new UnsupportedOperationException();
+//        }
+//
+//        public ClasspathChange setRawClasspath(IClasspathEntry[] newRawClasspath, IPath newOutputLocation,
+//                                               IJavaModelStatus newRawClasspathStatus) {
+//            return setRawClasspath(newRawClasspath, null, newOutputLocation, newRawClasspathStatus);
+//        }
+//
+//        public synchronized ClasspathChange setRawClasspath(IClasspathEntry[] newRawClasspath, IClasspathEntry[] referencedEntries,
+//                                                            IPath newOutputLocation, IJavaModelStatus newRawClasspathStatus) {
+//            this.rawTimeStamp++;
+//            return setClasspath(newRawClasspath, referencedEntries, newOutputLocation, newRawClasspathStatus, null/*resolved classpath*/,
+//                                null/*root to raw map*/, null/*root to resolved map*/, null/*unresolved status*/, true/*add classpath
+//                                change*/);
+//        }
+//
+//        public ClasspathChange setResolvedClasspath(IClasspathEntry[] newResolvedClasspath, Map newRootPathToRawEntries,
+//                                                    Map newRootPathToResolvedEntries, IJavaModelStatus newUnresolvedEntryStatus,
+//                                                    int timeStamp, boolean addClasspathChange) {
+//            return setResolvedClasspath(newResolvedClasspath, null, newRootPathToRawEntries, newRootPathToResolvedEntries,
+//                                        newUnresolvedEntryStatus, timeStamp, addClasspathChange);
+//        }
+//
+//        public synchronized ClasspathChange setResolvedClasspath(IClasspathEntry[] newResolvedClasspath,
+//                                                                 IClasspathEntry[] referencedEntries, Map newRootPathToRawEntries,
+//                                                                 Map newRootPathToResolvedEntries,
+//                                                                 IJavaModelStatus newUnresolvedEntryStatus, int timeStamp,
+//                                                                 boolean addClasspathChange) {
+//            if (this.rawTimeStamp != timeStamp)
+//                return null;
+//            return setClasspath(this.rawClasspath, referencedEntries, this.outputLocation, this.rawClasspathStatus, newResolvedClasspath,
+//                                newRootPathToRawEntries, newRootPathToResolvedEntries, newUnresolvedEntryStatus, addClasspathChange);
+//        }
+
+        /**
+         * Reads the classpath and caches the entries. Returns a two-dimensional array, where the number of elements in the row is fixed
+         * to 2.
+         * The first element is an array of raw classpath entries and the second element is an array of referenced entries that may have
+         * been stored
+         * by the client earlier. See {@link IJavaProject#getReferencedClasspathEntries()} for more details.
+         */
+        public synchronized IClasspathEntry[][] readAndCacheClasspath(JavaProject javaProject) {
+//            // read file entries and update status
+//            IClasspathEntry[][] classpath;
+//            IJavaModelStatus status;
+//            try {
+//                classpath = javaProject.readFileEntriesWithException(null/*not interested in unknown elements*/);
+//                status = JavaModelStatus.VERIFIED_OK;
+//            } catch (CoreException e) {
+//                classpath = new IClasspathEntry[][]{JavaProject.INVALID_CLASSPATH,
+//                                                    ClasspathEntry.NO_ENTRIES};
+//                status =
+//                        new JavaModelStatus(
+//                                IJavaModelStatusConstants.INVALID_CLASSPATH_FILE_FORMAT,
+//                                Messages.bind(Messages.classpath_cannotReadClasspathFile, javaProject.getElementName()));
+//            } catch (IOException e) {
+//                classpath = new IClasspathEntry[][]{JavaProject.INVALID_CLASSPATH,
+//                                                    ClasspathEntry.NO_ENTRIES};
+//                if (Messages.file_badFormat.equals(e.getMessage()))
+//                    status =
+//                            new JavaModelStatus(
+//                                    IJavaModelStatusConstants.INVALID_CLASSPATH_FILE_FORMAT,
+//                                    Messages.bind(Messages.classpath_xmlFormatError, javaProject.getElementName(),
+//                                                  Messages.file_badFormat));
+//                else
+//                    status =
+//                            new JavaModelStatus(
+//                                    IJavaModelStatusConstants.INVALID_CLASSPATH_FILE_FORMAT,
+//                                    Messages.bind(Messages.classpath_cannotReadClasspathFile, javaProject.getElementName()));
+//            } catch (ClasspathEntry.AssertionFailedException e) {
+//                classpath = new IClasspathEntry[][]{JavaProject.INVALID_CLASSPATH,
+//                                                    ClasspathEntry.NO_ENTRIES};
+//                status =
+//                        new JavaModelStatus(
+//                                IJavaModelStatusConstants.INVALID_CLASSPATH_FILE_FORMAT,
+//                                Messages.bind(Messages.classpath_illegalEntryInClasspathFile,
+//                                              new String[]{javaProject.getElementName(), e.getMessage()}));
+//            }
+//
+//            // extract out the output location
+//            int rawClasspathLength = classpath[0].length;
+//            IPath output = null;
+//            if (rawClasspathLength > 0) {
+//                IClasspathEntry entry = classpath[0][rawClasspathLength - 1];
+//                if (entry.getContentKind() == ClasspathEntry.K_OUTPUT) {
+//                    output = entry.getPath();
+//                    IClasspathEntry[] copy = new IClasspathEntry[rawClasspathLength - 1];
+//                    System.arraycopy(classpath[0], 0, copy, 0, copy.length);
+//                    classpath[0] = copy;
+//                }
+//            }
+//
+//            // store new raw classpath, new output and new status, and null out resolved info
+////            setRawClasspath(classpath[0], classpath[1], output, status);
+//
+//            return classpath;
+            throw new UnsupportedOperationException();
+        }
+
+        public String toString() {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("Info for "); //$NON-NLS-1$
+//            buffer.append(this.project.getFullPath());
+            buffer.append("\nRaw classpath:\n"); //$NON-NLS-1$
+            if (this.rawClasspath == null) {
+                buffer.append("  <null>\n"); //$NON-NLS-1$
+            } else {
+                for (int i = 0, length = this.rawClasspath.length; i < length; i++) {
+                    buffer.append("  "); //$NON-NLS-1$
+                    buffer.append(this.rawClasspath[i]);
+                    buffer.append('\n');
+                }
+            }
+            buffer.append("Resolved classpath:\n"); //$NON-NLS-1$
+            IClasspathEntry[] resolvedCP = this.resolvedClasspath;
+            if (resolvedCP == null) {
+                buffer.append("  <null>\n"); //$NON-NLS-1$
+            } else {
+                for (int i = 0, length = resolvedCP.length; i < length; i++) {
+                    buffer.append("  "); //$NON-NLS-1$
+                    buffer.append(resolvedCP[i]);
+                    buffer.append('\n');
+                }
+            }
+            buffer.append("Resolved classpath status: "); //$NON-NLS-1$
+            if (this.unresolvedEntryStatus == NEED_RESOLUTION)
+                buffer.append("NEED RESOLUTION"); //$NON-NLS-1$
+            else
+                buffer.append(this.unresolvedEntryStatus == null ? "<null>\n" : this.unresolvedEntryStatus.toString()); //$NON-NLS-1$
+            buffer.append("Output location:\n  "); //$NON-NLS-1$
+            if (this.outputLocation == null) {
+                buffer.append("<null>"); //$NON-NLS-1$
+            } else {
+                buffer.append(this.outputLocation);
+            }
+            return buffer.toString();
+        }
+
+        public boolean writeAndCacheClasspath(
+                JavaProject javaProject,
+                final IClasspathEntry[] newRawClasspath,
+                IClasspathEntry[] newReferencedEntries,
+                final IPath newOutputLocation) throws JavaModelException {
+            try {
+                this.writtingRawClasspath = true;
+                if (newReferencedEntries == null) newReferencedEntries = this.referencedEntries;
+
+//                // write .classpath
+//                if (!javaProject.writeFileEntries(newRawClasspath, newReferencedEntries, newOutputLocation)) {
+//                    return false;
+//                }
+//                // store new raw classpath, new output and new status, and null out resolved info
+//                setRawClasspath(newRawClasspath, newReferencedEntries, newOutputLocation, JavaModelStatus.VERIFIED_OK);
+            } finally {
+                this.writtingRawClasspath = false;
+            }
+            return true;
+        }
+
+        public boolean writeAndCacheClasspath(JavaProject javaProject, final IClasspathEntry[] newRawClasspath,
+                                              final IPath newOutputLocation) throws JavaModelException {
+            return writeAndCacheClasspath(javaProject, newRawClasspath, null, newOutputLocation);
+        }
+
+    }
+
     public static class PerWorkingCopyInfo implements IProblemRequestor {
         int useCount = 0;
-        IProblemRequestor                             problemRequestor;
-        CompilationUnit workingCopy;
+        IProblemRequestor problemRequestor;
+        CompilationUnit   workingCopy;
 
         public PerWorkingCopyInfo(CompilationUnit workingCopy, IProblemRequestor problemRequestor) {
             this.workingCopy = workingCopy;

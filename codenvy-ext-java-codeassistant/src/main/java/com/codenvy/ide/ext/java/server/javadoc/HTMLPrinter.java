@@ -10,6 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.javadoc;
 
+import java.awt.*;
+import java.io.IOException;
+import java.io.Reader;
+
 /**
  * Provides a set of convenience methods for creating HTML pages.
  * <p>
@@ -17,14 +21,12 @@ package com.codenvy.ide.ext.java.server.javadoc;
  */
 public class HTMLPrinter {
 
-//	private static RGB BG_COLOR_RGB= new RGB(255, 255, 225); // RGB value of info bg color on WindowsXP
-//	private static RGB FG_COLOR_RGB= new RGB(0, 0, 0); // RGB value of info fg color on WindowsXP
-
     private static final String UNIT; // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
-
     static {
         UNIT = "px"; ///Util.isMac() ? "px" : "pt";   //$NON-NLS-1$//$NON-NLS-2$
     }
+	private static Color BG_COLOR_RGB= new Color(255, 255, 225); // RGB value of info bg color on WindowsXP
+	private static Color FG_COLOR_RGB= new Color(0, 0, 0); // RGB value of info fg color on WindowsXP
 
 
 //	static {
@@ -124,62 +126,62 @@ public class HTMLPrinter {
         return "<span style='white-space:pre'>" + content + "</span>"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-//	public static String read(Reader rd) {
-//
-//		StringBuffer buffer= new StringBuffer();
-//		char[] readBuffer= new char[2048];
-//
-//		try {
-//			int n= rd.read(readBuffer);
-//			while (n > 0) {
-//				buffer.append(readBuffer, 0, n);
-//				n= rd.read(readBuffer);
-//			}
-//			return buffer.toString();
-//		} catch (IOException x) {
-//		}
-//
-//		return null;
-//	}
-//
-//	public static void insertPageProlog(StringBuffer buffer, int position, RGB fgRGB, RGB bgRGB, String styleSheet) {
-//		if (fgRGB == null)
-//			fgRGB= FG_COLOR_RGB;
-//		if (bgRGB == null)
-//			bgRGB= BG_COLOR_RGB;
-//
-//		StringBuffer pageProlog= new StringBuffer(300);
-//
-//		pageProlog.append("<html>"); //$NON-NLS-1$
-//
-//		appendStyleSheet(pageProlog, styleSheet);
-//
-//		appendColors(pageProlog, fgRGB, bgRGB);
-//
-//		buffer.insert(position,  pageProlog.toString());
-//	}
-//
-//	private static void appendColors(StringBuffer pageProlog, RGB fgRGB, RGB bgRGB) {
-//		pageProlog.append("<body text=\""); //$NON-NLS-1$
-//		appendColor(pageProlog, fgRGB);
-//		pageProlog.append("\" bgcolor=\""); //$NON-NLS-1$
-//		appendColor(pageProlog, bgRGB);
-//		pageProlog.append("\">"); //$NON-NLS-1$
-//	}
-//
-//	private static void appendColor(StringBuffer buffer, RGB rgb) {
-//		buffer.append('#');
-//		appendAsHexString(buffer, rgb.red);
-//		appendAsHexString(buffer, rgb.green);
-//		appendAsHexString(buffer, rgb.blue);
-//	}
-//
-//	private static void appendAsHexString(StringBuffer buffer, int intValue) {
-//		String hexValue= Integer.toHexString(intValue);
-//		if (hexValue.length() == 1)
-//			buffer.append('0');
-//		buffer.append(hexValue);
-//	}
+	public static String read(Reader rd) {
+
+		StringBuffer buffer= new StringBuffer();
+		char[] readBuffer= new char[2048];
+
+		try {
+			int n= rd.read(readBuffer);
+			while (n > 0) {
+				buffer.append(readBuffer, 0, n);
+				n= rd.read(readBuffer);
+			}
+			return buffer.toString();
+		} catch (IOException x) {
+		}
+
+		return null;
+	}
+
+	public static void insertPageProlog(StringBuffer buffer, int position, Color fgRGB, Color bgRGB, String styleSheet) {
+		if (fgRGB == null)
+			fgRGB= FG_COLOR_RGB;
+		if (bgRGB == null)
+			bgRGB= BG_COLOR_RGB;
+
+		StringBuffer pageProlog= new StringBuffer(300);
+
+		pageProlog.append("<html>"); //$NON-NLS-1$
+
+		appendStyleSheet(pageProlog, styleSheet);
+
+		appendColors(pageProlog, fgRGB, bgRGB);
+
+		buffer.insert(position,  pageProlog.toString());
+	}
+
+	private static void appendColors(StringBuffer pageProlog, Color fgRGB, Color bgRGB) {
+		pageProlog.append("<body text=\""); //$NON-NLS-1$
+		appendColor(pageProlog, fgRGB);
+		pageProlog.append("\" bgcolor=\""); //$NON-NLS-1$
+		appendColor(pageProlog, bgRGB);
+		pageProlog.append("\">"); //$NON-NLS-1$
+	}
+
+	private static void appendColor(StringBuffer buffer, Color rgb) {
+		buffer.append('#');
+		appendAsHexString(buffer, rgb.getRed());
+		appendAsHexString(buffer, rgb.getGreen());
+		appendAsHexString(buffer, rgb.getBlue());
+	}
+
+	private static void appendAsHexString(StringBuffer buffer, int intValue) {
+		String hexValue= Integer.toHexString(intValue);
+		if (hexValue.length() == 1)
+			buffer.append('0');
+		buffer.append(hexValue);
+	}
 //
 //	public static void insertStyles(StringBuffer buffer, String[] styles) {
 //		if (styles == null || styles.length == 0)
@@ -209,22 +211,25 @@ public class HTMLPrinter {
 //		}
 //	}
 //
-//	private static void appendStyleSheet(StringBuffer buffer, String styleSheet) {
-//		if (styleSheet == null)
-//			return;
-//
-//		// workaround for https://bugs.eclipse.org/318243
+	private static void appendStyleSheet(StringBuffer buffer, String styleSheetURL) {
+		if (styleSheetURL == null)
+			return;
+
+		// workaround for https://bugs.eclipse.org/318243
 //		StringBuffer fg= new StringBuffer();
 //		appendColor(fg, FG_COLOR_RGB);
 //		styleSheet= styleSheet.replaceAll("InfoText", fg.toString()); //$NON-NLS-1$
 //		StringBuffer bg= new StringBuffer();
 //		appendColor(bg, BG_COLOR_RGB);
 //		styleSheet= styleSheet.replaceAll("InfoBackground", bg.toString()); //$NON-NLS-1$
-//
-//		buffer.append("<head><style CHARSET=\"ISO-8859-1\" TYPE=\"text/css\">"); //$NON-NLS-1$
-//		buffer.append(styleSheet);
-//		buffer.append("</style></head>"); //$NON-NLS-1$
-//	}
+
+		buffer.append("<head>");
+        buffer.append("<link REL=\"stylesheet\" HREF= \""); //$NON-NLS-1$
+		buffer.append(styleSheetURL);
+        buffer.append("\" TYPE=\"text/css\">"); //$NON-NLS-1$
+
+		buffer.append("</head>"); //$NON-NLS-1$
+	}
 //
 //	private static void appendStyleSheetURL(StringBuffer buffer, URL styleSheetURL) {
 //		if (styleSheetURL == null)
@@ -239,12 +244,12 @@ public class HTMLPrinter {
 //		buffer.append("</head>"); //$NON-NLS-1$
 //	}
 //
-//	public static void insertPageProlog(StringBuffer buffer, int position) {
-//		StringBuffer pageProlog= new StringBuffer(60);
-//		pageProlog.append("<html>"); //$NON-NLS-1$
-//		appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
-//		buffer.insert(position,  pageProlog.toString());
-//	}
+	public static void insertPageProlog(StringBuffer buffer, int position) {
+		StringBuffer pageProlog= new StringBuffer(60);
+		pageProlog.append("<html>"); //$NON-NLS-1$
+		appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
+		buffer.insert(position,  pageProlog.toString());
+	}
 //
 //	public static void insertPageProlog(StringBuffer buffer, int position, URL styleSheetURL) {
 //		StringBuffer pageProlog= new StringBuffer(300);
@@ -253,49 +258,49 @@ public class HTMLPrinter {
 //		appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
 //		buffer.insert(position,  pageProlog.toString());
 //	}
-//
-//	public static void insertPageProlog(StringBuffer buffer, int position, String styleSheet) {
-//		insertPageProlog(buffer, position, null, null, styleSheet);
-//	}
-//
-//	public static void addPageProlog(StringBuffer buffer) {
-//		insertPageProlog(buffer, buffer.length());
-//	}
-//
-//	public static void addPageEpilog(StringBuffer buffer) {
-//		buffer.append("</body></html>"); //$NON-NLS-1$
-//	}
-//
-//	public static void startBulletList(StringBuffer buffer) {
-//		buffer.append("<ul>"); //$NON-NLS-1$
-//	}
-//
-//	public static void endBulletList(StringBuffer buffer) {
-//		buffer.append("</ul>"); //$NON-NLS-1$
-//	}
-//
-//	public static void addBullet(StringBuffer buffer, String bullet) {
-//		if (bullet != null) {
-//			buffer.append("<li>"); //$NON-NLS-1$
-//			buffer.append(bullet);
-//			buffer.append("</li>"); //$NON-NLS-1$
-//		}
-//	}
-//
-//	public static void addSmallHeader(StringBuffer buffer, String header) {
-//		if (header != null) {
-//			buffer.append("<h5>"); //$NON-NLS-1$
-//			buffer.append(header);
-//			buffer.append("</h5>"); //$NON-NLS-1$
-//		}
-//	}
-//
-//	public static void addParagraph(StringBuffer buffer, String paragraph) {
-//		if (paragraph != null) {
-//			buffer.append("<p>"); //$NON-NLS-1$
-//			buffer.append(paragraph);
-//		}
-//	}
+
+	public static void insertPageProlog(StringBuffer buffer, int position, String styleSheet) {
+		insertPageProlog(buffer, position, null, null, styleSheet);
+	}
+
+	public static void addPageProlog(StringBuffer buffer) {
+		insertPageProlog(buffer, buffer.length());
+	}
+
+	public static void addPageEpilog(StringBuffer buffer) {
+		buffer.append("</body></html>"); //$NON-NLS-1$
+	}
+
+	public static void startBulletList(StringBuffer buffer) {
+		buffer.append("<ul>"); //$NON-NLS-1$
+	}
+
+	public static void endBulletList(StringBuffer buffer) {
+		buffer.append("</ul>"); //$NON-NLS-1$
+	}
+
+	public static void addBullet(StringBuffer buffer, String bullet) {
+		if (bullet != null) {
+			buffer.append("<li>"); //$NON-NLS-1$
+			buffer.append(bullet);
+			buffer.append("</li>"); //$NON-NLS-1$
+		}
+	}
+
+	public static void addSmallHeader(StringBuffer buffer, String header) {
+		if (header != null) {
+			buffer.append("<h5>"); //$NON-NLS-1$
+			buffer.append(header);
+			buffer.append("</h5>"); //$NON-NLS-1$
+		}
+	}
+
+	public static void addParagraph(StringBuffer buffer, String paragraph) {
+		if (paragraph != null) {
+			buffer.append("<p>"); //$NON-NLS-1$
+			buffer.append(paragraph);
+		}
+	}
 //
 //	/**
 //	 * Appends a string and keeps its whitespace and newlines.
@@ -319,10 +324,10 @@ public class HTMLPrinter {
 //		}
 //	}
 //
-//	public static void addParagraph(StringBuffer buffer, Reader paragraphReader) {
-//		if (paragraphReader != null)
-//			addParagraph(buffer, read(paragraphReader));
-//	}
+	public static void addParagraph(StringBuffer buffer, Reader paragraphReader) {
+		if (paragraphReader != null)
+			addParagraph(buffer, read(paragraphReader));
+	}
 //
 //	/**
 //	 * Replaces the following style attributes of the font definition of the <code>html</code>

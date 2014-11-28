@@ -38,16 +38,15 @@ import java.util.Map;
  */
 public class PackageFragmentRoot extends Openable implements  IPackageFragmentRoot {
 
+    /*
+     * No source attachment property
+     */
+    public final static String NO_SOURCE_ATTACHMENT = ""; //$NON-NLS-1$
     /**
      * The delimiter between the source path and root path in the
      * attachment server property.
      */
     protected final static char ATTACHMENT_PROPERTY_DELIMITER= '*';
-    /*
-     * No source attachment property
-     */
-    public final static String NO_SOURCE_ATTACHMENT = ""; //$NON-NLS-1$
-
     private final IPath path;
     protected PackageFragmentRoot(File folder, JavaProject project, JavaModelManager manager) {
         super(project, manager);
@@ -427,12 +426,57 @@ public class PackageFragmentRoot extends Openable implements  IPackageFragmentRo
 
     @Override
     public IJavaElement getHandleFromMemento(String token, MementoTokenizer memento, WorkingCopyOwner owner) {
+        switch (token.charAt(0)) {
+            case JEM_PACKAGEFRAGMENT:
+                String[] pkgName;
+                if (memento.hasMoreTokens()) {
+                    token = memento.nextToken();
+                    char firstChar = token.charAt(0);
+                    if (firstChar == JEM_CLASSFILE || firstChar == JEM_COMPILATIONUNIT || firstChar == JEM_COUNT) {
+                        pkgName = CharOperation.NO_STRINGS;
+                    } else {
+                        pkgName = Util.splitOn('.', token, 0, token.length());
+                        token = null;
+                    }
+                } else {
+                    pkgName = CharOperation.NO_STRINGS;
+                    token = null;
+                }
+                JavaElement pkg = getPackageFragment(pkgName);
+                if (token == null) {
+                    return pkg.getHandleFromMemento(memento, owner);
+                } else {
+                    return pkg.getHandleFromMemento(token, memento, owner);
+                }
+        }
         return null;
     }
 
     @Override
     protected char getHandleMementoDelimiter() {
-        return 0;
+        return JavaElement.JEM_PACKAGEFRAGMENTROOT;
+    }
+
+    /**
+     * @see org.eclipse.jdt.internal.core.JavaElement#getHandleMemento(StringBuffer)
+     */
+    protected void getHandleMemento(StringBuffer buff) {
+        IPath path;
+        File underlyingResource = resource();
+        if (underlyingResource != null) {
+            // internal jar or regular root
+//            if (resource().getProject().equals(getJavaProject().getProject())) {
+//                path = underlyingResource.getProjectRelativePath();
+//            } else {
+            path = new Path(underlyingResource.getAbsolutePath());
+//            }
+        } else {
+            // external jar
+            path = getPath();
+        }
+        ((JavaElement)getParent()).getHandleMemento(buff);
+        buff.append(getHandleMementoDelimiter());
+        escapeMementoName(buff, path.toString());
     }
 
     @Override
@@ -481,5 +525,18 @@ public class PackageFragmentRoot extends Openable implements  IPackageFragmentRo
             mapper = null;
         }
         return mapper;
+    }
+
+    /*
+ * A version of getKind() that doesn't update the timestamp of the info in the Java model cache
+ * to speed things up
+ */
+    int internalKind() throws JavaModelException {
+//        org.eclipse.jdt.internal.core.JavaModelManager manager = org.eclipse.jdt.internal.core.JavaModelManager.getJavaModelManager();
+        PackageFragmentRootInfo info = (PackageFragmentRootInfo)manager.peekAtInfo(this);
+        if (info == null) {
+            info = (PackageFragmentRootInfo)openWhenClosed(createElementInfo(), false, null);
+        }
+        return info.getRootKind();
     }
 }

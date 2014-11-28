@@ -57,12 +57,12 @@ import java.util.HashMap;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class BinaryType extends BinaryMember implements IType, SuffixConstants {
 
+	public static final JavadocContents EMPTY_JAVADOC =
+			new JavadocContents(null, org.eclipse.jdt.internal.compiler.util.Util.EMPTY_STRING);
 	private static final IField[]        NO_FIELDS       = new IField[0];
 	private static final IMethod[]       NO_METHODS      = new IMethod[0];
 	private static final IType[]         NO_TYPES        = new IType[0];
 	private static final IInitializer[]  NO_INITIALIZERS = new IInitializer[0];
-	public static final  JavadocContents EMPTY_JAVADOC   =
-			new JavadocContents(null, org.eclipse.jdt.internal.compiler.util.Util.EMPTY_STRING);
 
 	protected BinaryType(JavaElement parent, JavaModelManager manager, String name) {
 		super(parent, manager, name);
@@ -663,16 +663,15 @@ public String[] getSuperInterfaceTypeSignatures() throws JavaModelException {
 }
 
 public ITypeParameter[] getTypeParameters() throws JavaModelException {
-//	String[] typeParameterSignatures = getTypeParameterSignatures();
-//	int length = typeParameterSignatures.length;
-//	if (length == 0) return TypeParameter.NO_TYPE_PARAMETERS;
-//	ITypeParameter[] typeParameters = new ITypeParameter[length];
-//	for (int i = 0; i < typeParameterSignatures.length; i++) {
-//		String typeParameterName = Signature.getTypeVariable(typeParameterSignatures[i]);
-//		typeParameters[i] = new TypeParameter(this, typeParameterName);
-//	}
-//	return typeParameters;
-	throw new UnsupportedOperationException();
+	String[] typeParameterSignatures = getTypeParameterSignatures();
+	int length = typeParameterSignatures.length;
+	if (length == 0) return TypeParameter.NO_TYPE_PARAMETERS;
+	ITypeParameter[] typeParameters = new ITypeParameter[length];
+	for (int i = 0; i < typeParameterSignatures.length; i++) {
+		String typeParameterName = Signature.getTypeVariable(typeParameterSignatures[i]);
+		typeParameters[i] = new TypeParameter(this, manager, typeParameterName);
+	}
+	return typeParameters;
 }
 
 /**
@@ -698,8 +697,7 @@ public IType getType(String typeName) {
 	return new BinaryType((JavaElement)classFile,manager, typeName);
 }
 public ITypeParameter getTypeParameter(String typeParameterName) {
-//	return new TypeParameter(this, typeParameterName);
-	throw new UnsupportedOperationException();
+	return new TypeParameter(this, manager, typeParameterName);
 }
 /*
  * @see IType#getTypeQualifiedName()

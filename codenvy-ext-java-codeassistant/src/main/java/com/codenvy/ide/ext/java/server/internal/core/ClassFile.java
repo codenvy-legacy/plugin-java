@@ -289,39 +289,39 @@ public boolean equals(Object o) {
 }
 
 public boolean existsUsingJarTypeCache() {
-//	if (getPackageFragmentRoot().isArchive()) {
+	if (getPackageFragmentRoot().isArchive()) {
 //		JavaModelManager manager = JavaModelManager.getJavaModelManager();
-//		IType type = getType();
-//		Object info = manager.getInfo(type);
-//		if (info == JavaModelCache.NON_EXISTING_JAR_TYPE_INFO)
-//			return false;
-//		else if (info != null)
-//			return true;
-//		// info is null
-//		JavaElementInfo parentInfo = (JavaElementInfo) manager.getInfo(getParent());
-//		if (parentInfo != null) {
-//			// if parent is open, this class file must be in its children
-//			IJavaElement[] children = parentInfo.getChildren();
-//			for (int i = 0, length = children.length; i < length; i++) {
-//				if (this.name.equals(((ClassFile) children[i]).name))
-//					return true;
-//			}
-//			return false;
-//		}
-//		try {
-//			info = getJarBinaryTypeInfo((PackageFragment) getParent(), true/*fully initialize so as to not keep a reference to the byte array*/);
-//		} catch (CoreException e) {
-//			// leave info null
-//		} catch (IOException e) {
-//			// leave info null
-//		} catch (ClassFormatException e) {
-//			// leave info null
-//		}
-//		manager.putJarTypeInfo(type, info == null ? JavaModelCache.NON_EXISTING_JAR_TYPE_INFO : info);
-//		return info != null;
-//	} else
-//		return exists();
-	throw new UnsupportedOperationException();
+		IType type = getType();
+		Object info = manager.getInfo(type);
+		if (info == JavaModelCache.NON_EXISTING_JAR_TYPE_INFO)
+			return false;
+		else if (info != null)
+			return true;
+		// info is null
+		JavaElementInfo parentInfo = (JavaElementInfo) manager.getInfo(getParent());
+		if (parentInfo != null) {
+			// if parent is open, this class file must be in its children
+			IJavaElement[] children = parentInfo.getChildren();
+			for (int i = 0, length = children.length; i < length; i++) {
+				if (this.name.equals(((ClassFile) children[i]).name))
+					return true;
+			}
+			return false;
+		}
+		try {
+			info = getJarBinaryTypeInfo((PackageFragment) getParent(), true/*fully initialize so as to not keep a reference to the byte array*/);
+		} catch (CoreException e) {
+			// leave info null
+		} catch (IOException e) {
+			// leave info null
+		} catch (ClassFormatException e) {
+			// leave info null
+		}
+		manager.putJarTypeInfo(type, info == null ? JavaModelCache.NON_EXISTING_JAR_TYPE_INFO : info);
+		return info != null;
+	} else
+		return exists();
+//	throw new UnsupportedOperationException();
 }
 
 /**

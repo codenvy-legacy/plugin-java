@@ -163,7 +163,7 @@ public class RestNameEnvironment {
     }
 
     private JavaProject getJavaProject(String projectPath) {
-        return javaProjectService.getOrCreateJavaProject(wsId, projectPath, request.getSession().getId());
+        return javaProjectService.getOrCreateJavaProject(wsId, projectPath);
     }
 
     @GET

@@ -65,15 +65,15 @@ public class BufferManager {
 			element.isReadOnly());
 }
 
-/**
- * Returns the default buffer manager.
- */
-public synchronized static BufferManager getDefaultBufferManager() {
-	if (DEFAULT_BUFFER_MANAGER == null) {
-		DEFAULT_BUFFER_MANAGER = new BufferManager();
-	}
-	return DEFAULT_BUFFER_MANAGER;
-}
+///**
+// * Returns the default buffer manager.
+// */
+//public synchronized static BufferManager getDefaultBufferManager() {
+//	if (DEFAULT_BUFFER_MANAGER == null) {
+//		DEFAULT_BUFFER_MANAGER = new BufferManager();
+//	}
+//	return DEFAULT_BUFFER_MANAGER;
+//}
 
 	/**
 	 * Adds a buffer to the table of open buffers.
