@@ -13,14 +13,17 @@ package com.codenvy.ide.ant.tools;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
+import com.codenvy.api.vfs.server.VirtualFile;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.helper.ProjectHelper2;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /** @author andrew00x */
+// TODO: avoid usage org.apache.tools.ant.Project for representation Ant project.
 public class AntUtils {
     private static final Path   BUILD_FILE_PATH    = Paths.get(System.getProperty("java.io.tmpdir"), "codenvy_ant_properties.xml");
     private static final String BUILD_FILE_CONTENT = "<project name=\"ant_properties\" default=\"get_properties\">\n" +
@@ -190,7 +194,12 @@ public class AntUtils {
     }
 
     /** Get source directories. */
-    public static List<String> getSourceDirectories(File buildFile) {
+    public static List<String> getSourceDirectories(java.io.File buildFile) throws IOException {
+        return getSourceDirectories(readProject(buildFile));
+    }
+
+    /** Get source directories. */
+    public static List<String> getSourceDirectories(VirtualFile buildFile) throws IOException {
         return getSourceDirectories(readProject(buildFile));
     }
 
@@ -201,10 +210,32 @@ public class AntUtils {
      *         path to build.xml file
      * @return description of ant project
      */
-    public static Project readProject(File buildFile) {
+    public static Project readProject(java.io.File buildFile) throws IOException {
         org.apache.tools.ant.Project antProject = new org.apache.tools.ant.Project();
-        ProjectHelper2.configureProject(antProject, buildFile);
+        try {
+            ProjectHelper2.configureProject(antProject, buildFile);
+        } catch (org.apache.tools.ant.BuildException e) {
+            throw new IOException("Error parsing ant file. " + e.getMessage());
+        }
 
+        return antProject;
+    }
+
+    /**
+     * Read description of ant project.
+     *
+     * @param buildFile
+     *         build.xml file
+     * @return description of ant project
+     */
+    public static Project readProject(VirtualFile buildFile) throws IOException {
+        org.apache.tools.ant.Project antProject = new org.apache.tools.ant.Project();
+        ProjectHelper2 helper = new ProjectHelper2();
+        try {
+            helper.parse(antProject, new URI("ide+vfs", '/' + buildFile.getMountPoint().getWorkspaceId(), buildFile.getPath()).toURL());
+        } catch (MalformedURLException | URISyntaxException | org.apache.tools.ant.BuildException e) {
+            throw new IOException("Error parsing ant file. " + e.getMessage());
+        }
         return antProject;
     }
 

@@ -107,9 +107,8 @@
                 "keepVcs": "false"
             }
         },
-        "defaultRunnerEnvironment": "gui",
         "runners": {
-            "default": "system:/java/standalone/simple/cli",
+            "default": "system:/java/standalone/simple/gui",
             "configs": {
                 "recommend": {
                     "ram": 256

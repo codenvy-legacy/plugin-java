@@ -52,7 +52,7 @@ public class AntProjectTypeResolver implements ProjectTypeResolver {
 
             return true;
         } catch (ForbiddenException e) {
-            throw new ServerException("An error occurred when trying to resolve maven project.", e);
+            throw new ServerException("An error occurred when trying to resolve ant project.", e);
         }
     }
 

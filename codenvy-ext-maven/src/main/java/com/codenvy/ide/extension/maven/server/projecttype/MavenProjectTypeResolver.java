@@ -50,16 +50,19 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
     @Override
     public boolean resolve(FolderEntry folderEntry) throws ServerException {
         try {
-            ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
-            if (projectType == null)
-                throw new ServerException(String.format("Project type '%s' not registered. ", Constants.MAVEN_ID));
-            if (folderEntry.getChild("pom.xml") == null) {
-                return false;
+            if (!folderEntry.isProjectFolder()) {
+                ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
+                if (projectType == null)
+                    throw new ServerException(String.format("Project type '%s' not registered. ", Constants.MAVEN_ID));
+                if (folderEntry.getChild("pom.xml") == null) {
+                    return false;
+                }
+                Project project = new Project(folderEntry, projectManager);
+                project.updateDescription(createProjectDescriptor(projectType));
+                fillMavenProject(projectType, project);
+                return true;
             }
-            Project project = new Project(folderEntry, projectManager);
-            project.updateDescription(createProjectDescriptor(projectType));
-            fillMavenProject(projectType, project);
-            return true;
+            return false;//project configure in initial source
         } catch (ForbiddenException | IOException | ConflictException e) {
             throw new ServerException("An error occurred when trying to resolve maven project.", e);
         }
@@ -72,7 +75,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
             FolderEntry parentFolder = getParentFolder(module, parentProject);
             module = module.replaceAll("\\.{2}/", "");
             FolderEntry moduleEntry = (FolderEntry)parentFolder.getChild(module);
-            if (moduleEntry != null && moduleEntry.getVirtualFile().getChild("pom.xml") != null) {
+            if (moduleEntry != null && !moduleEntry.isProjectFolder() && moduleEntry.getVirtualFile().getChild("pom.xml") != null) {
                 Project project = projectManager.getProject(ws, parentFolder.getPath() + "/" + module);
                 if (project == null) {
                     project = new Project(moduleEntry, projectManager);

@@ -54,10 +54,12 @@ public class MavenVersionValueProviderFactory extends AbstractMavenValueProvider
                     return;
                 }
                 try {
-                    VirtualFile pom = getOrCreatePom(project);
-                    Model model = MavenUtils.readModel(pom);
-                    if (!version.equals(model.getVersion())) {
-                        MavenUtils.setVersion(pom, version);
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        Model model = MavenUtils.readModel(pom);
+                        if (!version.equals(model.getVersion())) {
+                            MavenUtils.setVersion(pom, version);
+                        }
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);

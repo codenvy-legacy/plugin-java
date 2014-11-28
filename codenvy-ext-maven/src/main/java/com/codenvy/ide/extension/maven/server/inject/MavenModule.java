@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.inject;
 
+import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.MavenMultimoduleAutoBuilder;
@@ -20,6 +21,7 @@ import com.codenvy.ide.extension.maven.server.projecttype.MavenPackagingValuePro
 import com.codenvy.ide.extension.maven.server.projecttype.MavenParentArtifactIdValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenParentGroupIdValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenParentVersionValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectGenerator;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeDescriptionsExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeResolver;
@@ -52,5 +54,6 @@ public class MavenModule extends AbstractModule {
         multiBinder.addBinding().to(MavenTestSourceFolderValueProviderFactory.class);
 
         Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(MavenProjectTypeResolver.class);
+        Multibinder.newSetBinder(binder(), ProjectGenerator.class).addBinding().to(MavenProjectGenerator.class);
     }
 }
