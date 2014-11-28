@@ -21,12 +21,18 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.codenvy.commons.xml.NewElement.createElement;
+import static java.util.Objects.requireNonNull;
+
 /**
- * TODO update tree in setters
+ * TODO add ability to create model not only from files
+ * TODO implement setters
  * The <code>&lt;project&gt;</code> element is the root of
  * the descriptor.
  * The following table lists all of the possible child elements.
@@ -157,36 +163,12 @@ public class Model {
     }
 
     /**
-     * Method addDependency.
+     * Returns project dependencies
      */
-    public void addDependency(Dependency dependency) {
-        getDependencies().add(dependency);
-    }
-
-    /**
-     * Method addModule.
-     */
-    public void addModule(String string) {
-        getModules().add(string);
-    }
-
-    /**
-     * Method addProperty.
-     */
-    public void addProperty(String key, String value) {
-        getProperties().put(key, value);
-    }
-
-    /**
-     * Method getDependencies.
-     *
-     * @return List
-     */
-    public java.util.List<Dependency> getDependencies() {
+    public List<Dependency> getDependencies() {
         if (dependencies == null) {
             dependencies = new ArrayList<>();
         }
-
         return dependencies;
     }
 
@@ -206,11 +188,9 @@ public class Model {
     }
 
     /**
-     * Method getModules.
-     *
-     * @return List
+     * Returns project modules
      */
-    public java.util.List<String> getModules() {
+    public List<String> getModules() {
         if (modules == null) {
             modules = new ArrayList<>();
         }
@@ -219,52 +199,136 @@ public class Model {
     }
 
     /**
-     * Method getProperties.
-     *
-     * @return Properties
+     * Returns project properties
      */
     public Map<String, String> getProperties() {
         if (properties == null) {
-            properties = new HashMap<>();
+            properties = new LinkedHashMap<>();
         }
         return properties;
     }
 
     /**
-     * Method removeDependency.
+     * Adds new dependency to the project
      */
-    public void removeDependency(Dependency dependency) {
+    public Model addDependency(Dependency newDependency) {
+        requireNonNull(newDependency);
+        getDependencies().add(newDependency);
+        //add dependency to xml tree
+        final Element root = tree.getRoot();
+        if (root.hasChild("dependencies")) {
+            root.getSingleChild("dependencies").appendChild(newDependency.toNewElement());
+        } else {
+            root.appendChild(createElement("dependencies", newDependency.toNewElement()));
+        }
+        newDependency.setElement(root.getSingleChild("dependencies").getLastChild());
+        return this;
+    }
+
+    /**
+     * Adds new module to the project
+     */
+    public Model addModule(String newModule) {
+        requireNonNull(newModule);
+        getModules().add(newModule);
+        //add module to xml tree
+        final Element root = tree.getRoot();
+        if (root.hasChild("modules")) {
+            root.getSingleChild("modules").appendChild(createElement("module", newModule));
+        } else {
+            root.appendChild(createElement("modules", createElement("module", newModule)));
+        }
+        return this;
+    }
+
+    /**
+     * Adds new property to the project
+     */
+    public Model addProperty(String key, String value) {
+        final Element root = tree.getRoot();
+        if (getProperties().containsKey(key)) {
+            root.getSingleChild("properties")
+                .getSingleChild(key)
+                .setText(value);
+        } else if (properties.isEmpty()) {
+            root.appendChild(createElement("properties", createElement(key, value)));
+        } else {
+            root.getSingleChild("properties")
+                .appendChild(createElement(key, value));
+        }
+        getProperties().put(key, value);
+        return this;
+    }
+
+
+    /**
+     * Removes dependency from model.
+     * If last dependency has been removed removes dependencies element as well.
+     */
+    public Model removeDependency(Dependency dependency) {
         getDependencies().remove(dependency);
+        //remove dependency from xml tree
+        if (dependencies.isEmpty()) {
+            tree.getRoot().removeChild("dependencies");
+        } else {
+            dependency.remove();
+        }
+        return this;
     }
 
     /**
-     * Method removeModule.
+     * Removes module from the model.
+     * If last module has been removed removes modules element as well.
      */
-    public void removeModule(String string) {
-        getModules().remove(string);
-    }
-
-
-    public void setBuild(Build build) {
-        this.build = build;
+    public Model removeModule(String module) {
+        getModules().remove(module);
+        //remove module from tree
+        if (modules.isEmpty()) {
+            tree.getRoot().removeChild("modules");
+        } else {
+            tree.getRoot()
+                .getSingleChild("modules")
+                .removeChild(module);
+        }
+        return this;
     }
 
     /**
-     * Set this element describes all of the dependencies
-     * associated with a
-     * project.
+     * Sets build settings for project.
+     */
+    public Model setBuild(Build build) {
+        this.build = build;
+        //set build to tree
+        final Element buildEl;
+        if (tree.getRoot().hasSingleChild("build")) {
+            buildEl = tree.getRoot()
+                          .getSingleChild("build")
+                          .replaceWith(build.toNewElement());
+        } else {
+            buildEl = tree.getRoot()
+                          .appendChild(build.toNewElement());
+        }
+        build.setElement(buildEl);
+        return this;
+    }
+
+    /**
+     * Sets dependencies associated with a project.
      * These dependencies are used to construct a
      * classpath for your
      * project during the build process. They are
      * automatically downloaded from the
      * repositories defined in this project.
-     * See <a
-     * href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">the
+     * See <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">the
      * dependency mechanism</a> for more information.
      */
-    public void setDependencies(java.util.List<Dependency> dependencies) {
-        this.dependencies = dependencies;
+    public Model setDependencies(Collection<Dependency> dependencies) {
+        this.dependencies = new ArrayList<>(dependencies);
+        //TODO
+        return this;
     }
+
+    //TODO
 
     /**
      * Set default dependency information for projects that inherit
@@ -282,7 +346,7 @@ public class Model {
     }
 
     /**
-     * Set the modules (sometimes called subprojects) to build as a
+     * Set the modules (sometimes called sub projects) to build as a
      * part of this
      * project. Each module listed is a relative path
      * to the directory containing the module.
@@ -313,6 +377,7 @@ public class Model {
      */
     public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
+        tree.getRoot().setChildText("artifactId", artifactId, true);
     }
 
     /**
@@ -329,6 +394,7 @@ public class Model {
      */
     public void setDescription(String description) {
         this.description = description;
+        tree.getRoot().setChildText("description", description, true);
     }
 
     /**
@@ -341,14 +407,23 @@ public class Model {
      */
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+        tree.getRoot().setChildText("groupId", groupId, true);
     }
 
     /**
-     * Set declares to which version of project descriptor this POM
-     * conforms.
+     * Set the current version of the artifact produced by this project.
+     */
+    public void setVersion(String version) {
+        this.version = version;
+        tree.getRoot().setChildText("version", version, true);
+    }
+
+    /**
+     * Set declares to which version of project descriptor this POM conforms.
      */
     public void setModelVersion(String modelVersion) {
         this.modelVersion = modelVersion;
+        tree.getRoot().setChildText("modelVersion", modelVersion, true);
     }
 
     /**
@@ -356,6 +431,7 @@ public class Model {
      */
     public void setName(String name) {
         this.name = name;
+        tree.getRoot().setChildText("name", name, true);
     }
 
     /**
@@ -371,6 +447,7 @@ public class Model {
      */
     public void setPackaging(String packaging) {
         this.packaging = packaging;
+        tree.getRoot().setChildText("packaging", packaging, true);
     }
 
     /**
@@ -382,13 +459,7 @@ public class Model {
      */
     public void setParent(Parent parent) {
         this.parent = parent;
-    }
 
-    /**
-     * Set the current version of the artifact produced by this project.
-     */
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     /**

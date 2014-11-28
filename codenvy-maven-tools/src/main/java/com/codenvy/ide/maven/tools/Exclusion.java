@@ -11,10 +11,24 @@
 package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
+import com.codenvy.commons.xml.NewElement;
+
+import java.util.GregorianCalendar;
+import java.util.Objects;
+
+import static com.codenvy.commons.xml.NewElement.createElement;
+import static java.util.Objects.requireNonNull;
 
 /**
- * The <code>&lt;exclusion&gt;</code> element contains
- * information required to exclude an artifact to the project.
+ * The {@literal <exclusion>} element contains information required to exclude an artifact from the project
+ * <p/>
+ * Supported next data:
+ * <ul>
+ * <li>artifactId</li>
+ * <li>groupId</li>
+ * </ul>
+ *
+ * @author Eugene Voevodin
  */
 public class Exclusion {
 
@@ -22,7 +36,8 @@ public class Exclusion {
     private String  groupId;
     private Element element;
 
-    public Exclusion() {}
+    public Exclusion() {
+    }
 
     Exclusion(Element element) {
         this.element = element;
@@ -47,16 +62,44 @@ public class Exclusion {
     /**
      * Set the artifact ID of the project to exclude.
      */
-    public void setArtifactId(String artifactId) {
-        this.artifactId = artifactId;
-        //TODO use element
+    public Exclusion setArtifactId(String artifactId) {
+        this.artifactId = requireNonNull(artifactId);
+        if (!isNew()) {
+            element.setChildText("artifactId", artifactId, true);
+        }
+        return this;
     }
 
     /**
      * Set the group ID of the project to exclude.
      */
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-        //TODO use element
+    public Exclusion setGroupId(String groupId) {
+        this.groupId = requireNonNull(groupId);
+        if (!isNew()) {
+            element.setChildText("groupId", groupId, true);
+        }
+        return this;
+    }
+
+    void remove() {
+        if (!isNew()) {
+            element.remove();
+            element = null;
+        }
+    }
+
+    void setElement(Element element) {
+        this.element = element;
+    }
+
+    NewElement toNewElement() {
+        final NewElement newExclusion = createElement("exclusion");
+        newExclusion.appendChild(createElement("artifactId", artifactId));
+        newExclusion.appendChild(createElement("groupId", groupId));
+        return newExclusion;
+    }
+
+    private boolean isNew() {
+        return element == null;
     }
 }

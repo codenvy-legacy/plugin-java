@@ -18,6 +18,8 @@ import java.util.List;
 
 /**
  * Section for management of default dependency information for use in a group of POMs.
+ *
+ * @author Eugene Voevodin
  */
 public class DependencyManagement {
 
@@ -25,10 +27,12 @@ public class DependencyManagement {
 
     private Element element;
 
-    public DependencyManagement() {}
+    public DependencyManagement() {
+    }
 
     DependencyManagement(Element element) {
         this.element = element;
+        //TODO store function in static field
         dependencies = element.getChildren(new FromElementFunction<Dependency>() {
             @Override
             public Dependency apply(Element element) {

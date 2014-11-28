@@ -11,13 +11,24 @@
 package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
+import com.codenvy.commons.xml.NewElement;
+
+import static com.codenvy.commons.xml.NewElement.createElement;
+import static java.util.Objects.requireNonNull;
 
 /**
- * The <code>&lt;parent&gt;</code> element contains
- * information required to locate the parent project from which
- * this project will inherit from.
- * <strong>Note:</strong> The children of this element are
- * not interpolated and must be given as literal values.
+ * The {@literal <parent>} element contains information required to
+ * locate the parent project which this project will inherit from.
+ * <p/>
+ * Supports next data:
+ * <ul>
+ * <li>artifactId</li>
+ * <li>groupId</li>
+ * <li>version</li>
+ * <li>relativePath</li>
+ * </ul>
+ *
+ * @author Eugene Voevodin
  */
 public class Parent {
 
@@ -27,7 +38,8 @@ public class Parent {
     private String  relativePath;
     private Element element;
 
-    public Parent() {}
+    public Parent() {
+    }
 
     Parent(Element element) {
         this.element = element;
@@ -38,36 +50,34 @@ public class Parent {
     }
 
     /**
-     * Get the artifact id of the parent project to inherit from.
+     * Returns the artifact id of the parent project to inherit from.
      */
     public String getArtifactId() {
-        return this.artifactId;
+        return artifactId;
     }
 
     /**
-     * Get the group id of the parent project to inherit from.
+     * Returns the group id of the parent project to inherit from
      */
     public String getGroupId() {
-        return this.groupId;
+        return groupId;
     }
 
     /**
-     * Get the relative path of the parent <code>pom.xml</code>
-     * file within the check out.
-     * If not specified, it defaults to
-     * <code>../pom.xml</code>.
-     * Maven looks for the parent POM first in this
-     * location on
-     * the filesystem, then the local repository, and
-     * lastly in the remote repo.
-     * <code>relativePath</code> allows you to select a
-     * different location,
-     * for example when your structure is flat, or
-     * deeper without an intermediate parent POM.
-     * However, the group ID, artifact ID and version
-     * are still required,
-     * and must match the file in the location given or
-     * it will revert to the repository for the POM.
+     * Get the relative path of the parent {@literal pom.xml} file
+     * within the check out. If not specified,
+     * it defaults to {@literal ../pom.xml}.
+     * <p/>
+     * Maven looks for the parent POM first
+     * in this location on the filesystem, then the
+     * local repository, and  lastly in the remote repo.
+     * {@code relativePath} allows you to select a different location,
+     * For example when your structure is flat,
+     * or deeper without an intermediate parent POM.
+     * However, the group ID, artifact ID and
+     * version are still required, and must match
+     * the file in the location given or it will
+     * revert to the repository for the POM.
      * This feature is only for enhancing the
      * development in a local checkout of that project.
      * Set the value to an empty string in case you
@@ -75,77 +85,90 @@ public class Parent {
      * the parent POM from the repositories.
      */
     public String getRelativePath() {
-        return this.relativePath;
+        return relativePath;
     }
 
     /**
-     * Get the version of the parent project to inherit.
+     * Returns the version of the parent project to inherit
      */
     public String getVersion() {
-        return this.version;
+        return version;
     }
 
     /**
-     * Set the artifact id of the parent project to inherit from.
+     * Sets the artifact id of the parent project to inherit from
      */
     public void setArtifactId(String artifactId) {
-        this.artifactId = artifactId;
-        //TODO use element
+        this.artifactId = requireNonNull(artifactId);
+        if (!isNew()) {
+            element.setChildText("artifactId", artifactId, true);
+        }
     }
 
     /**
-     * Set the group id of the parent project to inherit from.
+     * Sets the group id of the parent project to inherit from
      */
     public void setGroupId(String groupId) {
-        this.groupId = groupId;
-        //TODO use element
+        this.groupId = requireNonNull(groupId);
+        if (!isNew()) {
+            element.setChildText("groupId", groupId, true);
+        }
     }
 
     /**
-     * Set the relative path of the parent <code>pom.xml</code>
-     * file within the check out.
-     * If not specified, it defaults to
-     * <code>../pom.xml</code>.
-     * Maven looks for the parent POM first in this
-     * location on
-     * the filesystem, then the local repository, and
-     * lastly in the remote repo.
-     * <code>relativePath</code> allows you to select a
-     * different location,
-     * for example when your structure is flat, or
-     * deeper without an intermediate parent POM.
-     * However, the group ID, artifact ID and version
-     * are still required,
-     * and must match the file in the location given or
-     * it will revert to the repository for the POM.
-     * This feature is only for enhancing the
-     * development in a local checkout of that project.
-     * Set the value to an empty string in case you
-     * want to disable the feature and always resolve
-     * the parent POM from the repositories.
+     * Sets the relative path of the parent {@literal pom.xml}
      */
     public void setRelativePath(String relativePath) {
-        this.relativePath = relativePath;
-        //TODO use element
+        this.relativePath = requireNonNull(relativePath);
+        if (!isNew()) {
+            element.setChildText("relativePath", relativePath, true);
+        }
     }
 
     /**
-     * Set the version of the parent project to inherit.
+     * Sets the version of the parent project to inherit
      */
     public void setVersion(String version) {
-        this.version = version;
-        //TODO use element
+        this.version = requireNonNull(version);
+        if (!isNew()) {
+            element.setChildText("version", version, true);
+        }
     }
 
     /**
-     * @return the id as <code>groupId:artifactId:version</code>
+     * Returns the id as {@literal groupId:artifactId:version}
      */
     public String getId() {
-        return getGroupId() + ':' + getArtifactId() + ":pom:" + getVersion();
+        return groupId + ':' + artifactId + ":pom:" + version;
     }
 
     @Override
     public String toString() {
         return getId();
+    }
+
+    void remove() {
+        element.remove();
+        element = null;
+    }
+
+    void setElement(Element element) {
+        this.element = element;
+    }
+
+    //TODO check for required children
+    NewElement toNewElement() {
+        final NewElement parentEl = createElement("parent");
+        parentEl.appendChild(createElement("artifactId", artifactId));
+        parentEl.appendChild(createElement("groupId", groupId));
+        parentEl.appendChild(createElement("version", version));
+        if (relativePath != null && !"../pom.xml".equals(relativePath)) {
+            parentEl.appendChild(createElement("artifactId", artifactId));
+        }
+        return parentEl;
+    }
+
+    private boolean isNew() {
+        return element == null;
     }
 }
