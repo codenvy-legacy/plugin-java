@@ -14,6 +14,7 @@ import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
 
 import javax.validation.constraints.NotNull;
 
+import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorWithErrors;
 import com.codenvy.ide.api.notification.Notification;
@@ -39,7 +40,10 @@ import com.google.inject.assistedinject.AssistedInject;
 
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 
+
+    private final BuildContext buildContext;
     private final EmbeddedTextEditorPresenter< ? > editor;
+
     private final JavaParserWorker worker;
     private final OutlineModel outlineModel;
     private final NotificationManager notificationManager;
@@ -57,10 +61,12 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
                                   @Assisted final OutlineModel outlineModel,
                                   @Assisted final JavaCodeAssistProcessor codeAssistProcessor,
                                   @Assisted final AnnotationModel annotationModel,
+                                  final BuildContext buildContext,
                                   final JavaParserWorker worker,
                                   final NotificationManager notificationManager,
                                   final JavaLocalizationConstant localizationConstant) {
         this.editor = editor;
+        this.buildContext = buildContext;
         this.worker = worker;
         this.outlineModel = outlineModel;
         this.notificationManager = notificationManager;
@@ -94,6 +100,9 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     }
 
     public void parse() {
+        if (this.buildContext.isBuilding()) {
+            return;
+        }
         if (first) {
             notification = new Notification("Parsing file...", Notification.Status.PROGRESS);
             codeAssistProcessor.disableCodeAssistant();
