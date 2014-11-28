@@ -18,6 +18,7 @@ import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.icon.Icon;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
@@ -33,7 +34,6 @@ import com.google.inject.assistedinject.AssistedInject;
 
 public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
-    private final AppContext appContext;
     private final BuildContext buildContext;
     private final EditorPartPresenter editor;
     private final JavaParserWorker worker;
@@ -44,12 +44,10 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
 
     @AssistedInject
     public JavaCodeAssistProcessor(@Assisted final EditorPartPresenter editor,
-                                   final AppContext appContext,
                                    final BuildContext buildContext,
                                    final JavaParserWorker worker,
                                    final JavaResources javaResources,
                                    final AnalyticsEventLogger eventLogger) {
-        this.appContext = appContext;
         this.buildContext = buildContext;
         this.editor = editor;
         this.worker = worker;
@@ -176,10 +174,10 @@ public class JavaCodeAssistProcessor implements CodeAssistProcessor {
             return;
         }
         this.eventLogger.log(this, "Autocompleting");
-        final String fileName = editor.getEditorInput().getFile().getName();
-        final String projectPath = this.appContext.getCurrentProject().getProjectDescription().getPath();
+        final FileNode file = editor.getEditorInput().getFile();
+        final String projectPath = file.getProject().getPath();
         this.worker.computeCAProposals(textEditor.getDocument().getContents(),
-                                       offset, fileName, projectPath,
+                                       offset, file.getName(), projectPath,
                                        new JavaParserWorker.WorkerCallback<WorkerProposal>() {
                                            @Override
                                            public void onResult(final Array<WorkerProposal> problems) {
