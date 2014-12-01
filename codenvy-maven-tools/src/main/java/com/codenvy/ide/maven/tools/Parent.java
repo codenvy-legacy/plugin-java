@@ -35,7 +35,6 @@ public class Parent {
     private String  groupId;
     private String  artifactId;
     private String  version;
-    private String  relativePath;
     private Element element;
 
     public Parent() {
@@ -46,7 +45,6 @@ public class Parent {
         groupId = element.getChildText("groupId");
         artifactId = element.getChildText("artifactId");
         version = element.getChildText("version");
-        relativePath = element.getChildTextOrDefault("relativePath", "../pom.xml");
     }
 
     /**
@@ -61,31 +59,6 @@ public class Parent {
      */
     public String getGroupId() {
         return groupId;
-    }
-
-    /**
-     * Get the relative path of the parent {@literal pom.xml} file
-     * within the check out. If not specified,
-     * it defaults to {@literal ../pom.xml}.
-     * <p/>
-     * Maven looks for the parent POM first
-     * in this location on the filesystem, then the
-     * local repository, and  lastly in the remote repo.
-     * {@code relativePath} allows you to select a different location,
-     * For example when your structure is flat,
-     * or deeper without an intermediate parent POM.
-     * However, the group ID, artifact ID and
-     * version are still required, and must match
-     * the file in the location given or it will
-     * revert to the repository for the POM.
-     * This feature is only for enhancing the
-     * development in a local checkout of that project.
-     * Set the value to an empty string in case you
-     * want to disable the feature and always resolve
-     * the parent POM from the repositories.
-     */
-    public String getRelativePath() {
-        return relativePath;
     }
 
     /**
@@ -112,16 +85,6 @@ public class Parent {
         this.groupId = requireNonNull(groupId);
         if (!isNew()) {
             element.setChildText("groupId", groupId, true);
-        }
-    }
-
-    /**
-     * Sets the relative path of the parent {@literal pom.xml}
-     */
-    public void setRelativePath(String relativePath) {
-        this.relativePath = requireNonNull(relativePath);
-        if (!isNew()) {
-            element.setChildText("relativePath", relativePath, true);
         }
     }
 
@@ -162,9 +125,6 @@ public class Parent {
         parentEl.appendChild(createElement("artifactId", artifactId));
         parentEl.appendChild(createElement("groupId", groupId));
         parentEl.appendChild(createElement("version", version));
-        if (relativePath != null && !"../pom.xml".equals(relativePath)) {
-            parentEl.appendChild(createElement("artifactId", artifactId));
-        }
         return parentEl;
     }
 

@@ -50,10 +50,10 @@ public class Dependency {
     private String          type;
     private String          classifier;
     private String          scope;
-    private String          systemPath;
     private String          optional;
     private List<Exclusion> exclusions;
-    private Element         element;
+
+    Element element;
 
     public Dependency() {
     }
@@ -65,7 +65,6 @@ public class Dependency {
         version = element.getChildText("version");
         classifier = element.getChildText("classifier");
         scope = element.getChildText("scope");
-        systemPath = element.getChildText("systemPath");
         optional = element.getChildText("optional");
         type = element.getChildTextOrDefault("type", "jar");
         //if dependency has exclusions fetch it!
@@ -144,22 +143,6 @@ public class Dependency {
     }
 
     /**
-     * Returns system path for system scope only.
-     * <p/>
-     * Note that use of this property is
-     * <b>discouraged</b> and may be replaced in later versions. This
-     * specifies the path on the filesystem
-     * for this dependency.
-     * Requires an absolute path for the value, not
-     * relative.
-     * Use a property that gives the machine specific
-     * absolute path, e.g. {@code ${java.home}}.
-     */
-    public String getSystemPath() {
-        return systemPath;
-    }
-
-    /**
      * Returns the type of dependency.
      * <p/>
      * This defaults to <code>jar</code>.
@@ -232,11 +215,11 @@ public class Dependency {
             exclusions = new ArrayList<>(newExclusions);
             return this;
         }
-        //use addExclusion to add and associate each new exclusion with tree element
-        if (element.hasSingleChild("exclusions")) {
+        if (element.hasChild("exclusions")) {
             element.removeChild("exclusions");
         }
         exclusions = new ArrayList<>(newExclusions.size());
+        //use addExclusion to add and associate each new exclusion with tree element
         for (Exclusion exclusion : newExclusions) {
             addExclusion(exclusion);
         }
@@ -317,27 +300,6 @@ public class Dependency {
     }
 
     /**
-     * Sets system path for the system scopes only.
-     * <p/>
-     * Note that use of this property is
-     * <b>discouraged</b>
-     * and may be replaced in later versions. This
-     * specifies the path on the filesystem
-     * for this dependency.
-     * Requires an absolute path for the value, not
-     * relative.
-     * Use a property that gives the machine specific
-     * absolute path, e.g. {@code ${java.home}}.
-     */
-    public Dependency setSystemPath(String systemPath) {
-        this.systemPath = requireNonNull(systemPath);
-        if (!isNew()) {
-            element.setChildText("systemPath", systemPath, true);
-        }
-        return this;
-    }
-
-    /**
      * Sets the type of dependency.
      * <p/>
      * This defaults to <code>jar</code>.
@@ -410,9 +372,6 @@ public class Dependency {
         }
     }
 
-    void setElement(Element element) {
-        this.element = element;
-    }
 
     NewElement toNewElement() {
         final NewElement dependencyEl = createElement("dependency");
@@ -430,9 +389,6 @@ public class Dependency {
         }
         if (optional != null) {
             dependencyEl.appendChild(createElement("optional", optional));
-        }
-        if (systemPath != null) {
-            dependencyEl.appendChild(createElement("systemPath", systemPath));
         }
         if (exclusions != null) {
             final NewElement exclusionsEl = createElement("exclusions");

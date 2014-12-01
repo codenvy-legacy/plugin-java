@@ -12,11 +12,15 @@ package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.FromElementFunction;
+import com.codenvy.commons.xml.NewElement;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.codenvy.commons.xml.NewElement.createElement;
+
 /**
+ * TODO: implement setters
  * Section for management of default dependency information for use in a group of POMs.
  *
  * @author Eugene Voevodin
@@ -25,7 +29,7 @@ public class DependencyManagement {
 
     private List<Dependency> dependencies;
 
-    private Element element;
+    Element element;
 
     public DependencyManagement() {
     }
@@ -65,5 +69,26 @@ public class DependencyManagement {
      */
     public void setDependencies(java.util.List<Dependency> dependencies) {
         this.dependencies = dependencies;
+    }
+
+    void remove() {
+        element.remove();
+        element = null;
+    }
+
+    void setElement(Element element) {
+        this.element = element;
+    }
+
+    NewElement asNewElement() {
+        final NewElement newElement = createElement("dependencyManagement");
+        for (Dependency dependency : getDependencies()) {
+            newElement.appendChild(dependency.toNewElement());
+        }
+        return newElement;
+    }
+
+    private boolean isNew() {
+        return element == null;
     }
 }

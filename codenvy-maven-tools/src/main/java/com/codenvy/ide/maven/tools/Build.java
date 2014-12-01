@@ -31,12 +31,13 @@ import static com.codenvy.commons.xml.NewElement.createElement;
  */
 public class Build {
 
-    private String  sourceDirectory;
-    private String  testSourceDirectory;
-    private String  scriptSourceDirectory;
-    private String  outputDirectory;
-    private String  testOutputDirectory;
-    private Element element;
+    private String sourceDirectory;
+    private String testSourceDirectory;
+    private String scriptSourceDirectory;
+    private String outputDirectory;
+    private String testOutputDirectory;
+
+    Element element;
 
     public Build() {
     }
@@ -147,11 +148,12 @@ public class Build {
         return this;
     }
 
-    void setElement(Element element) {
-        this.element = element;
+    void remove() {
+        element.remove();
+        element = null;
     }
 
-    NewElement toNewElement() {
+    NewElement asNewElement() {
         final NewElement buildEl = createElement("build");
         if (sourceDirectory != null) {
             buildEl.appendChild(createElement("sourceDirectory", sourceDirectory));
