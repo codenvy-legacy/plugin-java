@@ -32,11 +32,26 @@ import static com.codenvy.commons.xml.NewElement.createElement;
 import static java.util.Objects.requireNonNull;
 
 /**
- * TODO add ability to create model not only from files
- * TODO implement setters
- * The <code>&lt;project&gt;</code> element is the root of
- * the descriptor.
- * The following table lists all of the possible child elements.
+ * The {@code <project>} element is the root of the descriptor.
+ * <p/>
+ * Supported next data:
+ * <ul>
+ * <li>modelVersion</li>
+ * <li>artifactId</li>
+ * <li>groupId</li>
+ * <li>version</li>
+ * <li>name</li>
+ * <li>description</li>
+ * <li>packaging</li>
+ * <li>parent</li>
+ * <li>build</li>
+ * <li>dependencyManagement</li>
+ * <li>properties</li>
+ * <li>modules</li>
+ * <li>dependencies</li>
+ * </ul>
+ *
+ * @author Eugene Voeovodin
  */
 public class Model {
 
@@ -206,7 +221,6 @@ public class Model {
         if (modules == null) {
             modules = new ArrayList<>();
         }
-
         return modules;
     }
 
@@ -226,13 +240,7 @@ public class Model {
     public Model addDependency(Dependency newDependency) {
         requireNonNull(newDependency);
         getDependencies().add(newDependency);
-        //add dependency to xml tree
-        if (root.hasChild("dependencies")) {
-            root.getSingleChild("dependencies").appendChild(newDependency.toNewElement());
-        } else {
-            root.appendChild(createElement("dependencies", newDependency.toNewElement()));
-        }
-        newDependency.element = root.getSingleChild("dependencies").getLastChild();
+        addToTree(newDependency);
         return this;
     }
 
@@ -244,7 +252,8 @@ public class Model {
         getModules().add(newModule);
         //add module to xml tree
         if (root.hasChild("modules")) {
-            root.getSingleChild("modules").appendChild(createElement("module", newModule));
+            root.getSingleChild("modules")
+                .appendChild(createElement("module", newModule));
         } else {
             root.appendChild(createElement("modules", createElement("module", newModule)));
         }
@@ -257,17 +266,7 @@ public class Model {
     public Model addProperty(String key, String value) {
         requireNonNull(key);
         requireNonNull(value);
-        if (getProperties().containsKey(key)) {
-            root.getSingleChild("properties")
-                .getSingleChild(key)
-                .setText(value);
-            //TODO check this
-        } else if (properties.isEmpty()) {
-            root.appendChild(createElement("properties", createElement(key, value)));
-        } else {
-            root.getSingleChild("properties")
-                .appendChild(createElement(key, value));
-        }
+        addTreeProperty(key, value);
         getProperties().put(key, value);
         return this;
     }
@@ -278,13 +277,7 @@ public class Model {
      */
     public Model removeDependency(Dependency dependency) {
         getDependencies().remove(requireNonNull(dependency));
-        //remove dependency from xml tree
-        if (dependencies.isEmpty()) {
-            root.removeChild("dependencies");
-            dependency.element = null;
-        } else {
-            dependency.remove();
-        }
+        removeFromTree(dependency);
         return this;
     }
 
@@ -294,13 +287,7 @@ public class Model {
      */
     public Model removeModule(String module) {
         getModules().remove(requireNonNull(module));
-        //remove module from tree
-        if (modules.isEmpty()) {
-            root.removeChild("modules");
-        } else {
-            root.getSingleChild("modules")
-                .removeChild(module);
-        }
+        removeFromTree(module);
         return this;
     }
 
@@ -311,8 +298,7 @@ public class Model {
         if (build != null) {
             build.remove();
         }
-        build = newBuild;
-        //add build to xml tree
+        build = requireNonNull(newBuild);
         root.setChild("build", build.asNewElement());
         //associate tree element with newly added build
         build.element = root.getSingleChild("build");
@@ -340,7 +326,7 @@ public class Model {
     }
 
     /**
-     * Set default dependency information for projects that inherit from this one.
+     * Sets default dependency information for projects that inherit from this one.
      * <p/>
      * The dependencies in this section are not immediately
      * resolved. Instead, when a POM derived
@@ -351,12 +337,10 @@ public class Model {
      * already specified.
      */
     public Model setDependencyManagement(DependencyManagement newDM) {
-        //remove existing dependency management
         if (dependencyManagement != null) {
             dependencyManagement.remove();
         }
         dependencyManagement = newDM;
-        //add element to tree
         root.setChild("dependencyManagement", newDM.asNewElement());
         //associate tree element with newly added dependency management
         dependencyManagement.element = root.getSingleChild("dependencyManagement");
@@ -368,47 +352,42 @@ public class Model {
      * part of this project. Each module listed is a relative path
      * to the directory containing the module.
      */
-    public Model setModules(Collection<String> newModules) {
-        modules = new ArrayList<>(newModules);
-        //set modules to xml tree
-        final NewElement modulesEl = createElement("modules");
-        for (String module : newModules) {
-            modulesEl.appendChild(createElement("module", module));
-        }
-        //replace or append child
-        root.setChild("modules", modulesEl);
+    public Model setModules(Collection<String> modules) {
+        this.modules = new ArrayList<>(modules);
+        setTreeModules();
         return this;
     }
 
-    //TODO
-
     /**
-     * Set properties that can be used throughout the POM as a
-     * substitution, and
-     * are used as filters in resources if enabled.
-     * The format is
-     * <code>&lt;name&gt;value&lt;/name&gt;</code>.
+     * Sets properties that can be used throughout the POM as a
+     * substitution, and are used as filters in resources if enabled.
+     * The format is {@code <name>value</name>}.
      */
-    public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
+    public Model setProperties(Map<String, String> properties) {
+        this.properties = new HashMap<>(requireNonNull(properties));
+        //set properties to xml tree
+        setTreeProperties();
+        return this;
     }
 
     /**
-     * Set the identifier for this artifact that is unique within
-     * the group given by the
-     * group ID. An artifact is something that is
+     * Sets the identifier for this artifact that is unique within
+     * the group given by the group ID.
+     * <p/>
+     * An artifact is something that is
      * either produced or used by a project.
      * Examples of artifacts produced by Maven for a
      * project include: JARs, source and binary
      * distributions, and WARs.
      */
-    public void setArtifactId(String artifactId) {
-        this.artifactId = artifactId;
+    public Model setArtifactId(String artifactId) {
+        this.artifactId = requireNonNull(artifactId);
         tree.getRoot().setChildText("artifactId", artifactId, true);
+        return this;
     }
 
     /**
-     * Set a detailed description of the project, used by Maven
+     * Sets a detailed description of the project, used by Maven
      * whenever it needs to
      * describe the project, such as on the web site.
      * While this element can be specified as
@@ -419,46 +398,49 @@ public class Model {
      * site, you are able to specify your own instead
      * of adjusting this text.
      */
-    public void setDescription(String description) {
-        this.description = description;
+    public Model setDescription(String description) {
+        this.description = requireNonNull(description);
         tree.getRoot().setChildText("description", description, true);
+        return this;
     }
 
     /**
-     * Set a universally unique identifier for a project. It is
-     * normal to
-     * use a fully-qualified package name to
+     * Sets a universally unique identifier for a project. It is
+     * normal to use a fully-qualified package name to
      * distinguish it from other
-     * projects with a similar name (eg.
-     * <code>org.apache.maven</code>).
+     * projects with a similar name (eg. <i>org.apache.maven</i>).
      */
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public Model setGroupId(String groupId) {
+        this.groupId = requireNonNull(groupId);
         tree.getRoot().setChildText("groupId", groupId, true);
+        return this;
     }
 
     /**
-     * Set the current version of the artifact produced by this project.
+     * Sets the current version of the artifact produced by this project.
      */
-    public void setVersion(String version) {
-        this.version = version;
+    public Model setVersion(String version) {
+        this.version = requireNonNull(version);
         tree.getRoot().setChildText("version", version, true);
+        return this;
     }
 
     /**
-     * Set declares to which version of project descriptor this POM conforms.
+     * Sets declares to which version of project descriptor this POM conforms.
      */
-    public void setModelVersion(String modelVersion) {
-        this.modelVersion = modelVersion;
+    public Model setModelVersion(String modelVersion) {
+        this.modelVersion = requireNonNull(modelVersion);
         tree.getRoot().setChildText("modelVersion", modelVersion, true);
+        return this;
     }
 
     /**
-     * Set the full name of the project.
+     * Sets the full name of the project.
      */
-    public void setName(String name) {
-        this.name = name;
+    public Model setName(String name) {
+        this.name = requireNonNull(name);
         tree.getRoot().setChildText("name", name, true);
+        return this;
     }
 
     /**
@@ -472,21 +454,27 @@ public class Model {
      * so this list does not contain all possible
      * types.
      */
-    public void setPackaging(String packaging) {
-        this.packaging = packaging;
+    public Model setPackaging(String packaging) {
+        this.packaging = requireNonNull(packaging);
         tree.getRoot().setChildText("packaging", packaging, true);
+        return this;
     }
 
     /**
-     * Set the location of the parent project, if one exists.
-     * Values from the parent
-     * project will be the default for this project if
-     * they are left unspecified. The location
-     * is given as a group ID, artifact ID and version.
+     * Sets the location of the parent project, if one exists.
+     * <p/>
+     * Values from the parent project will be
+     * the default for this project if they are left unspecified.
+     * The location is given as a group ID, artifact ID and version.
      */
-    public void setParent(Parent parent) {
-        this.parent = parent;
-
+    public Model setParent(Parent newParent) {
+        if (parent != null) {
+            parent.remove();
+        }
+        parent = requireNonNull(newParent);
+        //add parent to xml tree
+        root.setChild("parent", newParent.asNewElement());
+        return this;
     }
 
     /**
@@ -502,17 +490,72 @@ public class Model {
                (version == null ? "[inherited]" : version);
     }
 
-    @Override
-    public String toString() {
-        return getId();
-    }
-
     public void writeTo(File file) throws IOException {
         tree.writeTo(file);
     }
 
     public void writeTo(VirtualFile file) throws ServerException, ForbiddenException {
         file.updateContent(new ByteArrayInputStream(tree.getBytes()), null);
+    }
+
+    @Override
+    public String toString() {
+        return getId();
+    }
+
+    private void addTreeProperty(String key, String value) {
+        if (getProperties().containsKey(key)) {
+            root.getSingleChild("properties")
+                .getSingleChild(key)
+                .setText(value);
+        } else if (properties.isEmpty()) {
+            root.appendChild(createElement("properties", createElement(key, value)));
+        } else {
+            root.getSingleChild("properties").appendChild(createElement(key, value));
+        }
+    }
+
+    private void addToTree(Dependency newDependency) {
+        if (root.hasChild("dependencies")) {
+            root.getSingleChild("dependencies")
+                .appendChild(newDependency.asNewElement());
+        } else {
+            root.appendChild(createElement("dependencies", newDependency.asNewElement()));
+        }
+        newDependency.element = root.getSingleChild("dependencies").getLastChild();
+    }
+
+    private void removeFromTree(Dependency dependency) {
+        if (dependencies.isEmpty()) {
+            root.removeChild("dependencies");
+            dependency.element = null;
+        } else {
+            dependency.remove();
+        }
+    }
+
+    private void removeFromTree(String module) {
+        if (modules.isEmpty()) {
+            root.removeChild("modules");
+        } else {
+            root.getSingleChild("modules").removeChild(module);
+        }
+    }
+
+    private void setTreeModules() {
+        final NewElement newModules = createElement("modules");
+        for (String module : modules) {
+            newModules.appendChild(createElement("module", module));
+        }
+        root.setChild("modules", newModules);
+    }
+
+    private void setTreeProperties() {
+        final NewElement newProperties = createElement("properties");
+        for (Map.Entry<String, String> property : properties.entrySet()) {
+            newProperties.appendChild(createElement(property.getKey(), property.getValue()));
+        }
+        root.setChild("properties", newProperties);
     }
 
     private void removeDependencies() {
@@ -539,7 +582,10 @@ public class Model {
             model.parent = new Parent(root.getSingleChild("parent"));
         }
         if (root.hasChild("dependencyManagement")) {
-            model.dependencyManagement = new DependencyManagement(root.getSingleChild("dependencyManagement"));
+            final Element dm = tree.getSingleElement("/project/dependencyManagement");
+            final List<Dependency> dependencies =
+                    tree.getElements("/project/dependencyManagement/dependencies/dependency", TO_DEPENDENCY_FUNCTION);
+            model.dependencyManagement = new DependencyManagement(dm, dependencies);
         }
         if (root.hasChild("build")) {
             model.build = new Build(root.getSingleChild("build"));

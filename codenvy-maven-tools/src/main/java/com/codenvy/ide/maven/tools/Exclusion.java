@@ -32,9 +32,10 @@ import static java.util.Objects.requireNonNull;
  */
 public class Exclusion {
 
-    private String  artifactId;
-    private String  groupId;
-    private Element element;
+    private String artifactId;
+    private String groupId;
+
+    Element element;
 
     public Exclusion() {
     }
@@ -88,11 +89,7 @@ public class Exclusion {
         }
     }
 
-    void setElement(Element element) {
-        this.element = element;
-    }
-
-    NewElement toNewElement() {
+    NewElement asNewElement() {
         final NewElement newExclusion = createElement("exclusion");
         newExclusion.appendChild(createElement("artifactId", artifactId));
         newExclusion.appendChild(createElement("groupId", groupId));

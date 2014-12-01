@@ -25,7 +25,6 @@ import static java.util.Objects.requireNonNull;
  * <li>artifactId</li>
  * <li>groupId</li>
  * <li>version</li>
- * <li>relativePath</li>
  * </ul>
  *
  * @author Eugene Voevodin
@@ -120,7 +119,7 @@ public class Parent {
     }
 
     //TODO check for required children
-    NewElement toNewElement() {
+    NewElement asNewElement() {
         final NewElement parentEl = createElement("parent");
         parentEl.appendChild(createElement("artifactId", artifactId));
         parentEl.appendChild(createElement("groupId", groupId));

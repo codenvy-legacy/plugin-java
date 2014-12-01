@@ -38,9 +38,9 @@
             <version>${maven-model.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${org.testng.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

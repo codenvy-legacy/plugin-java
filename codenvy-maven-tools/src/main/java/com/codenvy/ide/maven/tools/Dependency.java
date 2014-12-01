@@ -34,7 +34,6 @@ import static java.util.Objects.requireNonNull;
  * <li>classifier</li>
  * <li>type</li>
  * <li>optional</li>
- * <li>systemPath</li>
  * <li>exclusions</li>
  * </ul>
  *
@@ -55,6 +54,12 @@ public class Dependency {
 
     Element element;
 
+    public Dependency(String artifactId, String groupId, String version) {
+        this.artifactId = artifactId;
+        this.groupId = groupId;
+        this.version = version;
+    }
+
     public Dependency() {
     }
 
@@ -64,8 +69,8 @@ public class Dependency {
         groupId = element.getChildText("groupId");
         version = element.getChildText("version");
         classifier = element.getChildText("classifier");
-        scope = element.getChildText("scope");
         optional = element.getChildText("optional");
+        scope = element.getChildTextOrDefault("scope", "compile");
         type = element.getChildTextOrDefault("type", "jar");
         //if dependency has exclusions fetch it!
         if (element.hasSingleChild("exclusions")) {
@@ -178,14 +183,13 @@ public class Dependency {
         getExclusions().add(exclusion);
         //add exclusion to xml tree
         if (!isNew()) {
-            if (element.hasSingleChild("exclusions")) {
+            if (element.hasChild("exclusions")) {
                 element.getSingleChild("exclusions")
-                       .appendChild(exclusion.toNewElement());
+                       .appendChild(exclusion.asNewElement());
             } else {
-                element.appendChild(createElement("exclusions", exclusion.toNewElement()));
+                element.appendChild(createElement("exclusions", exclusion.asNewElement()));
             }
-            exclusion.setElement(element.getSingleChild("exclusions")
-                                        .getLastChild());
+            exclusion.element = element.getSingleChild("exclusions").getLastChild();
         }
         return this;
     }
@@ -215,15 +219,23 @@ public class Dependency {
             exclusions = new ArrayList<>(newExclusions);
             return this;
         }
-        if (element.hasChild("exclusions")) {
-            element.removeChild("exclusions");
-        }
-        exclusions = new ArrayList<>(newExclusions.size());
+        removeExclusions();
         //use addExclusion to add and associate each new exclusion with tree element
+        exclusions = new ArrayList<>(newExclusions.size());
         for (Exclusion exclusion : newExclusions) {
             addExclusion(exclusion);
         }
         return this;
+    }
+
+    private void removeExclusions() {
+        if (exclusions == null) return;
+        //remove element references
+        for (Exclusion exclusion : exclusions) {
+            exclusion.element = null;
+        }
+        //remove exclusions element from tree
+        element.removeChild("exclusions");
     }
 
     /**
@@ -372,16 +384,15 @@ public class Dependency {
         }
     }
 
-
-    NewElement toNewElement() {
+    NewElement asNewElement() {
         final NewElement dependencyEl = createElement("dependency");
         dependencyEl.appendChild(createElement("artifactId", artifactId));
         dependencyEl.appendChild(createElement("groupId", groupId));
         dependencyEl.appendChild(createElement("version", version));
-        if (scope != null) {
+        if (scope != null && !scope.equals("compile")) {
             dependencyEl.appendChild(createElement("scope", scope));
         }
-        if (type != null) {
+        if (type != null && !type.equals("jar")) {
             dependencyEl.appendChild(createElement("type", type));
         }
         if (classifier != null) {
@@ -393,7 +404,7 @@ public class Dependency {
         if (exclusions != null) {
             final NewElement exclusionsEl = createElement("exclusions");
             for (Exclusion exclusion : exclusions) {
-                exclusionsEl.appendChild(exclusion.toNewElement());
+                exclusionsEl.appendChild(exclusion.asNewElement());
             }
             exclusionsEl.appendChild(exclusionsEl);
         }
