@@ -13,7 +13,7 @@ package com.codenvy.ide.extension.maven.client.module;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
-import com.codenvy.api.project.shared.dto.GenerateDescriptor;
+import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.CurrentProject;
@@ -100,7 +100,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         attributes.put(PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(GROUP_ID)));
         attributes.put(PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(VERSION)));
         newProject.setAttributes(attributes);
-        newProject.setGenerateDescriptor(dtoFactory.createDto(GenerateDescriptor.class).withName(MAVEN_ID));
+        newProject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class).withName(MAVEN_ID));
         view.showButtonLoader(true);
         projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject,
                                     new AsyncRequestCallback<ProjectDescriptor>() {
