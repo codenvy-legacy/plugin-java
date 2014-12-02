@@ -12,17 +12,23 @@ package com.codenvy.ide.ext.java.client;
 
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
+import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.filetypes.FileType;
 import com.codenvy.ide.api.filetypes.FileTypeRegistry;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
+import com.codenvy.ide.ext.java.client.action.BackAction;
+import com.codenvy.ide.ext.java.client.action.ForwardAction;
 import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
+import com.codenvy.ide.ext.java.client.action.QuickDocumentationAction;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.toolbar.ToolbarPresenter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import static com.codenvy.ide.api.action.IdeActions.GROUP_CODE;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 
 /** @author Evgen Vidolob */
@@ -57,7 +63,8 @@ public class JavaExtension {
     private void prepareActions(JavaLocalizationConstant localizationConstant,
                                 NewPackageAction newPackageAction,
                                 NewJavaSourceFileAction newJavaSourceFileAction,
-                                ActionManager actionManager) {
+                                ActionManager actionManager, @Named("quickdocToolbar") ToolbarPresenter toolbarPresenter,
+                                BackAction backAction, ForwardAction forwardAction, QuickDocumentationAction quickDocumentationAction) {
         // add actions in File -> New group
         actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
         actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
@@ -65,6 +72,21 @@ public class JavaExtension {
         newGroup.addSeparator();
         newGroup.add(newJavaSourceFileAction);
         newGroup.add(newPackageAction);
+
+        actionManager.registerAction("showQuickDoc", quickDocumentationAction);
+        actionManager.registerAction("quickdocBack", backAction);
+        actionManager.registerAction("quickdocForward", forwardAction);
+
+        DefaultActionGroup codeGroup = (DefaultActionGroup)actionManager.getAction(GROUP_CODE);
+        codeGroup.add(quickDocumentationAction, Constraints.LAST);
+
+        DefaultActionGroup quickDocGroup = new DefaultActionGroup(actionManager);
+        actionManager.registerAction("quickdocToolbarGroup", quickDocGroup);
+
+        quickDocGroup.add(backAction);
+        quickDocGroup.add(forwardAction);
+
+        toolbarPresenter.bindMainGroup(quickDocGroup);
 
     }
 

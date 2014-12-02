@@ -19,7 +19,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.fest.assertions.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,6 +26,8 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Evgen Vidolob
@@ -38,7 +39,7 @@ public class JavadocUrlTest extends BaseTest {
 
     @Before
     public void prepare() {
-        project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
+        project = new JavaProject(new File("/temp"), "/aaa", "/temp", "ws", options);
     }
 
     @Test
@@ -48,7 +49,7 @@ public class JavadocUrlTest extends BaseTest {
         String handle = uri.substring(urlPart.length());
         handle = URLDecoder.decode(handle, "UTF-8");
         IJavaElement element = JavaElementLinks.parseURI(handle, project);
-        Assertions.assertThat(element).isNotNull().isEqualTo(type);
+        assertThat(element).isNotNull().isEqualTo(type);
     }
 
     @Test
@@ -59,7 +60,7 @@ public class JavadocUrlTest extends BaseTest {
         String handle = uri.substring(urlPart.length());
         handle = URLDecoder.decode(handle, "UTF-8");
         IJavaElement element = JavaElementLinks.parseURI(handle, project);
-        Assertions.assertThat(element).isNotNull().isEqualTo(field);
+        assertThat(element).isNotNull().isEqualTo(field);
     }
 
     @Test
@@ -70,6 +71,6 @@ public class JavadocUrlTest extends BaseTest {
         String handle = uri.substring(urlPart.length());
         handle = URLDecoder.decode(handle, "UTF-8");
         IJavaElement element = JavaElementLinks.parseURI(handle, project);
-        Assertions.assertThat(element).isNotNull().isEqualTo(method);
+        assertThat(element).isNotNull().isEqualTo(method);
     }
 }

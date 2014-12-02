@@ -40,5 +40,12 @@ public class BaseTest {
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
     }
 
+    protected static String getHanldeForRtJarStart(){
+        String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
+        javaHome = javaHome.replaceAll("/","\\\\/");
+//               "/lib/rt.jar"
+        return "☂/" + javaHome;
+    }
+
 
 }

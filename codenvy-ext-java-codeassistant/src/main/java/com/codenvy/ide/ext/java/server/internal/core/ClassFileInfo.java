@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
+import org.eclipse.jdt.internal.compiler.env.IBinaryElementValuePair;
 import org.eclipse.jdt.internal.compiler.env.IBinaryField;
 import org.eclipse.jdt.internal.compiler.env.IBinaryMethod;
 import org.eclipse.jdt.internal.compiler.env.IBinaryNestedType;
@@ -77,29 +78,28 @@ import java.util.HashMap;
 
 	private void generateAnnotationInfo(JavaElement parent, char[] parameterName, HashMap newElements, IBinaryAnnotation annotationInfo,
 										String memberValuePairName) {
-//		char[] typeName = org.eclipse.jdt.core.Signature.toCharArray(CharOperation.replaceOnCopy(annotationInfo.getTypeName(), '/', '.'));
-//		Annotation annotation = new Annotation(parent, new String(typeName), memberValuePairName);
-//		while (newElements.containsKey(annotation)) {
-//			annotation.occurrenceCount++;
-//		}
-//		newElements.put(annotation, annotationInfo);
-//		IBinaryElementValuePair[] pairs = annotationInfo.getElementValuePairs();
-//		for (int i = 0, length = pairs.length; i < length; i++) {
-//			Object value = pairs[i].getValue();
-//			if (value instanceof IBinaryAnnotation) {
-//				generateAnnotationInfo(annotation, newElements, (IBinaryAnnotation)value, new String(pairs[i].getName()));
-//		} else if (value instanceof Object[]) {
-//			// if the value is an array, it can have no more than 1 dimension - no need to recurse
-//			Object[] valueArray = (Object[]) value;
-//			for (int j = 0, valueArrayLength = valueArray.length; j < valueArrayLength; j++) {
-//				Object nestedValue = valueArray[j];
-//				if (nestedValue instanceof IBinaryAnnotation) {
-//					generateAnnotationInfo(annotation, newElements, (IBinaryAnnotation) nestedValue, new String(pairs[i].getName()));
-//				}
-//			}
-//		}
-//	}
-		throw new UnsupportedOperationException();
+		char[] typeName = org.eclipse.jdt.core.Signature.toCharArray(CharOperation.replaceOnCopy(annotationInfo.getTypeName(), '/', '.'));
+		Annotation annotation = new Annotation(parent,parent.manager, new String(typeName), memberValuePairName);
+		while (newElements.containsKey(annotation)) {
+			annotation.occurrenceCount++;
+		}
+		newElements.put(annotation, annotationInfo);
+		IBinaryElementValuePair[] pairs = annotationInfo.getElementValuePairs();
+		for (int i = 0, length = pairs.length; i < length; i++) {
+			Object value = pairs[i].getValue();
+			if (value instanceof IBinaryAnnotation) {
+				generateAnnotationInfo(annotation, newElements, (IBinaryAnnotation)value, new String(pairs[i].getName()));
+		} else if (value instanceof Object[]) {
+			// if the value is an array, it can have no more than 1 dimension - no need to recurse
+			Object[] valueArray = (Object[]) value;
+			for (int j = 0, valueArrayLength = valueArray.length; j < valueArrayLength; j++) {
+				Object nestedValue = valueArray[j];
+				if (nestedValue instanceof IBinaryAnnotation) {
+					generateAnnotationInfo(annotation, newElements, (IBinaryAnnotation) nestedValue, new String(pairs[i].getName()));
+				}
+			}
+		}
+	}
 }
 private void generateStandardAnnotationsInfos(JavaElement javaElement, char[] parameterName, long tagBits, HashMap newElements) {
 	if ((tagBits & TagBits.AllStandardAnnotationsMask) == 0)

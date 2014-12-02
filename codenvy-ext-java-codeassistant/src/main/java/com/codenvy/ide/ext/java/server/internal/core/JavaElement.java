@@ -617,11 +617,11 @@ public abstract class JavaElement implements IJavaElement {
      * Creates and returns a new not present exception for this element.
      */
     public JavaModelException newNotPresentException() {
-        return new JavaModelException(newDoesNotExistStatus());
+        return new com.codenvy.ide.ext.java.server.core.JavaModelException(newDoesNotExistStatus());
     }
 
-    protected JavaModelStatus newDoesNotExistStatus() {
-        return new JavaModelStatus(IJavaModelStatusConstants.ELEMENT_DOES_NOT_EXIST, this);
+    protected IJavaModelStatus newDoesNotExistStatus() {
+        return new com.codenvy.ide.ext.java.server.internal.core.JavaModelStatus(IJavaModelStatusConstants.ELEMENT_DOES_NOT_EXIST, this);
     }
 
     /**

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.ext.java.server.internal.codeassist.SelectionEngine;
+
 import org.eclipse.jdt.core.BindingKey;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
@@ -22,7 +24,9 @@ import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.codeassist.ISelectionRequestor;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 
 /**
@@ -257,52 +261,51 @@ public abstract  class NamedMember extends Member {
      * @see IType#resolveType(String, org.eclipse.jdt.core.WorkingCopyOwner)
      */
     public String[][] resolveType(String typeName, WorkingCopyOwner owner) throws JavaModelException {
-//        org.eclipse.jdt.internal.core.JavaProject project = (org.eclipse.jdt.internal.core.JavaProject) getJavaProject();
-//        SearchableEnvironment environment = project.newSearchableNameEnvironment(owner);
-//
-//        class TypeResolveRequestor implements ISelectionRequestor {
-//            String[][] answers = null;
-//            public void acceptType(char[] packageName, char[] tName, int modifiers, boolean isDeclaration, char[] uniqueKey, int start, int end) {
-//                String[] answer = new String[]  {new String(packageName), new String(tName) };
-//                if (this.answers == null) {
-//                    this.answers = new String[][]{ answer };
-//                } else {
-//                    // grow
-//                    int length = this.answers.length;
-//                    System.arraycopy(this.answers, 0, this.answers = new String[length+1][], 0, length);
-//                    this.answers[length] = answer;
-//                }
-//            }
-//            public void acceptError(CategorizedProblem error) {
-//                // ignore
-//            }
-//            public void acceptField(char[] declaringTypePackageName, char[] declaringTypeName, char[] fieldName, boolean isDeclaration, char[] uniqueKey, int start, int end) {
-//                // ignore
-//            }
-//            public void acceptMethod(char[] declaringTypePackageName, char[] declaringTypeName, String enclosingDeclaringTypeSignature, char[] selector, char[][] parameterPackageNames, char[][] parameterTypeNames, String[] parameterSignatures, char[][] typeParameterNames, char[][][] typeParameterBoundNames, boolean isConstructor, boolean isDeclaration, char[] uniqueKey, int start, int end) {
-//                // ignore
-//            }
-//            public void acceptPackage(char[] packageName){
-//                // ignore
-//            }
-//            public void acceptTypeParameter(char[] declaringTypePackageName, char[] declaringTypeName, char[] typeParameterName, boolean isDeclaration, int start, int end) {
-//                // ignore
-//            }
-//            public void acceptMethodTypeParameter(char[] declaringTypePackageName, char[] declaringTypeName, char[] selector, int selectorStart, int selcetorEnd, char[] typeParameterName, boolean isDeclaration, int start, int end) {
-//                // ignore
-//            }
-//
-//        }
-//        TypeResolveRequestor requestor = new TypeResolveRequestor();
-//        SelectionEngine engine =
-//                new SelectionEngine(environment, requestor, project.getOptions(true), owner);
-//
-//        engine.selectType(typeName.toCharArray(), (IType) this);
-//        if (NameLookup.VERBOSE) {
-//            System.out.println(Thread.currentThread() + " TIME SPENT in NameLoopkup#seekTypesInSourcePackage: " + environment.nameLookup.timeSpentInSeekTypesInSourcePackage + "ms");  //$NON-NLS-1$ //$NON-NLS-2$
-//            System.out.println(Thread.currentThread() + " TIME SPENT in NameLoopkup#seekTypesInBinaryPackage: " + environment.nameLookup.timeSpentInSeekTypesInBinaryPackage + "ms");  //$NON-NLS-1$ //$NON-NLS-2$
-//        }
-//        return requestor.answers;
-        throw new UnsupportedOperationException();
+        JavaProject project = (JavaProject) getJavaProject();
+        SearchableEnvironment environment = project.newSearchableNameEnvironment(owner);
+
+        class TypeResolveRequestor implements ISelectionRequestor {
+            String[][] answers = null;
+            public void acceptType(char[] packageName, char[] tName, int modifiers, boolean isDeclaration, char[] uniqueKey, int start, int end) {
+                String[] answer = new String[]  {new String(packageName), new String(tName) };
+                if (this.answers == null) {
+                    this.answers = new String[][]{ answer };
+                } else {
+                    // grow
+                    int length = this.answers.length;
+                    System.arraycopy(this.answers, 0, this.answers = new String[length+1][], 0, length);
+                    this.answers[length] = answer;
+                }
+            }
+            public void acceptError(CategorizedProblem error) {
+                // ignore
+            }
+            public void acceptField(char[] declaringTypePackageName, char[] declaringTypeName, char[] fieldName, boolean isDeclaration, char[] uniqueKey, int start, int end) {
+                // ignore
+            }
+            public void acceptMethod(char[] declaringTypePackageName, char[] declaringTypeName, String enclosingDeclaringTypeSignature, char[] selector, char[][] parameterPackageNames, char[][] parameterTypeNames, String[] parameterSignatures, char[][] typeParameterNames, char[][][] typeParameterBoundNames, boolean isConstructor, boolean isDeclaration, char[] uniqueKey, int start, int end) {
+                // ignore
+            }
+            public void acceptPackage(char[] packageName){
+                // ignore
+            }
+            public void acceptTypeParameter(char[] declaringTypePackageName, char[] declaringTypeName, char[] typeParameterName, boolean isDeclaration, int start, int end) {
+                // ignore
+            }
+            public void acceptMethodTypeParameter(char[] declaringTypePackageName, char[] declaringTypeName, char[] selector, int selectorStart, int selcetorEnd, char[] typeParameterName, boolean isDeclaration, int start, int end) {
+                // ignore
+            }
+
+        }
+        TypeResolveRequestor requestor = new TypeResolveRequestor();
+        SelectionEngine engine =
+                new SelectionEngine(environment, requestor, project.getOptions(true), owner, project.getIndexManager(), project);
+
+        engine.selectType(typeName.toCharArray(), (IType) this);
+        if (NameLookup.VERBOSE) {
+            System.out.println(Thread.currentThread() + " TIME SPENT in NameLoopkup#seekTypesInSourcePackage: " + environment.nameLookup.timeSpentInSeekTypesInSourcePackage + "ms");  //$NON-NLS-1$ //$NON-NLS-2$
+            System.out.println(Thread.currentThread() + " TIME SPENT in NameLoopkup#seekTypesInBinaryPackage: " + environment.nameLookup.timeSpentInSeekTypesInBinaryPackage + "ms");  //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        return requestor.answers;
     }
 }

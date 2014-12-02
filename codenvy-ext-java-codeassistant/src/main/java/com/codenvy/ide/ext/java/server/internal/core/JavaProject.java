@@ -45,7 +45,6 @@ import org.eclipse.jdt.core.eval.IEvaluationContext;
 import org.eclipse.jdt.internal.compiler.util.ObjectVector;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
-import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1048,7 +1047,7 @@ public class JavaProject extends Openable implements IJavaProject {
      * @see org.eclipse.jdt.internal.core.JavaElement#getHandleMemento(StringBuffer)
      */
     protected void getHandleMemento(StringBuffer buff) {
-        buff.append(getElementName());
+//        buff.append(getElementName());
     }
 
 //    @Override
@@ -1090,8 +1089,16 @@ public class JavaProject extends Openable implements IJavaProject {
         return getJavaProjectElementInfo().newNameLookup(this, workingCopies);
     }
 
-    public SearchableEnvironment newSearchableNameEnvironment(ICompilationUnit[] workingCopies) {
-        return null;
+    public SearchableEnvironment newSearchableNameEnvironment(ICompilationUnit[] workingCopies) throws JavaModelException {
+        return new SearchableEnvironment(this, workingCopies);
+    }
+
+    /*
+     * Returns a new search name environment for this project. This name environment first looks in the working copies
+     * of the given owner.
+     */
+    public SearchableEnvironment newSearchableNameEnvironment(WorkingCopyOwner owner) throws JavaModelException {
+        return new SearchableEnvironment(this, owner);
     }
 
     public String getVfsId() {

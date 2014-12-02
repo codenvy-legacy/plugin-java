@@ -19,9 +19,12 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -30,22 +33,28 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class JavaDocTest extends BaseTest {
     private String urlPart = "http://localhost:8080/ws/java-ca?projectpath=/test&handle=";
+    private JavadocFinder finder;
+    private JavaProject project;
 
+
+    @Before
+    public void setUp() throws Exception {
+        finder = new JavadocFinder(urlPart);
+        project = new JavaProject(new File("/temp"), "/test", "/temp", "ws", options);
+    }
 
     @Test
     public void binaryObjectDoc() throws JavaModelException {
         JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
         IType type = project.findType("java.lang.Object");
         assertThat(type).isNotNull();
-        String htmlContent = JavadocContentAccess2.getHTMLContent(type, true,urlPart);
+        String htmlContent = JavadocContentAccess2.getHTMLContent(type, true, urlPart);
         Assert.assertNotNull(htmlContent);
         assertThat(htmlContent).isNotNull().isNotEmpty().contains("Class <code>Object</code> is the root of the class hierarchy.");
     }
 
     @Test
     public void findObjectDoc() throws JavaModelException {
-        JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
-        JavadocFinder finder = new JavadocFinder(urlPart);
         String javadoc = finder.findJavadoc(project, "java.lang.Object");
         Assert.assertNotNull(javadoc);
         assertThat(javadoc).isNotNull().isNotEmpty().contains("Class <code>Object</code> is the root of the class hierarchy.");
@@ -53,7 +62,6 @@ public class JavaDocTest extends BaseTest {
 
     @Test
     public void binaryMethodDoc() throws JavaModelException {
-        JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
         IType type = project.findType("java.lang.Object");
         assertThat(type).isNotNull();
         IMethod method = type.getMethod("hashCode", null);
@@ -64,7 +72,6 @@ public class JavaDocTest extends BaseTest {
 
     @Test
     public void binaryGenericMethodDoc() throws JavaModelException {
-        JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
         IType type = project.findType("java.util.List");
         assertThat(type).isNotNull();
         IMethod method = type.getMethod("add", new String[]{"TE;"});
@@ -75,7 +82,6 @@ public class JavaDocTest extends BaseTest {
 
     @Test
     public void binaryFieldDoc() throws JavaModelException {
-        JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
         IType type = project.findType("java.util.ArrayList");
         assertThat(type).isNotNull();
         IField field = type.getField("size");
@@ -86,10 +92,44 @@ public class JavaDocTest extends BaseTest {
 
     @Test
     public void binaryGenericObjectDoc() throws JavaModelException {
-        JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
         IType type = project.findType("java.util.ArrayList");
         assertThat(type).isNotNull();
         String htmlContent = JavadocContentAccess2.getHTMLContent(type, true, urlPart);
         assertThat(htmlContent).isNotNull().isNotEmpty().contains("Resizable-array implementation of the <tt>List</tt> interface.");
     }
+
+    @Test
+    public void binaryHandle() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+        testDoc("<java.lang(String.class☃String☂java.lang.StringBuffer",
+                "A thread-safe, mutable sequence of characters.");
+    }
+
+    @Test
+    public void binaryHandleMethod() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+        testDoc("<java.nio.charset(CharsetDecoder.class☃CharsetDecoder☂☂replaceWith☂java.lang.String",
+                "Changes this decoder's replacement value.");
+    }
+
+    @Test
+    public void exceptionMethod() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+        testDoc("<java.lang(Throwable.class☃Throwable~Throwable~Ljava.lang.String;~Ljava.lang.Throwable;~Z~Z☂☂getStackTrace",
+                "Provides programmatic access to the stack trace information printed by");
+//       String handle2 = URLDecoder.decode(", "UTF-8");
+//        System.out.println(handle2);
+    }
+
+    @Test
+    public void getContextClassLoadingMethod() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+//       String handle2 = URLDecoder.decode("%E2%98%82%2F%5C%2Fusr%5C%2Flib64%5C%2Fjdk1.7.0_51%5C%2Fjre%5C%2Flib%5C%2Frt.jar%3Cjava.nio.charset.spi%28CharsetProvider.class%E2%98%83CharsetProvider%E2%98%82java.lang.Thread%E2%98%82getContextClassLoader%E2%98%82", "UTF-8");
+//                                          System.out.println(handle2);
+        testDoc("<java.nio.charset.spi(CharsetProvider.class☃CharsetProvider☂java.lang.Thread☂getContextClassLoader☂",
+                "Returns the context ClassLoader for this Thread.");
+    }
+
+    private void testDoc(String handle, String content){
+        String handl = getHanldeForRtJarStart() + handle;
+        String javadoc = finder.findJavadoc4Handle(project, handl);
+        assertThat(javadoc).contains(content);
+    }
+
 }

@@ -16,6 +16,8 @@ import com.codenvy.ide.api.filetypes.FileType;
 import com.codenvy.ide.api.texteditor.ContentFormatter;
 import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.JavaResources;
+import com.codenvy.ide.ext.java.client.documentation.QuickDocPresenter;
+import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
 import com.codenvy.ide.ext.java.client.editor.JavaFormatter;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorkerImpl;
@@ -23,10 +25,12 @@ import com.codenvy.ide.ext.java.client.format.FormatController;
 import com.codenvy.ide.ext.java.client.newsourcefile.NewJavaSourceFileView;
 import com.codenvy.ide.ext.java.client.newsourcefile.NewJavaSourceFileViewImpl;
 import com.codenvy.ide.ext.java.client.watcher.ProjectStateListener;
+import com.codenvy.ide.toolbar.ToolbarPresenter;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 /**
  * @author Evgen Vidolob
@@ -43,10 +47,13 @@ public class JavaGinModule extends AbstractGinModule {
         bind(FormatController.class).asEagerSingleton();
         bind(ProjectStateListener.class).asEagerSingleton();
         bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
+        bind(QuickDocumentation.class).to(QuickDocPresenter.class).in(Singleton.class);
+        bind(ToolbarPresenter.class).annotatedWith(Names.named("quickdocToolbar")).to(ToolbarPresenter.class).in(Singleton.class);
     }
 
     @Provides
     @Named("javaCA")
+    @Singleton
     protected String getJavaCAPath() {
         return JavaExtension.getJavaCAPath();
     }

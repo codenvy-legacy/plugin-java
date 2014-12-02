@@ -17,6 +17,7 @@ import com.google.inject.name.Named;
 import org.eclipse.jdt.core.JavaModelException;
 
 import javax.inject.Inject;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -25,7 +26,7 @@ import javax.ws.rs.QueryParam;
 /**
  * @author Evgen Vidolob
  */
-@Path("java-ca/javadoc/{ws-id}")
+@Path("javadoc/{ws-id}")
 public class JavadocService {
 
 
@@ -40,6 +41,7 @@ public class JavadocService {
     private String urlRefix;
 
     @Path("find")
+    @GET
     @Produces("text/html")
     public String findJavadoc(@QueryParam("fqn") String fqn, @QueryParam("projectpath") String projectPath) throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
@@ -49,6 +51,7 @@ public class JavadocService {
 
     @Path("get")
     @Produces("text/html")
+    @GET
     public String get(@QueryParam("handle") String handle, @QueryParam("projectpath") String projectPath) {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
         String urlPart = getUrlPart(projectPath);
@@ -56,7 +59,7 @@ public class JavadocService {
     }
 
     private String getUrlPart(String projectPath) {
-        return urlRefix + wsId + "?projectpath=" + projectPath + "&handle=";
+        return urlRefix + wsId + "/get"+ "?projectpath=" + projectPath + "&handle=";
     }
 
 }

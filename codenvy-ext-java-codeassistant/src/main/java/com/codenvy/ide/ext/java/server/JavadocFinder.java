@@ -13,7 +13,6 @@ package com.codenvy.ide.ext.java.server;
 
 import com.codenvy.ide.ext.java.server.dom.ASTNodes;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
-import com.codenvy.ide.ext.java.server.javadoc.ASTProvider;
 import com.codenvy.ide.ext.java.server.javadoc.HTMLPrinter;
 import com.codenvy.ide.ext.java.server.javadoc.JavaDocLocations;
 import com.codenvy.ide.ext.java.server.javadoc.JavaElementLabels;
@@ -21,7 +20,6 @@ import com.codenvy.ide.ext.java.server.javadoc.JavaElementLinks;
 import com.codenvy.ide.ext.java.server.javadoc.JavadocContentAccess2;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
@@ -32,7 +30,6 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
@@ -265,19 +262,20 @@ public class JavadocFinder {
                 return null;
         }
 
-        IBinding binding;
+        IBinding binding = null;
         //TODO
         ASTNode node = null; //getHoveredASTNode(editorInputElement, hoverRegion);
 
         if (node == null) {
-            ASTParser p = ASTParser.newParser(ASTProvider.SHARED_AST_LEVEL);
-            p.setProject(element.getJavaProject());
-            p.setBindingsRecovery(true);
-            try {
-                binding = p.createBindings(new IJavaElement[]{element}, null)[0];
-            } catch (OperationCanceledException e) {
-                return null;
-            }
+            //todo use ast ported parser,that uses our java model
+//            ASTParser p = ASTParser.newParser(ASTProvider.SHARED_AST_LEVEL);
+//            p.setProject(element.getJavaProject());
+//            p.setBindingsRecovery(true);
+//            try {
+//                binding = p.createBindings(new IJavaElement[]{element}, null)[0];
+//            } catch (OperationCanceledException e) {
+//                return null;
+//            }
 
         } else {
             binding = resolveBinding(node);
