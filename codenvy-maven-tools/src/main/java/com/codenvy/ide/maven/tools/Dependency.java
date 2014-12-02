@@ -70,8 +70,8 @@ public class Dependency {
         version = element.getChildText("version");
         classifier = element.getChildText("classifier");
         optional = element.getChildText("optional");
-        scope = element.getChildTextOrDefault("scope", "compile");
-        type = element.getChildTextOrDefault("type", "jar");
+        scope = element.getChildText("scope");
+        type = element.getChildText("type");
         //if dependency has exclusions fetch it!
         if (element.hasSingleChild("exclusions")) {
             exclusions = element.getSingleChild("exclusions")
@@ -144,7 +144,7 @@ public class Dependency {
      */
 
     public String getScope() {
-        return scope;
+        return scope == null ? "compile" : scope;
     }
 
     /**
@@ -165,7 +165,7 @@ public class Dependency {
      * this is not a complete list.
      */
     public String getType() {
-        return type;
+        return type == null ? "jar" : type;
     }
 
     /**

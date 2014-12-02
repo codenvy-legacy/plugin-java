@@ -166,7 +166,7 @@ public class Model {
      * types.
      */
     public String getPackaging() {
-        return packaging;
+        return packaging == null ? "jar" : packaging;
     }
 
     /**
@@ -612,7 +612,7 @@ public class Model {
         model.version = root.getChildText("version");
         model.name = root.getChildText("name");
         model.description = root.getChildText("description");
-        model.packaging = root.getChildTextOrDefault("packaging", "jar");
+        model.packaging = root.getChildText("packaging");
         if (root.hasChild("parent")) {
             model.parent = new Parent(root.getSingleChild("parent"));
         }
@@ -626,10 +626,10 @@ public class Model {
             model.build = new Build(root.getSingleChild("build"));
         }
         if (root.hasChild("dependencies")) {
-            model.dependencies = new ArrayList<>(tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION));
+            model.dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION);
         }
         if (root.hasChild("modules")) {
-            model.modules = new ArrayList<>(tree.getElements("/project/modules/module", TO_MODULE_FUNCTION));
+            model.modules = tree.getElements("/project/modules/module", TO_MODULE_FUNCTION);
         }
         if (root.hasChild("properties")) {
             model.properties = fetchProperties(root.getSingleChild("properties"));
