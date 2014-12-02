@@ -19,10 +19,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * @author Eugene Voevodin
@@ -84,6 +86,19 @@ public class ModelTest {
                    "    <version>x.x.x</version>\n" +
                    "    <name>name</name>\n" +
                    "    <description>description</description>\n" +
+                   "    <modules>\n" +
+                   "        <module>first</module>\n" +
+                   "        <module>second</module>\n" +
+                   "    </modules>\n" +
+                   "    <dependencyManagement>\n" +
+                   "        <dependencies>\n" +
+                   "            <dependency>\n" +
+                   "                <groupId>junit</groupId>\n" +
+                   "                <artifactId>junit</artifactId>\n" +
+                   "                <version>3.8</version>\n" +
+                   "            </dependency>\n" +
+                   "        </dependencies>\n" +
+                   "    </dependencyManagement>\n" +
                    "    <dependencies>\n" +
                    "        <dependency>\n" +
                    "            <artifactId>junit</artifactId>\n" +
@@ -98,7 +113,7 @@ public class ModelTest {
                    "    </dependencies>\n" +
                    "</project>");
 
-        final Model model = Model.readModel(pom);
+        final Model model = Model.readFrom(pom);
 
         assertEquals(model.getModelVersion(), "4.0.0");
         assertEquals(model.getArtifactId(), "artifact-id");
@@ -107,10 +122,371 @@ public class ModelTest {
         assertEquals(model.getName(), "name");
         assertEquals(model.getDescription(), "description");
         assertEquals(model.getArtifactId(), "artifact-id");
+        assertEquals(model.getPackaging(), "jar");
+        assertEquals(model.getModules(), asList("first", "second"));
         assertEquals(model.getDependencies().size(), 2);
+        assertEquals(model.getDependencyManagement().getDependencies().size(), 1);
     }
 
-    //TODO MORE TEST!
+    @Test
+    public void shouldRemoveDependenciesWhenLastDependencyWasRemoved() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "    <dependencies>\n" +
+                   "        <dependency>\n" +
+                   "            <artifactId>junit</artifactId>\n" +
+                   "            <groupId>org.junit</groupId>\n" +
+                   "            <version>x.x.x</version>\n" +
+                   "        </dependency>\n" +
+                   "    </dependencies>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final Dependency junit = model.selectDependencies().first();
+        model.removeDependency(junit);
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldRemoveModulesIfLastModuleWasRemoved() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "    <modules>\n" +
+                   "        <module>first</module>\n" +
+                   "        <module>second</module>\n" +
+                   "    </modules>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.removeModule("first");
+        model.removeModule("second");
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "</project>");
+        assertTrue(model.getDependencies().isEmpty());
+    }
+
+    @Test
+    public void shouldAddCreateModuleParentElementWhenAddingNewModule() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.addModule("new-module");
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <modules>\n" +
+                                "        <module>new-module</module>\n" +
+                                "    </modules>\n" +
+                                "</project>");
+        assertEquals(model.getModules(), asList("new-module"));
+    }
+
+    @Test
+    public void shouldCreateDependenciesParentElementWhenAddingNewDependency() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.addDependency(new Dependency("artifact-id", "group-id", "version"));
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <dependencies>\n" +
+                                "        <dependency>\n" +
+                                "            <artifactId>artifact-id</artifactId>\n" +
+                                "            <groupId>group-id</groupId>\n" +
+                                "            <version>version</version>\n" +
+                                "        </dependency>\n" +
+                                "    </dependencies>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToSetParent() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.setParent(new Parent("parent-artifact", "parent-group", "parent-version"));
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <parent>\n" +
+                                "        <artifactId>parent-artifact</artifactId>\n" +
+                                "        <groupId>parent-group</groupId>\n" +
+                                "        <version>parent-version</version>\n" +
+                                "    </parent>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToSetBuild() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.setBuild(new Build().setSourceDirectory("src/main/java")
+                                  .setTestSourceDirectory("src/main/test"));
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <build>\n" +
+                                "        <sourceDirectory>src/main/java</sourceDirectory>\n" +
+                                "        <testSourceDirectory>src/main/test</testSourceDirectory>\n" +
+                                "    </build>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToAddDependencyExclusion() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "    <dependencies>\n" +
+                   "        <dependency>\n" +
+                   "            <artifactId>junit</artifactId>\n" +
+                   "            <groupId>org.junit</groupId>\n" +
+                   "            <version>x.x.x</version>\n" +
+                   "        </dependency>\n" +
+                   "    </dependencies>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.selectDependencies()
+             .first()
+             .addExclusion(new Exclusion("artifact-id", "group-id"));
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <dependencies>\n" +
+                                "        <dependency>\n" +
+                                "            <artifactId>junit</artifactId>\n" +
+                                "            <groupId>org.junit</groupId>\n" +
+                                "            <version>x.x.x</version>\n" +
+                                "            <exclusions>\n" +
+                                "                <exclusion>\n" +
+                                "                    <artifactId>artifact-id</artifactId>\n" +
+                                "                    <groupId>group-id</groupId>\n" +
+                                "                </exclusion>\n" +
+                                "            </exclusions>\n" +
+                                "        </dependency>\n" +
+                                "    </dependencies>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToSelectDependencies() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "    <dependencies>\n" +
+                   "        <dependency>\n" +
+                   "            <artifactId>junit</artifactId>\n" +
+                   "            <groupId>org.junit</groupId>\n" +
+                   "            <version>x.x.x</version>\n" +
+                   "            <scope>test</scope>\n" +
+                   "        </dependency>\n" +
+                   "        <dependency>\n" +
+                   "            <groupId>org.testng</groupId>\n" +
+                   "            <artifactId>testng</artifactId>\n" +
+                   "            <version>x.x.x</version>\n" +
+                   "            <scope>test</scope>\n" +
+                   "        </dependency>\n" +
+                   "        <dependency>\n" +
+                   "            <groupId>test-group-id</groupId>\n" +
+                   "            <artifactId>test-artifact-id</artifactId>\n" +
+                   "            <version>x.x.x</version>\n" +
+                   "        </dependency>" +
+                   "    </dependencies>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final List<Dependency> testDependencies = model.selectDependencies()
+                                                       .byScope("test")
+                                                       .all();
+        assertEquals(testDependencies.size(), 2);
+        assertEquals(testDependencies.get(0).getArtifactId(), "junit");
+        assertEquals(testDependencies.get(1).getArtifactId(), "testng");
+    }
+
+    @Test
+    public void shouldBeAbleToUpdateProperties() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "    <properties>\n" +
+                   "        <childKey>child</childKey>\n" +
+                   "        <parentKey>parent</parentKey>\n" +
+                   "    </properties>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.addProperty("childKey", "new-child");
+        model.addProperty("newProperty", "new-property");
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <properties>\n" +
+                                "        <childKey>new-child</childKey>\n" +
+                                "        <parentKey>parent</parentKey>\n" +
+                                "        <newProperty>new-property</newProperty>\n" +
+                                "    </properties>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldRemovePropertiesWhenLastPropertyWasRemoved() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "    <properties>\n" +
+                   "        <childKey>child</childKey>\n" +
+                   "    </properties>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.removeProperty("childKey");
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToSetDependencyManagement() throws Exception {
+        final File pom = targetDir().resolve("test-pom.xml").toFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <modelVersion>4.0.0</modelVersion>\n" +
+                   "    <artifactId>artifact-id</artifactId>\n" +
+                   "    <groupId>group-id</groupId>\n" +
+                   "    <version>x.x.x</version>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final DependencyManagement dm = new DependencyManagement();
+        dm.addDependency(new Dependency("artifact-id", "group-id", "version"));
+        model.setDependencyManagement(dm);
+
+        model.writeTo(pom);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <modelVersion>4.0.0</modelVersion>\n" +
+                                "    <artifactId>artifact-id</artifactId>\n" +
+                                "    <groupId>group-id</groupId>\n" +
+                                "    <version>x.x.x</version>\n" +
+                                "    <dependencyManagement>\n" +
+                                "        <dependencies>\n" +
+                                "            <dependency>\n" +
+                                "                <artifactId>artifact-id</artifactId>\n" +
+                                "                <groupId>group-id</groupId>\n" +
+                                "                <version>version</version>\n" +
+                                "            </dependency>\n" +
+                                "        </dependencies>\n" +
+                                "    </dependencyManagement>\n" +
+                                "</project>");
+    }
 
     private String read(File file) throws IOException {
         return new String(Files.readAllBytes(file.toPath()));

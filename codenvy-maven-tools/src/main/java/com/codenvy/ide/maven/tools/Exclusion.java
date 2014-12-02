@@ -12,6 +12,7 @@ package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.NewElement;
+import com.sun.org.apache.xalan.internal.xsltc.dom.AdaptiveResultTreeImpl;
 
 import java.util.GregorianCalendar;
 import java.util.Objects;
@@ -37,7 +38,9 @@ public class Exclusion {
 
     Element element;
 
-    public Exclusion() {
+    public Exclusion(String artifactId, String groupId) {
+        this.artifactId = requireNonNull(artifactId);
+        this.groupId = requireNonNull(groupId);
     }
 
     Exclusion(Element element) {

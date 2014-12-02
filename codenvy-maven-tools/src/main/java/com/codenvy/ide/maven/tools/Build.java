@@ -144,7 +144,9 @@ public class Build {
      */
     public Build setTestSourceDirectory(String testSourceDirectory) {
         this.testSourceDirectory = testSourceDirectory;
-        element.setChildText("testSourceDirectory", testSourceDirectory, true);
+        if (!isNew()) {
+            element.setChildText("testSourceDirectory", testSourceDirectory, true);
+        }
         return this;
     }
 

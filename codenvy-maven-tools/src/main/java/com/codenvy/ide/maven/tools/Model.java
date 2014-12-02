@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,11 +57,11 @@ import static java.util.Objects.requireNonNull;
  */
 public class Model {
 
-    public static Model readModel(File file) throws IOException {
+    public static Model readFrom(File file) throws IOException {
         return fetchModel(XMLTree.from(file));
     }
 
-    public static Model readModel(VirtualFile file) throws ServerException, ForbiddenException, IOException {
+    public static Model readFrom(VirtualFile file) throws ServerException, ForbiddenException, IOException {
         return fetchModel(XMLTree.from(file.getContent().getStream()));
     }
 
@@ -69,7 +71,7 @@ public class Model {
             .setAttribute("xmlns", "http://maven.apache.org/POM/4.0.0")
             .setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
             .setAttribute("xsi:schemaLocation", "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd");
-        return new Model(tree);
+        return new Model(tree).setPackaging("jar");
     }
 
     private static final ToModuleFunction     TO_MODULE_FUNCTION     = new ToModuleFunction();
@@ -200,6 +202,13 @@ public class Model {
     }
 
     /**
+     * Returns dependencies selector which helps to select needed dependencies.
+     */
+    public DependenciesSelector selectDependencies() {
+        return new DependenciesSelector(getDependencies());
+    }
+
+    /**
      * Get default dependency information for projects that inherit
      * from this one. The
      * dependencies in this section are not immediately
@@ -240,7 +249,7 @@ public class Model {
     public Model addDependency(Dependency newDependency) {
         requireNonNull(newDependency);
         getDependencies().add(newDependency);
-        addToTree(newDependency);
+        addDependencyToTree(newDependency);
         return this;
     }
 
@@ -261,13 +270,26 @@ public class Model {
     }
 
     /**
-     * Adds new property to the project
+     * Adds new property to the project.
+     * If property with given key already exists its value
+     * going to be changed with new one.
      */
     public Model addProperty(String key, String value) {
         requireNonNull(key);
         requireNonNull(value);
-        addTreeProperty(key, value);
+        addPropertyToTree(key, value);
         getProperties().put(key, value);
+        return this;
+    }
+
+    /**
+     * Removes property with given key from model.
+     * If last property was removed properties will be removed as well
+     */
+    public Model removeProperty(String key) {
+        if (getProperties().remove(requireNonNull(key)) != null) {
+            removePropertyFromTree(key);
+        }
         return this;
     }
 
@@ -276,8 +298,9 @@ public class Model {
      * If last dependency has been removed removes dependencies element as well.
      */
     public Model removeDependency(Dependency dependency) {
-        getDependencies().remove(requireNonNull(dependency));
-        removeFromTree(dependency);
+        if (getDependencies().remove(requireNonNull(dependency))) {
+            removeDependencyFromTree(dependency);
+        }
         return this;
     }
 
@@ -286,8 +309,9 @@ public class Model {
      * If last module has been removed removes modules element as well
      */
     public Model removeModule(String module) {
-        getModules().remove(requireNonNull(module));
-        removeFromTree(module);
+        if (getModules().remove(requireNonNull(module))) {
+            removeModuleFromTree(module);
+        }
         return this;
     }
 
@@ -354,7 +378,12 @@ public class Model {
      */
     public Model setModules(Collection<String> modules) {
         this.modules = new ArrayList<>(modules);
-        setTreeModules();
+        //set tree modules
+        final NewElement newModules = createElement("modules");
+        for (String module : modules) {
+            newModules.appendChild(createElement("module", module));
+        }
+        root.setChild("modules", newModules);
         return this;
     }
 
@@ -366,7 +395,11 @@ public class Model {
     public Model setProperties(Map<String, String> properties) {
         this.properties = new HashMap<>(requireNonNull(properties));
         //set properties to xml tree
-        setTreeProperties();
+        final NewElement newProperties = createElement("properties");
+        for (Map.Entry<String, String> property : properties.entrySet()) {
+            newProperties.appendChild(createElement(property.getKey(), property.getValue()));
+        }
+        root.setChild("properties", newProperties);
         return this;
     }
 
@@ -382,7 +415,7 @@ public class Model {
      */
     public Model setArtifactId(String artifactId) {
         this.artifactId = requireNonNull(artifactId);
-        tree.getRoot().setChildText("artifactId", artifactId, true);
+        root.setChildText("artifactId", artifactId, true);
         return this;
     }
 
@@ -400,7 +433,7 @@ public class Model {
      */
     public Model setDescription(String description) {
         this.description = requireNonNull(description);
-        tree.getRoot().setChildText("description", description, true);
+        root.setChildText("description", description, true);
         return this;
     }
 
@@ -412,7 +445,7 @@ public class Model {
      */
     public Model setGroupId(String groupId) {
         this.groupId = requireNonNull(groupId);
-        tree.getRoot().setChildText("groupId", groupId, true);
+        root.setChildText("groupId", groupId, true);
         return this;
     }
 
@@ -421,7 +454,7 @@ public class Model {
      */
     public Model setVersion(String version) {
         this.version = requireNonNull(version);
-        tree.getRoot().setChildText("version", version, true);
+        root.setChildText("version", version, true);
         return this;
     }
 
@@ -430,7 +463,7 @@ public class Model {
      */
     public Model setModelVersion(String modelVersion) {
         this.modelVersion = requireNonNull(modelVersion);
-        tree.getRoot().setChildText("modelVersion", modelVersion, true);
+        root.setChildText("modelVersion", modelVersion, true);
         return this;
     }
 
@@ -439,7 +472,7 @@ public class Model {
      */
     public Model setName(String name) {
         this.name = requireNonNull(name);
-        tree.getRoot().setChildText("name", name, true);
+        root.setChildText("name", name, true);
         return this;
     }
 
@@ -456,7 +489,11 @@ public class Model {
      */
     public Model setPackaging(String packaging) {
         this.packaging = requireNonNull(packaging);
-        tree.getRoot().setChildText("packaging", packaging, true);
+        if (!"jar".equals(packaging)) {
+            root.setChildText("packaging", packaging, true);
+        } else {
+            root.removeChild("packaging");
+        }
         return this;
     }
 
@@ -474,6 +511,7 @@ public class Model {
         parent = requireNonNull(newParent);
         //add parent to xml tree
         root.setChild("parent", newParent.asNewElement());
+        parent.element = root.getSingleChild("parent");
         return this;
     }
 
@@ -503,7 +541,7 @@ public class Model {
         return getId();
     }
 
-    private void addTreeProperty(String key, String value) {
+    private void addPropertyToTree(String key, String value) {
         if (getProperties().containsKey(key)) {
             root.getSingleChild("properties")
                 .getSingleChild(key)
@@ -515,7 +553,7 @@ public class Model {
         }
     }
 
-    private void addToTree(Dependency newDependency) {
+    private void addDependencyToTree(Dependency newDependency) {
         if (root.hasChild("dependencies")) {
             root.getSingleChild("dependencies")
                 .appendChild(newDependency.asNewElement());
@@ -525,7 +563,7 @@ public class Model {
         newDependency.element = root.getSingleChild("dependencies").getLastChild();
     }
 
-    private void removeFromTree(Dependency dependency) {
+    private void removeDependencyFromTree(Dependency dependency) {
         if (dependencies.isEmpty()) {
             root.removeChild("dependencies");
             dependency.element = null;
@@ -534,28 +572,25 @@ public class Model {
         }
     }
 
-    private void removeFromTree(String module) {
+    private void removeModuleFromTree(String module) {
         if (modules.isEmpty()) {
             root.removeChild("modules");
         } else {
-            root.getSingleChild("modules").removeChild(module);
+            for (Element element : root.getChildren()) {
+                if (module.equals(element.getText())) {
+                    element.remove();
+                }
+            }
         }
     }
 
-    private void setTreeModules() {
-        final NewElement newModules = createElement("modules");
-        for (String module : modules) {
-            newModules.appendChild(createElement("module", module));
+    private void removePropertyFromTree(String key) {
+        if (properties.isEmpty()) {
+            root.removeChild("properties");
+        } else {
+            root.getSingleChild("properties")
+                .removeChild(key);
         }
-        root.setChild("modules", newModules);
-    }
-
-    private void setTreeProperties() {
-        final NewElement newProperties = createElement("properties");
-        for (Map.Entry<String, String> property : properties.entrySet()) {
-            newProperties.appendChild(createElement(property.getKey(), property.getValue()));
-        }
-        root.setChild("properties", newProperties);
     }
 
     private void removeDependencies() {
@@ -577,7 +612,7 @@ public class Model {
         model.version = root.getChildText("version");
         model.name = root.getChildText("name");
         model.description = root.getChildText("description");
-        model.packaging = root.getChildText("packaging");
+        model.packaging = root.getChildTextOrDefault("packaging", "jar");
         if (root.hasChild("parent")) {
             model.parent = new Parent(root.getSingleChild("parent"));
         }
@@ -591,10 +626,10 @@ public class Model {
             model.build = new Build(root.getSingleChild("build"));
         }
         if (root.hasChild("dependencies")) {
-            model.dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION);
+            model.dependencies = new ArrayList<>(tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION));
         }
         if (root.hasChild("modules")) {
-            model.modules = tree.getElements("/project/modules/module", TO_MODULE_FUNCTION);
+            model.modules = new ArrayList<>(tree.getElements("/project/modules/module", TO_MODULE_FUNCTION));
         }
         if (root.hasChild("properties")) {
             model.properties = fetchProperties(root.getSingleChild("properties"));
@@ -623,6 +658,59 @@ public class Model {
         @Override
         public String apply(Element element) {
             return element.getText();
+        }
+    }
+
+    public static class DependenciesSelector {
+
+        private LinkedList<Dependency> dependencies;
+
+        private DependenciesSelector(List<Dependency> dependencies) {
+            this.dependencies = new LinkedList<>(dependencies);
+        }
+
+        public DependenciesSelector byArtifactId(String artifactId) {
+            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
+                if (!artifactId.equals(depIt.next().getArtifactId())) {
+                    depIt.remove();
+                }
+            }
+            return this;
+        }
+
+        public DependenciesSelector byGroupId(String groupId) {
+            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
+                if (!groupId.equals(depIt.next().getGroupId())) {
+                    depIt.remove();
+                }
+            }
+            return this;
+        }
+
+        public DependenciesSelector byScope(String scope) {
+            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
+                if (!scope.equals(depIt.next().getScope())) {
+                    depIt.remove();
+                }
+            }
+            return this;
+        }
+
+        public DependenciesSelector byClassifier(String classifier) {
+            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
+                if (!classifier.equals(depIt.next().getClassifier())) {
+                    depIt.remove();
+                }
+            }
+            return this;
+        }
+
+        public Dependency first() {
+            return dependencies.isEmpty() ? null : dependencies.getFirst();
+        }
+
+        public LinkedList<Dependency> all() {
+            return dependencies;
         }
     }
 }

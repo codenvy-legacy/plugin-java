@@ -31,12 +31,16 @@ import static java.util.Objects.requireNonNull;
  */
 public class Parent {
 
-    private String  groupId;
-    private String  artifactId;
-    private String  version;
-    private Element element;
+    private String groupId;
+    private String artifactId;
+    private String version;
 
-    public Parent() {
+    Element element;
+
+    public Parent(String artifactId, String groupId, String version) {
+        this.artifactId = requireNonNull(artifactId);
+        this.groupId = requireNonNull(groupId);
+        this.version = requireNonNull(version);
     }
 
     Parent(Element element) {
@@ -70,31 +74,34 @@ public class Parent {
     /**
      * Sets the artifact id of the parent project to inherit from
      */
-    public void setArtifactId(String artifactId) {
+    public Parent setArtifactId(String artifactId) {
         this.artifactId = requireNonNull(artifactId);
         if (!isNew()) {
             element.setChildText("artifactId", artifactId, true);
         }
+        return this;
     }
 
     /**
      * Sets the group id of the parent project to inherit from
      */
-    public void setGroupId(String groupId) {
+    public Parent setGroupId(String groupId) {
         this.groupId = requireNonNull(groupId);
         if (!isNew()) {
             element.setChildText("groupId", groupId, true);
         }
+        return this;
     }
 
     /**
      * Sets the version of the parent project to inherit
      */
-    public void setVersion(String version) {
+    public Parent setVersion(String version) {
         this.version = requireNonNull(version);
         if (!isNew()) {
             element.setChildText("version", version, true);
         }
+        return this;
     }
 
     /**
@@ -114,11 +121,6 @@ public class Parent {
         element = null;
     }
 
-    void setElement(Element element) {
-        this.element = element;
-    }
-
-    //TODO check for required children
     NewElement asNewElement() {
         final NewElement parentEl = createElement("parent");
         parentEl.appendChild(createElement("artifactId", artifactId));
