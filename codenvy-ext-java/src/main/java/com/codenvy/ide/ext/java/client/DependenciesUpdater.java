@@ -81,10 +81,6 @@ public class DependenciesUpdater {
     }
 
     public void updateDependencies(final ProjectDescriptor project, final boolean force) {
-        if (isUserReadOnly(project)) {
-            return;
-        }
-
         if (updating) {
             projects.add(new Pair<>(project, force));
             return;
@@ -160,11 +156,6 @@ public class DependenciesUpdater {
                 updateFinishedWithError(exception, notification);
             }
         });
-    }
-
-    private boolean isUserReadOnly(ProjectDescriptor projectDescriptor) {
-        return !projectDescriptor.getPermissions().isEmpty() &&
-               projectDescriptor.getPermissions().size() == 1 && "read".equalsIgnoreCase(projectDescriptor.getPermissions().get(0));
     }
 
     private void updateFinishedWithError(Throwable exception, Notification notification) {

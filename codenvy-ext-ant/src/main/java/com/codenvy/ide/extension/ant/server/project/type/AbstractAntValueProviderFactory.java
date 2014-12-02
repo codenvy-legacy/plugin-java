@@ -19,6 +19,8 @@ import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.project.server.VirtualFileEntry;
+import com.codenvy.api.vfs.server.VirtualFile;
+import com.codenvy.ide.ant.tools.AntUtils;
 import com.codenvy.ide.ant.tools.buildfile.BuildFileGenerator;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.codenvy.vfs.impl.fs.VirtualFileImpl;
@@ -49,34 +51,20 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
      *         if error occurred while getting file on server side
      * @throws ForbiddenException
      *         if access to build file is forbidden
-     * @throws ValueStorageException
-     *         if build.xml file doesn't exist
      */
-    protected org.apache.tools.ant.Project getOrCreateDefaultAntProject(Project project)
-            throws ServerException, ForbiddenException, ValueStorageException {
-        VirtualFileEntry buildXML = project.getBaseFolder().getChild(AntAttributes.BUILD_FILE);
-        if (buildXML == null) {
+    protected VirtualFile getOrCreateBuildXml(Project project) throws ServerException, ForbiddenException {
+        VirtualFileEntry buildXml = project.getBaseFolder().getChild(AntAttributes.BUILD_FILE);
+        if (buildXml == null) {
+            final byte[] buildXmlContent = new BuildFileGenerator(project.getName()).getBuildFileContent().getBytes();
             try {
-                buildXML = project.getBaseFolder().createFile(AntAttributes.BUILD_FILE,
-                                                              new BuildFileGenerator(project.getName()).getBuildFileContent().getBytes(),
-                                                              "text/xml");
-                project.getBaseFolder().createFolder("lib");
-            } catch (ConflictException | ParserConfigurationException | IOException | TransformerException e) {
-                throw new ValueStorageException("Failed to store Ant build file.");
+                buildXml = project.getBaseFolder().createFile(AntAttributes.BUILD_FILE, buildXmlContent, null);
+            } catch (ConflictException e) {
+                // File existence was checked before create so not expected to be here.
+                throw new ServerException(e.getServiceError());
             }
         }
 
-        return parseIOBuildFile((FileEntry)buildXML);
-    }
-
-    /** @return parsed Ant build.xml file. */
-    private org.apache.tools.ant.Project parseIOBuildFile(FileEntry buildFile) {
-        java.io.File ioBuildFile = ((VirtualFileImpl)buildFile.getVirtualFile()).getIoFile();
-
-        org.apache.tools.ant.Project antProject = new org.apache.tools.ant.Project();
-        ProjectHelper2.configureProject(antProject, ioBuildFile);
-
-        return antProject;
+        return buildXml.getVirtualFile();
     }
 
     /** @return instance of {@link ValueStorageException} with specified message. */
@@ -104,9 +92,9 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
         @Override
         public List<String> getValues() throws ValueStorageException {
             try {
-                org.apache.tools.ant.Project antProject = getOrCreateDefaultAntProject(project);
+                org.apache.tools.ant.Project antProject = AntUtils.readProject(getOrCreateBuildXml(project));
                 return Collections.unmodifiableList(getValues(antProject));
-            } catch (ServerException | ForbiddenException e) {
+            } catch (IOException | ForbiddenException | ServerException e) {
                 throw readException(e);
             }
         }

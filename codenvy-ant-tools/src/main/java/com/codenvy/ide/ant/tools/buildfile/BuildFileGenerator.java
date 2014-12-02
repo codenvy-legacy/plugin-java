@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ant.tools.buildfile;
 
+import com.codenvy.api.core.ServerException;
+
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -25,7 +27,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,8 +34,6 @@ import java.util.TreeMap;
 /**
  * Creates build.xml file. That need for Ant automation build tool to be able to build simple project using Ant.
  * Idea based on eclipse Ant build file creator from eclipse sources (org.eclipse.ant.internal.ui.datatransfer.BuildFileCreator).
- *
- * TODO: Maybe use {@link org.apache.tools.ant.Project} to store project structure and based on it construct physical build.xml file.
  *
  * @author Vladyslav Zhukovskii
  */
@@ -64,17 +63,19 @@ public class BuildFileGenerator {
      *
      * @return string representation of auto generated build file
      */
-    public String getBuildFileContent() throws ParserConfigurationException, IOException, TransformerException {
+    public String getBuildFileContent() throws ServerException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        this.doc = dbf.newDocumentBuilder().newDocument();
-
-        createRoot();
-        createProperty();
-        createClassPath();
-        createBuild();
-        createClean();
-
-        return documentToString(doc);
+        try {
+            this.doc = dbf.newDocumentBuilder().newDocument();
+            createRoot();
+            createProperty();
+//            createClassPath();
+            createBuild();
+            createClean();
+            return documentToString(doc);
+        } catch (ParserConfigurationException | TransformerException e) {
+            throw new ServerException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -117,24 +118,24 @@ public class BuildFileGenerator {
         }
     }
 
-    /**
-     * Create classpath tag.
-     * <path id="libs.dir">
-     * <fileset dir="lib" includes="**\/*\.jar"/>
-     * </path>
-     */
-    private void createClassPath() {
-        Element path = doc.createElement("path");
-        path.setAttribute("id", "libs.dir");
-
-        Element fieldSet = doc.createElement("fileset");
-        fieldSet.setAttribute("dir", "lib");
-        fieldSet.setAttribute("includes", "**/*.jar");
-
-        path.appendChild(fieldSet);
-
-        root.appendChild(path);
-    }
+//    /**
+//     * Create classpath tag.
+//     * <path id="libs.dir">
+//     * <fileset dir="lib" includes="**\/*\.jar"/>
+//     * </path>
+//     */
+//    private void createClassPath() {
+//        Element path = doc.createElement("path");
+//        path.setAttribute("id", "libs.dir");
+//
+//        Element fieldSet = doc.createElement("fileset");
+//        fieldSet.setAttribute("dir", "lib");
+//        fieldSet.setAttribute("includes", "**/*.jar");
+//
+//        path.appendChild(fieldSet);
+//
+//        root.appendChild(path);
+//    }
 
     /**
      * Create build target tag.
@@ -175,10 +176,10 @@ public class BuildFileGenerator {
         javac.setAttribute("optimize", "true");
         javac.setAttribute("includeantruntime", "true");
 
-        //Create classpath tag inside javac
-        Element classpath = doc.createElement("classpath");
-        classpath.setAttribute("refid", "libs.dir");
-        javac.appendChild(classpath);
+//        //Create classpath tag inside javac
+//        Element classpath = doc.createElement("classpath");
+//        classpath.setAttribute("refid", "libs.dir");
+//        javac.appendChild(classpath);
 
         target.appendChild(javac);
 
@@ -247,18 +248,17 @@ public class BuildFileGenerator {
     }
 
     /** Convert document to formatted XML string. */
-    private String documentToString(Document doc) throws IOException, TransformerException {
-        try (StringWriter writer = new StringWriter()) {
-            Source source = new DOMSource(doc);
-            Result result = new StreamResult(writer);
-            TransformerFactory factory = TransformerFactory.newInstance();
-            factory.setAttribute("indent-number", "4");
+    private String documentToString(Document doc) throws TransformerException {
+        StringWriter writer = new StringWriter();
+        Source source = new DOMSource(doc);
+        Result result = new StreamResult(writer);
+        TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setAttribute("indent-number", "4");
 
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.transform(source, result);
+        Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.transform(source, result);
 
-            return writer.toString();
-        }
+        return writer.toString();
     }
 }

@@ -11,10 +11,9 @@
 package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.MavenResources;
@@ -28,7 +27,7 @@ import com.google.inject.Singleton;
  * @author Artem Zatsarynnyy
  */
 @Singleton
-public class CustomBuildAction extends Action {
+public class CustomBuildAction extends ProjectAction {
 
     private final AppContext           appContext;
     private final MavenBuildPresenter  presenter;
@@ -43,7 +42,7 @@ public class CustomBuildAction extends Action {
                              AnalyticsEventLogger eventLogger,
                              BuildContext buildContext) {
         super(localizationConstant.buildProjectControlTitle(),
-              localizationConstant.buildProjectControlDescription(), null, resources.build());
+              localizationConstant.buildProjectControlDescription(), resources.build());
         this.presenter = presenter;
         this.appContext = appContext;
         this.eventLogger = eventLogger;
@@ -59,15 +58,10 @@ public class CustomBuildAction extends Action {
 
     /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
-        CurrentProject activeProject = appContext.getCurrentProject();
-        if (activeProject != null) {
-            final String builder = activeProject.getBuilder();
-            if ("maven".equals(builder)) {
-                e.getPresentation().setEnabledAndVisible(true);
-            } else {
-                e.getPresentation().setEnabledAndVisible(false);
-            }
+    public void updateProjectAction(ActionEvent e) {
+        final String builder = appContext.getCurrentProject().getBuilder();
+        if ("maven".equals(builder)) {
+            e.getPresentation().setEnabledAndVisible(true);
         } else {
             e.getPresentation().setEnabledAndVisible(false);
         }
