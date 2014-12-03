@@ -21,7 +21,8 @@ import com.codenvy.ide.ant.tools.buildfile.BuildFileGenerator;
 import java.util.List;
 import java.util.Map;
 
-import static com.codenvy.ide.ext.java.shared.Constants.ANT_ID;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_GENERATOR_ID;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.BUILD_FILE;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.TEST_SOURCE_FOLDER;
@@ -35,7 +36,7 @@ public class AntProjectGenerator implements ProjectGenerator {
 
     @Override
     public String getId() {
-        return "ant";
+        return ANT_GENERATOR_ID;
     }
 
     @Override

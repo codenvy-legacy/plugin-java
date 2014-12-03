@@ -38,7 +38,7 @@ public class AntProjectTypeDescriptionsExtension implements ProjectTypeDescripti
     @Nonnull
     public List<ProjectType> getProjectTypes() {
         final List<ProjectType> list = new ArrayList<>(1);
-        list.add(new ProjectType(Constants.ANT_ID, Constants.ANT_NAME, Constants.JAVA_CATEGORY));
+        list.add(new ProjectType(AntAttributes.ANT_ID, AntAttributes.ANT_NAME, Constants.JAVA_CATEGORY));
         return list;
     }
 
