@@ -13,7 +13,7 @@ package com.codenvy.ide.jseditor.java.client.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
