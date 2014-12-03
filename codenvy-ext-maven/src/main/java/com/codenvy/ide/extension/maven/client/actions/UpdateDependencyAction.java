@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client.actions;
 
-import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
