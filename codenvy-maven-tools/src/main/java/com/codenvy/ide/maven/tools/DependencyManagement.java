@@ -14,7 +14,6 @@ import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.NewElement;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
@@ -32,6 +31,7 @@ public class DependencyManagement {
     Element element;
 
     public DependencyManagement() {
+        dependencies = new ArrayList<>();
     }
 
     DependencyManagement(Element element, List<Dependency> dependencies) {
@@ -39,85 +39,27 @@ public class DependencyManagement {
         this.dependencies = dependencies;
     }
 
-    public List<Dependency> getDependencies() {
-        if (dependencies == null) {
-            dependencies = new ArrayList<>();
+    public Dependencies dependencies() {
+        return new Dependencies(element, dependencies);
+    }
+
+    public void remove() {
+        if (element != null) {
+            element.remove();
+            //disable of using dependencies
+            for (Dependency dependency : dependencies) {
+                dependency.element = null;
+            }
+            element = null;
         }
-        return dependencies;
-    }
-
-    public DependencyManagement addDependency(Dependency newDependency) {
-        requireNonNull(newDependency);
-        getDependencies().add(newDependency);
-        if (!isNew()) {
-            addToTree(newDependency);
-        }
-        return this;
-    }
-
-    public DependencyManagement removeDependency(Dependency dependency) {
-        getDependencies().remove(dependency);
-        if (!isNew()) {
-            removeFromTree(dependency);
-        }
-        return this;
-    }
-
-    /**
-     * Set the dependencies specified here are not used until they
-     * are referenced in a
-     * POM within the group. This allows the
-     * specification of a "standard" version for a
-     * particular dependency.
-     */
-    public DependencyManagement setDependencies(Collection<Dependency> newDependencies) {
-        this.dependencies = new ArrayList<>(newDependencies);
-        //add and associate each new dependency with element in tree
-        newDependencies = new ArrayList<>(newDependencies.size());
-        for (Dependency newDependency : newDependencies) {
-            addDependency(newDependency);
-        }
-        return this;
-    }
-
-    void remove() {
-        element.remove();
-        element = null;
-    }
-
-    void setElement(Element element) {
-        this.element = element;
     }
 
     NewElement asNewElement() {
         final NewElement newDM = createElement("dependencyManagement");
         final NewElement newDependencies = createElement("dependencies");
-        for (Dependency dependency : getDependencies()) {
+        for (Dependency dependency : dependencies) {
             newDependencies.appendChild(dependency.asNewElement());
         }
         return newDM.appendChild(newDependencies);
-    }
-
-    private void addToTree(Dependency newDependency) {
-        if (element.hasChild("dependencies")) {
-            element.getSingleChild("dependencies")
-                   .appendChild(newDependency.asNewElement());
-        } else {
-            element.appendChild(createElement("dependencies", newDependency.asNewElement()));
-        }
-        newDependency.element = element.getSingleChild("dependencies").getLastChild();
-    }
-
-    private void removeFromTree(Dependency dependency) {
-        if (dependencies.isEmpty()) {
-            element.removeChild("dependencies");
-            dependency.element = null;
-        } else {
-            dependency.remove();
-        }
-    }
-
-    private boolean isNew() {
-        return element == null;
     }
 }

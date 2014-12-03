@@ -14,7 +14,7 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.commons.xml.Element;
-import com.codenvy.commons.xml.FromElementFunction;
+import com.codenvy.commons.xml.ElementMapper;
 import com.codenvy.commons.xml.NewElement;
 import com.codenvy.commons.xml.XMLTree;
 
@@ -24,13 +24,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
+import static com.codenvy.commons.xml.XMLTreeLocation.after;
+import static com.codenvy.commons.xml.XMLTreeLocation.afterAnyOf;
+import static com.codenvy.commons.xml.XMLTreeLocation.beforeAnyOf;
+import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
+import static com.codenvy.commons.xml.XMLTreeLocation.inTheEnd;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -52,10 +56,14 @@ import static java.util.Objects.requireNonNull;
  * <li>modules</li>
  * <li>dependencies</li>
  * </ul>
+ * Order of elements in model based on
+ * <a href="http://maven.apache.org/developers/conventions/code.html"> official recommended order</a>.
+ * It means that each newly added element will be added
+ * to the right place of delegated xml file - if it is possible to do so.
  *
  * @author Eugene Voeovodin
  */
-public class Model {
+public final class Model {
 
     public static Model readFrom(File file) throws IOException {
         return fetchModel(XMLTree.from(file));
@@ -71,11 +79,11 @@ public class Model {
             .setAttribute("xmlns", "http://maven.apache.org/POM/4.0.0")
             .setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
             .setAttribute("xsi:schemaLocation", "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd");
-        return new Model(tree).setPackaging("jar");
+        return new Model(tree);
     }
 
-    private static final ToModuleFunction     TO_MODULE_FUNCTION     = new ToModuleFunction();
-    private static final ToDependencyFunction TO_DEPENDENCY_FUNCTION = new ToDependencyFunction();
+    private static final ToModuleMapper     TO_MODULE_MAPPER     = new ToModuleMapper();
+    private static final ToDependencyMapper TO_DEPENDENCY_MAPPER = new ToDependencyMapper();
 
     private String               modelVersion;
     private String               groupId;
@@ -191,27 +199,29 @@ public class Model {
         return build;
     }
 
-    /**
-     * Returns project dependencies
-     */
     public List<Dependency> getDependencies() {
         if (dependencies == null) {
-            dependencies = new ArrayList<>();
+            return emptyList();
         }
-        return dependencies;
+        return new ArrayList<>(dependencies);
     }
 
     /**
-     * Returns dependencies selector which helps to select needed dependencies.
+     * Returns returns {@link Dependencies} instance which
+     * helps to manage project dependencies
      */
-    public DependenciesSelector selectDependencies() {
-        return new DependenciesSelector(getDependencies());
+    public Dependencies dependencies() {
+        if (dependencies == null) {
+            dependencies = new ArrayList<>();
+        }
+        return new Dependencies(root, dependencies);
     }
 
     /**
      * Get default dependency information for projects that inherit
      * from this one. The
-     * dependencies in this section are not immediately
+     * dependencies in this sect
+     * ion are not immediately
      * resolved. Instead, when a POM derived
      * from this one declares a dependency described by
      * a matching groupId and artifactId, the
@@ -228,9 +238,9 @@ public class Model {
      */
     public List<String> getModules() {
         if (modules == null) {
-            modules = new ArrayList<>();
+            return emptyList();
         }
-        return modules;
+        return new ArrayList<>(modules);
     }
 
     /**
@@ -238,19 +248,9 @@ public class Model {
      */
     public Map<String, String> getProperties() {
         if (properties == null) {
-            properties = new LinkedHashMap<>();
+            return emptyMap();
         }
-        return properties;
-    }
-
-    /**
-     * Adds new dependency to the project
-     */
-    public Model addDependency(Dependency newDependency) {
-        requireNonNull(newDependency);
-        getDependencies().add(newDependency);
-        addDependencyToTree(newDependency);
-        return this;
+        return new HashMap<>(properties);
     }
 
     /**
@@ -258,7 +258,7 @@ public class Model {
      */
     public Model addModule(String newModule) {
         requireNonNull(newModule);
-        getModules().add(newModule);
+        modules().add(newModule);
         //add module to xml tree
         if (root.hasChild("modules")) {
             root.getSingleChild("modules")
@@ -278,7 +278,7 @@ public class Model {
         requireNonNull(key);
         requireNonNull(value);
         addPropertyToTree(key, value);
-        getProperties().put(key, value);
+        properties().put(key, value);
         return this;
     }
 
@@ -287,19 +287,8 @@ public class Model {
      * If last property was removed properties will be removed as well
      */
     public Model removeProperty(String key) {
-        if (getProperties().remove(requireNonNull(key)) != null) {
+        if (properties().remove(requireNonNull(key)) != null) {
             removePropertyFromTree(key);
-        }
-        return this;
-    }
-
-    /**
-     * Removes dependency from model.
-     * If last dependency has been removed removes dependencies element as well.
-     */
-    public Model removeDependency(Dependency dependency) {
-        if (getDependencies().remove(requireNonNull(dependency))) {
-            removeDependencyFromTree(dependency);
         }
         return this;
     }
@@ -309,7 +298,7 @@ public class Model {
      * If last module has been removed removes modules element as well
      */
     public Model removeModule(String module) {
-        if (getModules().remove(requireNonNull(module))) {
+        if (modules().remove(requireNonNull(module))) {
             removeModuleFromTree(module);
         }
         return this;
@@ -323,29 +312,27 @@ public class Model {
             build.remove();
         }
         build = requireNonNull(newBuild);
-        root.setChild("build", build.asNewElement());
+        root.appendChild(newBuild.asNewElement());
         //associate tree element with newly added build
         build.element = root.getSingleChild("build");
         return this;
     }
 
     /**
-     * Sets dependencies associated with a project.
+     * Sets the location of the parent project, if one exists.
      * <p/>
-     * These dependencies are used to construct a
-     * classpath for your project during the build process.
-     * They are automatically downloaded from the
-     * repositories defined in this project.
-     * See <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">the
-     * dependency mechanism</a> for more information.
+     * Values from the parent project will be
+     * the default for this project if they are left unspecified.
+     * The location is given as a group ID, artifact ID and version.
      */
-    public Model setDependencies(Collection<Dependency> newDependencies) {
-        removeDependencies();
-        //add and associate each new dependency with element in tree
-        dependencies = new ArrayList<>(newDependencies.size());
-        for (Dependency newDependency : newDependencies) {
-            addDependency(newDependency);
+    public Model setParent(Parent newParent) {
+        if (parent != null) {
+            parent.remove();
         }
+        parent = requireNonNull(newParent);
+        //add parent to xml tree
+        root.insertChild(newParent.asNewElement(), after("modelVersion").or(inTheBegin()));
+        parent.element = root.getSingleChild("parent");
         return this;
     }
 
@@ -365,7 +352,9 @@ public class Model {
             dependencyManagement.remove();
         }
         dependencyManagement = newDM;
-        root.setChild("dependencyManagement", newDM.asNewElement());
+        //insert new dependency management to tree
+        root.insertChild(newDM.asNewElement(),
+                         beforeAnyOf("dependencies", "build").or(inTheEnd()));
         //associate tree element with newly added dependency management
         dependencyManagement.element = root.getSingleChild("dependencyManagement");
         return this;
@@ -378,12 +367,19 @@ public class Model {
      */
     public Model setModules(Collection<String> modules) {
         this.modules = new ArrayList<>(modules);
+        //remove modules from tree if exist
+        root.removeChild("modules");
         //set tree modules
         final NewElement newModules = createElement("modules");
         for (String module : modules) {
             newModules.appendChild(createElement("module", module));
         }
-        root.setChild("modules", newModules);
+        //insert new modules to tree
+        root.insertChild(newModules,
+                         beforeAnyOf("properties",
+                                     "dependencyManagement",
+                                     "dependencies",
+                                     "build").or(inTheEnd()));
         return this;
     }
 
@@ -394,12 +390,18 @@ public class Model {
      */
     public Model setProperties(Map<String, String> properties) {
         this.properties = new HashMap<>(requireNonNull(properties));
+        //remove properties from tree if exist
+        tree.removeElement("properties");
         //set properties to xml tree
         final NewElement newProperties = createElement("properties");
         for (Map.Entry<String, String> property : properties.entrySet()) {
             newProperties.appendChild(createElement(property.getKey(), property.getValue()));
         }
-        root.setChild("properties", newProperties);
+        //insert new properties to tree
+        root.insertChild(newProperties,
+                         beforeAnyOf("dependencyManagement",
+                                     "dependencies",
+                                     "build").or(inTheEnd()));
         return this;
     }
 
@@ -415,7 +417,14 @@ public class Model {
      */
     public Model setArtifactId(String artifactId) {
         this.artifactId = requireNonNull(artifactId);
-        root.setChildText("artifactId", artifactId, true);
+        if (!root.hasChild("artifactId")) {
+            root.insertChild(createElement("artifactId", artifactId),
+                             afterAnyOf("groupId",
+                                        "parent",
+                                        "modelVersion").or(inTheBegin()));
+        } else {
+            tree.updateText("/project/artifactId", artifactId);
+        }
         return this;
     }
 
@@ -433,7 +442,17 @@ public class Model {
      */
     public Model setDescription(String description) {
         this.description = requireNonNull(description);
-        root.setChildText("description", description, true);
+        if (!root.hasChild("description")) {
+            root.insertChild(createElement("description", description),
+                             afterAnyOf("name",
+                                        "version",
+                                        "artifactId",
+                                        "groupId",
+                                        "parent",
+                                        "modelVersion").or(inTheBegin()));
+        } else {
+            tree.updateText("/project/artifactId", artifactId);
+        }
         return this;
     }
 
@@ -445,7 +464,10 @@ public class Model {
      */
     public Model setGroupId(String groupId) {
         this.groupId = requireNonNull(groupId);
-        root.setChildText("groupId", groupId, true);
+        if (!root.hasChild("groupId")) {
+            root.insertChild(createElement("groupId", groupId),
+                             afterAnyOf("parent", "modelVersion").or(inTheBegin()));
+        }
         return this;
     }
 
@@ -454,7 +476,15 @@ public class Model {
      */
     public Model setVersion(String version) {
         this.version = requireNonNull(version);
-        root.setChildText("version", version, true);
+        if (!root.hasChild("version")) {
+            root.insertChild(createElement("version", version),
+                             afterAnyOf("artifactId",
+                                        "groupId",
+                                        "parent",
+                                        "modelVersion").or(inTheBegin()));
+        } else {
+            tree.updateText("/project/version", version);
+        }
         return this;
     }
 
@@ -463,7 +493,11 @@ public class Model {
      */
     public Model setModelVersion(String modelVersion) {
         this.modelVersion = requireNonNull(modelVersion);
-        root.setChildText("modelVersion", modelVersion, true);
+        if (!root.hasChild("modelVersion")) {
+            root.insertChild(createElement("modelVersion", modelVersion), inTheBegin());
+        } else {
+            tree.updateText("/project/modelVersion", modelVersion);
+        }
         return this;
     }
 
@@ -472,7 +506,17 @@ public class Model {
      */
     public Model setName(String name) {
         this.name = requireNonNull(name);
-        root.setChildText("name", name, true);
+        if (!root.hasChild("name")) {
+            root.insertChild(createElement("name", name),
+                             afterAnyOf("packaging",
+                                        "version",
+                                        "artifactId",
+                                        "groupId",
+                                        "parent",
+                                        "modelVersion").or(inTheBegin()));
+        } else {
+            tree.updateText("/project/name", name);
+        }
         return this;
     }
 
@@ -489,29 +533,16 @@ public class Model {
      */
     public Model setPackaging(String packaging) {
         this.packaging = requireNonNull(packaging);
-        if (!"jar".equals(packaging)) {
-            root.setChildText("packaging", packaging, true);
+        if (!root.hasChild("packaging")) {
+            root.insertChild(createElement("packaging", name),
+                             afterAnyOf("version",
+                                        "artifactId",
+                                        "groupId",
+                                        "parent",
+                                        "modelVersion").or(inTheBegin()));
         } else {
-            root.removeChild("packaging");
+            tree.updateText("/project/packaging", name);
         }
-        return this;
-    }
-
-    /**
-     * Sets the location of the parent project, if one exists.
-     * <p/>
-     * Values from the parent project will be
-     * the default for this project if they are left unspecified.
-     * The location is given as a group ID, artifact ID and version.
-     */
-    public Model setParent(Parent newParent) {
-        if (parent != null) {
-            parent.remove();
-        }
-        parent = requireNonNull(newParent);
-        //add parent to xml tree
-        root.setChild("parent", newParent.asNewElement());
-        parent.element = root.getSingleChild("parent");
         return this;
     }
 
@@ -541,8 +572,16 @@ public class Model {
         return getId();
     }
 
+    private Map<String, String> properties() {
+        return properties == null ? properties = new HashMap<>() : properties;
+    }
+
+    private List<String> modules() {
+        return modules == null ? modules = new ArrayList<>() : modules;
+    }
+
     private void addPropertyToTree(String key, String value) {
-        if (getProperties().containsKey(key)) {
+        if (properties().containsKey(key)) {
             root.getSingleChild("properties")
                 .getSingleChild(key)
                 .setText(value);
@@ -550,25 +589,6 @@ public class Model {
             root.appendChild(createElement("properties", createElement(key, value)));
         } else {
             root.getSingleChild("properties").appendChild(createElement(key, value));
-        }
-    }
-
-    private void addDependencyToTree(Dependency newDependency) {
-        if (root.hasChild("dependencies")) {
-            root.getSingleChild("dependencies")
-                .appendChild(newDependency.asNewElement());
-        } else {
-            root.appendChild(createElement("dependencies", newDependency.asNewElement()));
-        }
-        newDependency.element = root.getSingleChild("dependencies").getLastChild();
-    }
-
-    private void removeDependencyFromTree(Dependency dependency) {
-        if (dependencies.isEmpty()) {
-            root.removeChild("dependencies");
-            dependency.element = null;
-        } else {
-            dependency.remove();
         }
     }
 
@@ -593,16 +613,6 @@ public class Model {
         }
     }
 
-    private void removeDependencies() {
-        if (dependencies == null) return;
-        //remove element references
-        for (Dependency dependency : dependencies) {
-            dependency.element = null;
-        }
-        //remove dependencies element from tree
-        root.removeChild("dependencies");
-    }
-
     private static Model fetchModel(XMLTree tree) {
         final Model model = new Model(tree);
         final Element root = tree.getRoot();
@@ -619,17 +629,17 @@ public class Model {
         if (root.hasChild("dependencyManagement")) {
             final Element dm = tree.getSingleElement("/project/dependencyManagement");
             final List<Dependency> dependencies =
-                    tree.getElements("/project/dependencyManagement/dependencies/dependency", TO_DEPENDENCY_FUNCTION);
+                    tree.getElements("/project/dependencyManagement/dependencies/dependency", TO_DEPENDENCY_MAPPER);
             model.dependencyManagement = new DependencyManagement(dm, dependencies);
         }
         if (root.hasChild("build")) {
             model.build = new Build(root.getSingleChild("build"));
         }
         if (root.hasChild("dependencies")) {
-            model.dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_FUNCTION);
+            model.dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_MAPPER);
         }
         if (root.hasChild("modules")) {
-            model.modules = tree.getElements("/project/modules/module", TO_MODULE_FUNCTION);
+            model.modules = tree.getElements("/project/modules/module", TO_MODULE_MAPPER);
         }
         if (root.hasChild("properties")) {
             model.properties = fetchProperties(root.getSingleChild("properties"));
@@ -645,72 +655,19 @@ public class Model {
         return properties;
     }
 
-    private static class ToDependencyFunction implements FromElementFunction<Dependency> {
+    private static class ToDependencyMapper implements ElementMapper<Dependency> {
 
         @Override
-        public Dependency apply(Element element) {
+        public Dependency map(Element element) {
             return new Dependency(element);
         }
     }
 
-    private static class ToModuleFunction implements FromElementFunction<String> {
+    private static class ToModuleMapper implements ElementMapper<String> {
 
         @Override
-        public String apply(Element element) {
+        public String map(Element element) {
             return element.getText();
-        }
-    }
-
-    public static class DependenciesSelector {
-
-        private LinkedList<Dependency> dependencies;
-
-        private DependenciesSelector(List<Dependency> dependencies) {
-            this.dependencies = new LinkedList<>(dependencies);
-        }
-
-        public DependenciesSelector byArtifactId(String artifactId) {
-            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
-                if (!artifactId.equals(depIt.next().getArtifactId())) {
-                    depIt.remove();
-                }
-            }
-            return this;
-        }
-
-        public DependenciesSelector byGroupId(String groupId) {
-            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
-                if (!groupId.equals(depIt.next().getGroupId())) {
-                    depIt.remove();
-                }
-            }
-            return this;
-        }
-
-        public DependenciesSelector byScope(String scope) {
-            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
-                if (!scope.equals(depIt.next().getScope())) {
-                    depIt.remove();
-                }
-            }
-            return this;
-        }
-
-        public DependenciesSelector byClassifier(String classifier) {
-            for (Iterator<Dependency> depIt = dependencies.iterator(); depIt.hasNext(); ) {
-                if (!classifier.equals(depIt.next().getClassifier())) {
-                    depIt.remove();
-                }
-            }
-            return this;
-        }
-
-        public Dependency first() {
-            return dependencies.isEmpty() ? null : dependencies.getFirst();
-        }
-
-        public LinkedList<Dependency> all() {
-            return dependencies;
         }
     }
 }

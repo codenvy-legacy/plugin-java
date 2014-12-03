@@ -14,6 +14,8 @@ import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.NewElement;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
+import static com.codenvy.commons.xml.XMLTreeLocation.after;
+import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -77,7 +79,12 @@ public class Parent {
     public Parent setArtifactId(String artifactId) {
         this.artifactId = requireNonNull(artifactId);
         if (!isNew()) {
-            element.setChildText("artifactId", artifactId, true);
+            if (element.hasChild("artifactId")) {
+                element.getSingleChild("artifactId").setText(artifactId);
+            } else {
+                element.insertChild(createElement("artifactId", artifactId),
+                                    after("groupId").or(inTheBegin()));
+            }
         }
         return this;
     }
@@ -88,7 +95,11 @@ public class Parent {
     public Parent setGroupId(String groupId) {
         this.groupId = requireNonNull(groupId);
         if (!isNew()) {
-            element.setChildText("groupId", groupId, true);
+            if (element.hasChild("groupId")) {
+                element.getSingleChild("groupId").setText(groupId);
+            } else {
+                element.insertChild(createElement("groupId", groupId), inTheBegin());
+            }
         }
         return this;
     }
@@ -99,13 +110,17 @@ public class Parent {
     public Parent setVersion(String version) {
         this.version = requireNonNull(version);
         if (!isNew()) {
-            element.setChildText("version", version, true);
+            if (element.hasChild("version")) {
+                element.getSingleChild("version").setText(version);
+            } else {
+                element.appendChild(createElement("version", version));
+            }
         }
         return this;
     }
 
     /**
-     * Returns the id as {@literal groupId:artifactId:version}
+     * Returns the id as <i>groupId:artifactId:version</i>
      */
     public String getId() {
         return groupId + ':' + artifactId + ":pom:" + version;
@@ -116,17 +131,19 @@ public class Parent {
         return getId();
     }
 
-    void remove() {
-        element.remove();
-        element = null;
+    public void remove() {
+        if (!isNew()) {
+            element.remove();
+            element = null;
+        }
     }
 
     NewElement asNewElement() {
-        final NewElement parentEl = createElement("parent");
-        parentEl.appendChild(createElement("artifactId", artifactId));
-        parentEl.appendChild(createElement("groupId", groupId));
-        parentEl.appendChild(createElement("version", version));
-        return parentEl;
+        final NewElement newParent = createElement("parent");
+        newParent.appendChild(createElement("artifactId", artifactId));
+        newParent.appendChild(createElement("groupId", groupId));
+        newParent.appendChild(createElement("version", version));
+        return newParent;
     }
 
     private boolean isNew() {

@@ -12,12 +12,9 @@ package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.NewElement;
-import com.sun.org.apache.xalan.internal.xsltc.dom.AdaptiveResultTreeImpl;
-
-import java.util.GregorianCalendar;
-import java.util.Objects;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
+import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -69,7 +66,11 @@ public class Exclusion {
     public Exclusion setArtifactId(String artifactId) {
         this.artifactId = requireNonNull(artifactId);
         if (!isNew()) {
-            element.setChildText("artifactId", artifactId, true);
+            if (element.hasChild("artifactId")) {
+                element.getSingleChild("artifactId").setText(artifactId);
+            } else {
+                element.appendChild(createElement("artifactId", artifactId));
+            }
         }
         return this;
     }
@@ -80,7 +81,11 @@ public class Exclusion {
     public Exclusion setGroupId(String groupId) {
         this.groupId = requireNonNull(groupId);
         if (!isNew()) {
-            element.setChildText("groupId", groupId, true);
+            if (element.hasChild("groupId")) {
+                element.getSingleChild("groupId").setText(groupId);
+            } else {
+                element.insertChild(createElement("groupId", groupId), inTheBegin());
+            }
         }
         return this;
     }
