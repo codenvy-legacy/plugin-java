@@ -13,6 +13,7 @@ package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.module.CreateMavenModulePresenter;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
