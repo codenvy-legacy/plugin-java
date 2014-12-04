@@ -19,10 +19,8 @@ import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
-
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
+import com.codenvy.ide.maven.tools.Build;
+import com.codenvy.ide.maven.tools.Model;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -49,7 +47,7 @@ public class MavenSourceFolderValueProviderFactory extends AbstractMavenValuePro
             @Override
             protected String getValue(Model model) {
                 Build build = model.getBuild();
-                if(build != null && build.getSourceDirectory() != null) {
+                if (build != null && build.getSourceDirectory() != null) {
                     return build.getSourceDirectory();
                 }
                 return "src/main/java";
@@ -69,10 +67,17 @@ public class MavenSourceFolderValueProviderFactory extends AbstractMavenValuePro
 //                    if (project.getBaseFolder().getChild(srcPath) == null) {
 //                        project.getBaseFolder().createFolder(srcPath);
 //                    }
-                    if(!"src/main/java".equals(srcPath)) {
+                    if (!"src/main/java".equals(srcPath)) {
                         VirtualFile pom = getPom(project);
                         if (pom != null) {
-                            MavenUtils.setSourceFolder(pom, srcPath);
+                            Model model = Model.readFrom(pom);
+                            Build build = model.getBuild();
+                            if (build != null) {
+                                build.setSourceDirectory(srcPath);
+                            } else {
+                                model.setBuild(new Build().setSourceDirectory(srcPath));
+                            }
+                            model.writeTo(pom);
                         }
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {

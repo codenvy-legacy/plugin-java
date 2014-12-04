@@ -21,6 +21,7 @@ import com.codenvy.commons.xml.XMLTree;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,6 +65,10 @@ import static java.util.Objects.requireNonNull;
  * @author Eugene Voeovodin
  */
 public final class Model {
+
+    public static Model readFrom(InputStream is) throws IOException {
+        return fetchModel(XMLTree.from(is));
+    }
 
     public static Model readFrom(File file) throws IOException {
         return fetchModel(XMLTree.from(file));

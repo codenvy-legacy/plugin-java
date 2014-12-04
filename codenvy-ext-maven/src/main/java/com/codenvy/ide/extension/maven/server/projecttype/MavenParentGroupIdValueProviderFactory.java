@@ -19,9 +19,8 @@ import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
-
-import org.apache.maven.model.Model;
+import com.codenvy.ide.maven.tools.Model;
+import com.codenvy.ide.maven.tools.Parent;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,9 +53,14 @@ public class MavenParentGroupIdValueProviderFactory extends AbstractMavenValuePr
 
                 try {
                     VirtualFile pom = getPom(project);
-                    if (pom != null) {
-                        MavenUtils.setParentGroupId(pom, value.get(0));
+                    Model model = Model.readFrom(pom);
+                    Parent parent = model.getParent();
+                    if (parent != null) {
+                        parent.setGroupId(value.get(0));
+                    } else {
+                        model.setParent(new Parent().setGroupId(value.get(0)));
                     }
+                    model.writeTo(pom);
                 } catch (ServerException | ForbiddenException | IOException e) {
                     throwWriteException(e);
                 }

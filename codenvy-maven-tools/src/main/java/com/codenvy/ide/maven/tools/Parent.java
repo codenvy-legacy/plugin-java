@@ -43,6 +43,9 @@ public class Parent {
 
     Element element;
 
+    public Parent() {
+    }
+
     public Parent(String groupId, String artifactId, String version) {
         this.groupId = requireNonNull(groupId);
         this.artifactId = requireNonNull(artifactId);

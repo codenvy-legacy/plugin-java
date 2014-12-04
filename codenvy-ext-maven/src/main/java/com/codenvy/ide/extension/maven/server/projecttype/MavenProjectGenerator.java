@@ -17,9 +17,8 @@ import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFile;
-import com.codenvy.ide.maven.tools.MavenUtils;
-
-import org.apache.maven.model.Model;
+import com.codenvy.ide.maven.tools.Build;
+import com.codenvy.ide.maven.tools.Model;
 
 import java.io.IOException;
 import java.util.List;
@@ -57,59 +56,64 @@ public class MavenProjectGenerator implements ProjectGenerator {
     @Override
     public void generateProject(FolderEntry baseFolder, NewProject newProjectDescriptor)
             throws ForbiddenException, ConflictException, ServerException {
-        Model model = new Model();
+        Model model = Model.createModel();
         model.setModelVersion("4.0.0");
         baseFolder.createFile("pom.xml", new byte[0], "text/xml");
-        VirtualFile pomFile = baseFolder.getChild("pom.xml").getVirtualFile();
-        try {
-            MavenUtils.writeModel(model, pomFile);
-            Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
+        Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
 
-            List<String> parentArtifactId = attributes.get(PARENT_ARTIFACT_ID);
-            if (parentArtifactId != null) {
-                MavenUtils.setArtifactId(pomFile, parentArtifactId.get(0));
+        List<String> parentArtifactId = attributes.get(PARENT_ARTIFACT_ID);
+        if (parentArtifactId != null) {
+            model.setArtifactId(parentArtifactId.get(0));
+        }
+        List<String> parentGroupId = attributes.get(PARENT_GROUP_ID);
+        if (parentGroupId != null) {
+            model.setGroupId(parentGroupId.get(0));
+        }
+        List<String> parentVersion = attributes.get(PARENT_VERSION);
+        if (parentVersion != null) {
+            model.setVersion(parentVersion.get(0));
+        }
+        List<String> artifactId = attributes.get(ARTIFACT_ID);
+        if (artifactId != null) {
+            model.setArtifactId(artifactId.get(0));
+        }
+        List<String> groupId = attributes.get(GROUP_ID);
+        if (groupId != null) {
+            model.setGroupId(groupId.get(0));
+        }
+        List<String> version = attributes.get(VERSION);
+        if (version != null) {
+            model.setVersion(version.get(0));
+        }
+        List<String> packaging = attributes.get(PACKAGING);
+        if (packaging != null) {
+            model.setPackaging(packaging.get(0));
+        }
+        List<String> sourceFolders = attributes.get(SOURCE_FOLDER);
+        if (sourceFolders != null) {
+            final String sourceFolder = sourceFolders.get(0);
+            baseFolder.createFolder(sourceFolder);
+            if (!"src/main/java".equals(sourceFolder)) {
+                model.setBuild(new Build().setSourceDirectory(sourceFolder));
             }
-            List<String> parentGroupId = attributes.get(PARENT_GROUP_ID);
-            if (parentGroupId != null) {
-                MavenUtils.setGroupId(pomFile, parentGroupId.get(0));
-            }
-            List<String> parentVersion = attributes.get(PARENT_VERSION);
-            if (parentVersion != null) {
-                MavenUtils.setVersion(pomFile, parentVersion.get(0));
-            }
-            List<String> artifactId = attributes.get(ARTIFACT_ID);
-            if (artifactId != null) {
-                MavenUtils.setArtifactId(pomFile, artifactId.get(0));
-            }
-            List<String> groupId = attributes.get(GROUP_ID);
-            if (groupId != null) {
-                MavenUtils.setGroupId(pomFile, groupId.get(0));
-            }
-            List<String> version = attributes.get(VERSION);
-            if (version != null) {
-                MavenUtils.setVersion(pomFile, version.get(0));
-            }
-            List<String> packaging = attributes.get(PACKAGING);
-            if (packaging != null) {
-                MavenUtils.setPackaging(pomFile, packaging.get(0));
-            }
-            List<String> sourceFolders = attributes.get(SOURCE_FOLDER);
-            if (sourceFolders != null) {
-                final String sourceFolder = sourceFolders.get(0);
-                baseFolder.createFolder(sourceFolder);
-                if (!"src/main/java".equals(sourceFolder)) {
-                    MavenUtils.setSourceFolder(pomFile, sourceFolder);
+        }
+        List<String> testSourceFolders = attributes.get(TEST_SOURCE_FOLDER);
+        if (testSourceFolders != null) {
+            final String testSourceFolder = testSourceFolders.get(0);
+            baseFolder.createFolder(testSourceFolder);
+            if (!"src/test/java".equals(testSourceFolder)) {
+                Build build = model.getBuild();
+                if (build != null) {
+                    build.setTestSourceDirectory(testSourceFolder);
+                } else {
+                    model.setBuild(new Build().setTestSourceDirectory(testSourceFolder));
                 }
             }
-            List<String> testSourceFolders = attributes.get(TEST_SOURCE_FOLDER);
-            if (testSourceFolders != null) {
-                final String testSourceFolder = testSourceFolders.get(0);
-                baseFolder.createFolder(testSourceFolder);
-                if (!"src/test/java".equals(testSourceFolder)) {
-                    MavenUtils.setSourceFolder(pomFile, testSourceFolder);
-                }
-            }
-        } catch (IOException e) {
+        }
+        VirtualFile pom = baseFolder.getChild("pom.xml").getVirtualFile();
+        try {
+            model.writeTo(pom);
+        } catch (ServerException | ForbiddenException  e) {
             throw new ForbiddenException("Can't write pom.xml: " + e.getMessage());
         }
     }

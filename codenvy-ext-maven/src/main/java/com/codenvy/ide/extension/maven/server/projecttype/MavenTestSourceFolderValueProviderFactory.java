@@ -11,7 +11,6 @@
 
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Project;
@@ -20,10 +19,9 @@ import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Build;
+import com.codenvy.ide.maven.tools.Model;
 
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
 
 import java.io.IOException;
 import java.util.List;
@@ -66,7 +64,14 @@ public class MavenTestSourceFolderValueProviderFactory extends AbstractMavenValu
                     if(!"src/test/java".equals(srcPath)) {
                         VirtualFile pom = getPom(project);
                         if (pom != null) {
-                            MavenUtils.setTestSourceFolder(pom, srcPath);
+                            Model model = Model.readFrom(pom);
+                            Build build = model.getBuild();
+                            if (build != null) {
+                                build.setTestOutputDirectory(srcPath);
+                            } else {
+                                model.setBuild(new Build().setTestSourceDirectory(srcPath));
+                            }
+                            model.writeTo(pom);
                         }
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {
