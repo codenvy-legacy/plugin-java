@@ -15,7 +15,10 @@ import com.codenvy.commons.xml.NewElement;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
 import static com.codenvy.commons.xml.XMLTreeLocation.after;
+import static com.codenvy.commons.xml.XMLTreeLocation.before;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
+import static com.codenvy.commons.xml.XMLTreeLocation.inTheEnd;
+import static java.util.Objects.compare;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -36,6 +39,7 @@ public class Parent {
     private String groupId;
     private String artifactId;
     private String version;
+    private String relativePath;
 
     Element element;
 
@@ -71,6 +75,10 @@ public class Parent {
      */
     public String getVersion() {
         return version;
+    }
+
+    public String getRelativePath() {
+        return relativePath == null ? "../pom.xml" : relativePath;
     }
 
     /**
@@ -113,7 +121,21 @@ public class Parent {
             if (element.hasChild("version")) {
                 element.getSingleChild("version").setText(version);
             } else {
-                element.appendChild(createElement("version", version));
+                element.insertChild(createElement("version", version), before("relativePath").or(inTheEnd()));
+            }
+        }
+        return this;
+    }
+
+    public Parent setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+        if (!isNew()) {
+            if (relativePath == null) {
+                element.removeChild("relativePath");
+            } else if (element.hasChild("relativePath")) {
+                element.getSingleChild("relativePath").setText(relativePath);
+            } else {
+                element.appendChild(createElement("relativePath", relativePath));
             }
         }
         return this;
@@ -140,9 +162,12 @@ public class Parent {
 
     NewElement asXMLElement() {
         final NewElement newParent = createElement("parent");
-        newParent.appendChild(createElement("artifactId", artifactId));
         newParent.appendChild(createElement("groupId", groupId));
+        newParent.appendChild(createElement("artifactId", artifactId));
         newParent.appendChild(createElement("version", version));
+        if (relativePath != null) {
+            newParent.appendChild(createElement("relativePath", relativePath));
+        }
         return newParent;
     }
 

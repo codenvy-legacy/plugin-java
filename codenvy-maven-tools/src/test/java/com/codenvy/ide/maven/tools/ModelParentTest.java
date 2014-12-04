@@ -41,8 +41,8 @@ public class ModelParentTest extends ModelTestBase {
                                 "<project>\n" +
                                 "    <modelVersion>4.0.0</modelVersion>\n" +
                                 "    <parent>\n" +
-                                "        <artifactId>parent-artifact</artifactId>\n" +
                                 "        <groupId>parent-group</groupId>\n" +
+                                "        <artifactId>parent-artifact</artifactId>\n" +
                                 "        <version>parent-version</version>\n" +
                                 "    </parent>\n" +
                                 "    <groupId>group-id</groupId>\n" +
@@ -58,9 +58,9 @@ public class ModelParentTest extends ModelTestBase {
                    "<project>\n" +
                    "    <modelVersion>4.0.0</modelVersion>\n" +
                    "    <parent>\n" +
-                   "        <artifactId>parent-artifact</artifactId>\n" +
-                   "        <groupId>parent-group</groupId>\n" +
-                   "        <version>parent-version</version>\n" +
+                   "        <groupId>new-parent-artifact</groupId>\n" +
+                   "        <artifactId>new-parent-group</artifactId>\n" +
+                   "        <version>new-parent-version</version>\n" +
                    "    </parent>\n" +
                    "    <artifactId>artifact-id</artifactId>\n" +
                    "    <groupId>group-id</groupId>\n" +
@@ -76,8 +76,8 @@ public class ModelParentTest extends ModelTestBase {
                                 "<project>\n" +
                                 "    <modelVersion>4.0.0</modelVersion>\n" +
                                 "    <parent>\n" +
-                                "        <artifactId>new-parent-group</artifactId>\n" +
                                 "        <groupId>new-parent-artifact</groupId>\n" +
+                                "        <artifactId>new-parent-group</artifactId>\n" +
                                 "        <version>new-parent-version</version>\n" +
                                 "    </parent>\n" +
                                 "    <artifactId>artifact-id</artifactId>\n" +

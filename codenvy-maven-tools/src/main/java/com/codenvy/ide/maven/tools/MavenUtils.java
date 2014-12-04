@@ -99,7 +99,7 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static Model getModel(java.io.File sources) throws IOException {
-        return doReadModel(new java.io.File(sources, "pom.xml"));
+        return readModel(new java.io.File(sources, "pom.xml"));
     }
 
     /**
