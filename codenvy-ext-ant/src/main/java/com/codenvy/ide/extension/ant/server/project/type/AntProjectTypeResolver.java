@@ -21,10 +21,11 @@ import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueStorageException;
-import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
 
 /** @author Vladyslav Zhukovskii */
 @Singleton
@@ -37,7 +38,7 @@ public class AntProjectTypeResolver implements ProjectTypeResolver {
     @Override
     public boolean resolve(FolderEntry folderEntry) throws ServerException, ValueStorageException, InvalidValueException {
         try {
-            ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.ANT_ID);
+            ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(ANT_ID);
 
             if (projectType == null) {
                 return false;

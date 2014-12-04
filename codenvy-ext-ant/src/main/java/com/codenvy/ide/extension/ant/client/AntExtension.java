@@ -26,6 +26,7 @@ import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
 import com.codenvy.ide.extension.ant.client.wizard.AntPagePresenter;
+import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -68,7 +69,7 @@ public class AntExtension {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
                 ProjectDescriptor project = event.getProject();
-                if (Constants.ANT_ID.equals(project.getType())
+                if (AntAttributes.ANT_ID.equals(project.getType())
                     && project.getAttributes().containsKey(Constants.LANGUAGE)
                     && project.getAttributes().get(Constants.LANGUAGE).get(0).equals("java")) {
                     dependenciesUpdater.updateDependencies(project, false);
@@ -109,6 +110,6 @@ public class AntExtension {
             }
         });
 
-        treeStructureProviderRegistry.registerProvider(Constants.ANT_ID, antProjectTreeStructureProvider);
+        treeStructureProviderRegistry.registerProvider(AntAttributes.ANT_ID, antProjectTreeStructureProvider);
     }
 }

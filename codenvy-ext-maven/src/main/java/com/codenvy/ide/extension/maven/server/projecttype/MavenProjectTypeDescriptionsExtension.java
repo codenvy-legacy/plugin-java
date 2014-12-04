@@ -10,10 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.project.server.ProjectTypeDescriptionExtension;
-import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
 import com.codenvy.api.project.server.AttributeDescription;
 import com.codenvy.api.project.server.ProjectType;
+import com.codenvy.api.project.server.ProjectTypeDescriptionExtension;
+import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
@@ -36,7 +36,7 @@ public class MavenProjectTypeDescriptionsExtension implements ProjectTypeDescrip
     @Override
     public List<ProjectType> getProjectTypes() {
         final List<ProjectType> list = new ArrayList<>(1);
-        list.add(new ProjectType(Constants.MAVEN_ID, Constants.MAVEN_NAME, Constants.JAVA_CATEGORY));
+        list.add(new ProjectType(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME, Constants.JAVA_CATEGORY));
         return list;
     }
 

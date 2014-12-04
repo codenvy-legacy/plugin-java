@@ -14,14 +14,18 @@ package com.codenvy.ide.extension.maven.shared;
  * @author Evgen Vidolob
  */
 public interface MavenAttributes {
+    final String MAVEN_ID   = "maven";
+    final String MAVEN_NAME = "Maven Project";
 
-    String GROUP_ID           = "maven.groupId";
-    String VERSION            = "maven.version";
-    String ARTIFACT_ID        = "maven.artifactId";
-    String PACKAGING          = "maven.packaging";
-    String PARENT_GROUP_ID    = "maven.parent.groupId";
-    String PARENT_VERSION     = "maven.parent.version";
-    String PARENT_ARTIFACT_ID = "maven.parent.artifactId";
-    String SOURCE_FOLDER      = "maven.source.folder";
-    String TEST_SOURCE_FOLDER = "maven.test.source.folder";
+    final String MAVEN_GENERATOR_ID = "maven";
+
+    final String GROUP_ID           = "maven.groupId";
+    final String VERSION            = "maven.version";
+    final String ARTIFACT_ID        = "maven.artifactId";
+    final String PACKAGING          = "maven.packaging";
+    final String PARENT_GROUP_ID    = "maven.parent.groupId";
+    final String PARENT_VERSION     = "maven.parent.version";
+    final String PARENT_ARTIFACT_ID = "maven.parent.artifactId";
+    final String SOURCE_FOLDER      = "maven.source.folder";
+    final String TEST_SOURCE_FOLDER = "maven.test.source.folder";
 }
