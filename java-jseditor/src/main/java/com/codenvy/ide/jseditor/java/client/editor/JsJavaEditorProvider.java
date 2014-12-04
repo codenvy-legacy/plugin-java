@@ -65,7 +65,7 @@ public class JsJavaEditorProvider implements EditorProvider {
         final EditorPartPresenter textEditor = editorProvider.getEditor();
 
         if (textEditor instanceof EmbeddedTextEditorPresenter) {
-            final EmbeddedTextEditorPresenter editor = (EmbeddedTextEditorPresenter)textEditor;
+            final EmbeddedTextEditorPresenter< ? > editor = (EmbeddedTextEditorPresenter< ? >)textEditor;
             final TextEditorConfiguration configuration =
                                                           this.jsJavaEditorConfigurationFactory.create(editor);
             editor.initialize(configuration, this.notificationManager);

@@ -19,7 +19,7 @@ import com.codenvy.ide.ext.java.jdi.client.actions.DebugAction;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
 import com.codenvy.ide.ext.java.jdi.client.fqn.FqnResolverFactory;
 import com.codenvy.ide.ext.java.jdi.client.fqn.JavaFqnResolver;
-import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.extension.runner.client.RunnerLocalizationConstant;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -63,7 +63,7 @@ public class JavaRuntimeExtension {
         DefaultActionGroup runContextGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN_CONTEXT_MENU);
         runContextGroup.add(debugAction);
 
-        debuggerManager.registeredDebugger(Constants.MAVEN_ID, debuggerPresenter);
+        debuggerManager.registeredDebugger(MavenAttributes.MAVEN_ID, debuggerPresenter);
         debuggerManager.registeredDebugger(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID, debuggerPresenter);
         resolverFactory.addResolver(APPLICATION_JAVA, javaFqnResolver);
     }

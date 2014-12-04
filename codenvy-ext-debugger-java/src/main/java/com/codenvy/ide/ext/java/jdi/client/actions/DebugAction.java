@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.actions;
 
-import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
+import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
 import com.codenvy.ide.api.action.ActionEvent;

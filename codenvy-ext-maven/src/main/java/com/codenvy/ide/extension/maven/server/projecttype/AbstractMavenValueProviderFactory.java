@@ -11,20 +11,20 @@
 
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ValueProviderFactory;
-import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.server.ValueProvider;
+import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
+import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.apache.maven.model.Model;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +34,6 @@ import java.util.List;
  */
 public abstract class AbstractMavenValueProviderFactory implements ValueProviderFactory {
 
-
     protected Model readModel(Project project) throws ValueStorageException, ServerException, ForbiddenException, IOException {
         FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
         if (pomFile == null) {
@@ -43,28 +42,17 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
         return MavenUtils.readModel(pomFile.getInputStream());
     }
 
-    protected VirtualFile getOrCreatePom(Project project) {
-        VirtualFileEntry pomFile;
+    @Nullable
+    protected VirtualFile getPom(Project project) {
         try {
-            pomFile = project.getBaseFolder().getChild("pom.xml");
-            if (pomFile == null){
-                Model model = new Model();
-                model.setModelVersion("4.0.0");
-                pomFile = writeModel(model, project);
+            final VirtualFileEntry pomFile = project.getBaseFolder().getChild("pom.xml");
+            if (pomFile != null) {
+                return pomFile.getVirtualFile();
             }
-            return pomFile.getVirtualFile();
-        } catch (ForbiddenException | ServerException | ConflictException | IOException e) {
+            return null;
+        } catch (ForbiddenException | ServerException e) {
             return null;
         }
-    }
-
-    protected VirtualFileEntry writeModel(Model model, Project project) throws ServerException, ForbiddenException, ConflictException, IOException {
-        VirtualFileEntry pomFile = project.getBaseFolder().getChild("pom.xml");
-        if (pomFile == null) {
-            pomFile = project.getBaseFolder().createFile("pom.xml", new byte[0], "text/xml");
-        }
-        MavenUtils.writeModel(model, pomFile.getVirtualFile());
-        return  pomFile;
     }
 
     protected void throwReadException(Exception e) throws ValueStorageException {

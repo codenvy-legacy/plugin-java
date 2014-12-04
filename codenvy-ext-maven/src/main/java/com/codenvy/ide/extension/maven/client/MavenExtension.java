@@ -32,7 +32,6 @@ import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
-import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.maven.client.actions.CreateMavenModuleAction;
 import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
 import com.codenvy.ide.extension.maven.client.actions.UpdateDependencyAction;
@@ -79,11 +78,11 @@ public class MavenExtension {
         ProjectWizard wizard = new ProjectWizard(notificationManager);
         wizard.addPage(mavenPagePresenter);
         wizard.addPage(runnerPagePresenter);
-        wizardRegistry.addWizard(Constants.MAVEN_ID, wizard);
+        wizardRegistry.addWizard(MavenAttributes.MAVEN_ID, wizard);
 
-        treeStructureProviderRegistry.registerProvider(Constants.MAVEN_ID, mavenProjectTreeStructureProvider);
+        treeStructureProviderRegistry.registerProvider(MavenAttributes.MAVEN_ID, mavenProjectTreeStructureProvider);
 
-        preSelectedProjectManager.setProjectTypeIdToPreselect(Constants.MAVEN_ID, 100);
+        preSelectedProjectManager.setProjectTypeIdToPreselect(MavenAttributes.MAVEN_ID, 100);
     }
 
     @Inject

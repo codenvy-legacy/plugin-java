@@ -54,11 +54,12 @@ public class MavenPackagingValueProviderFactory extends AbstractMavenValueProvid
                     return;
                 }
                 try {
-                    VirtualFile pom = getOrCreatePom(project);
-                    Model model = MavenUtils.readModel(pom);
-
-                    if (!packaging.equals(model.getPackaging())) {
-                        MavenUtils.setPackaging(pom, packaging);
+                    VirtualFile pom = getPom(project);
+                    if (pom != null) {
+                        Model model = MavenUtils.readModel(pom);
+                        if (!packaging.equals(model.getPackaging())) {
+                            MavenUtils.setPackaging(pom, packaging);
+                        }
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);

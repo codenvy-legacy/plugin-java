@@ -10,15 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
+import com.codenvy.api.project.server.Attribute;
 import com.codenvy.api.project.server.Builders;
+import com.codenvy.api.project.server.ProjectTemplateDescription;
+import com.codenvy.api.project.server.ProjectTemplateDescriptionLoader;
+import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
 import com.codenvy.api.project.server.ProjectTypeExtension;
-import com.codenvy.api.project.server.Attribute;
-import com.codenvy.api.project.server.ProjectTemplateDescription;
-import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.Runners;
 import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.api.project.server.ProjectTemplateDescriptionLoader;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class MavenProjectTypeExtension implements ProjectTypeExtension {
     public MavenProjectTypeExtension(ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader,
                                      ProjectTypeDescriptionRegistry registry) {
         this.projectTemplateDescriptionLoader = projectTemplateDescriptionLoader;
-        projectType = new ProjectType(Constants.MAVEN_ID, Constants.MAVEN_NAME, Constants.JAVA_CATEGORY);
+        projectType = new ProjectType(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME, Constants.JAVA_CATEGORY);
         registry.registerProjectType(this);
     }
 

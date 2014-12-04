@@ -13,14 +13,13 @@ package com.codenvy.ide.extension.maven.client.module;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
+import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.maven.client.wizard.MavenPomServiceClient;
-import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.util.NameUtils;
 import com.codenvy.ide.util.loging.Log;
@@ -34,12 +33,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
+
 /**
  * @author Evgen Vidolob
  */
 @Singleton
 public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionDelegate {
-
 
     private CreateMavenModuleView view;
     private ProjectServiceClient  projectService;
@@ -65,9 +72,9 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     public void showDialog(@Nonnull CurrentProject project) {
         parentProject = project;
-        view.setParentArtifactId(project.getAttributeValue(MavenAttributes.ARTIFACT_ID));
-        view.setGroupId(project.getAttributeValue(MavenAttributes.GROUP_ID));
-        view.setVersion(project.getAttributeValue(MavenAttributes.VERSION));
+        view.setParentArtifactId(project.getAttributeValue(ARTIFACT_ID));
+        view.setGroupId(project.getAttributeValue(GROUP_ID));
+        view.setVersion(project.getAttributeValue(VERSION));
         view.reset();
         view.show();
         updateViewState();
@@ -75,7 +82,6 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     @Override
     public void onClose() {
-
     }
 
     @Override
@@ -83,36 +89,36 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         NewProject newProject = dtoFactory.createDto(NewProject.class);
         BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class);
         builders.setDefault("maven");
-        newProject.setType(Constants.MAVEN_ID);
+        newProject.setType(MAVEN_ID);
         newProject.setVisibility(parentProject.getProjectDescription().getVisibility());
         Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put(MavenAttributes.ARTIFACT_ID, Arrays.asList(artifactId));
-        attributes.put(MavenAttributes.GROUP_ID, Arrays.asList(view.getGroupId()));
-        attributes.put(MavenAttributes.VERSION, Arrays.asList(view.getVersion()));
-        attributes.put(MavenAttributes.PACKAGING, Arrays.asList(view.getPackaging()));
-        attributes.put(MavenAttributes.PARENT_ARTIFACT_ID, Arrays.asList(parentProject.getAttributeValue(MavenAttributes.ARTIFACT_ID)));
-        attributes.put(MavenAttributes.PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(MavenAttributes.GROUP_ID)));
-        attributes.put(MavenAttributes.PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(MavenAttributes.VERSION)));
+        attributes.put(ARTIFACT_ID, Arrays.asList(artifactId));
+        attributes.put(GROUP_ID, Arrays.asList(view.getGroupId()));
+        attributes.put(VERSION, Arrays.asList(view.getVersion()));
+        attributes.put(PACKAGING, Arrays.asList(view.getPackaging()));
+        attributes.put(PARENT_ARTIFACT_ID, Arrays.asList(parentProject.getAttributeValue(ARTIFACT_ID)));
+        attributes.put(PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(GROUP_ID)));
+        attributes.put(PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(VERSION)));
         newProject.setAttributes(attributes);
+        newProject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class).withName(MAVEN_ID));
         view.showButtonLoader(true);
-        projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject, new AsyncRequestCallback<ProjectDescriptor>() {
+        projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject,
+                                    new AsyncRequestCallback<ProjectDescriptor>() {
+                                        @Override
+                                        protected void onSuccess(ProjectDescriptor result) {
+                                            addModuleToParentPom();
+                                        }
 
-            @Override
-            protected void onSuccess(ProjectDescriptor result) {
-                addModuleToParentPom();
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                view.showButtonLoader(false);
-                Log.error(CreateMavenModulePresenter.class, exception);
-            }
-        });
+                                        @Override
+                                        protected void onFailure(Throwable exception) {
+                                            view.showButtonLoader(false);
+                                            Log.error(CreateMavenModulePresenter.class, exception);
+                                        }
+                                    });
     }
 
     private void addModuleToParentPom() {
         mavenPomServiceClient.addModule(parentProject.getProjectDescription().getPath(), moduleName, new AsyncRequestCallback<Void>() {
-
             @Override
             protected void onSuccess(Void result) {
                 view.close();

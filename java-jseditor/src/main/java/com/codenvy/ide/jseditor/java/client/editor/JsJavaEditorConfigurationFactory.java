@@ -13,5 +13,5 @@ package com.codenvy.ide.jseditor.java.client.editor;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 
 public interface JsJavaEditorConfigurationFactory {
-    JsJavaEditorConfiguration create(EmbeddedTextEditorPresenter editor);
+    JsJavaEditorConfiguration create(EmbeddedTextEditorPresenter< ? > editor);
 }

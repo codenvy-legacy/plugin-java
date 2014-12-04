@@ -37,7 +37,7 @@ import java.io.IOException;
 /**
  * @author Evgen Vidolob
  */
-@Path("maven/pom/{ws-id}")
+@Path("maven/{ws-id}")
 public class MavenPomService {
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().serializeNulls().create();
 
@@ -48,7 +48,7 @@ public class MavenPomService {
     @Inject
     private ProjectManager projectManager;
 
-    @Path("read")
+    @Path("/pom/read")
     @GET
     @Produces("application/json")
     public String readPomAttributes(@QueryParam("projectpath") String projectPath) throws Exception {
@@ -84,7 +84,7 @@ public class MavenPomService {
     }
 
     @POST
-    @Path("add-module")
+    @Path("/pom/add-module")
     public void addModule(@QueryParam("projectpath") String projectPath, @QueryParam("module") String moduleName)
             throws ServerException, ForbiddenException, IOException {
         Project project = projectManager.getProject(wsId, projectPath);
