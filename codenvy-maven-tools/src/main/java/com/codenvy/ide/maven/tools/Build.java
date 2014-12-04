@@ -39,15 +39,16 @@ public class Build {
 
     Element element;
 
-    public Build() {}
+    public Build() {
+    }
 
     Build(Element element) {
-        this.element          = element;
-        sourceDirectory       = element.getChildText("sourceDirectory");
-        testSourceDirectory   = element.getChildText("testSourceDirectory");
+        this.element = element;
+        sourceDirectory = element.getChildText("sourceDirectory");
+        testSourceDirectory = element.getChildText("testSourceDirectory");
         scriptSourceDirectory = element.getChildText("scriptSourceDirectory");
-        outputDirectory       = element.getChildText("outputDirectory");
-        testOutputDirectory   = element.getChildText("testOutputDirectory");
+        outputDirectory = element.getChildText("outputDirectory");
+        testOutputDirectory = element.getChildText("testOutputDirectory");
     }
 
     /**
@@ -105,7 +106,9 @@ public class Build {
     public Build setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
         if (!isNew()) {
-            if (element.hasChild("outputDirectory")) {
+            if (outputDirectory == null) {
+                element.removeChild("outputDirectory");
+            } else if (element.hasChild("outputDirectory")) {
                 element.getSingleChild("outputDirectory").setText(outputDirectory);
             } else {
                 element.appendChild(createElement("outputDirectory", outputDirectory));
@@ -120,7 +123,9 @@ public class Build {
     public Build setScriptSourceDirectory(String scriptSourceDirectory) {
         this.scriptSourceDirectory = scriptSourceDirectory;
         if (!isNew()) {
-            if (element.hasChild("scriptSourceDirectory")) {
+            if (scriptSourceDirectory == null) {
+                element.removeChild("scriptSourceDirectory");
+            } else if (element.hasChild("scriptSourceDirectory")) {
                 element.getSingleChild("scriptSourceDirectory").setText(scriptSourceDirectory);
             } else {
                 element.appendChild(createElement("scriptSourceDirectory", scriptSourceDirectory));
@@ -135,7 +140,9 @@ public class Build {
     public Build setSourceDirectory(String sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
         if (!isNew()) {
-            if (element.hasChild("sourceDirectory")) {
+            if (sourceDirectory == null) {
+                element.removeChild("sourceDirectory");
+            } else if (element.hasChild("sourceDirectory")) {
                 element.getSingleChild("sourceDirectory").setText(sourceDirectory);
             } else {
                 element.appendChild(createElement("sourceDirectory", sourceDirectory));
@@ -150,7 +157,9 @@ public class Build {
     public Build setTestOutputDirectory(String testOutputDirectory) {
         this.testOutputDirectory = testOutputDirectory;
         if (!isNew()) {
-            if (element.hasChild("testOutputDirectory")) {
+            if (testOutputDirectory == null) {
+                element.removeChild("testOutputDirectory");
+            } else if (element.hasChild("testOutputDirectory")) {
                 element.getSingleChild("testOutputDirectory").setText(testOutputDirectory);
             } else {
                 element.appendChild(createElement("testOutputDirectory", testOutputDirectory));
@@ -165,7 +174,9 @@ public class Build {
     public Build setTestSourceDirectory(String testSourceDirectory) {
         this.testSourceDirectory = testSourceDirectory;
         if (!isNew()) {
-            if (element.hasChild("testSourceDirectory")) {
+            if (testSourceDirectory == null) {
+                element.removeChild("testSourceDirectory");
+            } else if (element.hasChild("testSourceDirectory")) {
                 element.getSingleChild("testSourceDirectory").setText(testSourceDirectory);
             } else {
                 element.appendChild(createElement("testSourceDirectory", testSourceDirectory));
@@ -174,14 +185,14 @@ public class Build {
         return this;
     }
 
-    public void remove() {
+    void removeFromXML() {
         if (!isNew()) {
             element.remove();
             element = null;
         }
     }
 
-    NewElement asNewElement() {
+    NewElement asXMLElement() {
         final NewElement buildEl = createElement("build");
         if (sourceDirectory != null) {
             buildEl.appendChild(createElement("sourceDirectory", sourceDirectory));

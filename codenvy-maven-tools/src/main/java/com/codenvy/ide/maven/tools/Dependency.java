@@ -59,9 +59,9 @@ public class Dependency {
 
     Element element;
 
-    public Dependency(String artifactId, String groupId, String version) {
-        this.artifactId = artifactId;
+    public Dependency(String groupId, String artifactId, String version) {
         this.groupId = groupId;
+        this.artifactId = artifactId;
         this.version = version;
     }
 
@@ -190,9 +190,9 @@ public class Dependency {
         if (!isNew()) {
             if (element.hasChild("exclusions")) {
                 element.getSingleChild("exclusions")
-                       .appendChild(exclusion.asNewElement());
+                       .appendChild(exclusion.asXMLElement());
             } else {
-                element.appendChild(createElement("exclusions", exclusion.asNewElement()));
+                element.appendChild(createElement("exclusions", exclusion.asXMLElement()));
             }
             exclusion.element = element.getSingleChild("exclusions").getLastChild();
         }
@@ -299,9 +299,9 @@ public class Dependency {
         this.optional = requireNonNull(optional);
         if (!isNew()) {
             if (element.hasChild("optional")) {
-                element.getSingleChild("optional").setText(groupId);
+                element.getSingleChild("optional").setText(optional);
             } else {
-                element.insertChild(createElement("o", groupId), inTheBegin());
+                element.insertChild(createElement("optional", optional), inTheBegin());
             }
         }
         return this;
@@ -325,9 +325,11 @@ public class Dependency {
      * dependency mechanism</a>.
      */
     public Dependency setScope(String scope) {
-        this.scope = requireNonNull(scope);
+        this.scope = scope;
         if (!isNew()) {
-            if (element.hasChild("scope")) {
+            if (scope == null) {
+                element.removeChild("scope");
+            } else if (element.hasChild("scope")) {
                 element.getSingleChild("scope").setText(scope);
             } else {
                 element.appendChild(createElement("scope", scope));
@@ -418,10 +420,10 @@ public class Dependency {
         }
     }
 
-    NewElement asNewElement() {
+    NewElement asXMLElement() {
         final NewElement dependencyEl = createElement("dependency");
-        dependencyEl.appendChild(createElement("artifactId", artifactId));
         dependencyEl.appendChild(createElement("groupId", groupId));
+        dependencyEl.appendChild(createElement("artifactId", artifactId));
         dependencyEl.appendChild(createElement("version", version));
         if (scope != null && !scope.equals("compile")) {
             dependencyEl.appendChild(createElement("scope", scope));
@@ -438,7 +440,7 @@ public class Dependency {
         if (exclusions != null) {
             final NewElement exclusionsEl = createElement("exclusions");
             for (Exclusion exclusion : exclusions) {
-                exclusionsEl.appendChild(exclusion.asNewElement());
+                exclusionsEl.appendChild(exclusion.asXMLElement());
             }
             exclusionsEl.appendChild(exclusionsEl);
         }

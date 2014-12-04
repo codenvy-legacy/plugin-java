@@ -14,9 +14,11 @@ import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.NewElement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -39,11 +41,21 @@ public class DependencyManagement {
         this.dependencies = dependencies;
     }
 
+    public List<Dependency> getDependencies() {
+        if (dependencies == null) {
+            return emptyList();
+        }
+        return new ArrayList<>(dependencies);
+    }
+
     public Dependencies dependencies() {
+        if (dependencies == null) {
+            dependencies = new ArrayList<>();
+        }
         return new Dependencies(element, dependencies);
     }
 
-    public void remove() {
+    void remove() {
         if (element != null) {
             element.remove();
             //disable of using dependencies
@@ -54,11 +66,11 @@ public class DependencyManagement {
         }
     }
 
-    NewElement asNewElement() {
+    NewElement asXMLElement() {
         final NewElement newDM = createElement("dependencyManagement");
         final NewElement newDependencies = createElement("dependencies");
         for (Dependency dependency : dependencies) {
-            newDependencies.appendChild(dependency.asNewElement());
+            newDependencies.appendChild(dependency.asXMLElement());
         }
         return newDM.appendChild(newDependencies);
     }

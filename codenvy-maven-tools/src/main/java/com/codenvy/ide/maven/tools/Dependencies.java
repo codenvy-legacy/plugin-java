@@ -12,7 +12,6 @@ package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -22,7 +21,6 @@ import static com.codenvy.commons.xml.NewElement.createElement;
 import static java.util.Objects.requireNonNull;
 
 /**
- * TODO do we need to filter deps here?
  * Helps to manage dependencies.
  *
  * @author Eugene Voevodin
@@ -35,7 +33,7 @@ public class Dependencies {
 
     Element element;
 
-    private LinkedList<Dependency> filtered;
+    private LinkedList<Dependency> selected;
     private List<Dependency>       dependencies;
 
     Dependencies(Element element, List<Dependency> dependencies) {
@@ -43,18 +41,31 @@ public class Dependencies {
         this.element = element;
     }
 
+    /**
+     * Adds new dependency to the end of dependencies list.
+     * <p/>
+     * Creates dependencies tag if element doesn't have dependencies yet
+     *
+     * @param dependency
+     *         new dependency which will be added to the end of dependencies list
+     */
     public Dependencies add(Dependency dependency) {
-        requireNonNull(dependency);
-        dependencies.add(dependency);
+        dependencies.add(requireNonNull(dependency));
         if (!isNew()) {
-            addDependencyToTree(dependency);
+            addDependencyToXML(dependency);
         }
         return this;
     }
 
+    /**
+     * Removes dependency from the list of existing dependencies.
+     *
+     * @param dependency
+     *         dependency which should be removed
+     */
     public Dependencies remove(Dependency dependency) {
         if (dependencies.remove(requireNonNull(dependency)) && !isNew()) {
-            removeDependencyFromTree(dependency);
+            removeDependencyFromXML(dependency);
         }
         return this;
     }
@@ -70,20 +81,29 @@ public class Dependencies {
      * dependency mechanism</a> for more information.
      */
     public Dependencies set(Collection<Dependency> newDependencies) {
+        requireNonNull(newDependencies);
         if (isNew()) {
-            dependencies = new ArrayList<>(newDependencies);
+            dependencies.clear();
+            dependencies.addAll(newDependencies);
             return this;
         }
         //removing all dependencies from xml tree
-        removeDependenciesFromTree();
-        //add and associate each new dependency with element in tree
-        dependencies = new ArrayList<>(newDependencies.size());
-        for (Dependency newDependency : newDependencies) {
-            add(newDependency);
+        removeDependenciesFromXML();
+        if (!newDependencies.isEmpty()) {
+            //add and associate each new dependency with element in tree
+            dependencies.clear();
+            for (Dependency newDependency : newDependencies) {
+                add(newDependency);
+            }
         }
         return this;
     }
 
+    /**
+     * Filters dependencies by artifactId.
+     * <p/>
+     * This method doesn't affect existing dependencies!
+     */
     public Dependencies byArtifactId(final String artifactId) {
         return filter(new DependencyFilter() {
             @Override
@@ -93,6 +113,11 @@ public class Dependencies {
         });
     }
 
+    /**
+     * Filters dependencies by groupId.
+     * <p/>
+     * This method doesn't affect existing dependencies!
+     */
     public Dependencies byGroupId(final String groupId) {
         return filter(new DependencyFilter() {
             @Override
@@ -102,6 +127,11 @@ public class Dependencies {
         });
     }
 
+    /**
+     * Filters dependencies by scope.
+     * <p/>
+     * This method doesn't affect existing dependencies!
+     */
     public Dependencies byScope(final String scope) {
         return filter(new DependencyFilter() {
             @Override
@@ -111,6 +141,11 @@ public class Dependencies {
         });
     }
 
+    /**
+     * Filters dependencies by classifier.
+     * <p/>
+     * This method doesn't affect existing dependencies!
+     */
     public Dependencies byClassifier(final String classifier) {
         return filter(new DependencyFilter() {
             @Override
@@ -120,9 +155,13 @@ public class Dependencies {
         });
     }
 
+    /**
+     * Filters dependencies by given filter.
+     * <p/>
+     * This method doesn't affect existing dependencies!
+     */
     public Dependencies filter(DependencyFilter filter) {
-        checkNotNew();
-        for (Iterator<Dependency> depIt = filtered().iterator(); depIt.hasNext(); ) {
+        for (Iterator<Dependency> depIt = selected().iterator(); depIt.hasNext(); ) {
             if (!filter.accept(depIt.next())) {
                 depIt.remove();
             }
@@ -130,36 +169,34 @@ public class Dependencies {
         return this;
     }
 
+    /**
+     * Returns selected dependencies or {@code null} if nothing was selected
+     */
     public Dependency first() {
-        checkNotNew();
-        return filtered().isEmpty() ? null : filtered.getFirst();
+        return selected().isEmpty() ? null : selected.getFirst();
     }
 
+    /**
+     * Returns last selected dependency or {@code null} if nothing was selected
+     */
     public Dependency last() {
-        checkNotNew();
-        return filtered.isEmpty() ? null : filtered.getLast();
+        return selected().isEmpty() ? null : selected.getLast();
     }
 
-    public List<Dependency> get() {
-        checkNotNew();
-        return filtered();
-    }
-
-    public int count() {
-        return dependencies.size();
-    }
-
+    /**
+     * Removes selected dependencies from source list of dependencies
+     */
     public void remove() {
-        for (Dependency dependency : filtered()) {
+        for (Dependency dependency : selected()) {
             remove(dependency);
         }
     }
 
-    private LinkedList<Dependency> filtered() {
-        return filtered == null ? filtered = new LinkedList<>(dependencies) : filtered;
+    private LinkedList<Dependency> selected() {
+        return selected == null ? selected = new LinkedList<>(dependencies) : selected;
     }
 
-    private void removeDependenciesFromTree() {
+    private void removeDependenciesFromXML() {
         if (dependencies == null) return;
         //remove element references
         for (Dependency dependency : dependencies) {
@@ -169,28 +206,22 @@ public class Dependencies {
         element.removeChild("dependencies");
     }
 
-    private void addDependencyToTree(Dependency dependency) {
+    private void addDependencyToXML(Dependency dependency) {
         if (element.hasChild("dependencies")) {
             element.getSingleChild("dependencies")
-                   .appendChild(dependency.asNewElement());
+                   .appendChild(dependency.asXMLElement());
         } else {
-            element.appendChild(createElement("dependencies", dependency.asNewElement()));
+            element.appendChild(createElement("dependencies", dependency.asXMLElement()));
         }
         dependency.element = element.getSingleChild("dependencies").getLastChild();
     }
 
-    private void removeDependencyFromTree(Dependency dependency) {
+    private void removeDependencyFromXML(Dependency dependency) {
         if (dependencies.isEmpty()) {
             element.removeChild("dependencies");
             dependency.element = null;
         } else {
             dependency.remove();
-        }
-    }
-
-    private void checkNotNew() {
-        if (isNew()) {
-            throw new RuntimeException("Should not be used on new element");
         }
     }
 

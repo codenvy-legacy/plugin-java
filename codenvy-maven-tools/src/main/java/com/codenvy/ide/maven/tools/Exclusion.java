@@ -97,10 +97,10 @@ public class Exclusion {
         }
     }
 
-    NewElement asNewElement() {
+    NewElement asXMLElement() {
         final NewElement newExclusion = createElement("exclusion");
-        newExclusion.appendChild(createElement("artifactId", artifactId));
         newExclusion.appendChild(createElement("groupId", groupId));
+        newExclusion.appendChild(createElement("artifactId", artifactId));
         return newExclusion;
     }
 

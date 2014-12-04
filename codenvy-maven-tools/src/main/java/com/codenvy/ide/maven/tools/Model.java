@@ -277,7 +277,7 @@ public final class Model {
     public Model addProperty(String key, String value) {
         requireNonNull(key);
         requireNonNull(value);
-        addPropertyToTree(key, value);
+        addPropertyToXML(key, value);
         properties().put(key, value);
         return this;
     }
@@ -288,7 +288,7 @@ public final class Model {
      */
     public Model removeProperty(String key) {
         if (properties().remove(requireNonNull(key)) != null) {
-            removePropertyFromTree(key);
+            removePropertyFromXML(key);
         }
         return this;
     }
@@ -299,7 +299,7 @@ public final class Model {
      */
     public Model removeModule(String module) {
         if (modules().remove(requireNonNull(module))) {
-            removeModuleFromTree(module);
+            removeModuleFromXML(module);
         }
         return this;
     }
@@ -309,12 +309,14 @@ public final class Model {
      */
     public Model setBuild(Build newBuild) {
         if (build != null) {
-            build.remove();
+            build.removeFromXML();
         }
-        build = requireNonNull(newBuild);
-        root.appendChild(newBuild.asNewElement());
-        //associate tree element with newly added build
-        build.element = root.getSingleChild("build");
+        build = newBuild;
+        if (newBuild != null) {
+            root.appendChild(newBuild.asXMLElement());
+            //associate tree element with newly added build
+            build.element = root.getSingleChild("build");
+        }
         return this;
     }
 
@@ -327,17 +329,20 @@ public final class Model {
      */
     public Model setParent(Parent newParent) {
         if (parent != null) {
-            parent.remove();
+            parent.removeFromXML();
         }
-        parent = requireNonNull(newParent);
-        //add parent to xml tree
-        root.insertChild(newParent.asNewElement(), after("modelVersion").or(inTheBegin()));
-        parent.element = root.getSingleChild("parent");
+        parent = newParent;
+        if (newParent != null) {
+            //add parent to xml tree
+            root.insertChild(newParent.asXMLElement(), after("modelVersion").or(inTheBegin()));
+            parent.element = root.getSingleChild("parent");
+        }
         return this;
     }
 
     /**
      * Sets default dependency information for projects that inherit from this one.
+     * If new dependency management is {@code null} removes old dependency management
      * <p/>
      * The dependencies in this section are not immediately
      * resolved. Instead, when a POM derived
@@ -352,11 +357,13 @@ public final class Model {
             dependencyManagement.remove();
         }
         dependencyManagement = newDM;
-        //insert new dependency management to tree
-        root.insertChild(newDM.asNewElement(),
-                         beforeAnyOf("dependencies", "build").or(inTheEnd()));
-        //associate tree element with newly added dependency management
-        dependencyManagement.element = root.getSingleChild("dependencyManagement");
+        if (newDM != null) {
+            //insert new dependency management to tree
+            root.insertChild(newDM.asXMLElement(),
+                             beforeAnyOf("dependencies", "build").or(inTheEnd()));
+            //associate tree element with newly added dependency management
+            dependencyManagement.element = root.getSingleChild("dependencyManagement");
+        }
         return this;
     }
 
@@ -364,22 +371,26 @@ public final class Model {
      * Sets the modules (sometimes called sub projects) to build as a
      * part of this project. Each module listed is a relative path
      * to the directory containing the module.
+     * If new modules list is an empty removes modules element from xml
      */
     public Model setModules(Collection<String> modules) {
+        requireNonNull(modules);
         this.modules = new ArrayList<>(modules);
         //remove modules from tree if exist
         root.removeChild("modules");
-        //set tree modules
-        final NewElement newModules = createElement("modules");
-        for (String module : modules) {
-            newModules.appendChild(createElement("module", module));
+        if (!modules.isEmpty()) {
+            //insert modules to xml tree
+            final NewElement newModules = createElement("modules");
+            for (String module : modules) {
+                newModules.appendChild(createElement("module", module));
+            }
+            //insert new modules to tree
+            root.insertChild(newModules,
+                             beforeAnyOf("properties",
+                                         "dependencyManagement",
+                                         "dependencies",
+                                         "build").or(inTheEnd()));
         }
-        //insert new modules to tree
-        root.insertChild(newModules,
-                         beforeAnyOf("properties",
-                                     "dependencyManagement",
-                                     "dependencies",
-                                     "build").or(inTheEnd()));
         return this;
     }
 
@@ -387,27 +398,30 @@ public final class Model {
      * Sets properties that can be used throughout the POM as a
      * substitution, and are used as filters in resources if enabled.
      * The format is {@code <name>value</name>}.
+     * If new modules list is an empty removes properties element from xml
      */
     public Model setProperties(Map<String, String> properties) {
         this.properties = new HashMap<>(requireNonNull(properties));
         //remove properties from tree if exist
-        tree.removeElement("properties");
+        root.removeChild("properties");
         //set properties to xml tree
-        final NewElement newProperties = createElement("properties");
-        for (Map.Entry<String, String> property : properties.entrySet()) {
-            newProperties.appendChild(createElement(property.getKey(), property.getValue()));
+        if (!properties.isEmpty()) {
+            final NewElement newProperties = createElement("properties");
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                newProperties.appendChild(createElement(property.getKey(), property.getValue()));
+            }
+            //insert new properties to tree
+            root.insertChild(newProperties,
+                             beforeAnyOf("dependencyManagement",
+                                         "dependencies",
+                                         "build").or(inTheEnd()));
         }
-        //insert new properties to tree
-        root.insertChild(newProperties,
-                         beforeAnyOf("dependencyManagement",
-                                     "dependencies",
-                                     "build").or(inTheEnd()));
         return this;
     }
 
     /**
-     * Sets the identifier for this artifact that is unique within
-     * the group given by the group ID.
+     * Sets the identifier for this artifact that is unique within the group given by the group ID.
+     * If new artifactId is {@code null} removes existing artifact element from xml
      * <p/>
      * An artifact is something that is
      * either produced or used by a project.
@@ -416,8 +430,10 @@ public final class Model {
      * distributions, and WARs.
      */
     public Model setArtifactId(String artifactId) {
-        this.artifactId = requireNonNull(artifactId);
-        if (!root.hasChild("artifactId")) {
+        this.artifactId = artifactId;
+        if (artifactId == null) {
+            root.removeChild("artifactId");
+        } else if (!root.hasChild("artifactId")) {
             root.insertChild(createElement("artifactId", artifactId),
                              afterAnyOf("groupId",
                                         "parent",
@@ -429,9 +445,10 @@ public final class Model {
     }
 
     /**
-     * Sets a detailed description of the project, used by Maven
-     * whenever it needs to
-     * describe the project, such as on the web site.
+     * Sets a detailed description of the project., used by Maven
+     * whenever it needs to describe the project, such as on the web site.
+     * If new description is {@code null} removes description element from xml
+     * <p/>
      * While this element can be specified as
      * CDATA to enable the use of HTML tags within the
      * description, it is discouraged to allow
@@ -441,8 +458,10 @@ public final class Model {
      * of adjusting this text.
      */
     public Model setDescription(String description) {
-        this.description = requireNonNull(description);
-        if (!root.hasChild("description")) {
+        this.description = description;
+        if (description == null) {
+            root.removeChild("description");
+        } else if (!root.hasChild("description")) {
             root.insertChild(createElement("description", description),
                              afterAnyOf("name",
                                         "version",
@@ -459,24 +478,31 @@ public final class Model {
     /**
      * Sets a universally unique identifier for a project. It is
      * normal to use a fully-qualified package name to
-     * distinguish it from other
-     * projects with a similar name (eg. <i>org.apache.maven</i>).
+     * distinguish it from other projects with a similar name (eg. <i>org.apache.maven</i>).
+     * If new groupId is {@code null} removes groupId element from xml
      */
     public Model setGroupId(String groupId) {
-        this.groupId = requireNonNull(groupId);
-        if (!root.hasChild("groupId")) {
+        this.groupId = groupId;
+        if (groupId == null) {
+            root.removeChild("groupId");
+        } else if (!root.hasChild("groupId")) {
             root.insertChild(createElement("groupId", groupId),
                              afterAnyOf("parent", "modelVersion").or(inTheBegin()));
+        } else {
+            tree.updateText("/project/groupId", groupId);
         }
         return this;
     }
 
     /**
      * Sets the current version of the artifact produced by this project.
+     * If new version is {@code null} removes version element from xml
      */
     public Model setVersion(String version) {
-        this.version = requireNonNull(version);
-        if (!root.hasChild("version")) {
+        this.version = version;
+        if (version == null) {
+            root.removeChild("version");
+        } else if (!root.hasChild("version")) {
             root.insertChild(createElement("version", version),
                              afterAnyOf("artifactId",
                                         "groupId",
@@ -490,10 +516,13 @@ public final class Model {
 
     /**
      * Sets declares to which version of project descriptor this POM conforms.
+     * If new modelVersion is {@code null} removes modelVersion element from xml
      */
     public Model setModelVersion(String modelVersion) {
-        this.modelVersion = requireNonNull(modelVersion);
-        if (!root.hasChild("modelVersion")) {
+        this.modelVersion = modelVersion;
+        if (modelVersion == null) {
+            root.removeChild("modelVersion");
+        } else if (!root.hasChild("modelVersion")) {
             root.insertChild(createElement("modelVersion", modelVersion), inTheBegin());
         } else {
             tree.updateText("/project/modelVersion", modelVersion);
@@ -503,10 +532,13 @@ public final class Model {
 
     /**
      * Sets the full name of the project.
+     * If new name is {@code null} removes name element from xml
      */
     public Model setName(String name) {
-        this.name = requireNonNull(name);
-        if (!root.hasChild("name")) {
+        this.name = name;
+        if (name == null) {
+            root.removeChild("name");
+        } else if (!root.hasChild("name")) {
             root.insertChild(createElement("name", name),
                              afterAnyOf("packaging",
                                         "version",
@@ -521,27 +553,31 @@ public final class Model {
     }
 
     /**
-     * Set the type of artifact this project produces, for example
+     * Set the type of artifact this project produces
+     * If new packaging is {@code null} removes packaging element from xml
+     * <p/>
+     * For example:
      * <code>jar</code>
      * <code>war</code>
      * <code>ear</code>
      * <code>pom</code>.
      * Plugins can create their own packaging, and
      * therefore their own packaging types,
-     * so this list does not contain all possible
-     * types.
+     * so this list does not contain all possible types.
      */
     public Model setPackaging(String packaging) {
-        this.packaging = requireNonNull(packaging);
-        if (!root.hasChild("packaging")) {
-            root.insertChild(createElement("packaging", name),
+        this.packaging = packaging;
+        if (packaging == null) {
+            root.removeChild("packaging");
+        } else if (!root.hasChild("packaging")) {
+            root.insertChild(createElement("packaging", packaging),
                              afterAnyOf("version",
                                         "artifactId",
                                         "groupId",
                                         "parent",
                                         "modelVersion").or(inTheBegin()));
         } else {
-            tree.updateText("/project/packaging", name);
+            tree.updateText("/project/packaging", packaging);
         }
         return this;
     }
@@ -580,7 +616,7 @@ public final class Model {
         return modules == null ? modules = new ArrayList<>() : modules;
     }
 
-    private void addPropertyToTree(String key, String value) {
+    private void addPropertyToXML(String key, String value) {
         if (properties().containsKey(key)) {
             root.getSingleChild("properties")
                 .getSingleChild(key)
@@ -592,7 +628,7 @@ public final class Model {
         }
     }
 
-    private void removeModuleFromTree(String module) {
+    private void removeModuleFromXML(String module) {
         if (modules.isEmpty()) {
             root.removeChild("modules");
         } else {
@@ -604,7 +640,7 @@ public final class Model {
         }
     }
 
-    private void removePropertyFromTree(String key) {
+    private void removePropertyFromXML(String key) {
         if (properties.isEmpty()) {
             root.removeChild("properties");
         } else {
@@ -617,8 +653,8 @@ public final class Model {
         final Model model = new Model(tree);
         final Element root = tree.getRoot();
         model.modelVersion = root.getChildText("modelVersion");
-        model.artifactId = root.getChildText("artifactId");
         model.groupId = root.getChildText("groupId");
+        model.artifactId = root.getChildText("artifactId");
         model.version = root.getChildText("version");
         model.name = root.getChildText("name");
         model.description = root.getChildText("description");

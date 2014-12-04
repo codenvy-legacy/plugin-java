@@ -39,9 +39,9 @@ public class Parent {
 
     Element element;
 
-    public Parent(String artifactId, String groupId, String version) {
-        this.artifactId = requireNonNull(artifactId);
+    public Parent(String groupId, String artifactId, String version) {
         this.groupId = requireNonNull(groupId);
+        this.artifactId = requireNonNull(artifactId);
         this.version = requireNonNull(version);
     }
 
@@ -77,7 +77,7 @@ public class Parent {
      * Sets the artifact id of the parent project to inherit from
      */
     public Parent setArtifactId(String artifactId) {
-        this.artifactId = requireNonNull(artifactId);
+        this.artifactId = artifactId;
         if (!isNew()) {
             if (element.hasChild("artifactId")) {
                 element.getSingleChild("artifactId").setText(artifactId);
@@ -131,14 +131,14 @@ public class Parent {
         return getId();
     }
 
-    public void remove() {
+    void removeFromXML() {
         if (!isNew()) {
             element.remove();
             element = null;
         }
     }
 
-    NewElement asNewElement() {
+    NewElement asXMLElement() {
         final NewElement newParent = createElement("parent");
         newParent.appendChild(createElement("artifactId", artifactId));
         newParent.appendChild(createElement("groupId", groupId));
