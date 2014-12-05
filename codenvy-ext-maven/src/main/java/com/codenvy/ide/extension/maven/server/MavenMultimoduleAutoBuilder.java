@@ -26,12 +26,11 @@ import com.codenvy.api.project.server.ProjectCreatedEvent;
 import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.commons.lang.Pair;
 import com.codenvy.dto.server.DtoFactory;
-import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Model;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import org.apache.maven.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +63,7 @@ public class MavenMultimoduleAutoBuilder implements EventSubscriber<ProjectCreat
                 Project project = manager.getProject(event.getWorkspaceId(), event.getProjectPath());
                 if (project != null) {
                     if (project.getBaseFolder().getChild("pom.xml") != null) {
-                        Model model = MavenUtils.readModel(project.getBaseFolder().getChild("pom.xml").getVirtualFile());
+                        Model model = Model.readFrom(project.getBaseFolder().getChild("pom.xml").getVirtualFile());
                         if ("pom".equals(model.getPackaging())) {
                             buildMavenProject(project);
                         }
