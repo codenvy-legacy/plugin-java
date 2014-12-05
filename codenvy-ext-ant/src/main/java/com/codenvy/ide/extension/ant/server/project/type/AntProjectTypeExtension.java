@@ -10,8 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.server.project.type;
 
-import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.Attribute;
+import com.codenvy.api.project.server.Builders;
+import com.codenvy.api.project.server.ProjectTemplateDescription;
+import com.codenvy.api.project.server.ProjectTemplateDescriptionLoader;
+import com.codenvy.api.project.server.ProjectType;
+import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
+import com.codenvy.api.project.server.ProjectTypeExtension;
+import com.codenvy.api.project.server.Runners;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -24,13 +32,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
+
 /** @author Vladyslav Zhukovskii */
 @Singleton
 public class AntProjectTypeExtension implements ProjectTypeExtension {
     /** {@inheritDoc} */
     @Override
     public Builders getBuilders() {
-        return new Builders(Constants.ANT_ID);
+        return new Builders(ANT_ID);
     }
 
     /** {@inheritDoc} */
@@ -48,7 +58,7 @@ public class AntProjectTypeExtension implements ProjectTypeExtension {
     public AntProjectTypeExtension(ProjectTypeDescriptionRegistry registry,
                                    ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader) {
         this.projectTemplateDescriptionLoader = projectTemplateDescriptionLoader;
-        this.projectType = new ProjectType(Constants.ANT_ID, Constants.ANT_NAME, Constants.JAVA_CATEGORY);
+        this.projectType = new ProjectType(AntAttributes.ANT_ID, AntAttributes.ANT_NAME, Constants.JAVA_CATEGORY);
         registry.registerProjectType(this);
     }
 

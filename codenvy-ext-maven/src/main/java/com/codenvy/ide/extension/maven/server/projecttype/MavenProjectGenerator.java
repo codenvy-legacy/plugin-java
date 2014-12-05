@@ -27,6 +27,8 @@ import java.util.Map;
 
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_GENERATOR_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
@@ -44,7 +46,12 @@ public class MavenProjectGenerator implements ProjectGenerator {
 
     @Override
     public String getId() {
-        return "maven";
+        return MAVEN_GENERATOR_ID;
+    }
+
+    @Override
+    public String getProjectTypeId() {
+        return MAVEN_ID;
     }
 
     @Override

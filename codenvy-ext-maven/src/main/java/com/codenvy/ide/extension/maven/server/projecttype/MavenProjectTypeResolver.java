@@ -22,7 +22,7 @@ import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
-import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.MavenUtils;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -51,9 +51,9 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
     public boolean resolve(FolderEntry folderEntry) throws ServerException {
         try {
             if (!folderEntry.isProjectFolder()) {
-                ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(Constants.MAVEN_ID);
+                ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(MavenAttributes.MAVEN_ID);
                 if (projectType == null)
-                    throw new ServerException(String.format("Project type '%s' not registered. ", Constants.MAVEN_ID));
+                    throw new ServerException(String.format("Project type '%s' not registered. ", MavenAttributes.MAVEN_ID));
                 if (folderEntry.getChild("pom.xml") == null) {
                     return false;
                 }
