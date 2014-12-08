@@ -165,13 +165,13 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         attributes.put(MavenAttributes.ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
         attributes.put(MavenAttributes.GROUP_ID, Arrays.asList(view.getGroupId()));
         attributes.put(MavenAttributes.VERSION, Arrays.asList(view.getVersion()));
-        attributes.put(MavenAttributes.PACKAGING, Arrays.asList(view.getPackaging()));
         setPackaging(view.getPackaging());
         delegate.updateControls();
     }
 
     @Override
     public void setPackaging(String packaging) {
+        attributes.put(MavenAttributes.PACKAGING, Arrays.asList(packaging));
         if ("pom".equals(packaging)) {
             attributes.remove(MavenAttributes.SOURCE_FOLDER);
             attributes.remove(MavenAttributes.TEST_SOURCE_FOLDER);

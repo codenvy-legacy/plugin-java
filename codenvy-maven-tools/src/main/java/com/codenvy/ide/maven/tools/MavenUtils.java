@@ -99,7 +99,7 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static Model getModel(java.io.File sources) throws IOException {
-        return doReadModel(new java.io.File(sources, "pom.xml"));
+        return readModel(new java.io.File(sources, "pom.xml"));
     }
 
     /**
@@ -964,8 +964,10 @@ public class MavenUtils {
     /**
      * Sets test source folder.
      *
-     * @param pom the pom
-     * @param srcPath the src path
+     * @param pom
+     *         the pom
+     * @param srcPath
+     *         the src path
      */
     public static void setTestSourceFolder(VirtualFile pom, String srcPath) throws ServerException, ForbiddenException, IOException {
         checkAndCreateBuild(pom);
@@ -982,8 +984,10 @@ public class MavenUtils {
     /**
      * Sets test source folder.
      *
-     * @param pom the pom
-     * @param srcPath the src path
+     * @param pom
+     *         the pom
+     * @param srcPath
+     *         the src path
      */
     public static void setTestSourceFolder(File pom, String srcPath) throws ServerException, ForbiddenException, IOException {
         checkAndCreateBuild(pom);

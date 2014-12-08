@@ -17,9 +17,7 @@ import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
-
-import org.apache.maven.model.Model;
+import com.codenvy.ide.maven.tools.Model;
 
 import java.io.IOException;
 import java.util.List;
@@ -56,9 +54,10 @@ public class MavenPackagingValueProviderFactory extends AbstractMavenValueProvid
                 try {
                     VirtualFile pom = getPom(project);
                     if (pom != null) {
-                        Model model = MavenUtils.readModel(pom);
+                        final Model model = Model.readFrom(pom);
                         if (!packaging.equals(model.getPackaging())) {
-                            MavenUtils.setPackaging(pom, packaging);
+                            model.setPackaging(packaging)
+                                 .writeTo(pom);
                         }
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {

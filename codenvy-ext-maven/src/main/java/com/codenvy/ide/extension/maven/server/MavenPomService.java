@@ -17,13 +17,12 @@ import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Model;
+import com.codenvy.ide.maven.tools.Parent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -57,7 +56,7 @@ public class MavenPomService {
 
         VirtualFile pomFile = projectFolder.getChild("pom.xml");
         if (pomFile != null) {
-            Model model = MavenUtils.readModel(pomFile);
+            Model model = Model.readFrom(pomFile);
             JsonObject object = new JsonObject();
             Parent parent = model.getParent();
             object.addProperty(MavenAttributes.ARTIFACT_ID, model.getArtifactId());
@@ -93,9 +92,10 @@ public class MavenPomService {
             throw new IllegalArgumentException("Can't find pom.xml file in path: " + projectPath);
         }
 
-        Model model = MavenUtils.readModel(pom.getVirtualFile());
+        Model model = Model.readFrom(pom.getVirtualFile());
         if("pom".equals(model.getPackaging())){
-            MavenUtils.addModule(pom.getVirtualFile(), moduleName);
+            model.addModule(moduleName);
+            model.writeTo(pom.getVirtualFile());
         } else {
             throw new IllegalArgumentException("Project must have packaging 'pom' in order to adding modules.");
         }

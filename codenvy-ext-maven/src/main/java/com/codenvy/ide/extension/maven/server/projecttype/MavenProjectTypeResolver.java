@@ -23,11 +23,10 @@ import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Model;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.apache.maven.model.Model;
 
 import java.io.IOException;
 import java.util.List;
@@ -101,7 +100,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
             throws IOException, ForbiddenException, ServerException, ConflictException {
         VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
         if (pom != null) {
-            Model model = MavenUtils.readModel(pom.getVirtualFile());
+            Model model = Model.readFrom(pom.getVirtualFile());
             String packaging = model.getPackaging();
             if (packaging.equals("pom")) {
                 createProjectsOnModules(model, project, project.getWorkspace(), projectType);
