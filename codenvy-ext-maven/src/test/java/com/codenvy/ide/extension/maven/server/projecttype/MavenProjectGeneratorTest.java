@@ -67,7 +67,7 @@ public class MavenProjectGeneratorTest {
 
     @Before
     public void setUp() throws Exception {
-        generator = new MavenProjectGenerator();
+        generator = new MavenProjectGenerator(null, null);
     }
 
     @Test

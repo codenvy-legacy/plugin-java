@@ -12,16 +12,22 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.shared.dto.NewProject;
-import com.codenvy.api.vfs.server.VirtualFile;
-import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.api.vfs.server.VirtualFileSystem;
+import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
+import com.codenvy.ide.extension.maven.server.archetypegenerator.ArchetypeGenerator;
+import com.codenvy.ide.extension.maven.server.archetypegenerator.GenerateResult;
+import com.codenvy.ide.extension.maven.server.archetypegenerator.GeneratorException;
+import com.codenvy.ide.extension.maven.server.archetypegenerator.MavenArchetype;
 
-import org.apache.maven.model.Model;
-
+import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -29,20 +35,22 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
- * Generates Maven-project structure.
+ * Generates sample Maven project using maven-archetype-quickstart.
  *
  * @author Artem Zatsarynnyy
  */
 public class MavenProjectGenerator implements ProjectGenerator {
+    private final ArchetypeGenerator        archetypeGenerator;
+    private final VirtualFileSystemRegistry vfsRegistry;
+
+    @Inject
+    public MavenProjectGenerator(ArchetypeGenerator archetypeGenerator, VirtualFileSystemRegistry vfsRegistry) {
+        this.archetypeGenerator = archetypeGenerator;
+        this.vfsRegistry = vfsRegistry;
+    }
 
     @Override
     public String getId() {
@@ -57,60 +65,35 @@ public class MavenProjectGenerator implements ProjectGenerator {
     @Override
     public void generateProject(FolderEntry baseFolder, NewProject newProjectDescriptor)
             throws ForbiddenException, ConflictException, ServerException {
-        Model model = new Model();
-        model.setModelVersion("4.0.0");
-        baseFolder.createFile("pom.xml", new byte[0], "text/xml");
-        VirtualFile pomFile = baseFolder.getChild("pom.xml").getVirtualFile();
-        try {
-            MavenUtils.writeModel(model, pomFile);
-            Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
-
-            List<String> parentArtifactId = attributes.get(PARENT_ARTIFACT_ID);
-            if (parentArtifactId != null) {
-                MavenUtils.setArtifactId(pomFile, parentArtifactId.get(0));
-            }
-            List<String> parentGroupId = attributes.get(PARENT_GROUP_ID);
-            if (parentGroupId != null) {
-                MavenUtils.setGroupId(pomFile, parentGroupId.get(0));
-            }
-            List<String> parentVersion = attributes.get(PARENT_VERSION);
-            if (parentVersion != null) {
-                MavenUtils.setVersion(pomFile, parentVersion.get(0));
-            }
-            List<String> artifactId = attributes.get(ARTIFACT_ID);
-            if (artifactId != null) {
-                MavenUtils.setArtifactId(pomFile, artifactId.get(0));
-            }
-            List<String> groupId = attributes.get(GROUP_ID);
-            if (groupId != null) {
-                MavenUtils.setGroupId(pomFile, groupId.get(0));
-            }
-            List<String> version = attributes.get(VERSION);
-            if (version != null) {
-                MavenUtils.setVersion(pomFile, version.get(0));
-            }
-            List<String> packaging = attributes.get(PACKAGING);
-            if (packaging != null) {
-                MavenUtils.setPackaging(pomFile, packaging.get(0));
-            }
-            List<String> sourceFolders = attributes.get(SOURCE_FOLDER);
-            if (sourceFolders != null) {
-                final String sourceFolder = sourceFolders.get(0);
-                baseFolder.createFolder(sourceFolder);
-                if (!"src/main/java".equals(sourceFolder)) {
-                    MavenUtils.setSourceFolder(pomFile, sourceFolder);
-                }
-            }
-            List<String> testSourceFolders = attributes.get(TEST_SOURCE_FOLDER);
-            if (testSourceFolders != null) {
-                final String testSourceFolder = testSourceFolders.get(0);
-                baseFolder.createFolder(testSourceFolder);
-                if (!"src/test/java".equals(testSourceFolder)) {
-                    MavenUtils.setSourceFolder(pomFile, testSourceFolder);
-                }
-            }
-        } catch (IOException e) {
-            throw new ForbiddenException("Can't write pom.xml: " + e.getMessage());
+        Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
+        List<String> artifactId = attributes.get(ARTIFACT_ID);
+        List<String> groupId = attributes.get(GROUP_ID);
+        List<String> version = attributes.get(VERSION);
+        if (artifactId == null || artifactId.isEmpty() || groupId == null || groupId.isEmpty() || version == null || version.isEmpty()) {
+            return;
         }
+
+        MavenArchetype quickstartArchetype = new MavenArchetype("org.apache.maven.archetypes",
+                                                                "maven-archetype-quickstart",
+                                                                "RELEASE", null);
+        try {
+            final GenerateResult result = archetypeGenerator.generateFromArchetype(quickstartArchetype,
+                                                                                   groupId.get(0),
+                                                                                   artifactId.get(0),
+                                                                                   version.get(0),
+                                                                                   null);
+            if (!result.isSuccessful()) {
+                throw new ServerException(new String(Files.readAllBytes(result.getGenerateReport().toPath())));
+            }
+            copyGeneratedFiles(baseFolder, baseFolder.getWorkspace(), result.getResult());
+        } catch (GeneratorException | IOException | NotFoundException e) {
+            throw new ServerException(e);
+        }
+    }
+
+    private void copyGeneratedFiles(FolderEntry baseFolder, String vfsId, File file)
+            throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
+        final VirtualFileSystem vfs = vfsRegistry.getProvider(vfsId).newInstance(null);
+        vfs.importZip(baseFolder.getVirtualFile().getId(), Files.newInputStream(file.toPath()), true, false);
     }
 }
