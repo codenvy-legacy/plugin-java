@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.Project;
@@ -64,9 +63,6 @@ public class MavenSourceFolderValueProviderFactory extends AbstractMavenValuePro
 
                 try {
                     String srcPath = strings.get(0);
-//                    if (project.getBaseFolder().getChild(srcPath) == null) {
-//                        project.getBaseFolder().createFolder(srcPath);
-//                    }
                     if (!"src/main/java".equals(srcPath)) {
                         VirtualFile pom = getPom(project);
                         if (pom != null) {
