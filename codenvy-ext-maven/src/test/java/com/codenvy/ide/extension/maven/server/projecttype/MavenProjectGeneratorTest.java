@@ -35,6 +35,7 @@ import com.codenvy.dto.server.DtoFactory;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -80,6 +81,7 @@ public class MavenProjectGeneratorTest {
         Assert.assertEquals(MAVEN_ID, generator.getProjectTypeId());
     }
 
+    @Ignore
     @Test
     public void testGeneratingProject() throws Exception {
         prepareProject();
