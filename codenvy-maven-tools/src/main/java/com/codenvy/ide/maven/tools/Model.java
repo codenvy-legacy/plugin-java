@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -600,10 +601,37 @@ public final class Model {
                (version == null ? "[inherited]" : version);
     }
 
+    /**
+     * Writes model to output stream.
+     * Doesn't close the stream
+     *
+     * @param os
+     *         stream to write model in
+     * @throws IOException
+     *         when any i/o error occurs
+     */
+    public void writeTo(OutputStream os) throws IOException {
+        tree.writeTo(os);
+    }
+
+    /**
+     * Writes model to given file.
+     *
+     * @param file
+     *         file to write model in
+     * @throws IOException
+     *         when any i/o error occurs
+     */
     public void writeTo(File file) throws IOException {
         tree.writeTo(file);
     }
 
+    /**
+     * Updates virtual file content
+     *
+     * @param file
+     *         virtual file which content should be updated
+     */
     public void writeTo(VirtualFile file) throws ServerException, ForbiddenException {
         file.updateContent(new ByteArrayInputStream(tree.getBytes()), null);
     }
