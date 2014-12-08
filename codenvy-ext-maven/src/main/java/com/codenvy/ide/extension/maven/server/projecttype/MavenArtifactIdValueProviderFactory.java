@@ -17,9 +17,7 @@ import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
-
-import org.apache.maven.model.Model;
+import com.codenvy.ide.maven.tools.Model;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,7 +50,9 @@ public class MavenArtifactIdValueProviderFactory extends AbstractMavenValueProvi
                 try {
                     VirtualFile pom = getPom(project);
                     if (pom != null) {
-                        MavenUtils.setArtifactId(pom, value.get(0));
+                        Model.readFrom(pom)
+                             .setArtifactId(value.get(0))
+                             .writeTo(pom);
                     }
                 } catch (ForbiddenException | ServerException | IOException e) {
                     throwWriteException(e);

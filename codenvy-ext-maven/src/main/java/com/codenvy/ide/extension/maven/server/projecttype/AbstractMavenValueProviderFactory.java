@@ -20,9 +20,7 @@ import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
-import com.codenvy.ide.maven.tools.MavenUtils;
-
-import org.apache.maven.model.Model;
+import com.codenvy.ide.maven.tools.Model;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -39,7 +37,7 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
         if (pomFile == null) {
             throw new ValueStorageException("pom.xml does not exist.");
         }
-        return MavenUtils.readModel(pomFile.getInputStream());
+        return Model.readFrom(pomFile.getInputStream());
     }
 
     @Nullable
