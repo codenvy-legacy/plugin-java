@@ -18,6 +18,7 @@ import com.codenvy.ide.ext.java.server.javadoc.JavaDocLocations;
 import com.codenvy.ide.ext.java.server.javadoc.JavaElementLabels;
 import com.codenvy.ide.ext.java.server.javadoc.JavaElementLinks;
 import com.codenvy.ide.ext.java.server.javadoc.JavadocContentAccess2;
+import com.google.inject.Singleton;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
@@ -26,7 +27,6 @@ import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IRegion;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -49,6 +49,7 @@ import java.net.URL;
 /**
  * @author Evgen Vidolob
  */
+@Singleton
 public class JavadocFinder {
     private static final long LABEL_FLAGS          = JavaElementLabels.ALL_FULLY_QUALIFIED
                                                      | JavaElementLabels.M_PRE_RETURNTYPE | JavaElementLabels.M_PARAMETER_ANNOTATIONS |
@@ -62,9 +63,11 @@ public class JavadocFinder {
     private static final long TYPE_PARAMETER_FLAGS = LABEL_FLAGS | JavaElementLabels.TP_POST_QUALIFIED;
     private static final long PACKAGE_FLAGS        = LABEL_FLAGS & ~JavaElementLabels.ALL_FULLY_QUALIFIED;
     private String baseHref;
+    private String cssHref;
 
-    public JavadocFinder(String baseHref) {
+    public JavadocFinder(String baseHref, String cssHref) {
         this.baseHref = baseHref;
+        this.cssHref = cssHref;
     }
 
     private static long getHeaderFlags(IJavaElement element) {
@@ -141,11 +144,16 @@ public class JavadocFinder {
     }
 
     public String findJavadoc(JavaProject project, String fqn) throws JavaModelException {
-        IType element = project.findType(fqn);
-        if (element == null) {
+
+        IMember member = null;
+        IJavaElement element = project.findElement(fqn, null);
+        if(element instanceof IMember) {
+            member = ((IMember)element);
+        }
+        if (member == null) {
             return null;
         }
-        return getJavadoc(element);
+        return getJavadoc(member);
     }
 
     private String getJavadoc(IMember element) {
@@ -185,7 +193,7 @@ public class JavadocFinder {
 
         if (buffer.length() > 0) {
             //todo use url for css
-            HTMLPrinter.insertPageProlog(buffer, 0, "");
+            HTMLPrinter.insertPageProlog(buffer, 0, cssHref);
 //            if (base != null) {
 //                int endHeadIdx= buffer.indexOf("</head>"); //$NON-NLS-1$
 //                buffer.insert(endHeadIdx, "\n<base href='" + base + "'>\n"); //$NON-NLS-1$ //$NON-NLS-2$

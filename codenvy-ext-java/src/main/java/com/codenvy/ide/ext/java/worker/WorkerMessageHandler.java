@@ -82,8 +82,9 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
 
     private static WorkerMessageHandler      instance;
     private final  WorkerOutlineModelUpdater outlineModelUpdater;
-    private        WorkerCorrectionProcessor correctionProcessor;
-    private        INameEnvironment     nameEnvironment;
+    private final WorkerJavadocHandleComputer javadocHandleComputer;
+    private WorkerCorrectionProcessor correctionProcessor;
+    private INameEnvironment          nameEnvironment;
     private HashMap<String, String> options                  = new HashMap<String, String>();
     private Map<String, String>     preferenceFormatSettings = new HashMap<String, String>();
     private MessageFilter                      messageFilter;
@@ -101,6 +102,7 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
         instance = this;
         initOptions();
         messageFilter = new MessageFilter();
+        javadocHandleComputer = new WorkerJavadocHandleComputer(worker);
         MessageFilter.MessageRecipient<ConfigMessage> configMessageRecipient = new MessageFilter.MessageRecipient<ConfigMessage>() {
             @Override
             public void onMessageReceived(ConfigMessage config) {
@@ -169,6 +171,9 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 }
             }
         });
+
+        messageFilter.registerMessageRecipient(RoutingTypes.COMPUTE_JAVADOC_HANDE, javadocHandleComputer);
+
     }
 
     public static WorkerMessageHandler get() {
@@ -303,6 +308,8 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 CompilationUnit unit = (CompilationUnit)ast;
                 workerCodeAssist.setCu(unit);
                 correctionProcessor.setCu(unit);
+                javadocHandleComputer.setCu(unit);
+                javadocHandleComputer.setSource(message.source());
                 IProblem[] problems = unit.getProblems();
                 MessagesImpls.ProblemsMessageImpl problemsMessage = MessagesImpls.ProblemsMessageImpl.make();
                 JsoArray<Problem> problemsArray = JsoArray.create();

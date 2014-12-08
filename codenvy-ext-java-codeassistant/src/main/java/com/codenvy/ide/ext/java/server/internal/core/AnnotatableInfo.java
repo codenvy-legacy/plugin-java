@@ -14,7 +14,6 @@ package com.codenvy.ide.ext.java.server.internal.core;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.SourceRange;
-import org.eclipse.jdt.internal.core.Annotation;
 
 public class AnnotatableInfo extends MemberElementInfo {
 

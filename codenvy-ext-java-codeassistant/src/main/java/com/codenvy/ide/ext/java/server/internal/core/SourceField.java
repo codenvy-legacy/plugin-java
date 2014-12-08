@@ -14,6 +14,7 @@ package com.codenvy.ide.ext.java.server.internal.core;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -126,13 +127,12 @@ protected char getHandleMementoDelimiter() {
  * @see JavaElement#getPrimaryElement(boolean)
  */
 public IJavaElement getPrimaryElement(boolean checkOwner) {
-//	if (checkOwner) {
-//		CompilationUnit cu = (CompilationUnit)getAncestor(COMPILATION_UNIT);
-//		if (cu.isPrimary()) return this;
-//	}
-//	IJavaElement primaryParent =this.parent.getPrimaryElement(false);
-//	return ((IType)primaryParent).getField(this.name);
-	throw new UnsupportedOperationException();
+	if (checkOwner) {
+		CompilationUnit cu = (CompilationUnit)getAncestor(COMPILATION_UNIT);
+		if (cu.isPrimary()) return this;
+	}
+	IJavaElement primaryParent =this.parent.getPrimaryElement(false);
+	return ((IType)primaryParent).getField(this.name);
 }
 /**
  * @see org.eclipse.jdt.core.IField
@@ -153,10 +153,9 @@ public boolean isResolved() {
 	return false;
 }
 public JavaElement resolved(Binding binding) {
-//	SourceRefElement resolvedHandle = new ResolvedSourceField(this.parent, this.name, new String(binding.computeUniqueKey()));
-//	resolvedHandle.occurrenceCount = this.occurrenceCount;
-//	return resolvedHandle;
-	throw new UnsupportedOperationException();
+	SourceRefElement resolvedHandle = new ResolvedSourceField(this.parent, this.name, new String(binding.computeUniqueKey()));
+	resolvedHandle.occurrenceCount = this.occurrenceCount;
+	return resolvedHandle;
 }
 /**
  * @private Debugging purposes

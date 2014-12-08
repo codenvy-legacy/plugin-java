@@ -17,6 +17,7 @@ import com.codenvy.ide.ant.tools.AntUtils;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
+import com.codenvy.ide.ext.java.server.internal.core.util.JavaElementFinder;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.eclipse.core.resources.IProject;
@@ -453,9 +454,32 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IJavaElement findElement(String bindingKey, WorkingCopyOwner owner) throws JavaModelException {
-        return null;
+        JavaElementFinder elementFinder = new JavaElementFinder(bindingKey, this, owner);
+        elementFinder.parse();
+        if (elementFinder.exception != null)
+            throw elementFinder.exception;
+        return elementFinder.element;
     }
+    public IJavaElement findPackageFragment(String packageName)
+            throws JavaModelException {
+        NameLookup lookup = newNameLookup((WorkingCopyOwner)null/*no need to look at working copies for pkgs*/);
+        IPackageFragment[] pkgFragments = lookup.findPackageFragments(packageName, false);
+        if (pkgFragments == null) {
+            return null;
 
+        } else {
+            // try to return one that is a child of this project
+            for (int i = 0, length = pkgFragments.length; i < length; i++) {
+
+                IPackageFragment pkgFragment = pkgFragments[i];
+                if (equals(pkgFragment.getParent().getParent())) {
+                    return pkgFragment;
+                }
+            }
+            // default to the first one
+            return pkgFragments[0];
+        }
+    }
     @Override
     public IPackageFragment findPackageFragment(IPath path) throws JavaModelException {
         return null;
@@ -1091,6 +1115,26 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public SearchableEnvironment newSearchableNameEnvironment(ICompilationUnit[] workingCopies) throws JavaModelException {
         return new SearchableEnvironment(this, workingCopies);
+    }
+
+    /**
+     * Returns true if this handle represents the same Java project
+     * as the given handle. Two handles represent the same
+     * project if they are identical or if they represent a project with
+     * the same underlying resource and occurrence counts.
+     *
+     * @see org.eclipse.jdt.internal.core.JavaElement#equals(Object)
+     */
+    public boolean equals(Object o) {
+
+        if (this == o)
+            return true;
+
+        if (!(o instanceof JavaProject))
+            return false;
+
+        JavaProject other = (JavaProject) o;
+        return this.getFullPath().equals(other.getFullPath());
     }
 
     /*

@@ -16,6 +16,7 @@ import com.codenvy.ide.ext.java.server.core.search.SearchDocument;
 import com.codenvy.ide.ext.java.server.core.search.SearchEngine;
 import com.codenvy.ide.ext.java.server.core.search.SearchParticipant;
 import com.codenvy.ide.ext.java.server.internal.core.ClasspathEntry;
+import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.BasicSearchEngine;
 import com.codenvy.ide.ext.java.server.internal.core.search.PatternSearchJob;
@@ -35,7 +36,6 @@ import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.util.SimpleLookupTable;
 import org.eclipse.jdt.internal.compiler.util.SimpleSet;
-import org.eclipse.jdt.internal.core.JavaModel;
 import org.eclipse.jdt.internal.core.index.DiskIndex;
 import org.eclipse.jdt.internal.core.index.FileIndexLocation;
 import org.eclipse.jdt.internal.core.index.Index;
@@ -710,7 +710,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
     }
 
     private void rebuildIndex(IndexLocation indexLocation, IPath containerPath) {
-        Object target = JavaModel.getTarget(containerPath, true);
+        Object target = JavaModelManager.getTarget(containerPath, true);
         if (target == null) return;
 
         if (VERBOSE)

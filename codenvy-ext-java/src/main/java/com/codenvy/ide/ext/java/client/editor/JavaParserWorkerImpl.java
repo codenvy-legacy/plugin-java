@@ -32,7 +32,9 @@ import com.codenvy.ide.collections.js.JsoStringMap;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.problem.DefaultProblem;
 import com.codenvy.ide.ext.java.messages.CAProposalsComputedMessage;
+import com.codenvy.ide.ext.java.messages.ComputeJavadocHandle;
 import com.codenvy.ide.ext.java.messages.FormatResultMessage;
+import com.codenvy.ide.ext.java.messages.JavadocHandleComputed;
 import com.codenvy.ide.ext.java.messages.Problem;
 import com.codenvy.ide.ext.java.messages.ProblemLocationMessage;
 import com.codenvy.ide.ext.java.messages.ProblemsMessage;
@@ -63,15 +65,15 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHandler, MessageFilter.MessageRecipient<ProblemsMessage> {
 
-    private final MessageFilter messageFilter;
-    private final String        workspaceId;
-    private String javaCAPath;
-    private Worker                       worker;
-    private String                       restContext;
-    private StringMap<WorkerCallback<?>> callbacks;
-    private StringMap<ApplyCallback>                   applyCallback        = Collections.createStringMap();
-    private StringMap<WorkerCallback<WorkerCodeBlock>> outlineCallbacks     = Collections.createStringMap();
-    private StringMap<FormatResultCallback>            formatResultCallback = Collections.createStringMap();
+    private final MessageFilter                messageFilter;
+    private final String                       workspaceId;
+    private       String                       javaCAPath;
+    private       Worker                       worker;
+    private       String                       restContext;
+    private       StringMap<WorkerCallback<?>> arrayCallbacks;
+    private StringMap<WorkerCallback<WorkerCodeBlock>> outlineCallbacks = Collections.createStringMap();
+    private StringMap<Callback<?>>                     callbacks        = Collections.createStringMap();
+
 
     @Inject
     public JavaParserWorkerImpl(EventBus eventBus, @Named("restContext") String restContext,
@@ -81,7 +83,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         this.javaCAPath = javaCAPath;
         eventBus.addHandler(ProjectActionEvent.TYPE, this);
         messageFilter = new MessageFilter();
-        callbacks = Collections.createStringMap();
+        arrayCallbacks = Collections.createStringMap();
         messageFilter.registerMessageRecipient(RoutingTypes.PROBLEMS, this);
         messageFilter.registerMessageRecipient(RoutingTypes.CA_PROPOSALS_COMPUTED,
                                                new MessageFilter.MessageRecipient<CAProposalsComputedMessage>() {
@@ -113,13 +115,31 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
                         handleFormatApplied(message);
                     }
                 });
+
+        messageFilter.registerMessageRecipient(RoutingTypes.JAVADOC_HANDLE_COMPUTED,
+                                               new MessageFilter.MessageRecipient<JavadocHandleComputed>() {
+                                                   @Override
+                                                   public void onMessageReceived(JavadocHandleComputed message) {
+                                                       handleJavadocMessage(message);
+                                                   }
+                                               });
     }
 
+    @SuppressWarnings("unchecked")
+    private void handleJavadocMessage(JavadocHandleComputed message) {
+        if (callbacks.containsKey(message.getId())) {
+            Callback<String> callback = (Callback<String>)callbacks.remove(message.getId());
+            callback.onCallback(message.getHandle());
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
     private void handleFormatApplied(FormatResultMessage message) {
-        FormatResultCallback callback = formatResultCallback.remove(message.id());
+        Callback<TextEdit> callback = (Callback<TextEdit>)callbacks.remove(message.id());
         Jso textEditJso = message.textEdit();
         TextEdit textEdit = convertTextEditFromJso(textEditJso);
-        callback.onApplyFormat(textEdit);
+        callback.onCallback(textEdit);
     }
 
     private TextEdit convertTextEditFromJso(Jso editJso) {
@@ -206,14 +226,15 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         return textEdit;
     }
 
-    private TextEdit[] convertChildrenTextEditFromJso(JsoArray childrenJso){
+    private TextEdit[] convertChildrenTextEditFromJso(JsoArray childrenJso) {
         TextEdit[] edits = new TextEdit[childrenJso.size()];
-        for (int i = 0; i<childrenJso.size();i++) {
-            Jso child =(Jso) childrenJso.get(i);
+        for (int i = 0; i < childrenJso.size(); i++) {
+            Jso child = (Jso)childrenJso.get(i);
             edits[i] = convertTextEditFromJso(child);
         }
         return edits;
     }
+
     private void handleUpdateOutline(OutlineUpdateMessage message) {
         if (outlineCallbacks.containsKey(message.getFilePath())) {
             WorkerCallback<WorkerCodeBlock> callback = outlineCallbacks.get(message.getFilePath());
@@ -221,20 +242,21 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleProposalApplied(ProposalAppliedMessage message) {
-        if (applyCallback.containsKey(message.id())) {
-            ApplyCallback callback = applyCallback.remove(message.id());
-            callback.onApply(message);
+        if (callbacks.containsKey(message.id())) {
+            Callback<ProposalAppliedMessage> callback = (Callback<ProposalAppliedMessage>)callbacks.remove(message.id());
+            callback.onCallback(message);
         }
     }
 
     @SuppressWarnings("unchecked")
     private void handleCAComputed(CAProposalsComputedMessage message) {
-        if (!callbacks.containsKey(message.id())) {
+        if (!arrayCallbacks.containsKey(message.id())) {
             return;
         }
 
-        WorkerCallback<WorkerProposal> callback = (WorkerCallback<WorkerProposal>)callbacks.remove(message.id());
+        WorkerCallback<WorkerProposal> callback = (WorkerCallback<WorkerProposal>)arrayCallbacks.remove(message.id());
         callback.onResult(message.proposals());
     }
 
@@ -243,16 +265,16 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         if (worker == null) {
             return;
         }
-        
+
         MessagesImpls.RemoveFqnMessageImpl message = MessagesImpls.RemoveFqnMessageImpl.make();
         message.setFqn(fqn);
         worker.postMessage(message.serialize());
     }
 
     @Override
-    public void format(int offset, int length, String content, FormatResultCallback callback) {
+    public void format(int offset, int length, String content, Callback<TextEdit> callback) {
         String uuid = UUID.uuid();
-        formatResultCallback.put(uuid, callback);
+        callbacks.put(uuid, callback);
         MessagesImpls.FormatMessageImpl message = MessagesImpls.FormatMessageImpl.make();
         message.setId(uuid).setOffset(offset).setLength(length).setContent(content);
         worker.postMessage(message.serialize());
@@ -262,6 +284,15 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     public void preferenceFormatSettings(JsoStringMap<String> settings) {
         MessagesImpls.PreferenceFormatSetMessageImpl message = MessagesImpls.PreferenceFormatSetMessageImpl.make();
         message.setSettings(settings);
+        worker.postMessage(message.serialize());
+    }
+
+    @Override
+    public void computeJavadocHandle(int offset, Callback<String> callback) {
+        String uuid = UUID.uuid();
+        ComputeJavadocHandle message = ComputeJavadocHandle.make();
+        message.setOffset(offset).setId(uuid);
+        callbacks.put(uuid, callback);
         worker.postMessage(message.serialize());
     }
 
@@ -281,7 +312,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
 
         MessagesImpls.ParseMessageImpl parseMessage = MessagesImpls.ParseMessageImpl.make();
         String uuid = UUID.uuid();
-        callbacks.put(uuid, callback);
+        arrayCallbacks.put(uuid, callback);
         parseMessage.setSource(content).setFileName(fileName).setFilePath(filePath).setId(uuid).setPackageName(packageName)
                     .setProjectPath(projectPath);
         worker.postMessage(parseMessage.serialize());
@@ -289,27 +320,28 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
 
     /** {@inheritDoc} */
     @Override
-    public void computeCAProposals(String content, int offset, String fileName, String projectPath, WorkerCallback<WorkerProposal> callback) {
+    public void computeCAProposals(String content, int offset, String fileName, String projectPath,
+                                   WorkerCallback<WorkerProposal> callback) {
         if (worker == null) {
             return;
         }
 
         MessagesImpls.ComputeCAProposalsMessageImpl computeMessage = MessagesImpls.ComputeCAProposalsMessageImpl.make();
         String uuid = UUID.uuid();
-        callbacks.put(uuid, callback);
+        arrayCallbacks.put(uuid, callback);
         computeMessage.setDocContent(content).setOffset(offset).setFileName(fileName).setId(uuid).setProjectPath(projectPath);
         worker.postMessage(computeMessage.serialize());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void applyCAProposal(String id, ApplyCallback callback) {
+    public void applyCAProposal(String id, Callback<ProposalAppliedMessage> callback) {
         if (worker == null) {
             return;
         }
         MessagesImpls.ApplyProposalMessageImpl message = MessagesImpls.ApplyProposalMessageImpl.make();
         message.setId(id);
-        applyCallback.put(id, callback);
+        callbacks.put(id, callback);
         worker.postMessage(message.serialize());
     }
 
@@ -325,7 +357,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         corrMessage.setDocumentContent(content).setDocumentOffset(offset).setDocumentSelectionLength(selectionLength)
                    .setUpdatedOffset(updatedContent).setProblemLocations(problems);
         String uuid = UUID.uuid();
-        callbacks.put(uuid, callback);
+        arrayCallbacks.put(uuid, callback);
         corrMessage.setId(uuid);
         worker.postMessage(corrMessage.serialize());
     }
@@ -377,7 +409,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     @Override
     @SuppressWarnings("unchecked")
     public void onMessageReceived(ProblemsMessage message) {
-        if (!callbacks.containsKey(message.id())) {
+        if (!arrayCallbacks.containsKey(message.id())) {
             return;
         }
         Array<Problem> problems = message.problems();
@@ -392,7 +424,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
                                              p.endPosition(), p.line(), p.column()));
         }
 
-        WorkerCallback<IProblem> callback = (WorkerCallback<IProblem>)callbacks.remove(message.id());
+        WorkerCallback<IProblem> callback = (WorkerCallback<IProblem>)arrayCallbacks.remove(message.id());
         callback.onResult(iProblems);
     }
 

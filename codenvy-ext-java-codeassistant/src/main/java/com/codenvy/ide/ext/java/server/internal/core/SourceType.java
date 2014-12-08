@@ -34,7 +34,6 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
-import org.eclipse.jdt.internal.core.TypeParameter;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.eclipse.jdt.internal.core.util.Messages;
 
@@ -226,9 +225,8 @@ public IMethod[] findMethods(IMethod method) {
 	}
 }
 public IAnnotation[] getAnnotations() throws JavaModelException {
-//	AnnotatableInfo info = (AnnotatableInfo) getElementInfo();
-//	return info.annotations;
-	throw new UnsupportedOperationException();
+	AnnotatableInfo info = (AnnotatableInfo) getElementInfo();
+	return info.annotations;
 }
 public IJavaElement[] getChildrenForCategory(String category) throws JavaModelException {
 	IJavaElement[] children = getChildren();
@@ -399,17 +397,15 @@ public IJavaElement getHandleFromMemento(String token, MementoTokenizer memento,
 				return type.getHandleFromMemento(token, memento, workingCopyOwner);
 			}
 		case JEM_TYPE_PARAMETER:
-//			if (!memento.hasMoreTokens()) return this;
-//			String typeParameterName = memento.nextToken();
-//			JavaElement typeParameter = new TypeParameter(this, typeParameterName);
-//			return typeParameter.getHandleFromMemento(memento, workingCopyOwner);
-			throw new UnsupportedOperationException();
+			if (!memento.hasMoreTokens()) return this;
+			String typeParameterName = memento.nextToken();
+			JavaElement typeParameter = new TypeParameter(this, manager, typeParameterName);
+			return typeParameter.getHandleFromMemento(memento, workingCopyOwner);
 		case JEM_ANNOTATION:
-//			if (!memento.hasMoreTokens()) return this;
-//			String annotationName = memento.nextToken();
-//			JavaElement annotation = new Annotation(this, annotationName);
-//			return annotation.getHandleFromMemento(memento, workingCopyOwner);
-			throw new UnsupportedOperationException();
+			if (!memento.hasMoreTokens()) return this;
+			String annotationName = memento.nextToken();
+			JavaElement annotation = new Annotation(this, manager, annotationName);
+			return annotation.getHandleFromMemento(memento, workingCopyOwner);
 	}
 	return null;
 }
@@ -474,23 +470,22 @@ public IPackageFragment getPackageFragment() {
  * @see JavaElement#getPrimaryElement(boolean)
  */
 public IJavaElement getPrimaryElement(boolean checkOwner) {
-//	if (checkOwner) {
-//		CompilationUnit cu = (CompilationUnit)getAncestor(COMPILATION_UNIT);
-//		if (cu.isPrimary()) return this;
-//	}
-//	IJavaElement primaryParent = this.parent.getPrimaryElement(false);
-//	switch (primaryParent.getElementType()) {
-//		case IJavaElement.COMPILATION_UNIT:
-//			return ((ICompilationUnit)primaryParent).getType(this.name);
-//		case IJavaElement.TYPE:
-//			return ((IType)primaryParent).getType(this.name);
-//		case IJavaElement.FIELD:
-//		case IJavaElement.INITIALIZER:
-//		case IJavaElement.METHOD:
-//			return ((IMember)primaryParent).getType(this.name, this.occurrenceCount);
-//	}
-//	return this;
-	throw new UnsupportedOperationException();
+	if (checkOwner) {
+		CompilationUnit cu = (CompilationUnit)getAncestor(COMPILATION_UNIT);
+		if (cu.isPrimary()) return this;
+	}
+	IJavaElement primaryParent = this.parent.getPrimaryElement(false);
+	switch (primaryParent.getElementType()) {
+		case IJavaElement.COMPILATION_UNIT:
+			return ((ICompilationUnit)primaryParent).getType(this.name);
+		case IJavaElement.TYPE:
+			return ((IType)primaryParent).getType(this.name);
+		case IJavaElement.FIELD:
+		case IJavaElement.INITIALIZER:
+		case IJavaElement.METHOD:
+			return ((IMember)primaryParent).getType(this.name, this.occurrenceCount);
+	}
+	return this;
 }
 /**
  * @see org.eclipse.jdt.core.IType
@@ -553,27 +548,26 @@ public ITypeParameter[] getTypeParameters() throws JavaModelException {
  * @since 3.0
  */
 public String[] getTypeParameterSignatures() throws JavaModelException {
-//	ITypeParameter[] typeParameters = getTypeParameters();
-//	int length = typeParameters.length;
-//	String[] typeParameterSignatures = new String[length];
-//	for (int i = 0; i < length; i++) {
-//		TypeParameter typeParameter = (TypeParameter) typeParameters[i];
-//		TypeParameterElementInfo info = (TypeParameterElementInfo) typeParameter.getElementInfo();
-//		char[][] bounds = info.bounds;
-//		if (bounds == null) {
-//			typeParameterSignatures[i] = Signature.createTypeParameterSignature(typeParameter.getElementName(), CharOperation.NO_STRINGS);
-//		} else {
-//			int boundsLength = bounds.length;
-//			char[][] boundSignatures = new char[boundsLength][];
-//			for (int j = 0; j < boundsLength; j++) {
-//				boundSignatures[j] = Signature.createCharArrayTypeSignature(bounds[j], false);
-//			}
-//			typeParameterSignatures[i] = new String(
-//					Signature.createTypeParameterSignature(typeParameter.getElementName().toCharArray(), boundSignatures));
-//		}
-//	}
-//	return typeParameterSignatures;
-	throw new UnsupportedOperationException();
+	ITypeParameter[] typeParameters = getTypeParameters();
+	int length = typeParameters.length;
+	String[] typeParameterSignatures = new String[length];
+	for (int i = 0; i < length; i++) {
+		TypeParameter typeParameter = (TypeParameter) typeParameters[i];
+		TypeParameterElementInfo info = (TypeParameterElementInfo) typeParameter.getElementInfo();
+		char[][] bounds = info.bounds;
+		if (bounds == null) {
+			typeParameterSignatures[i] = Signature.createTypeParameterSignature(typeParameter.getElementName(), CharOperation.NO_STRINGS);
+		} else {
+			int boundsLength = bounds.length;
+			char[][] boundSignatures = new char[boundsLength][];
+			for (int j = 0; j < boundsLength; j++) {
+				boundSignatures[j] = Signature.createCharArrayTypeSignature(bounds[j], false);
+			}
+			typeParameterSignatures[i] = new String(
+					Signature.createTypeParameterSignature(typeParameter.getElementName().toCharArray(), boundSignatures));
+		}
+	}
+	return typeParameterSignatures;
 }
 
 /**
@@ -879,11 +873,10 @@ public ITypeHierarchy newTypeHierarchy(
 	throw new UnsupportedOperationException();
 }
 public JavaElement resolved(Binding binding) {
-//	ResolvedSourceType resolvedHandle = new ResolvedSourceType(this.parent, this.name, new String(binding.computeUniqueKey()));
-//	resolvedHandle.occurrenceCount = this.occurrenceCount;
-//	resolvedHandle.localOccurrenceCount = this.localOccurrenceCount;
-//	return resolvedHandle;
-	throw new UnsupportedOperationException();
+	ResolvedSourceType resolvedHandle = new ResolvedSourceType(this.parent, this.name, new String(binding.computeUniqueKey()));
+	resolvedHandle.occurrenceCount = this.occurrenceCount;
+	resolvedHandle.localOccurrenceCount = this.localOccurrenceCount;
+	return resolvedHandle;
 }
 /**
  * @private Debugging purposes

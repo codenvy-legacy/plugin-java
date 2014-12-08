@@ -126,13 +126,11 @@ public abstract class SourceRefElement extends JavaElement implements ISourceRef
         }
     }
     public IAnnotation getAnnotation(String name) {
-//        return new Annotation(this, name);
-        throw new UnsupportedOperationException();
+        return new Annotation(this, manager, name);
     }
     public IAnnotation[] getAnnotations() throws JavaModelException {
-//        AnnotatableInfo info = (AnnotatableInfo) getElementInfo();
-//        return info.annotations;
-        throw new UnsupportedOperationException();
+        AnnotatableInfo info = (AnnotatableInfo) getElementInfo();
+        return info.annotations;
     }
     /**
      * @see org.eclipse.jdt.core.IMember

@@ -13,7 +13,6 @@ package com.codenvy.ide.ext.java.server.internal.core;
 
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.internal.compiler.env.ISourceField;
-import org.eclipse.jdt.internal.core.AnnotatableInfo;
 
 /**
  * Element info for IField elements.

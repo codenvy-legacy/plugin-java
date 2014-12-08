@@ -11,10 +11,11 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.ext.java.server.internal.core.util.Util;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -33,7 +34,6 @@ import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.eclipse.jdt.internal.core.util.Messages;
-import org.eclipse.jdt.internal.core.util.Util;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -72,24 +72,25 @@ public class PackageFragment extends Openable implements IPackageFragment, Suffi
 		// add compilation units/class files from resources
 		HashSet vChildren = new HashSet();
 		int kind = getKind();
-		try {
-			PackageFragmentRoot root = getPackageFragmentRoot();
-			char[][] inclusionPatterns = root.fullInclusionPatternChars();
-			char[][] exclusionPatterns = root.fullExclusionPatternChars();
-			IResource[] members = ((IContainer)underlyingResource).members();
+		PackageFragmentRoot root = getPackageFragmentRoot();
+		char[][] inclusionPatterns = root.fullInclusionPatternChars();
+		char[][] exclusionPatterns = root.fullExclusionPatternChars();
+		File[] members = underlyingResource.listFiles();
+
+		{
 			int length = members.length;
 			if (length > 0) {
 				IJavaProject project = getJavaProject();
 				String sourceLevel = project.getOption(JavaCore.COMPILER_SOURCE, true);
 				String complianceLevel = project.getOption(JavaCore.COMPILER_COMPLIANCE, true);
 				for (int i = 0; i < length; i++) {
-					IResource child = members[i];
-					if (child.getType() != IResource.FOLDER
-						&& !Util.isExcluded(child, inclusionPatterns, exclusionPatterns)) {
+					File child = members[i];
+					if (child.isFile()
+						&& !Util.isExcluded(new Path(child.getAbsolutePath()), inclusionPatterns, exclusionPatterns, false)) {
 						IJavaElement childElement;
 						if (kind == IPackageFragmentRoot.K_SOURCE &&
 							Util.isValidCompilationUnitName(child.getName(), sourceLevel, complianceLevel)) {
-							childElement = new CompilationUnit(this,manager, child.getName(), DefaultWorkingCopyOwner.PRIMARY);
+							childElement = new CompilationUnit(this, manager, child.getName(), DefaultWorkingCopyOwner.PRIMARY);
 							vChildren.add(childElement);
 						} else if (kind == IPackageFragmentRoot.K_BINARY &&
 								   Util.isValidClassFileName(child.getName(), sourceLevel, complianceLevel)) {
@@ -99,10 +100,7 @@ public class PackageFragment extends Openable implements IPackageFragment, Suffi
 					}
 				}
 			}
-		} catch (CoreException e) {
-			throw new JavaModelException(e);
 		}
-
 		if (kind == IPackageFragmentRoot.K_SOURCE) {
 			// add primary compilation units
 			ICompilationUnit[] primaryCompilationUnits = getCompilationUnits(DefaultWorkingCopyOwner.PRIMARY);
@@ -241,7 +239,7 @@ public ICompilationUnit[] getCompilationUnits() throws JavaModelException {
  * @see org.eclipse.jdt.core.IPackageFragment#getCompilationUnits(org.eclipse.jdt.core.WorkingCopyOwner)
  */
 public ICompilationUnit[] getCompilationUnits(WorkingCopyOwner owner) {
-//	ICompilationUnit[] workingCopies = JavaModelManager.getJavaModelManager().getWorkingCopies(owner, false/*don't add primary*/);
+//	ICompilationUnit[] workingCopies = manager.getWorkingCopies(owner, false/*don't add primary*/);
 //	if (workingCopies == null) return JavaModelManager.NO_WORKING_COPY;
 //	int length = workingCopies.length;
 //	ICompilationUnit[] result = new ICompilationUnit[length];
@@ -256,7 +254,7 @@ public ICompilationUnit[] getCompilationUnits(WorkingCopyOwner owner) {
 //		System.arraycopy(result, 0, result = new ICompilationUnit[index], 0, index);
 //	}
 //	return result;
-	throw new UnsupportedOperationException();
+	return  JavaModelManager.NO_WORKING_COPY;
 }
 public String getElementName() {
 	if (this.names.length == 0)

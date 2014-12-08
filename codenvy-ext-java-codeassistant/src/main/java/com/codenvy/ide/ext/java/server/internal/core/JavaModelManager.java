@@ -67,6 +67,7 @@ public class JavaModelManager {
     private final static String        INDEXED_SECONDARY_TYPES        = "#@*_indexing secondary cache_*@#"; //$NON-NLS-1$
     public static        boolean       ZIP_ACCESS_VERBOSE             = false;
     public static        boolean       VERBOSE                        = false;
+    public final static ICompilationUnit[] NO_WORKING_COPY = new ICompilationUnit[0];
     /**
      * A set of java.io.Files used as a cache of external jars that
      * are known to be existing.

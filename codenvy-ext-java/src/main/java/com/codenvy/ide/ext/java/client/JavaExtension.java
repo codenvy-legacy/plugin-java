@@ -18,6 +18,8 @@ import com.codenvy.ide.api.filetypes.FileType;
 import com.codenvy.ide.api.filetypes.FileTypeRegistry;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
+import com.codenvy.ide.api.keybinding.KeyBindingAgent;
+import com.codenvy.ide.api.keybinding.KeyBuilder;
 import com.codenvy.ide.ext.java.client.action.BackAction;
 import com.codenvy.ide.ext.java.client.action.ForwardAction;
 import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
@@ -62,6 +64,7 @@ public class JavaExtension {
     @Inject
     private void prepareActions(JavaLocalizationConstant localizationConstant,
                                 NewPackageAction newPackageAction,
+                                KeyBindingAgent keyBinding,
                                 NewJavaSourceFileAction newJavaSourceFileAction,
                                 ActionManager actionManager, @Named("quickdocToolbar") ToolbarPresenter toolbarPresenter,
                                 BackAction backAction, ForwardAction forwardAction, QuickDocumentationAction quickDocumentationAction) {
@@ -87,7 +90,7 @@ public class JavaExtension {
         quickDocGroup.add(forwardAction);
 
         toolbarPresenter.bindMainGroup(quickDocGroup);
-
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('q').build(), "showQuickDoc");
     }
 
     @Inject

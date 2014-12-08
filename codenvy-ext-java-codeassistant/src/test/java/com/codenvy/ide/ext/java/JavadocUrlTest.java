@@ -11,7 +11,7 @@
 
 package com.codenvy.ide.ext.java;
 
-import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+import com.codenvy.ide.ext.java.server.JavadocFinder;
 import com.codenvy.ide.ext.java.server.javadoc.JavaElementLinks;
 
 import org.eclipse.jdt.core.IField;
@@ -19,10 +19,8 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -35,12 +33,6 @@ import static org.fest.assertions.Assertions.assertThat;
 public class JavadocUrlTest extends BaseTest {
 
     private String urlPart = "http://localhost:8080/ws/java-ca?projectpath=/test&handle=";
-    private JavaProject project;
-
-    @Before
-    public void prepare() {
-        project = new JavaProject(new File("/temp"), "/aaa", "/temp", "ws", options);
-    }
 
     @Test
     public void binaryObjectUri() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
@@ -72,5 +64,21 @@ public class JavadocUrlTest extends BaseTest {
         handle = URLDecoder.decode(handle, "UTF-8");
         IJavaElement element = JavaElementLinks.parseURI(handle, project);
         assertThat(element).isNotNull().isEqualTo(method);
+    }
+
+    @Test
+    public void methodHandleUri() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+        JavadocFinder finder = new JavadocFinder("test", "testUrl");
+        String javadoc = finder.findJavadoc(project, "Ljava/lang/String;.startsWith(Ljava.lang.String;I)");
+        assertThat(javadoc).isNotNull().contains(
+                "Tests if the substring of this string beginning");
+    }
+
+    @Test
+    public void methodHandleUri2() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+        JavadocFinder finder = new JavadocFinder("test", "testUrl");
+        String javadoc = finder.findJavadoc(project, "Ljava/lang/String;.split(Ljava.lang.String;)");
+        assertThat(javadoc).isNotNull().contains(
+                "Splits this string around matches");
     }
 }

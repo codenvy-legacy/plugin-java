@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
@@ -50,21 +51,20 @@ protected void closing(Object info) throws JavaModelException {
 	super.closing(info);
 	SourceMethodElementInfo elementInfo = (SourceMethodElementInfo) info;
 	ITypeParameter[] typeParameters = elementInfo.typeParameters;
-//	for (int i = 0, length = typeParameters.length; i < length; i++) {
-//		((TypeParameter) typeParameters[i]).close();
-//	}
+	for (int i = 0, length = typeParameters.length; i < length; i++) {
+		((TypeParameter) typeParameters[i]).close();
+	}
 }
 public boolean equals(Object o) {
-	if (!(o instanceof org.eclipse.jdt.internal.core.SourceMethod)) return false;
+	if (!(o instanceof SourceMethod)) return false;
 	return super.equals(o) && Util.equalArraysOrNull(this.parameterTypes, ((SourceMethod)o).parameterTypes);
 }
 public IMemberValuePair getDefaultValue() throws JavaModelException {
-//	SourceMethodElementInfo sourceMethodInfo = (SourceMethodElementInfo) getElementInfo();
-//	if (sourceMethodInfo.isAnnotationMethod()) {
-//		return ((SourceAnnotationMethodInfo) sourceMethodInfo).defaultValue;
-//	}
-//	return null;
-	throw new UnsupportedOperationException();
+	SourceMethodElementInfo sourceMethodInfo = (SourceMethodElementInfo) getElementInfo();
+	if (sourceMethodInfo.isAnnotationMethod()) {
+		return ((SourceAnnotationMethodInfo) sourceMethodInfo).defaultValue;
+	}
+	return null;
 }
 /**
  * @see org.eclipse.jdt.core.IJavaElement
@@ -76,10 +76,9 @@ public int getElementType() {
  * @see org.eclipse.jdt.core.IMethod
  */
 public String[] getExceptionTypes() throws JavaModelException {
-//	SourceMethodElementInfo info = (SourceMethodElementInfo) getElementInfo();
-//	char[][] exs= info.getExceptionTypeNames();
-//	return CompilationUnitStructureRequestor.convertTypeNamesToSigs(exs);
-	throw new UnsupportedOperationException();
+	SourceMethodElementInfo info = (SourceMethodElementInfo) getElementInfo();
+	char[][] exs= info.getExceptionTypeNames();
+	return CompilationUnitStructureRequestor.convertTypeNamesToSigs(exs);
 }
 /**
  * @see org.eclipse.jdt.internal.core.JavaElement#getHandleMemento(StringBuffer)
@@ -137,8 +136,7 @@ public String[] getParameterTypes() {
 }
 
 public ITypeParameter getTypeParameter(String typeParameterName) {
-//	return new TypeParameter(this, typeParameterName);
-	throw new UnsupportedOperationException();
+	return new TypeParameter(this, manager, typeParameterName);
 }
 
 public ITypeParameter[] getTypeParameters() throws JavaModelException {
@@ -146,11 +144,10 @@ public ITypeParameter[] getTypeParameters() throws JavaModelException {
 	return info.typeParameters;
 }
 public ILocalVariable[] getParameters() throws JavaModelException {
-//	ILocalVariable[] arguments = ((SourceMethodElementInfo) getElementInfo()).arguments;
-//	if (arguments == null)
-//		return LocalVariable.NO_LOCAL_VARIABLES;
-//	return arguments;
-	throw new UnsupportedOperationException();
+	ILocalVariable[] arguments = ((SourceMethodElementInfo) getElementInfo()).arguments;
+	if (arguments == null)
+		return LocalVariable.NO_LOCAL_VARIABLES;
+	return arguments;
 }
 /**
  * @see org.eclipse.jdt.core.IMethod#getTypeParameterSignatures()
@@ -158,41 +155,40 @@ public ILocalVariable[] getParameters() throws JavaModelException {
  * @deprecated
  */
 public String[] getTypeParameterSignatures() throws JavaModelException {
-//	ITypeParameter[] typeParameters = getTypeParameters();
-//	int length = typeParameters.length;
-//	String[] typeParameterSignatures = new String[length];
-//	for (int i = 0; i < length; i++) {
-//		TypeParameter typeParameter = (TypeParameter) typeParameters[i];
-//		TypeParameterElementInfo info = (TypeParameterElementInfo) typeParameter.getElementInfo();
-//		char[][] bounds = info.bounds;
-//		if (bounds == null) {
-//			typeParameterSignatures[i] = Signature.createTypeParameterSignature(typeParameter.getElementName(), CharOperation.NO_STRINGS);
-//		} else {
-//			int boundsLength = bounds.length;
-//			char[][] boundSignatures = new char[boundsLength][];
-//			for (int j = 0; j < boundsLength; j++) {
-//				boundSignatures[j] = Signature.createCharArrayTypeSignature(bounds[j], false);
-//			}
-//			typeParameterSignatures[i] = new String(
-//					Signature.createTypeParameterSignature(typeParameter.getElementName().toCharArray(), boundSignatures));
-//		}
-//	}
-//	return typeParameterSignatures;
-	throw new UnsupportedOperationException();
+	ITypeParameter[] typeParameters = getTypeParameters();
+	int length = typeParameters.length;
+	String[] typeParameterSignatures = new String[length];
+	for (int i = 0; i < length; i++) {
+		TypeParameter typeParameter = (TypeParameter) typeParameters[i];
+		TypeParameterElementInfo info = (TypeParameterElementInfo) typeParameter.getElementInfo();
+		char[][] bounds = info.bounds;
+		if (bounds == null) {
+			typeParameterSignatures[i] = Signature.createTypeParameterSignature(typeParameter.getElementName(), CharOperation.NO_STRINGS);
+		} else {
+			int boundsLength = bounds.length;
+			char[][] boundSignatures = new char[boundsLength][];
+			for (int j = 0; j < boundsLength; j++) {
+				boundSignatures[j] = Signature.createCharArrayTypeSignature(bounds[j], false);
+			}
+			typeParameterSignatures[i] = new String(
+					Signature.createTypeParameterSignature(typeParameter.getElementName().toCharArray(), boundSignatures));
+		}
+	}
+	return typeParameterSignatures;
 }
 
 /*
  * @see JavaElement#getPrimaryElement(boolean)
  */
 public IJavaElement getPrimaryElement(boolean checkOwner) {
-//	if (checkOwner) {
-//		CompilationUnit cu = (CompilationUnit)getAncestor(COMPILATION_UNIT);
-//		if (cu.isPrimary()) return this;
-//	}
-//	IJavaElement primaryParent = this.parent.getPrimaryElement(false);
-//	return ((IType)primaryParent).getMethod(this.name, this.parameterTypes);
-	throw new UnsupportedOperationException();
+	if (checkOwner) {
+		CompilationUnit cu = (CompilationUnit)getAncestor(COMPILATION_UNIT);
+		if (cu.isPrimary()) return this;
+	}
+	IJavaElement primaryParent = this.parent.getPrimaryElement(false);
+	return ((IType)primaryParent).getMethod(this.name, this.parameterTypes);
 }
+
 public String[] getRawParameterNames() throws JavaModelException {
 	return getParameterNames();
 }
@@ -279,11 +275,10 @@ public String readableName() {
 	return buffer.toString();
 }
 public JavaElement resolved(Binding binding) {
-//	SourceRefElement
-//			resolvedHandle = new ResolvedSourceMethod(this.parent, this.name, this.parameterTypes, new String(binding.computeUniqueKey()));
-//	resolvedHandle.occurrenceCount = this.occurrenceCount;
-//	return resolvedHandle;
-	throw new UnsupportedOperationException();
+	SourceRefElement
+			resolvedHandle = new ResolvedSourceMethod(this.parent, this.name, this.parameterTypes, new String(binding.computeUniqueKey()));
+	resolvedHandle.occurrenceCount = this.occurrenceCount;
+	return resolvedHandle;
 }
 /**
  * @private Debugging purposes

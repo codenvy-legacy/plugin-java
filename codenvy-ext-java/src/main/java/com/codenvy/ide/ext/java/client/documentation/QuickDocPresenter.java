@@ -13,6 +13,10 @@ package com.codenvy.ide.ext.java.client.documentation;
 
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
+import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
+import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -27,20 +31,41 @@ public class QuickDocPresenter implements QuickDocumentation, QuickDocView.Actio
     private QuickDocView view;
     private AppContext   appContext;
     private String       caContext;
-    private EditorAgent editorAgent;
+    private EditorAgent  editorAgent;
+    private JavaParserWorker worker;
 
     @Inject
-    public QuickDocPresenter(QuickDocView view, AppContext appContext, @Named("javaCA") String caContext, EditorAgent editorAgent) {
+    public QuickDocPresenter(QuickDocView view, AppContext appContext, @Named("javaCA") String caContext, EditorAgent editorAgent,
+                             JavaParserWorker worker) {
         this.view = view;
         this.appContext = appContext;
         this.caContext = caContext;
         this.editorAgent = editorAgent;
+        this.worker = worker;
     }
 
     @Override
     public void showDocumentation() {
-//        editorAgent.getActiveEditor()
+        EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
+        if (activeEditor == null) {
+            return;
+        }
 
+        if (!(activeEditor instanceof EmbeddedTextEditorPresenter)) {
+            Log.info(getClass(), "Quick Document support only EmbeddedTextEditorPresenter as editor");
+            return;
+        }
+        EmbeddedTextEditorPresenter editor = ((EmbeddedTextEditorPresenter)activeEditor);
+        int offset = editor.getCursorOffset();
+        worker.computeJavadocHandle(offset, new JavaParserWorker.Callback<String>() {
+            @Override
+            public void onCallback(String result) {
+                if(result != null){
+                    view.show(caContext + "/javadoc/" + appContext.getWorkspace().getId() + "/find?fqn=" + result + "&projectpath=" +
+                              appContext.getCurrentProject().getProjectDescription().getPath());
+                }
+            }
+        });
 
 //        view.show(caContext + "/javadoc/" + appContext.getWorkspace().getName() + "/find?fqn=java.lang.String&projectpath=" +
 //                  appContext.getCurrentProject().getProjectDescription().getPath());

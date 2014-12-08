@@ -31,7 +31,7 @@ public interface JavaParserWorker {
 
     void computeCAProposals(String content, int offset, String fileName, String projectPath, WorkerCallback<WorkerProposal> callback);
 
-    void applyCAProposal(String id, ApplyCallback callback);
+    void applyCAProposal(String id, Callback<ProposalAppliedMessage> callback);
 
     void addOutlineUpdateHandler(String filePath, WorkerCallback<WorkerCodeBlock> callback);
 
@@ -41,20 +41,26 @@ public interface JavaParserWorker {
 
     void removeFqnFromCache(String fqn);
 
-    void format(int offset, int length, String content, FormatResultCallback callback);
+    void format(int offset, int length, String content, Callback<TextEdit> callback);
 
     void preferenceFormatSettings(JsoStringMap<String> settings);
+
+    void computeJavadocHandle(int offset, Callback<String> callback);
 
     public interface WorkerCallback<T> {
         void onResult(Array<T> problems);
     }
 
-    public interface ApplyCallback {
-        void onApply(ProposalAppliedMessage message);
+    public interface Callback<T>{
+        void onCallback(T result);
     }
 
-    public interface FormatResultCallback {
-        void onApplyFormat(TextEdit edit);
-    }
+//    public interface ApplyCallback {
+//        void onApply(ProposalAppliedMessage message);
+//    }
+
+//    public interface FormatResultCallback {
+//        void onApplyFormat(TextEdit edit);
+//    }
 
 }

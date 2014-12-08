@@ -11,10 +11,13 @@
 
 package com.codenvy.ide.ext.java;
 
+import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +26,8 @@ import java.util.Map;
  */
 public class BaseTest {
     protected Map<String, String> options = new HashMap<>();
+    protected JavaProject         project;
+
 
     public BaseTest() {
         options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_7);
@@ -38,6 +43,7 @@ public class BaseTest {
         options.put(JavaCore.COMPILER_PB_UNUSED_PARAMETER_INCLUDE_DOC_COMMENT_REFERENCE, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
+        project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/test", "/temp", "ws", options);
     }
 
     protected static String getHanldeForRtJarStart(){

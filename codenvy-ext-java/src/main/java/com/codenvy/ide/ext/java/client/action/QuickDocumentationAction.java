@@ -11,8 +11,11 @@
 
 package com.codenvy.ide.ext.java.client.action;
 
+import com.codenvy.ide.MimeType;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
+import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
 import com.google.inject.Inject;
@@ -25,16 +28,25 @@ import com.google.inject.Singleton;
 public class QuickDocumentationAction extends ProjectAction {
 
     private QuickDocumentation quickDocumentation;
+    private EditorAgent        editorAgent;
 
     @Inject
-    public QuickDocumentationAction(JavaLocalizationConstant constant, QuickDocumentation quickDocumentation) {
+    public QuickDocumentationAction(JavaLocalizationConstant constant, QuickDocumentation quickDocumentation, EditorAgent editorAgent) {
         super(constant.actionQuickdocTitle(), constant.actionQuickdocDescription());
         this.quickDocumentation = quickDocumentation;
+        this.editorAgent = editorAgent;
     }
 
     @Override
     protected void updateProjectAction(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(true);
+        if (editorAgent.getActiveEditor() != null) {
+            EditorInput input = editorAgent.getActiveEditor().getEditorInput();
+            if (input.getFile().getData().getMediaType().equals(MimeType.APPLICATION_JAVA)) {
+                e.getPresentation().setEnabledAndVisible(true);
+                return;
+            }
+        }
+        e.getPresentation().setEnabledAndVisible(false);
     }
 
     @Override

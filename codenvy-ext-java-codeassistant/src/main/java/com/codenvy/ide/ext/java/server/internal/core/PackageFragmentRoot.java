@@ -11,6 +11,8 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.ext.java.server.internal.core.util.Util;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,7 +29,6 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
-import org.eclipse.jdt.internal.core.util.Util;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -489,6 +490,10 @@ public class PackageFragmentRoot extends Openable implements  IPackageFragmentRo
         return path;
     }
 
+    public IPath internalPath(){
+        return path;
+    }
+
     SourceMapper createSourceMapper(IPath sourcePath, IPath rootPath) throws JavaModelException {
         IClasspathEntry entry = ((JavaProject) getParent()).getClasspathEntryFor(getPath());
         String encoding = (entry== null) ? null : ((ClasspathEntry) entry).getSourceAttachmentEncoding();
@@ -500,6 +505,26 @@ public class PackageFragmentRoot extends Openable implements  IPackageFragmentRo
                 manager);
 
         return mapper;
+    }
+
+    public int hashCode() {
+        return resource().getAbsolutePath().hashCode();
+    }
+
+    /**
+     * Compares two objects for equality;
+     * for <code>PackageFragmentRoot</code>s, equality is having the
+     * same parent, same resources, and occurrence count.
+     *
+     */
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof PackageFragmentRoot))
+            return false;
+        PackageFragmentRoot other = (PackageFragmentRoot) o;
+        return resource().equals(other.resource()) &&
+               this.parent.equals(other.parent);
     }
 
     /**
@@ -526,7 +551,12 @@ public class PackageFragmentRoot extends Openable implements  IPackageFragmentRo
         }
         return mapper;
     }
-
+    /**
+     * Returns a new element info for this element.
+     */
+    protected Object createElementInfo() {
+        return new PackageFragmentRootInfo();
+    }
     /*
  * A version of getKind() that doesn't update the timestamp of the info in the Java model cache
  * to speed things up

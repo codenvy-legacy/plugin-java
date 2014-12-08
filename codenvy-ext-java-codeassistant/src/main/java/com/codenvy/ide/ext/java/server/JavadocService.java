@@ -40,13 +40,17 @@ public class JavadocService {
     @Named("javadoc.prefix.url")
     private String urlRefix;
 
+    @Inject
+    @Named("javadoc.css.url")
+    private String cssUrl;
+
     @Path("find")
     @GET
     @Produces("text/html")
     public String findJavadoc(@QueryParam("fqn") String fqn, @QueryParam("projectpath") String projectPath) throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
         String urlPart = getUrlPart(projectPath);
-        return new JavadocFinder(urlPart).findJavadoc(project, fqn);
+        return new JavadocFinder(urlPart, cssUrl).findJavadoc(project, fqn);
     }
 
     @Path("get")
@@ -55,7 +59,7 @@ public class JavadocService {
     public String get(@QueryParam("handle") String handle, @QueryParam("projectpath") String projectPath) {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
         String urlPart = getUrlPart(projectPath);
-        return new JavadocFinder(urlPart).findJavadoc4Handle(project, handle);
+        return new JavadocFinder(urlPart, cssUrl).findJavadoc4Handle(project, handle);
     }
 
     private String getUrlPart(String projectPath) {

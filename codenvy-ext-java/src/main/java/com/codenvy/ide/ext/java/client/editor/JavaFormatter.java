@@ -23,7 +23,7 @@ import com.google.inject.Inject;
  *
  * @author Roman Nikitenko
  */
-public class JavaFormatter implements ContentFormatter, JavaParserWorker.FormatResultCallback {
+public class JavaFormatter implements ContentFormatter, JavaParserWorker.Callback<TextEdit> {
 
     private JavaParserWorker javaParserWorker;
     private Document         document;
@@ -46,7 +46,7 @@ public class JavaFormatter implements ContentFormatter, JavaParserWorker.FormatR
     }
 
     @Override
-    public void onApplyFormat(TextEdit edit) {
+    public void onCallback(TextEdit edit) {
         try {
             edit.apply(document);
         } catch (BadLocationException e) {

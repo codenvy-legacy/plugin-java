@@ -123,12 +123,12 @@ a:visited {
 
 a.header:link {
     text-decoration: none;
-    color: InfoText
+    color: #ff0000;
 }
 
 a.header:visited {
     text-decoration: none;
-    color: InfoText
+    color: #ff0000;
 }
 
 a.header:hover {

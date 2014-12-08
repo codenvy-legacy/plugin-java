@@ -11,8 +11,6 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
-import org.eclipse.jdt.internal.core.SourceMethodElementInfo;
-
 /*
  * Element info for method from source.
  */

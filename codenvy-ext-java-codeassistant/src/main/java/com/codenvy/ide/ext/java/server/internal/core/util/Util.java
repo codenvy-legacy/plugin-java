@@ -10,14 +10,25 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.util;
 
+import com.codenvy.ide.ext.java.server.dom.JavaConventions;
 import com.codenvy.ide.ext.java.server.internal.core.Annotation;
+import com.codenvy.ide.ext.java.server.internal.core.CompilationUnit;
 import com.codenvy.ide.ext.java.server.internal.core.JavaElement;
 import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
 import com.codenvy.ide.ext.java.server.internal.core.MemberValuePair;
+import com.codenvy.ide.ext.java.server.internal.core.PackageFragment;
+import com.codenvy.ide.ext.java.server.internal.core.PackageFragmentRoot;
 import com.codenvy.ide.runtime.Assert;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IAnnotation;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaModelStatusConstants;
 import org.eclipse.jdt.core.IMemberValuePair;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -34,6 +45,11 @@ import org.eclipse.jdt.internal.compiler.parser.ScannerHelper;
 import org.eclipse.jdt.internal.compiler.util.SuffixConstants;
 import org.eclipse.jdt.internal.core.util.KeyToSignature;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1904,6 +1920,178 @@ public class Util {
             default:
                 memberValuePair.valueKind = IMemberValuePair.K_UNKNOWN;
                 return null;
+        }
+    }
+
+    /**
+     * Validate the given compilation unit name.
+     * A compilation unit name must obey the following rules:
+     * <ul>
+     * <li> it must not be null
+     * <li> it must include the <code>".java"</code> suffix
+     * <li> its prefix must be a valid identifier
+     * </ul>
+     * </p>
+     * @param name the name of a compilation unit
+     * @param sourceLevel the source level
+     * @param complianceLevel the compliance level
+     * @return a status object with code <code>IStatus.OK</code> if
+     *		the given name is valid as a compilation unit name, otherwise a status
+     *		object indicating what is wrong with the name
+     */
+    public static boolean isValidCompilationUnitName(String name, String sourceLevel, String complianceLevel) {
+        return JavaConventions.validateCompilationUnitName(name, sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR;
+    }
+
+    /**
+     * Returns true if the given folder name is valid for a package,
+     * false if it is not.
+     * @param folderName the name of the folder
+     * @param sourceLevel the source level
+     * @param complianceLevel the compliance level
+     */
+    public static boolean isValidFolderNameForPackage(String folderName, String sourceLevel, String complianceLevel) {
+        return JavaConventions.validateIdentifier(folderName, sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR;
+    }
+
+    /*
+ * Returns whether the given resource path matches one of the inclusion/exclusion
+ * patterns.
+ * NOTE: should not be asked directly using pkg root pathes
+ * @see IClasspathEntry#getInclusionPatterns
+ * @see IClasspathEntry#getExclusionPatterns
+ */
+    public final static boolean isExcluded(IPath resourcePath, char[][] inclusionPatterns, char[][] exclusionPatterns, boolean isFolderPath) {
+        if (inclusionPatterns == null && exclusionPatterns == null) return false;
+        return org.eclipse.jdt.internal.compiler.util.Util.isExcluded(resourcePath.toString().toCharArray(), inclusionPatterns, exclusionPatterns, isFolderPath);
+    }
+
+    /*
+ * Returns whether the given java element is exluded from its root's classpath.
+ * It doesn't check whether the root itself is on the classpath or not
+ */
+    public static final boolean isExcluded(IJavaElement element) {
+        int elementType = element.getElementType();
+        switch (elementType) {
+            case IJavaElement.JAVA_MODEL:
+            case IJavaElement.JAVA_PROJECT:
+            case IJavaElement.PACKAGE_FRAGMENT_ROOT:
+                return false;
+
+            case IJavaElement.PACKAGE_FRAGMENT:
+                PackageFragmentRoot root = (PackageFragmentRoot) element.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                File resource = ((PackageFragment) element).resource();
+                return resource != null && isExcluded(resource, root.fullInclusionPatternChars(), root.fullExclusionPatternChars());
+
+            case IJavaElement.COMPILATION_UNIT:
+                root = (PackageFragmentRoot) element.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                resource = ((CompilationUnit)element).resource();
+                if (resource == null)
+                    return false;
+                if (isExcluded(resource, root.fullInclusionPatternChars(), root.fullExclusionPatternChars()))
+                    return true;
+                return isExcluded(element.getParent());
+
+            default:
+                IJavaElement cu = element.getAncestor(IJavaElement.COMPILATION_UNIT);
+                return cu != null && isExcluded(cu);
+        }
+    }
+
+    /*
+ * Returns whether the given resource matches one of the exclusion patterns.
+ * NOTE: should not be asked directly using pkg root pathes
+ * @see IClasspathEntry#getExclusionPatterns
+ */
+    public final static boolean isExcluded(File resource, char[][] inclusionPatterns, char[][] exclusionPatterns) {
+        IPath path = new Path(resource.getAbsolutePath());
+        // ensure that folders are only excluded if all of their children are excluded
+        int resourceType = resource.isFile()? IResource.FILE : IResource.FOLDER;
+        return isExcluded(path, inclusionPatterns, exclusionPatterns, resourceType == IResource.FOLDER || resourceType == IResource.PROJECT);
+    }
+
+    /**
+     * Validate the given .class file name.
+     * A .class file name must obey the following rules:
+     * <ul>
+     * <li> it must not be null
+     * <li> it must include the <code>".class"</code> suffix
+     * <li> its prefix must be a valid identifier
+     * </ul>
+     * </p>
+     * @param name the name of a .class file
+     * @param sourceLevel the source level
+     * @param complianceLevel the compliance level
+     * @return a status object with code <code>IStatus.OK</code> if
+     *		the given name is valid as a .class file name, otherwise a status
+     *		object indicating what is wrong with the name
+     */
+    public static boolean isValidClassFileName(String name, String sourceLevel, String complianceLevel) {
+        return JavaConventions.validateClassFileName(name, sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR;
+    }
+
+    /**
+     * Converts a String[] to char[][].
+     */
+    public static char[][] toCharArrays(String[] a) {
+        int len = a.length;
+        if (len == 0) return CharOperation.NO_CHAR_CHAR;
+        char[][] result = new char[len][];
+        for (int i = 0; i < len; ++i) {
+            result[i] = a[i].toCharArray();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the given file's contents as a character array.
+     * This Method uses "UTF-8" encoding as default.
+     */
+    public static char[] getResourceContentsAsCharArray(File file) throws JavaModelException {
+        // Get encoding from file
+        String encoding;
+        encoding = "UTF-8";
+        return getResourceContentsAsCharArray(file, encoding);
+    }
+
+    public static char[] getResourceContentsAsCharArray(File file, String encoding) throws JavaModelException {
+        // Get file length
+        // workaround https://bugs.eclipse.org/bugs/show_bug.cgi?id=130736 by using java.io.File if possible
+//        IPath location = file.getLocation();
+        long length;
+//        if (location == null) {
+//            // non local file
+//            try {
+//                URI locationURI = file.getLocationURI();
+//                if (locationURI == null)
+//                    throw new CoreException(new Status(IStatus.ERROR, JavaCore.PLUGIN_ID, Messages
+//                            .bind(Messages.file_notFound, file.getFullPath().toString())));
+//                length = EFS.getStore(locationURI).fetchInfo().getLength();
+//            } catch (CoreException e) {
+//                throw new JavaModelException(e, IJavaModelStatusConstants.ELEMENT_DOES_NOT_EXIST);
+//            }
+//        } else {
+//            // local file
+            length = file.length();
+//        }
+
+        // Get resource contents
+        InputStream stream= null;
+        try {
+            stream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new JavaModelException(e, IJavaModelStatusConstants.ELEMENT_DOES_NOT_EXIST);
+        }
+        try {
+            return org.eclipse.jdt.internal.compiler.util.Util.getInputStreamAsCharArray(stream, (int) length, encoding);
+        } catch (IOException e) {
+            throw new JavaModelException(e, IJavaModelStatusConstants.IO_EXCEPTION);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                // ignore
+            }
         }
     }
 

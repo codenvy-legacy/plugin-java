@@ -169,7 +169,7 @@ public class SourceTypeElementInfo extends AnnotatableInfo implements ISourceTyp
         int initializerIndex = 0;
         for (int i = 0; i < length; i++) {
             IJavaElement child = this.children[i];
-            if (child instanceof org.eclipse.jdt.internal.core.Initializer) {
+            if (child instanceof Initializer) {
                 try {
                     InitializerElementInfo initializer = (InitializerElementInfo)((Initializer)child).getElementInfo();
                     initializers[initializerIndex++] = initializer;

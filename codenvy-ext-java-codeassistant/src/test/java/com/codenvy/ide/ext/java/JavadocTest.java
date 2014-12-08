@@ -31,16 +31,14 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Evgen Vidolob
  */
-public class JavaDocTest extends BaseTest {
+public class JavadocTest extends BaseTest {
     private String urlPart = "http://localhost:8080/ws/java-ca?projectpath=/test&handle=";
     private JavadocFinder finder;
-    private JavaProject project;
 
 
     @Before
     public void setUp() throws Exception {
-        finder = new JavadocFinder(urlPart);
-        project = new JavaProject(new File("/temp"), "/test", "/temp", "ws", options);
+        finder = new JavadocFinder(urlPart,"testUrl");
     }
 
     @Test
@@ -55,7 +53,7 @@ public class JavaDocTest extends BaseTest {
 
     @Test
     public void findObjectDoc() throws JavaModelException {
-        String javadoc = finder.findJavadoc(project, "java.lang.Object");
+        String javadoc = finder.findJavadoc(project, "Ljava/lang/Object;");
         Assert.assertNotNull(javadoc);
         assertThat(javadoc).isNotNull().isNotEmpty().contains("Class <code>Object</code> is the root of the class hierarchy.");
     }

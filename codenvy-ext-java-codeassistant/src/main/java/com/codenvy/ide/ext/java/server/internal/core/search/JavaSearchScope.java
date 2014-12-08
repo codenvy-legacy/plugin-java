@@ -12,7 +12,10 @@ package com.codenvy.ide.ext.java.server.internal.core.search;
 
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.ClasspathEntry;
+import com.codenvy.ide.ext.java.server.internal.core.JavaElement;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+import com.codenvy.ide.ext.java.server.internal.core.PackageFragment;
+import com.codenvy.ide.ext.java.server.internal.core.PackageFragmentRoot;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -29,12 +32,9 @@ import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.compiler.env.AccessRule;
 import org.eclipse.jdt.internal.compiler.env.AccessRuleSet;
 import org.eclipse.jdt.internal.core.ExternalFoldersManager;
-import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.core.JavaModel;
-import org.eclipse.jdt.internal.core.PackageFragment;
-import org.eclipse.jdt.internal.core.PackageFragmentRoot;
-import org.eclipse.jdt.internal.core.util.Util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -241,10 +241,10 @@ public class JavaSearchScope extends AbstractJavaSearchScope {
 				IPath rootPath = root.internalPath();
 				containerPath = root.getKind() == IPackageFragmentRoot.K_SOURCE ? root.getParent().getPath() : rootPath;
 				containerPathToString = containerPath.getDevice() == null ? containerPath.toString() : containerPath.toOSString();
-				IResource rootResource = root.resource();
+				File rootResource = root.resource();
 				String projectPath = root.getJavaProject().getPath().toString();
-				if (rootResource != null && rootResource.isAccessible()) {
-					String relativePath = Util.relativePath(rootResource.getFullPath(), containerPath.segmentCount());
+				if (rootResource != null /*&& rootResource.isAccessible()*/) {
+					String relativePath = Util.relativePath(new Path(rootResource.getAbsolutePath()), containerPath.segmentCount());
 					add(projectPath, relativePath, containerPathToString, false/*not a package*/, null);
 				} else {
 					add(projectPath, "", containerPathToString, false/*not a package*/, null); //$NON-NLS-1$
@@ -254,22 +254,22 @@ public class JavaSearchScope extends AbstractJavaSearchScope {
 				root = (PackageFragmentRoot)element.getParent();
 				projectPath = root.getJavaProject().getPath().toString();
 				if (root.isArchive()) {
-					String relativePath = Util.concatWith(((PackageFragment)element).names, '/');
+					String relativePath = org.eclipse.jdt.internal.core.util.Util.concatWith(((PackageFragment)element).names, '/');
 					containerPath = root.getPath();
 					containerPathToString = containerPath.getDevice() == null ? containerPath.toString() : containerPath.toOSString();
 					add(projectPath, relativePath, containerPathToString, true/*package*/, null);
 				} else {
-					IResource resource = ((JavaElement)element).resource();
+					File resource = ((JavaElement)element).resource();
 					if (resource != null) {
-						if (resource.isAccessible()) {
+//						if (resource.isAccessible()) {
 							containerPath =
 									root.getKind() == IPackageFragmentRoot.K_SOURCE ? root.getParent().getPath() : root.internalPath();
-						} else {
-							// for working copies, get resource container full path
-							containerPath = resource.getParent().getFullPath();
-						}
+//						} else {
+//							// for working copies, get resource container full path
+//							containerPath = resource.getParent().getFullPath();
+//						}
 						containerPathToString = containerPath.getDevice() == null ? containerPath.toString() : containerPath.toOSString();
-						String relativePath = Util.relativePath(resource.getFullPath(), containerPath.segmentCount());
+						String relativePath = Util.relativePath(new Path(resource.getAbsolutePath()), containerPath.segmentCount());
 						add(projectPath, relativePath, containerPathToString, true/*package*/, null);
 					}
 				}
@@ -503,7 +503,7 @@ public class JavaSearchScope extends AbstractJavaSearchScope {
 					return Path.EMPTY;
 				return element.getPath();
 			case IJavaElement.PACKAGE_FRAGMENT:
-				String relativePath = Util.concatWith(((PackageFragment)element).names, '/');
+				String relativePath = org.eclipse.jdt.internal.core.util.Util.concatWith(((PackageFragment)element).names, '/');
 				return getPath(element.getParent(), relativeToRoot).append(new Path(relativePath));
 			case IJavaElement.COMPILATION_UNIT:
 			case IJavaElement.CLASS_FILE:
@@ -701,7 +701,7 @@ public IPackageFragmentRoot packageFragmentRoot(String resourcePathString, int j
 					}
 				}
 				System.arraycopy(paths, 0, paths = new String[index], 0, index);
-				Util.sort(paths);
+				org.eclipse.jdt.internal.core.util.Util.sort(paths);
 				for (int i = 0; i < index; i++) {
 				result.append("\n\t"); //$NON-NLS-1$
 				result.append(paths[i]);
