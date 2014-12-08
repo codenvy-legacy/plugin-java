@@ -191,15 +191,13 @@ public class ArchetypeGenerator {
         }
 
         GenerateTask task = generate(artifactId, myOptions);
-
         while (!task.isDone()) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
-
         return task.getResult();
     }
 
@@ -220,7 +218,7 @@ public class ArchetypeGenerator {
 
     private GeneratorLogger createLogger(File logFile) throws GeneratorException {
         try {
-            return new GeneratorLogger(logFile, "text/plain");
+            return new GeneratorLogger(logFile);
         } catch (IOException e) {
             throw new GeneratorException(e);
         }
@@ -292,7 +290,7 @@ public class ArchetypeGenerator {
         boolean mavenSuccess = false;
         BufferedReader logReader = null;
         try {
-            logReader = new BufferedReader(task.getBuildLogger().getReader());
+            logReader = new BufferedReader(task.getLogger().getReader());
             String line;
             while ((line = logReader.readLine()) != null) {
                 line = MavenUtils.removeLoggerPrefix(line);
@@ -350,7 +348,7 @@ public class ArchetypeGenerator {
                 LOG.warn("Unable delete directory {}", workDir);
             }
         }
-        final java.io.File log = task.getBuildLogger().getFile();
+        final java.io.File log = task.getLogger().getFile();
         if (log != null && log.exists()) {
             if (!log.delete()) {
                 LOG.warn("Unable delete file {}", log);
@@ -378,10 +376,10 @@ public class ArchetypeGenerator {
                 }
             }
         }
-        final java.io.File buildDir = configuration.getBuildDir();
-        if (buildDir != null && buildDir.exists()) {
-            if (!IoUtil.deleteRecursive(buildDir)) {
-                LOG.warn("Unable delete directory {}", buildDir);
+        final java.io.File projectDir = configuration.getProjectDir();
+        if (projectDir != null && projectDir.exists()) {
+            if (!IoUtil.deleteRecursive(projectDir)) {
+                LOG.warn("Unable delete directory {}", projectDir);
             }
         }
     }
@@ -416,28 +414,22 @@ public class ArchetypeGenerator {
             endTime = System.currentTimeMillis();
             try {
                 logger.close();
-                LOG.debug("Close build logger {}", logger);
+                LOG.debug("Close logger {}", logger);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
 
-        GeneratorLogger getBuildLogger() {
+        GeneratorLogger getLogger() {
             return logger;
         }
 
         /**
-         * Get build result.
+         * Get result of project generating.
          *
-         * @return build result or {@code null} if task is not done yet
+         * @return result of project generating or {@code null} if task is not done yet
          * @throws GeneratorException
-         *         if an error occurs when try to start build process or get its result.
-         *         <p/>
-         *         <strong>Note</strong> Throwing of this exception is typically should not be related to failed build process itself.
-         *         Builder
-         *         should always provide result of build process with GenerateResult instance. Throwing of this exception means something
-         *         going
-         *         wrong with build system itself and it is not possible to start build process or getting result of a build
+         *         if an error occurs when try to start project generating process or get its result.
          */
         final GenerateResult getResult() throws GeneratorException {
             if (!isDone()) {

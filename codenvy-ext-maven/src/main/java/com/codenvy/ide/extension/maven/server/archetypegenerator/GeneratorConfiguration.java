@@ -14,25 +14,25 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Generator configuration for particular generating process.
+ * Generator configuration for particular project generating process.
  *
  * @author Artem Zatsarynnyy
  */
 class GeneratorConfiguration {
-    private final java.io.File        buildDir;
+    private final java.io.File        projectDir;
     private final java.io.File        workDir;
     private final String              artifactId;
     private final Map<String, String> options;
 
-    GeneratorConfiguration(java.io.File buildDir, java.io.File workDir, String artifactId, Map<String, String> options) {
-        this.buildDir = buildDir;
+    GeneratorConfiguration(java.io.File projectDir, java.io.File workDir, String artifactId, Map<String, String> options) {
+        this.projectDir = projectDir;
         this.workDir = workDir;
         this.artifactId = artifactId;
         this.options = options;
     }
 
-    java.io.File getBuildDir() {
-        return buildDir;
+    java.io.File getProjectDir() {
+        return projectDir;
     }
 
     java.io.File getWorkDir() {

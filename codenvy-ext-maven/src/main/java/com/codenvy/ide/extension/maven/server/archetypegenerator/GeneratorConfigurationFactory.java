@@ -23,8 +23,8 @@ class GeneratorConfigurationFactory {
     }
 
     GeneratorConfiguration createConfiguration(String artifactId, Map<String, String> options) throws GeneratorException {
-        final java.io.File buildDir = createProjectDir();
-        return new GeneratorConfiguration(buildDir, createWorkDir(buildDir, artifactId), artifactId, options);
+        final java.io.File projectDir = createProjectDir();
+        return new GeneratorConfiguration(projectDir, createWorkDir(projectDir, artifactId), artifactId, options);
     }
 
     private java.io.File createProjectDir() throws GeneratorException {

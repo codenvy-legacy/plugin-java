@@ -25,19 +25,17 @@ import java.nio.file.Files;
  */
 class GeneratorLogger implements LineConsumer {
     private final java.io.File file;
-    private final String       contentType;
     private final Writer       writer;
     private final boolean      autoFlush;
 
-    GeneratorLogger(java.io.File file, String contentType) throws IOException {
+    GeneratorLogger(java.io.File file) throws IOException {
         this.file = file;
-        this.contentType = contentType;
         autoFlush = true;
         writer = Files.newBufferedWriter(file.toPath(), Charset.defaultCharset());
     }
 
     /**
-     * Get Reader of build log.
+     * Get Reader of generator's log.
      *
      * @return reader
      * @throws java.io.IOException
@@ -47,20 +45,7 @@ class GeneratorLogger implements LineConsumer {
         return Files.newBufferedReader(file.toPath(), Charset.defaultCharset());
     }
 
-    /**
-     * Get content type of build logs.
-     *
-     * @return content type
-     */
-    String getContentType() {
-        return contentType;
-    }
-
-    /**
-     * Get {@code File} is case if logs stored in file.
-     *
-     * @return {@code File} or {@code null} if BuildLogger does not use {@code File} as backend
-     */
+    /** Get {@code File} where logs stored. */
     java.io.File getFile() {
         return file;
     }

@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,14 +77,20 @@ public class MavenProjectGenerator implements ProjectGenerator {
         MavenArchetype quickstartArchetype = new MavenArchetype("org.apache.maven.archetypes",
                                                                 "maven-archetype-quickstart",
                                                                 "RELEASE", null);
+        Map<String, String> options = new HashMap<>();
+        options.put("-Dpackage", "app");
         try {
             final GenerateResult result = archetypeGenerator.generateFromArchetype(quickstartArchetype,
                                                                                    groupId.get(0),
                                                                                    artifactId.get(0),
                                                                                    version.get(0),
-                                                                                   null);
+                                                                                   options);
             if (!result.isSuccessful()) {
-                throw new ServerException(new String(Files.readAllBytes(result.getGenerateReport().toPath())));
+                if (result.hasGenerateReport()) {
+                    throw new ServerException(new String(Files.readAllBytes(result.getGenerateReport().toPath())));
+                } else {
+                    throw new ServerException("Failed to generate project.");
+                }
             }
             copyGeneratedFiles(baseFolder, baseFolder.getWorkspace(), result.getResult());
         } catch (GeneratorException | IOException | NotFoundException e) {
