@@ -35,6 +35,15 @@ public class ComputeJavadocHandle  extends MessageImpl{
         return this;
     }-*/;
 
+    public final native String getFilePath() /*-{
+        return this["filePath"];
+    }-*/;
+
+    public final native ComputeJavadocHandle setFilePath(String filePath) /*-{
+        this["filePath"] = filePath;
+        return this;
+    }-*/;
+
     public final native java.lang.String id() /*-{
         return this["id"];
     }-*/;

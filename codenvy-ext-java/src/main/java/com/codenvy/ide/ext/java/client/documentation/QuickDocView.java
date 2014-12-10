@@ -19,11 +19,7 @@ import com.google.inject.ImplementedBy;
  */
 @ImplementedBy(QuickDocViewImpl.class)
 public interface QuickDocView extends View<QuickDocView.ActionDelegate> {
-    void show(String url);
-
-    void back();
-
-    void forward();
+    void show(String url, int x, int y);
 
     public interface ActionDelegate{
 

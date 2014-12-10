@@ -15,7 +15,11 @@ import com.codenvy.ide.ext.java.server.JavadocFinder;
 
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
 import org.junit.Test;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -62,5 +66,13 @@ public class JavadocFromSourceTest extends BaseTest {
         IJavaElement element = project.findElement("Ljava/lang/String;.endsWith(Ljava.lang.String;)Z", null);
         assertThat(element).isNotNull().isInstanceOf(IMethod.class);
         assertThat(element.getElementName()).isEqualTo("endsWith");
+    }
+
+    @Test
+    public void methodHandleWithParam() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
+        JavadocFinder finder = new JavadocFinder("test", "testUrl");
+        String javadoc = finder.findJavadoc(project, "Lcom/codenvy/test/MyClass;.greetServer(Ljava.lang.String;)Ljava.lang.String;|Ljava.lang.IllegalArgumentException;#input");
+        assertThat(javadoc).isNotNull().contains(
+                "Method with param and exception");
     }
 }

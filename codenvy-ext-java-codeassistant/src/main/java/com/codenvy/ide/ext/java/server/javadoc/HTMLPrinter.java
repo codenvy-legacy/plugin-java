@@ -25,8 +25,8 @@ public class HTMLPrinter {
     static {
         UNIT = "px"; ///Util.isMac() ? "px" : "pt";   //$NON-NLS-1$//$NON-NLS-2$
     }
-	private static Color BG_COLOR_RGB= new Color(255, 255, 225); // RGB value of info bg color on WindowsXP
-	private static Color FG_COLOR_RGB= new Color(0, 0, 0); // RGB value of info fg color on WindowsXP
+	private static Color BG_COLOR_RGB= new Color(47, 47, 47); // RGB value of info bg color on WindowsXP
+	private static Color FG_COLOR_RGB= new Color(169,183,198); // RGB value of info fg color on WindowsXP
 
 
 //	static {

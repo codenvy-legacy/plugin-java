@@ -33,6 +33,7 @@ import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.problem.DefaultProblem;
 import com.codenvy.ide.ext.java.messages.CAProposalsComputedMessage;
 import com.codenvy.ide.ext.java.messages.ComputeJavadocHandle;
+import com.codenvy.ide.ext.java.messages.FileClosedMessage;
 import com.codenvy.ide.ext.java.messages.FormatResultMessage;
 import com.codenvy.ide.ext.java.messages.JavadocHandleComputed;
 import com.codenvy.ide.ext.java.messages.Problem;
@@ -288,11 +289,18 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     }
 
     @Override
-    public void computeJavadocHandle(int offset, Callback<String> callback) {
+    public void computeJavadocHandle(int offset, String filePath, Callback<String> callback) {
         String uuid = UUID.uuid();
         ComputeJavadocHandle message = ComputeJavadocHandle.make();
-        message.setOffset(offset).setId(uuid);
+        message.setOffset(offset).setId(uuid).setFilePath(filePath);
         callbacks.put(uuid, callback);
+        worker.postMessage(message.serialize());
+    }
+
+    @Override
+    public void fileClosed(String path) {
+        FileClosedMessage message = FileClosedMessage.make();
+        message.setFilePath(path);
         worker.postMessage(message.serialize());
     }
 
@@ -321,7 +329,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     /** {@inheritDoc} */
     @Override
     public void computeCAProposals(String content, int offset, String fileName, String projectPath,
-                                   WorkerCallback<WorkerProposal> callback) {
+                                   String filePath, WorkerCallback<WorkerProposal> callback) {
         if (worker == null) {
             return;
         }
@@ -329,7 +337,8 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         MessagesImpls.ComputeCAProposalsMessageImpl computeMessage = MessagesImpls.ComputeCAProposalsMessageImpl.make();
         String uuid = UUID.uuid();
         arrayCallbacks.put(uuid, callback);
-        computeMessage.setDocContent(content).setOffset(offset).setFileName(fileName).setId(uuid).setProjectPath(projectPath);
+        computeMessage.setDocContent(content).setOffset(offset).setFileName(fileName).setId(uuid).setProjectPath(projectPath)
+                      .setFilePath(filePath);
         worker.postMessage(computeMessage.serialize());
     }
 
@@ -352,10 +361,16 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
 
     @Override
     public void computeQAProposals(String content, int offset, int selectionLength, boolean updatedContent,
-                                   JsoArray<ProblemLocationMessage> problems, WorkerCallback<WorkerProposal> callback) {
+                                   JsoArray<ProblemLocationMessage> problems, String filePath, WorkerCallback<WorkerProposal> callback) {
         MessagesImpls.ComputeCorrMessageImpl corrMessage = MessagesImpls.ComputeCorrMessageImpl.make();
-        corrMessage.setDocumentContent(content).setDocumentOffset(offset).setDocumentSelectionLength(selectionLength)
-                   .setUpdatedOffset(updatedContent).setProblemLocations(problems);
+
+        corrMessage.setDocumentContent(content)
+                   .setDocumentOffset(offset)
+                   .setDocumentSelectionLength(selectionLength)
+                   .setUpdatedOffset(updatedContent)
+                   .setProblemLocations(problems)
+                   .setFilePath(filePath);
+
         String uuid = UUID.uuid();
         arrayCallbacks.put(uuid, callback);
         corrMessage.setId(uuid);

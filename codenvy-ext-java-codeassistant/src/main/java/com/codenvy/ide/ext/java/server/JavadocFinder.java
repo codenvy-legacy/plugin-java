@@ -22,12 +22,15 @@ import com.google.inject.Singleton;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IRegion;
 import org.eclipse.jdt.core.ITypeRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
@@ -40,6 +43,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
+import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -209,15 +213,15 @@ public class JavadocFinder {
         long flags = getHeaderFlags(element);
         StringBuffer label = new StringBuffer(JavaElementLinks.getElementLabel(element, flags));
 
-//        if (element.getElementType() == IJavaElement.FIELD) {
-//            String constantValue= getConstantValue((IField) element, editorInputElement);
-//            if (constantValue != null) {
-//                constantValue= HTMLPrinter.convertToHTMLContentWithWhitespace(constantValue);
-//                IJavaProject javaProject= element.getJavaProject();
-//                label.append(getFormattedAssignmentOperator(javaProject));
-//                label.append(constantValue);
-//            }
-//        }
+        if (element.getElementType() == IJavaElement.FIELD) {
+            String constantValue= getConstantValue((IField) element, editorInputElement);
+            if (constantValue != null) {
+                constantValue= HTMLPrinter.convertToHTMLContentWithWhitespace(constantValue);
+                IJavaProject javaProject= element.getJavaProject();
+                label.append(getFormattedAssignmentOperator(javaProject));
+                label.append(constantValue);
+            }
+        }
 
 //		if (element.getElementType() == IJavaElement.METHOD) {
 //			IMethod method= (IMethod)element;
@@ -227,6 +231,50 @@ public class JavadocFinder {
         return getImageAndLabel(element, allowImage, label.toString());
     }
 
+    /**
+     * Returns the assignment operator string with the project's formatting applied to it.
+     *
+     * @param javaProject the Java project whose formatting options will be used.
+     * @return the formatted assignment operator string.
+     * @since 3.4
+     */
+    public static String getFormattedAssignmentOperator(IJavaProject javaProject) {
+        StringBuffer buffer= new StringBuffer();
+        if (JavaCore.INSERT.equals(javaProject.getOption(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_BEFORE_ASSIGNMENT_OPERATOR, true)))
+            buffer.append(' ');
+        buffer.append('=');
+        if (JavaCore.INSERT.equals(javaProject.getOption(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_ASSIGNMENT_OPERATOR, true)))
+            buffer.append(' ');
+        return buffer.toString();
+    }
+    /**
+     * Returns the constant value for the given field.
+     *
+     * @param field the field
+     * @param editorInputElement the editor input element
+     * @param hoverRegion the hover region in the editor
+     * @return the constant value for the given field or <code>null</code> if none
+     * @since 3.4
+     */
+    private String getConstantValue(IField field, ITypeRoot editorInputElement) {
+//        if (!isStaticFinal(field))
+//            return null;
+//
+//        ASTNode node= getHoveredASTNode(editorInputElement, hoverRegion);
+//        if (node == null)
+//            return null;
+//
+//        Object constantValue= getVariableBindingConstValue(node, field);
+//        if (constantValue == null)
+//            return null;
+//
+//        if (constantValue instanceof String) {
+//            return ASTNodes.getEscapedStringLiteral((String) constantValue);
+//        } else {
+//            return getHexConstantValue(constantValue);
+//        }
+        return null;
+    }
     public void addAnnotations(StringBuffer buf, IJavaElement element, ITypeRoot editorInputElement, IRegion hoverRegion) {
         try {
             if (element instanceof IAnnotatable) {

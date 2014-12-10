@@ -15,8 +15,10 @@ import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
+import com.codenvy.ide.jseditor.client.position.PositionConverter;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import com.codenvy.ide.util.loging.Log;
+import com.google.gwt.http.client.URL;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -55,30 +57,21 @@ public class QuickDocPresenter implements QuickDocumentation, QuickDocView.Actio
             Log.info(getClass(), "Quick Document support only EmbeddedTextEditorPresenter as editor");
             return;
         }
+
         EmbeddedTextEditorPresenter editor = ((EmbeddedTextEditorPresenter)activeEditor);
         int offset = editor.getCursorOffset();
-        worker.computeJavadocHandle(offset, new JavaParserWorker.Callback<String>() {
+        final PositionConverter.PixelCoordinates coordinates = editor.getPositionConverter().offsetToPixel(offset);
+
+        worker.computeJavadocHandle(offset, editor.getEditorInput().getFile().getPath(), new JavaParserWorker.Callback<String>() {
             @Override
             public void onCallback(String result) {
-                if(result != null){
+                if (result != null) {
+                    result = URL.encodeQueryString(result);
                     view.show(caContext + "/javadoc/" + appContext.getWorkspace().getId() + "/find?fqn=" + result + "&projectpath=" +
-                              appContext.getCurrentProject().getProjectDescription().getPath());
+                              appContext.getCurrentProject().getProjectDescription().getPath(), coordinates.getX(), coordinates.getY() + 16);
                 }
             }
         });
-
-//        view.show(caContext + "/javadoc/" + appContext.getWorkspace().getName() + "/find?fqn=java.lang.String&projectpath=" +
-//                  appContext.getCurrentProject().getProjectDescription().getPath());
-    }
-
-    @Override
-    public void back() {
-        view.back();
-    }
-
-    @Override
-    public void forward() {
-        view.forward();
     }
 
     @Override

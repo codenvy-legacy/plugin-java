@@ -10,14 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.inject.Inject;
-
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.text.Position;
 import com.codenvy.ide.api.text.annotation.Annotation;
@@ -42,7 +34,13 @@ import com.codenvy.ide.jseditor.client.quickfix.QuickAssistInvocationContext;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import com.codenvy.ide.jseditor.client.text.LinearRange;
 import com.codenvy.ide.jseditor.client.texteditor.TextEditor;
-import com.codenvy.ide.util.loging.Log;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * {@link QuickAssistProcessor} for java files.
@@ -116,7 +114,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             }
         }
         worker.computeQAProposals(textEditor.getDocument().getContents(), range.getStartOffset(), range.getLength(),
-                                  false, problems,
+                                  false, problems, textEditor.getEditorInput().getFile().getPath(),
                                   new JavaParserWorker.WorkerCallback<WorkerProposal>() {
                                       @Override
                                       public void onResult(final Array<WorkerProposal> problems) {

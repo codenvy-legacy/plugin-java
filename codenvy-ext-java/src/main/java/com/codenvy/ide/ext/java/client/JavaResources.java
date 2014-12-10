@@ -211,13 +211,6 @@ public interface JavaResources extends ClientBundle {
     @Source("svg/text.svg")
     SVGResource textFile();
 
-    @Source("svg/left224.svg")
-    SVGResource leftArrow();
-
-    @Source("svg/right208.svg")
-    SVGResource rightArrow();
-
-
     @Source("svg/update-dependencies.svg")
     SVGResource updateDependencies();
 

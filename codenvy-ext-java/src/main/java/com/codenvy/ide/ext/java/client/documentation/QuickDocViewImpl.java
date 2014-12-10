@@ -11,20 +11,15 @@
 
 package com.codenvy.ide.ext.java.client.documentation;
 
-import elemental.html.FrameElement;
-
-import com.codenvy.ide.toolbar.ToolbarPresenter;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  * @author Evgen Vidolob
@@ -33,12 +28,13 @@ import com.google.inject.name.Named;
 public class QuickDocViewImpl implements QuickDocView {
 
 
-    private       ActionDelegate delegate;
-    private final PopupPanel     popupPanel;
-    private final Frame          frame;
+    private final PopupPanel      popupPanel;
+    private final DockLayoutPanel rootPanel;
+    private       ActionDelegate  delegate;
+    private       Frame           frame;
 
     @Inject
-    public QuickDocViewImpl(@Named("quickdocToolbar") ToolbarPresenter toolbarPresenter) {
+    public QuickDocViewImpl() {
         popupPanel = new PopupPanel(true, true);
         popupPanel.addCloseHandler(new CloseHandler<PopupPanel>() {
             @Override
@@ -47,20 +43,19 @@ public class QuickDocViewImpl implements QuickDocView {
             }
         });
 
-        DockLayoutPanel rootPanel = new DockLayoutPanel(Style.Unit.PX);
-        SimplePanel toolPanel = new SimplePanel();
-        toolPanel.setSize("100%", "100%");
-        rootPanel.addSouth(toolPanel, 20);
-        toolbarPresenter.go(toolPanel);
-
+        rootPanel = new DockLayoutPanel(Style.Unit.PX);
         popupPanel.setWidget(rootPanel);
         rootPanel.setSize("400px", "200px");
 
+        createFrame();
+        rootPanel.add(frame);
+
+    }
+
+    private void createFrame() {
         frame = new Frame();
         frame.setSize("100%", "100%");
         frame.getElement().getStyle().setBorderStyle(Style.BorderStyle.NONE);
-        rootPanel.add(frame);
-
     }
 
     @Override
@@ -74,21 +69,12 @@ public class QuickDocViewImpl implements QuickDocView {
     }
 
     @Override
-    public void show(String url) {
+    public void show(String url, int x, int y) {
+        rootPanel.remove(frame);
+        createFrame();
+        rootPanel.add(frame);
         frame.setUrl(url);
+        popupPanel.setPopupPosition(x, y);
         popupPanel.show();
-        popupPanel.center();
-    }
-
-    @Override
-    public void back() {
-        FrameElement element = (FrameElement)frame.getElement();
-        element.getContentWindow().getHistory().back();
-    }
-
-    @Override
-    public void forward() {
-        FrameElement element = (FrameElement)frame.getElement();
-        element.getContentWindow().getHistory().forward();
     }
 }

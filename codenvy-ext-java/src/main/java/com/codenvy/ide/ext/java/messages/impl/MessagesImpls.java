@@ -151,6 +151,20 @@ public class MessagesImpls {
     }-*/;
 
     @Override
+    public final native java.lang.String filePath() /*-{
+      return this["filePath"];
+    }-*/;
+
+    public final native ComputeCAProposalsMessageImpl setFilePath(java.lang.String filePath) /*-{
+      this["filePath"] = filePath;
+      return this;
+    }-*/;
+
+    public final native boolean hasFilePath() /*-{
+      return this.hasOwnProperty("filePath");
+    }-*/;
+
+    @Override
     public final native java.lang.String docContent() /*-{
       return this["docContent"];
     }-*/;
@@ -280,6 +294,20 @@ public class MessagesImpls {
     public final native ComputeCorrMessageImpl setDocumentContent(java.lang.String documentContent) /*-{
       this["documentContent"] = documentContent;
       return this;
+    }-*/;
+
+    @Override
+    public final native java.lang.String filePath() /*-{
+        return this["filePath"];
+    }-*/;
+
+    public final native ComputeCorrMessageImpl setFilePath(java.lang.String filePath) /*-{
+        this["filePath"] = filePath;
+        return this;
+    }-*/;
+
+    public final native boolean hasFilePath() /*-{
+        return this.hasOwnProperty("filePath");
     }-*/;
 
     public final native boolean hasDocumentContent() /*-{

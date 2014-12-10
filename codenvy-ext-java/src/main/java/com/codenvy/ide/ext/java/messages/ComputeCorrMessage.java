@@ -31,4 +31,6 @@ public interface ComputeCorrMessage extends Message {
     Array<ProblemLocationMessage> problemLocations();
 
     String projectId();
+
+    String filePath();
 }

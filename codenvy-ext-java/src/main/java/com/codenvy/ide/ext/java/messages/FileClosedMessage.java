@@ -9,12 +9,29 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.ext.java.client.documentation;
+package com.codenvy.ide.ext.java.messages;
+
+import com.google.gwt.webworker.client.messages.MessageImpl;
 
 /**
  * @author Evgen Vidolob
  */
-public interface QuickDocumentation {
+public class FileClosedMessage extends MessageImpl {
+    protected FileClosedMessage() {
+    }
 
-    void showDocumentation();
+    public static native FileClosedMessage make() /*-{
+        return {
+            _type : 17
+        }
+    }-*/;
+
+    public final native String getFilePath() /*-{
+        return this["filePath"];
+    }-*/;
+
+    public final native FileClosedMessage setFilePath(String filePath) /*-{
+        this["filePath"] = filePath;
+        return this;
+    }-*/;
 }

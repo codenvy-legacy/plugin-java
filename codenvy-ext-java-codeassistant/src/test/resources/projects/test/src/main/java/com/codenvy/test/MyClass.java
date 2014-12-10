@@ -50,4 +50,14 @@ public class MyClass {
         }
         return name.length() > 3;
     }
+
+    /**
+     * Method with param and exception
+     * @param input
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public String greetServer(String input) throws IllegalArgumentException {
+        return "";
+    }
 }

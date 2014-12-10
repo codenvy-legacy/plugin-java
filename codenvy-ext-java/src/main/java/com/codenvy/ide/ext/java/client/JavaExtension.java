@@ -20,13 +20,10 @@ import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.keybinding.KeyBindingAgent;
 import com.codenvy.ide.api.keybinding.KeyBuilder;
-import com.codenvy.ide.ext.java.client.action.BackAction;
-import com.codenvy.ide.ext.java.client.action.ForwardAction;
 import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
 import com.codenvy.ide.ext.java.client.action.QuickDocumentationAction;
 import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.ide.toolbar.ToolbarPresenter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -66,8 +63,8 @@ public class JavaExtension {
                                 NewPackageAction newPackageAction,
                                 KeyBindingAgent keyBinding,
                                 NewJavaSourceFileAction newJavaSourceFileAction,
-                                ActionManager actionManager, @Named("quickdocToolbar") ToolbarPresenter toolbarPresenter,
-                                BackAction backAction, ForwardAction forwardAction, QuickDocumentationAction quickDocumentationAction) {
+                                ActionManager actionManager,
+                                QuickDocumentationAction quickDocumentationAction) {
         // add actions in File -> New group
         actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
         actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
@@ -77,19 +74,10 @@ public class JavaExtension {
         newGroup.add(newPackageAction);
 
         actionManager.registerAction("showQuickDoc", quickDocumentationAction);
-        actionManager.registerAction("quickdocBack", backAction);
-        actionManager.registerAction("quickdocForward", forwardAction);
 
         DefaultActionGroup codeGroup = (DefaultActionGroup)actionManager.getAction(GROUP_CODE);
         codeGroup.add(quickDocumentationAction, Constraints.LAST);
 
-        DefaultActionGroup quickDocGroup = new DefaultActionGroup(actionManager);
-        actionManager.registerAction("quickdocToolbarGroup", quickDocGroup);
-
-        quickDocGroup.add(backAction);
-        quickDocGroup.add(forwardAction);
-
-        toolbarPresenter.bindMainGroup(quickDocGroup);
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('q').build(), "showQuickDoc");
     }
 

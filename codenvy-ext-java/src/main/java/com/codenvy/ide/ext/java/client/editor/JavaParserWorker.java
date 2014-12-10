@@ -29,7 +29,8 @@ public interface JavaParserWorker {
 
     void parse(String content, String fileName, String filePath, String packageName, String projectPath, WorkerCallback<IProblem> callback);
 
-    void computeCAProposals(String content, int offset, String fileName, String projectPath, WorkerCallback<WorkerProposal> callback);
+    void computeCAProposals(String content, int offset, String fileName, String projectPath, String filePath,
+                            WorkerCallback<WorkerProposal> callback);
 
     void applyCAProposal(String id, Callback<ProposalAppliedMessage> callback);
 
@@ -37,7 +38,7 @@ public interface JavaParserWorker {
 
     void computeQAProposals(String content, int offset, int selectionLength, boolean updatedContent,
                             JsoArray<ProblemLocationMessage> problems,
-                            WorkerCallback<WorkerProposal> callback);
+                            String filePath, WorkerCallback<WorkerProposal> callback);
 
     void removeFqnFromCache(String fqn);
 
@@ -45,7 +46,9 @@ public interface JavaParserWorker {
 
     void preferenceFormatSettings(JsoStringMap<String> settings);
 
-    void computeJavadocHandle(int offset, Callback<String> callback);
+    void computeJavadocHandle(int offset, String filePath, Callback<String> callback);
+
+    void fileClosed(String path);
 
     public interface WorkerCallback<T> {
         void onResult(Array<T> problems);
@@ -54,13 +57,5 @@ public interface JavaParserWorker {
     public interface Callback<T>{
         void onCallback(T result);
     }
-
-//    public interface ApplyCallback {
-//        void onApply(ProposalAppliedMessage message);
-//    }
-
-//    public interface FormatResultCallback {
-//        void onApplyFormat(TextEdit edit);
-//    }
 
 }

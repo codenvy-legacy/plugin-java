@@ -57,13 +57,15 @@ public class WorkerCorrectionProcessor {
 
     private String fErrorMessage;
 
-    private CompilationUnit       cu;
     private JavaParserWorker      worker;
     private WorkerProposalApplier workerProposalApplier;
+    private WorkerCuCache cuCache;
 
-    public WorkerCorrectionProcessor(JavaParserWorker worker, MessageFilter messageFilter, WorkerProposalApplier workerProposalApplier) {
+    public WorkerCorrectionProcessor(JavaParserWorker worker, MessageFilter messageFilter, WorkerProposalApplier workerProposalApplier,
+                                     WorkerCuCache cuCache) {
         this.worker = worker;
         this.workerProposalApplier = workerProposalApplier;
+        this.cuCache = cuCache;
         messageFilter.registerMessageRecipient(RoutingTypes.COMPUTE_CORRECTION, new MessageFilter.MessageRecipient<ComputeCorrMessage>() {
             @Override
             public void onMessageReceived(ComputeCorrMessage message) {
@@ -152,9 +154,9 @@ public class WorkerCorrectionProcessor {
         return false;
     }
 
-    public void setCu(CompilationUnit cu) {
-        this.cu = cu;
-    }
+//    public void setCu(CompilationUnit cu) {
+//        this.cu = cu;
+//    }
 
     public void computateProposals(ComputeCorrMessage message) {
         JsoStringMap<JavaCompletionProposal> proposalMap = JsoStringMap.create();
@@ -162,6 +164,7 @@ public class WorkerCorrectionProcessor {
 
         WorkerDocument document = new WorkerDocument(message.documentContent());
         AssistContext context = null;
+        CompilationUnit cu = cuCache.getCompilationUnit(message.filePath());
         if (cu != null) {
             int length = message.documentSelectionLength();
             context = new AssistContext(document, documentOffset, length, cu);

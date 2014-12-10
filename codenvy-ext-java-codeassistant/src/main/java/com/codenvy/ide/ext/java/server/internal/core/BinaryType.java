@@ -11,6 +11,8 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.runtime.OperationCanceledException;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.CompletionRequestor;
@@ -40,11 +42,13 @@ import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.util.SuffixConstants;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
+import org.eclipse.jdt.internal.core.JavadocConstants;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.eclipse.jdt.internal.core.util.Messages;
 import org.eclipse.jdt.internal.core.util.Util;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -1048,50 +1052,49 @@ public String getAttachedJavadoc(IProgressMonitor monitor) throws JavaModelExcep
 	return javadocContents.getTypeDoc();
 }
 public JavadocContents getJavadocContents(IProgressMonitor monitor) throws JavaModelException {
-//	PerProjectInfo projectInfo = manager.getPerProjectInfoCheckExistence(getJavaProject().getProject());
-//	JavadocContents cachedJavadoc = null;
-//	synchronized (projectInfo.javadocCache) {
-//		cachedJavadoc = (JavadocContents) projectInfo.javadocCache.get(this);
-//	}
-//
-//	if (cachedJavadoc != null && cachedJavadoc != EMPTY_JAVADOC) {
-//		return cachedJavadoc;
-//	}
-//	URL baseLocation= getJavadocBaseLocation();
-//	if (baseLocation == null) {
-//		return null;
-//	}
-//	StringBuffer pathBuffer = new StringBuffer(baseLocation.toExternalForm());
-//
-//	if (!(pathBuffer.charAt(pathBuffer.length() - 1) == '/')) {
-//		pathBuffer.append('/');
-//	}
-//	IPackageFragment pack= getPackageFragment();
-//	String typeQualifiedName = null;
-//	if (isMember()) {
-//		IType currentType = this;
-//		StringBuffer typeName = new StringBuffer();
-//		while (currentType != null) {
-//			typeName.insert(0, currentType.getElementName());
-//			currentType = currentType.getDeclaringType();
-//			if (currentType != null) {
-//				typeName.insert(0, '.');
-//			}
-//		}
-//		typeQualifiedName = new String(typeName.toString());
-//	} else {
-//		typeQualifiedName = getElementName();
-//	}
-//
-//	pathBuffer.append(pack.getElementName().replace('.', '/')).append('/').append(typeQualifiedName).append(JavadocConstants.HTML_EXTENSION);
-//	if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
-//	final String contents = getURLContents(baseLocation, String.valueOf(pathBuffer));
-//	JavadocContents javadocContents = new JavadocContents(this, contents);
-//	synchronized (projectInfo.javadocCache) {
-//		projectInfo.javadocCache.put(this, javadocContents);
-//	}
-//	return javadocContents;
-	throw new UnsupportedOperationException();
+	JavaModelManager.PerProjectInfo projectInfo = manager.getPerProjectInfoCheckExistence();
+	JavadocContents cachedJavadoc = null;
+	synchronized (projectInfo.javadocCache) {
+		cachedJavadoc = (JavadocContents) projectInfo.javadocCache.get(this);
+	}
+
+	if (cachedJavadoc != null && cachedJavadoc != EMPTY_JAVADOC) {
+		return cachedJavadoc;
+	}
+	URL baseLocation= getJavadocBaseLocation();
+	if (baseLocation == null) {
+		return null;
+	}
+	StringBuffer pathBuffer = new StringBuffer(baseLocation.toExternalForm());
+
+	if (!(pathBuffer.charAt(pathBuffer.length() - 1) == '/')) {
+		pathBuffer.append('/');
+	}
+	IPackageFragment pack= getPackageFragment();
+	String typeQualifiedName = null;
+	if (isMember()) {
+		IType currentType = this;
+		StringBuffer typeName = new StringBuffer();
+		while (currentType != null) {
+			typeName.insert(0, currentType.getElementName());
+			currentType = currentType.getDeclaringType();
+			if (currentType != null) {
+				typeName.insert(0, '.');
+			}
+		}
+		typeQualifiedName = new String(typeName.toString());
+	} else {
+		typeQualifiedName = getElementName();
+	}
+
+	pathBuffer.append(pack.getElementName().replace('.', '/')).append('/').append(typeQualifiedName).append(JavadocConstants.HTML_EXTENSION);
+	if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
+	final String contents = getURLContents(baseLocation, String.valueOf(pathBuffer));
+	JavadocContents javadocContents = new JavadocContents(this, contents);
+	synchronized (projectInfo.javadocCache) {
+		projectInfo.javadocCache.put(this, javadocContents);
+	}
+	return javadocContents;
 }
 @Override
 public boolean isLambda() {
