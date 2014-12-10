@@ -48,7 +48,7 @@ public class TemplatesJs {
                                   .append("                        \"enabled\": true,\n")
                                   .append("                        \"id\": \"org.eclipse.jdt.ui.text.codetemplates.constructorcomment\",\n")
                                   .append("                        \"name\": \"constructorcomment\",\n")
-                                  .append("                        \"text\": \"/**\\b * ${tags}\\n *\\/\"\n")
+                                  .append("                        \"text\": \"/**\\n * ${tags}\\n *\\/\"\n")
                                   .append("                    },\n").append("                    {\n")
                                   .append("                        \"autoinsert\": true,\n")
                                   .append("                        \"context\": \"fieldcomment_context\",\n")
