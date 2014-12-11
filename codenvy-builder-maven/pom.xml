@@ -40,6 +40,18 @@
             <artifactId>codenvy-maven-tools</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${org.mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <resources>
@@ -126,6 +138,7 @@
                 <configuration>
                     <dtoPackages>
                         <package>com.codenvy.builder.maven.dto</package>
+                        <package>com.codenvy.generator.archetype.dto</package>
                     </dtoPackages>
                     <outputDirectory>${dto-generator-out-directory}</outputDirectory>
                     <genClassName>com.codenvy.builder.maven.dto.DtoServerImpls</genClassName>

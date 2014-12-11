@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.archetypegenerator;
+package com.codenvy.generator.archetype;
 
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.ProcessUtil;
@@ -63,7 +63,7 @@ public class ArchetypeGenerator {
     private final long                              keepResultTimeMillis;
     private       ExecutorService                   executor;
     private       ScheduledExecutorService          scheduler;
-    private       java.io.File                      projectsFolder;
+    private       File                              projectsFolder;
 
     @Inject
     public ArchetypeGenerator() {
@@ -73,8 +73,8 @@ public class ArchetypeGenerator {
 
     /** Initialize generator. */
     @PostConstruct
-    private void start() {
-        projectsFolder = new java.io.File(System.getProperty("java.io.tmpdir"), "archetype-generator");
+    void start() {
+        projectsFolder = new File(System.getProperty("java.io.tmpdir"), "archetype-generator");
         if (!(projectsFolder.exists() || projectsFolder.mkdirs())) {
             throw new IllegalStateException(String.format("Unable to create directory %s", projectsFolder.getAbsolutePath()));
         }
@@ -107,7 +107,7 @@ public class ArchetypeGenerator {
 
     /** Stops generator and releases any associated resources. */
     @PreDestroy
-    private void stop() {
+    void stop() {
         boolean interrupted = false;
         scheduler.shutdownNow();
         try {
@@ -129,9 +129,9 @@ public class ArchetypeGenerator {
             interrupted |= true;
             executor.shutdownNow();
         }
-        final java.io.File[] files = projectsFolder.listFiles();
+        final File[] files = projectsFolder.listFiles();
         if (files != null && files.length > 0) {
-            for (java.io.File f : files) {
+            for (File f : files) {
                 boolean deleted;
                 if (f.isDirectory()) {
                     deleted = IoUtil.deleteRecursive(f);
@@ -149,7 +149,7 @@ public class ArchetypeGenerator {
         }
     }
 
-    java.io.File getProjectsDirectory() {
+    File getProjectsDirectory() {
         return projectsFolder;
     }
 
@@ -170,11 +170,11 @@ public class ArchetypeGenerator {
      *         version of new project
      * @param options
      *         additional properties for archetype. May be {@code null}
-     * @return generating result
+     * @return generating task
      * @throws GeneratorException
      */
-    public GenerateResult generateFromArchetype(@Nonnull MavenArchetype archetype, @Nonnull String groupId, @Nonnull String artifactId,
-                                                @Nonnull String version, @Nullable Map<String, String> options) throws GeneratorException {
+    public GenerateTask generateFromArchetype(@Nonnull MavenArchetype archetype, @Nonnull String groupId, @Nonnull String artifactId,
+                                              @Nonnull String version, @Nullable Map<String, String> options) throws GeneratorException {
         Map<String, String> myOptions = new HashMap<>();
         myOptions.put("-DinteractiveMode", "false"); // get rid of the interactivity of the archetype plugin
         myOptions.put("-DarchetypeGroupId", archetype.getGroupId());
@@ -189,23 +189,22 @@ public class ArchetypeGenerator {
         if (options != null) {
             myOptions.putAll(options);
         }
+        return generate(artifactId, myOptions);
+    }
 
-        GenerateTask task = generate(artifactId, myOptions);
-        while (!task.isDone()) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+    public GenerateTask getTaskById(Long id) throws GeneratorException {
+        final GenerateTask task = tasks.get(id);
+        if (task == null) {
+            throw new GeneratorException(String.format("Invalid task id: %d", id));
         }
-        return task.getResult();
+        return task;
     }
 
     /** Starts new project generating process. */
     private GenerateTask generate(String artifactId, Map<String, String> options) throws GeneratorException {
         final GeneratorConfiguration configuration = getGeneratorConfigurationFactory().createConfiguration(artifactId, options);
-        final java.io.File workDir = configuration.getWorkDir();
-        final java.io.File logFile = new java.io.File(workDir.getParentFile(), workDir.getName() + ".log");
+        final File workDir = configuration.getWorkDir();
+        final File logFile = new File(workDir.getParentFile(), workDir.getName() + ".log");
         final GeneratorLogger logger = createLogger(logFile);
         final CommandLine commandLine = createCommandLine(configuration);
         final Callable<Boolean> callable = createTaskFor(commandLine, logger, configuration);
@@ -280,7 +279,7 @@ public class ArchetypeGenerator {
      * @return GenerateResult
      * @throws GeneratorException
      *         if an error occurs when try to get result
-     * @see com.codenvy.ide.extension.maven.server.archetypegenerator.ArchetypeGenerator.GenerateTask#getResult()
+     * @see GenerateTask#getResult()
      */
     private GenerateResult getTaskResult(GenerateTask task, boolean successful) throws GeneratorException {
         if (!successful) {
@@ -315,12 +314,12 @@ public class ArchetypeGenerator {
         }
 
         final GeneratorConfiguration config = task.getConfiguration();
-        final java.io.File workDir = config.getWorkDir();
+        final File workDir = config.getWorkDir();
         final GenerateResult result = new GenerateResult(true, getReport(task));
 
-        final java.io.File projectFolder = new java.io.File(workDir, config.getArtifactId());
+        final File projectFolder = new File(workDir, config.getArtifactId());
         if (projectFolder.isDirectory() && projectFolder.list().length > 0) {
-            final java.io.File zip = new java.io.File(workDir, "project.zip");
+            final File zip = new File(workDir, "project.zip");
             try {
                 ZipUtils.zipDir(projectFolder.getAbsolutePath(), projectFolder, zip, IoUtil.ANY_FILTER);
             } catch (IOException e) {
@@ -333,22 +332,22 @@ public class ArchetypeGenerator {
     }
 
     /** Get generating task report or {@code null} if report is not available. */
-    private java.io.File getReport(GenerateTask task) {
-        final java.io.File workDir = task.getConfiguration().getWorkDir();
-        final java.io.File logFile = new java.io.File(workDir.getParentFile(), workDir.getName() + ".log");
+    private File getReport(GenerateTask task) {
+        final File workDir = task.getConfiguration().getWorkDir();
+        final File logFile = new File(workDir.getParentFile(), workDir.getName() + ".log");
         return logFile.exists() ? logFile : null;
     }
 
     /** Cleanup task - remove all local files which were created during project generating process, e.g logs, generated project, etc. */
     private void cleanup(GenerateTask task) {
         final GeneratorConfiguration configuration = task.getConfiguration();
-        final java.io.File workDir = configuration.getWorkDir();
+        final File workDir = configuration.getWorkDir();
         if (workDir != null && workDir.exists()) {
             if (!IoUtil.deleteRecursive(workDir)) {
                 LOG.warn("Unable delete directory {}", workDir);
             }
         }
-        final java.io.File log = task.getLogger().getFile();
+        final File log = task.getLogger().getFile();
         if (log != null && log.exists()) {
             if (!log.delete()) {
                 LOG.warn("Unable delete file {}", log);
@@ -361,14 +360,14 @@ public class ArchetypeGenerator {
             LOG.error("Skip cleanup of the task {}. Unable get task result.", task);
         }
         if (result != null) {
-            java.io.File artifact = result.getResult();
+            File artifact = result.getResult();
             if (artifact.exists()) {
                 if (!artifact.delete()) {
                     LOG.warn("Unable delete file {}", artifact);
                 }
             }
             if (result.hasGenerateReport()) {
-                java.io.File report = result.getGenerateReport();
+                File report = result.getGenerateReport();
                 if (report != null && report.exists()) {
                     if (!report.delete()) {
                         LOG.warn("Unable delete file {}", report);
@@ -376,7 +375,7 @@ public class ArchetypeGenerator {
                 }
             }
         }
-        final java.io.File projectDir = configuration.getProjectDir();
+        final File projectDir = configuration.getProjectDir();
         if (projectDir != null && projectDir.exists()) {
             if (!IoUtil.deleteRecursive(projectDir)) {
                 LOG.warn("Unable delete directory {}", projectDir);
@@ -384,7 +383,7 @@ public class ArchetypeGenerator {
         }
     }
 
-    private class GenerateTask extends FutureTask<Boolean> {
+    class GenerateTask extends FutureTask<Boolean> {
         private final Long                   id;
         private final GeneratorConfiguration configuration;
         private final GeneratorLogger        logger;
@@ -404,7 +403,7 @@ public class ArchetypeGenerator {
             endTime = -1L;
         }
 
-        final Long getId() {
+        Long getId() {
             return id;
         }
 
@@ -431,7 +430,7 @@ public class ArchetypeGenerator {
          * @throws GeneratorException
          *         if an error occurs when try to start project generating process or get its result.
          */
-        final GenerateResult getResult() throws GeneratorException {
+        GenerateResult getResult() throws GeneratorException {
             if (!isDone()) {
                 return null;
             }

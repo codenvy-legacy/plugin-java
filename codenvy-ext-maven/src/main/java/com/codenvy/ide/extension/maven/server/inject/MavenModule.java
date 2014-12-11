@@ -21,13 +21,14 @@ import com.codenvy.ide.extension.maven.server.projecttype.MavenPackagingValuePro
 import com.codenvy.ide.extension.maven.server.projecttype.MavenParentArtifactIdValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenParentGroupIdValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenParentVersionValueProviderFactory;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectGenerator;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeDescriptionsExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeExtension;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeResolver;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenSourceFolderValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenTestSourceFolderValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenVersionValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.generators.QuickstartProjectGenerator;
+import com.codenvy.ide.extension.maven.server.projecttype.generators.SimpleProjectGenerator;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -42,18 +43,21 @@ public class MavenModule extends AbstractModule {
         bind(MavenPomService.class);
         bind(MavenMultimoduleAutoBuilder.class);
 
-        Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenArtifactIdValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenGroupIdValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenVersionValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenPackagingValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenParentArtifactIdValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenParentGroupIdValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenParentVersionValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenSourceFolderValueProviderFactory.class);
-        multiBinder.addBinding().to(MavenTestSourceFolderValueProviderFactory.class);
+        Multibinder<ValueProviderFactory> valueProviderFactoryMultibinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenArtifactIdValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenGroupIdValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenVersionValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenPackagingValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenParentArtifactIdValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenParentGroupIdValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenParentVersionValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenSourceFolderValueProviderFactory.class);
+        valueProviderFactoryMultibinder.addBinding().to(MavenTestSourceFolderValueProviderFactory.class);
 
         Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(MavenProjectTypeResolver.class);
-        Multibinder.newSetBinder(binder(), ProjectGenerator.class).addBinding().to(MavenProjectGenerator.class);
+
+        Multibinder<ProjectGenerator> projectGeneratorMultibinder = Multibinder.newSetBinder(binder(), ProjectGenerator.class);
+        projectGeneratorMultibinder.addBinding().to(SimpleProjectGenerator.class);
+        projectGeneratorMultibinder.addBinding().to(QuickstartProjectGenerator.class);
     }
 }

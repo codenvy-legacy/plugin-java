@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.archetypegenerator;
+package com.codenvy.generator.archetype;
 
 /**
  * Main exception to throw by {@link ArchetypeGenerator}.
@@ -18,6 +18,10 @@ package com.codenvy.ide.extension.maven.server.archetypegenerator;
 public class GeneratorException extends Exception {
     public GeneratorException(Throwable cause) {
         super(cause);
+    }
+
+    public GeneratorException(String message) {
+        super(message);
     }
 
     public GeneratorException(String message, Throwable cause) {

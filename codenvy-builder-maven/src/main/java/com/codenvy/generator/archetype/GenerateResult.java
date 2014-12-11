@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.archetypegenerator;
+package com.codenvy.generator.archetype;
 
 import java.io.File;
 
@@ -20,8 +20,8 @@ import java.io.File;
 public class GenerateResult {
     private final boolean success;
 
-    private File         artifact;
-    private java.io.File report;
+    private File artifact;
+    private File report;
 
     GenerateResult(boolean success, File artifact, File report) {
         this.success = success;
@@ -29,7 +29,7 @@ public class GenerateResult {
         this.report = report;
     }
 
-    GenerateResult(boolean success, java.io.File report) {
+    GenerateResult(boolean success, File report) {
         this(success, null, report);
     }
 
@@ -43,7 +43,7 @@ public class GenerateResult {
     }
 
     /** Gets zipped file with generated project. */
-    public java.io.File getResult() {
+    public File getResult() {
         return artifact;
     }
 
@@ -66,7 +66,7 @@ public class GenerateResult {
      *
      * @return report about project generating or {@code null}
      */
-    public java.io.File getGenerateReport() {
+    public File getGenerateReport() {
         return report;
     }
 }

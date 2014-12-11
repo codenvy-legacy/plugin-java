@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.archetypegenerator;
+package com.codenvy.generator.archetype;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
