@@ -22,6 +22,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -42,12 +43,16 @@ public class MavenPageViewImpl implements MavenPageView {
     @UiField
     TextBox  artifactId;
     @UiField
+    Label    packagingLabel;
+    @UiField
     ListBox  packagingField;
     @UiField
     CheckBox generateFromArchetype;
     @UiField
+    Label    archetypeLabel;
+    @UiField
     ListBox  archetypeField;
-    private ActionDelegate delegate;
+    private ActionDelegate        delegate;
     private Array<MavenArchetype> archetypes;
 
     public MavenPageViewImpl() {
@@ -134,8 +139,21 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
-    public void enablePackaging(boolean enabled) {
-        packagingField.setEnabled(enabled);
+    public void setPackagingVisibility(boolean visible) {
+        packagingLabel.setVisible(visible);
+        packagingField.setVisible(visible);
+    }
+
+    @Override
+    public void setArchetypesVisibility(boolean visible) {
+        archetypeField.setVisible(visible);
+    }
+
+    @Override
+    public void setArchetypeSectionVisibility(boolean visible) {
+        generateFromArchetype.setVisible(visible);
+        archetypeLabel.setVisible(visible);
+        archetypeField.setVisible(visible);
     }
 
     @Override
@@ -208,6 +226,12 @@ public class MavenPageViewImpl implements MavenPageView {
     @Override
     public void enableGenerateFromArchetype(boolean enabled) {
         generateFromArchetype.setEnabled(enabled);
+    }
+
+    @Override
+    public void clearArchetypes() {
+        archetypes.clear();
+        archetypeField.clear();
     }
 
     interface MavenPageViewImplUiBinder

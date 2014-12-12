@@ -41,7 +41,11 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void setVersion(String value);
 
-    void enablePackaging(boolean enabled);
+    void setPackagingVisibility(boolean visible);
+
+    void setArchetypesVisibility(boolean visible);
+
+    void setArchetypeSectionVisibility(boolean visible);
 
     void enableArchetypes(boolean enabled);
 
@@ -54,6 +58,8 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
     void showVersionMissingIndicator(boolean doShow);
 
     void enableGenerateFromArchetype(boolean enabled);
+
+    void clearArchetypes();
 
     public interface ActionDelegate {
 

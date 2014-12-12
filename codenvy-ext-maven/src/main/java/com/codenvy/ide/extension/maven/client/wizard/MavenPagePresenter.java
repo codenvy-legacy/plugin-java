@@ -111,10 +111,10 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         ProjectDescriptor projectUpdate = wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE);
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
 
-        view.enableGenerateFromArchetype(projectUpdate == null);
-        view.enablePackaging(!view.isGenerateFromArchetypeSelected());
+        view.setArchetypeSectionVisibility(projectUpdate == null);
+        view.setPackagingVisibility(!view.isGenerateFromArchetypeSelected());
         view.enableArchetypes(view.isGenerateFromArchetypeSelected());
-        if (projectUpdate == null) {
+        if (projectUpdate == null && view.isGenerateFromArchetypeSelected()) {
             view.setArchetypes(getAvailableArchetypes());
         }
 
@@ -206,8 +206,13 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     @Override
     public void generateFromArchetypeChanged(boolean isGenerateFromArchetype) {
-        view.enablePackaging(!isGenerateFromArchetype);
+        view.setPackagingVisibility(!isGenerateFromArchetype);
         view.enableArchetypes(isGenerateFromArchetype);
+        if (!isGenerateFromArchetype) {
+            view.clearArchetypes();
+        } else {
+            view.setArchetypes(getAvailableArchetypes());
+        }
 
         if (isGenerateFromArchetype) {
             wizardContext.putData(GENERATOR, archetypeToGeneratorDescription(view.getArchetype()));
