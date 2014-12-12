@@ -31,6 +31,7 @@
         <module>codenvy-builder-maven</module>
         <module>codenvy-builder-ant</module>
         <module>codenvy-runner-webapps</module>
+        <module>codenvy-generator-archetype</module>
         <module>codenvy-ext-maven</module>
         <module>codenvy-ext-java</module>
         <module>codenvy-ext-java-codeassistant</module>
