@@ -30,26 +30,26 @@ import java.util.Map;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.QUICKSTART_GENERATOR_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /** @author Artem Zatsarynnyy */
 @RunWith(MockitoJUnitRunner.class)
-public class QuickstartProjectGeneratorTest {
+public class ArchetypeProjectGeneratorTest {
 
     private final VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
-    private QuickstartProjectGenerator generator;
+    private ArchetypeProjectGenerator generator;
 
     @Before
     public void setUp() throws Exception {
-        generator = new QuickstartProjectGenerator("http://localhost/", vfsRegistry);
+        generator = new ArchetypeProjectGenerator("http://localhost/", vfsRegistry);
     }
 
     @Test
     public void testGetId() throws Exception {
-        Assert.assertEquals(QUICKSTART_GENERATOR_ID, generator.getId());
+        Assert.assertEquals(ARCHETYPE_GENERATOR_ID, generator.getId());
     }
 
     @Test

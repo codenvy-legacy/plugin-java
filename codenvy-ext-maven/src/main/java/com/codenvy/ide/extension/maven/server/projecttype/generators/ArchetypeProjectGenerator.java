@@ -42,10 +42,10 @@ import java.util.concurrent.Future;
 
 import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask.Status.FAILED;
 import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask.Status.SUCCESSFUL;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.QUICKSTART_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
@@ -53,25 +53,22 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
  *
  * @author Artem Zatsarynnyy
  */
-public class QuickstartProjectGenerator implements ProjectGenerator {
-    private static final String ARCHETYPE_GROUP_ID    = "org.apache.maven.archetypes";
-    private static final String ARCHETYPE_ARTIFACT_ID = "maven-archetype-quickstart";
-    private static final String ARCHETYPE_VERSION     = "RELEASE";
+public class ArchetypeProjectGenerator implements ProjectGenerator {
     private final String                    generatorServiceUrl;
     private final VirtualFileSystemRegistry vfsRegistry;
     private final DownloadPlugin downloadPlugin = new HttpDownloadPlugin();
     private ExecutorService executor;
 
     @Inject
-    public QuickstartProjectGenerator(@Named("archetype_generator_service.url") String generatorServiceUrl,
-                                      VirtualFileSystemRegistry vfsRegistry) {
+    public ArchetypeProjectGenerator(@Named("archetype_generator_service.url") String generatorServiceUrl,
+                                     VirtualFileSystemRegistry vfsRegistry) {
         this.generatorServiceUrl = generatorServiceUrl;
         this.vfsRegistry = vfsRegistry;
     }
 
     @Override
     public String getId() {
-        return QUICKSTART_GENERATOR_ID;
+        return ARCHETYPE_GENERATOR_ID;
     }
 
     @Override
@@ -96,22 +93,47 @@ public class QuickstartProjectGenerator implements ProjectGenerator {
         List<String> artifactId = attributes.get(ARTIFACT_ID);
         List<String> groupId = attributes.get(GROUP_ID);
         List<String> version = attributes.get(VERSION);
-        if (artifactId == null || artifactId.isEmpty() || groupId == null || groupId.isEmpty() || version == null || version.isEmpty()) {
-            throw new ServerException("Missed some required attribute (artifactId, groupId or version)");
+        if (groupId == null || groupId.isEmpty() || artifactId == null || artifactId.isEmpty() || version == null || version.isEmpty()) {
+            throw new ServerException("Missed some required attribute (groupId, artifactId or version)");
         }
 
+        String archetypeGroupId = null;
+        String archetypeArtifactId = null;
+        String archetypeVersion = null;
         Map<String, String> options = new HashMap<>();
-        options.put("-Dpackage", "app");
-        GenerateTaskCallable callable = new GenerateTaskCallable(generatorServiceUrl,
-                                                                 ARCHETYPE_GROUP_ID, ARCHETYPE_ARTIFACT_ID, ARCHETYPE_VERSION,
-                                                                 groupId.get(0), artifactId.get(0), version.get(0), options);
+
+        for (Map.Entry<String, String> entry : newProjectDescriptor.getGeneratorDescription().getOptions().entrySet()) {
+            switch (entry.getKey()) {
+                case "archetypeGroupId":
+                    archetypeGroupId = entry.getValue();
+                    break;
+                case "archetypeArtifactId":
+                    archetypeArtifactId = entry.getValue();
+                    break;
+                case "archetypeVersion":
+                    archetypeVersion = entry.getValue();
+                    break;
+                default:
+                    options.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        if (archetypeGroupId == null || archetypeGroupId.isEmpty() ||
+            archetypeArtifactId == null || archetypeArtifactId.isEmpty() ||
+            archetypeVersion == null || archetypeVersion.isEmpty()) {
+            throw new ServerException("Missed some required option (archetypeGroupId, archetypeArtifactId or archetypeVersion)");
+        }
+
+        final GenerateTaskCallable callable = new GenerateTaskCallable(generatorServiceUrl,
+                                                                       archetypeGroupId, archetypeArtifactId, archetypeVersion,
+                                                                       groupId.get(0), artifactId.get(0), version.get(0), options);
         Future<GenerateTask> futureTask = executor.submit(callable);
         try {
             GenerateTask task = futureTask.get();
             if (task.getStatus() == SUCCESSFUL) {
                 download(task, baseFolder);
             } else if (task.getStatus() == FAILED) {
-                throw new ServerException(task.getReport().isEmpty() ? "Failed to generate project" : task.getReport());
+                throw new ServerException(task.getReport().isEmpty() ? "Failed to generate project: " : task.getReport());
             }
         } catch (NotFoundException | InterruptedException | ExecutionException | IOException e) {
             throw new ServerException(e.getMessage(), e);
@@ -120,7 +142,7 @@ public class QuickstartProjectGenerator implements ProjectGenerator {
 
     private void download(GenerateTask generateTask, FolderEntry baseFolder)
             throws ServerException, ConflictException, ForbiddenException, IOException, NotFoundException {
-        final ValueHolder<java.io.File> resultHolder = new ValueHolder<>();
+        final ValueHolder<File> resultHolder = new ValueHolder<>();
         final ValueHolder<IOException> errorHolder = new ValueHolder<>();
         DownloadPlugin.Callback callback = new DownloadPlugin.Callback() {
             @Override

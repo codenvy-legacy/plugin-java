@@ -59,7 +59,7 @@ public class SimpleProjectGenerator implements ProjectGenerator {
         List<String> groupId = attributes.get(GROUP_ID);
         List<String> version = attributes.get(VERSION);
         if (artifactId == null || artifactId.isEmpty() || groupId == null || groupId.isEmpty() || version == null || version.isEmpty()) {
-            throw new ServerException("Missed some required attribute (artifactId, groupId or version)");
+            throw new ServerException("Missed some required attribute (groupId, artifactId or version)");
         }
 
         Model model = Model.createModel();

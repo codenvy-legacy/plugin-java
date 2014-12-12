@@ -16,6 +16,8 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.api.wizard.Wizard;
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
@@ -31,11 +33,12 @@ import com.google.web.bindery.event.shared.EventBus;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizard.GENERATOR;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.QUICKSTART_GENERATOR_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 
 /**
@@ -107,13 +110,21 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
         ProjectDescriptor projectUpdate = wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE);
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
+
+        view.enableGenerateFromArchetype(projectUpdate == null);
+        view.enablePackaging(!view.isGenerateFromArchetypeSelected());
+        view.enableArchetypes(view.isGenerateFromArchetypeSelected());
+        if (projectUpdate == null) {
+            view.setArchetypes(getAvailableArchetypes());
+        }
+
         if (project != null) {
             attributes = project.getAttributes();
             attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
             attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
 
             if (view.isGenerateFromArchetypeSelected()) {
-                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(QUICKSTART_GENERATOR_ID));
+                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(ARCHETYPE_GENERATOR_ID));
             } else {
                 wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
             }
@@ -177,12 +188,12 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         attributes.put(MavenAttributes.ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
         attributes.put(MavenAttributes.GROUP_ID, Arrays.asList(view.getGroupId()));
         attributes.put(MavenAttributes.VERSION, Arrays.asList(view.getVersion()));
-        setPackaging(view.getPackaging());
+        packagingChanged(view.getPackaging());
         delegate.updateControls();
     }
 
     @Override
-    public void setPackaging(String packaging) {
+    public void packagingChanged(String packaging) {
         attributes.put(MavenAttributes.PACKAGING, Arrays.asList(packaging));
         if ("pom".equals(packaging)) {
             attributes.remove(MavenAttributes.SOURCE_FOLDER);
@@ -195,10 +206,34 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     @Override
     public void generateFromArchetypeChanged(boolean isGenerateFromArchetype) {
+        view.enablePackaging(!isGenerateFromArchetype);
+        view.enableArchetypes(isGenerateFromArchetype);
+
         if (isGenerateFromArchetype) {
-            wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(QUICKSTART_GENERATOR_ID));
+            wizardContext.putData(GENERATOR, archetypeToGeneratorDescription(view.getArchetype()));
         } else {
             wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
         }
+    }
+
+    @Override
+    public void archetypeChanged(MavenArchetype archetype) {
+        wizardContext.putData(GENERATOR, archetypeToGeneratorDescription(archetype));
+    }
+
+    private GeneratorDescription archetypeToGeneratorDescription(MavenArchetype archetype) {
+        HashMap<String, String> options = new HashMap<>();
+        options.put("archetypeGroupId", archetype.getGroupId());
+        options.put("archetypeArtifactId", archetype.getArtifactId());
+        options.put("archetypeVersion", archetype.getVersion());
+        if (archetype.getRepository() != null) {
+            options.put("archetypeRepository", archetype.getRepository());
+        }
+        return dtoFactory.createDto(GeneratorDescription.class).withName(ARCHETYPE_GENERATOR_ID).withOptions(options);
+    }
+
+    private Array<MavenArchetype> getAvailableArchetypes() {
+        return Collections.createArray(new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "RELEASE", null),
+                                       new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null));
     }
 }
