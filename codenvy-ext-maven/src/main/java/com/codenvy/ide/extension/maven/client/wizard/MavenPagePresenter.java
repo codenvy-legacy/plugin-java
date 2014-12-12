@@ -11,6 +11,7 @@
 package com.codenvy.ide.extension.maven.client.wizard;
 
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
+import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
@@ -32,6 +33,10 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizard.GENERATOR;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.QUICKSTART_GENERATOR_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 
 /**
  * @author Evgen Vidolob
@@ -106,6 +111,13 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
             attributes = project.getAttributes();
             attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
             attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+
+            if (view.isGenerateFromArchetypeSelected()) {
+                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(QUICKSTART_GENERATOR_ID));
+            } else {
+                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
+            }
+
             BuildersDescriptor builders = project.getBuilders();
             if (builders == null) {
                 builders = dtoFactory.createDto(BuildersDescriptor.class);
@@ -178,6 +190,15 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         } else {
             attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
             attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+        }
+    }
+
+    @Override
+    public void generateFromArchetypeChanged(boolean isGenerateFromArchetype) {
+        if (isGenerateFromArchetype) {
+            wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(QUICKSTART_GENERATOR_ID));
+        } else {
+            wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
         }
     }
 }

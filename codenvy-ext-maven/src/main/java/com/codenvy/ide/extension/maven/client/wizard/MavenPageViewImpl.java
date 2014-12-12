@@ -13,10 +13,12 @@ package com.codenvy.ide.extension.maven.client.wizard;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
@@ -30,20 +32,21 @@ public class MavenPageViewImpl implements MavenPageView {
     private static MavenPageViewImplUiBinder ourUiBinder = GWT.create(MavenPageViewImplUiBinder.class);
     private final DockLayoutPanel rootElement;
     @UiField
-    Style   style;
+    Style    style;
     @UiField
-    TextBox versionField;
+    TextBox  versionField;
     @UiField
-    TextBox groupId;
+    TextBox  groupId;
     @UiField
-    TextBox artifactId;
+    TextBox  artifactId;
     @UiField
-    ListBox packagingField;
+    ListBox  packagingField;
+    @UiField
+    CheckBox generateFromArchetype;
     private ActionDelegate delegate;
 
     public MavenPageViewImpl() {
         rootElement = ourUiBinder.createAndBindUi(this);
-
     }
 
     @Override
@@ -98,12 +101,17 @@ public class MavenPageViewImpl implements MavenPageView {
         groupId.setText("");
         versionField.setText("1.0-SNAPSHOT");
         packagingField.setSelectedIndex(0);
-
+        generateFromArchetype.setValue(false);
     }
 
     @Override
     public void enablePackaging(boolean enabled) {
         packagingField.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean isGenerateFromArchetypeSelected() {
+        return generateFromArchetype.getValue();
     }
 
     @Override
@@ -124,6 +132,11 @@ public class MavenPageViewImpl implements MavenPageView {
     @UiHandler("packagingField")
     void onPackagingChanged(ChangeEvent event) {
         delegate.setPackaging(getPackaging());
+    }
+
+    @UiHandler({"generateFromArchetype"})
+    void generateFromArchetypeHandler(ValueChangeEvent<Boolean> event) {
+        delegate.generateFromArchetypeChanged(generateFromArchetype.getValue());
     }
 
     @Override

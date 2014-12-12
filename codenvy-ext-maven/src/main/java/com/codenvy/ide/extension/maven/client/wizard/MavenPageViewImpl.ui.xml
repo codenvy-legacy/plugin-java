@@ -45,6 +45,20 @@
             box-shadow: 0 0 5px #ffe400;
         }
 
+        .labelPosition {
+            position: relative;
+            line-height: 29px;
+            margin-right: 9px;
+            font-weight: bold;
+            float: left;
+            font-size: 12px;
+        }
+
+        .checkBoxPosition {
+            position: relative;
+            top: 5px;
+        }
+
     </ui:style>
     <g:DockLayoutPanel unit="PX" debugId="mavenPageView-mainPanel" addStyleNames="{style.mainDoc}">
         <g:north size="50">
@@ -118,6 +132,16 @@
                             </g:ListBox>
                         </g:SimplePanel>
                     </g:SimplePanel>
+                </g:center>
+            </g:DockLayoutPanel>
+        </g:north>
+        <g:north size="50">
+            <g:DockLayoutPanel unit="PX" width="100%" height="100%">
+                <g:center>
+                    <g:FlowPanel addStyleNames="{style.spaceRight}">
+                        <g:Label text="Generate from quickstart archetype" addStyleNames="{style.labelPosition} {style.projectNamePosition}"/>
+                        <g:CheckBox ui:field="generateFromArchetype" debugId="mavenPageView-generateFromArchetype" addStyleNames="{style.checkBoxPosition}"/>
+                    </g:FlowPanel>
                 </g:center>
             </g:DockLayoutPanel>
         </g:north>

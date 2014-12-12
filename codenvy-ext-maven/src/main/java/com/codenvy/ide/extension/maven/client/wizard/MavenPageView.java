@@ -38,6 +38,8 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void enablePackaging(boolean enabled);
 
+    boolean isGenerateFromArchetypeSelected();
+
     void showArtifactIdMissingIndicator(boolean doShow);
 
     void showGroupIdMissingIndicator(boolean doShow);
@@ -49,5 +51,7 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
         void onTextsChange();
 
         void setPackaging(String packaging);
+
+        void generateFromArchetypeChanged(boolean isGenerateFromArchetype);
     }
 }
