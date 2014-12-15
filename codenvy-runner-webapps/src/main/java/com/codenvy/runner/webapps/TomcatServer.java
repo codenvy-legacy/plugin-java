@@ -105,7 +105,7 @@ public class TomcatServer implements ApplicationServer {
             }
             Files.createDirectory(webappsPath);
             final Path rootPath = Files.createDirectory(webappsPath.resolve("ROOT"));
-            if (toDeploy.isArchive()) {
+            if (toDeploy.isZipArchive()) {
                 ZipUtils.unzip(toDeploy.getFile(), rootPath.toFile());
             } else {
                 IoUtil.copy(toDeploy.getFile(), rootPath.toFile(), null);
