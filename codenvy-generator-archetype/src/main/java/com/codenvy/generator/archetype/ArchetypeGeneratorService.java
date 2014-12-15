@@ -61,7 +61,8 @@ public class ArchetypeGeneratorService {
                                  @QueryParam("artifactId") String artifactId,
                                  @QueryParam("version") String version,
                                  Map<String, String> options) throws GeneratorException {
-        final MavenArchetype archetype = new MavenArchetype(archetypeGroupId, archetypeArtifactId, archetypeVersion, null);
+        final String archetypeRepository = options.remove("archetypeRepository");
+        final MavenArchetype archetype = new MavenArchetype(archetypeGroupId, archetypeArtifactId, archetypeVersion, archetypeRepository);
         ArchetypeGenerator.GenerateTask task = archetypeGenerator.generateFromArchetype(archetype, groupId, artifactId, version, options);
         final GenerateTask generateTask = DtoFactory.getInstance().createDto(GenerateTask.class);
         generateTask
