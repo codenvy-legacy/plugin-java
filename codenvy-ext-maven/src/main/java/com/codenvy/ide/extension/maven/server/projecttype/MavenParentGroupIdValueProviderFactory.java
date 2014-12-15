@@ -53,14 +53,16 @@ public class MavenParentGroupIdValueProviderFactory extends AbstractMavenValuePr
 
                 try {
                     VirtualFile pom = getPom(project);
-                    Model model = Model.readFrom(pom);
-                    Parent parent = model.getParent();
-                    if (parent != null) {
-                        parent.setGroupId(value.get(0));
-                    } else {
-                        model.setParent(new Parent().setGroupId(value.get(0)));
+                    if (pom != null) {
+                        Model model = Model.readFrom(pom);
+                        Parent parent = model.getParent();
+                        if (parent != null) {
+                            parent.setGroupId(value.get(0));
+                        } else {
+                            model.setParent(new Parent().setGroupId(value.get(0)));
+                        }
+                        model.writeTo(pom);
                     }
-                    model.writeTo(pom);
                 } catch (ServerException | ForbiddenException | IOException e) {
                     throwWriteException(e);
                 }

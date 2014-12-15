@@ -26,7 +26,7 @@ public class JavaWebApplicationValidator implements DeploymentSourcesValidator {
 
     @Override
     public boolean isValid(DeploymentSources deployment) {
-        if (deployment.isArchive()) {
+        if (deployment.isZipArchive()) {
             try (ZipFile zip = new ZipFile(deployment.getFile())) {
                 return zip.getEntry(WEB_XML) != null;
             } catch (IOException e) {

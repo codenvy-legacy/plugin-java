@@ -324,7 +324,7 @@
             }
         },
         "runners": {
-            "default": "system:/java/mobile/android",
+            "default": "system:/java/mobile/android442",
             "configs": {
                 "recommend": {
                     "ram": 256
