@@ -26,6 +26,9 @@ import com.codenvy.commons.lang.NamedThreadFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask;
 import com.google.inject.name.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -33,12 +36,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask.Status.FAILED;
 import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask.Status.SUCCESSFUL;
@@ -47,6 +55,7 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * Generates sample Maven project using maven-archetype-quickstart.
@@ -54,16 +63,21 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
  * @author Artem Zatsarynnyy
  */
 public class ArchetypeProjectGenerator implements ProjectGenerator {
-    private final String                    generatorServiceUrl;
-    private final VirtualFileSystemRegistry vfsRegistry;
+    private static final Logger     LOG            = LoggerFactory.getLogger(ArchetypeProjectGenerator.class);
+    private static final AtomicLong taskIdSequence = new AtomicLong(1);
+    private final ConcurrentMap<Long, GenerateTaskCallable> tasks;
+    private final String                                    generatorServiceUrl;
+    private final VirtualFileSystemRegistry                 vfsRegistry;
     private final DownloadPlugin downloadPlugin = new HttpDownloadPlugin();
-    private ExecutorService executor;
+    private ExecutorService          executor;
+    private ScheduledExecutorService scheduler;
 
     @Inject
     public ArchetypeProjectGenerator(@Named("archetype_generator_service.url") String generatorServiceUrl,
                                      VirtualFileSystemRegistry vfsRegistry) {
         this.generatorServiceUrl = generatorServiceUrl;
         this.vfsRegistry = vfsRegistry;
+        tasks = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -79,11 +93,38 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     @PostConstruct
     void start() {
         executor = Executors.newCachedThreadPool(new NamedThreadFactory("-ProjectGenerator-" + getId() + "-", true));
+        scheduler =
+                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("-ProjectGeneratorSchedulerPool-" + getId() + "-", true));
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                int num = 0;
+                for (Iterator<GenerateTaskCallable> i = tasks.values().iterator(); i.hasNext(); ) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        return;
+                    }
+                    final GenerateTaskCallable task = i.next();
+                    if (task.isDone()) {
+                        i.remove();
+                        try {
+                            cleanup(task);
+                        } catch (RuntimeException e) {
+                            LOG.error(e.getMessage(), e);
+                        }
+                        num++;
+                    }
+                }
+                if (num > 0) {
+                    LOG.debug("Remove {} expired tasks", num);
+                }
+            }
+        }, 1, 1, MINUTES);
     }
 
     @PreDestroy
     void stop() {
         executor.shutdownNow();
+        scheduler.shutdownNow();
+        tasks.clear();
     }
 
     @Override
@@ -124,24 +165,29 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
             throw new ServerException("Missed some required option (archetypeGroupId, archetypeArtifactId or archetypeVersion)");
         }
 
-        final GenerateTaskCallable callable = new GenerateTaskCallable(generatorServiceUrl,
-                                                                       archetypeGroupId, archetypeArtifactId, archetypeVersion,
-                                                                       groupId.get(0), artifactId.get(0), version.get(0), options);
-        Future<GenerateTask> futureTask = executor.submit(callable);
+        final Long internalId = taskIdSequence.getAndIncrement();
         try {
+            final File downloadFolder = Files.createTempDirectory("generated-project-").toFile();
+            final GenerateTaskCallable callable = new GenerateTaskCallable(generatorServiceUrl, internalId,
+                                                                           archetypeGroupId, archetypeArtifactId, archetypeVersion,
+                                                                           groupId.get(0), artifactId.get(0), version.get(0), options,
+                                                                           downloadFolder);
+            tasks.put(internalId, callable);
+            Future<GenerateTask> futureTask = executor.submit(callable);
             GenerateTask task = futureTask.get();
             if (task.getStatus() == SUCCESSFUL) {
-                download(task, baseFolder);
+                final File result = downloadTaskResult(task, downloadFolder);
+                copyFileToRemoteFolder(result, baseFolder);
             } else if (task.getStatus() == FAILED) {
                 throw new ServerException(task.getReport().isEmpty() ? "Failed to generate project: " : task.getReport());
             }
+            callable.done();
         } catch (NotFoundException | InterruptedException | ExecutionException | IOException e) {
             throw new ServerException(e.getMessage(), e);
         }
     }
 
-    private void download(GenerateTask generateTask, FolderEntry baseFolder)
-            throws ServerException, ConflictException, ForbiddenException, IOException, NotFoundException {
+    private File downloadTaskResult(GenerateTask generateTask, File downloadFolder) throws ServerException, IOException {
         final ValueHolder<File> resultHolder = new ValueHolder<>();
         final ValueHolder<IOException> errorHolder = new ValueHolder<>();
         DownloadPlugin.Callback callback = new DownloadPlugin.Callback() {
@@ -155,17 +201,26 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
                 errorHolder.set(e);
             }
         };
-        downloadPlugin.download(generateTask.getDownloadUrl(), Files.createTempDirectory("generated-project-").toFile(), callback);
+        downloadPlugin.download(generateTask.getDownloadUrl(), downloadFolder, callback);
         final IOException ioError = errorHolder.get();
         if (ioError != null) {
             throw new ServerException(ioError);
         }
-        copyFileToRemoteFolder(resultHolder.get(), baseFolder);
+        return resultHolder.get();
     }
 
     private void copyFileToRemoteFolder(File file, FolderEntry baseFolder)
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
         final VirtualFileSystem vfs = vfsRegistry.getProvider(baseFolder.getWorkspace()).newInstance(null);
         vfs.importZip(baseFolder.getVirtualFile().getId(), Files.newInputStream(file.toPath()), true, false);
+    }
+
+    private void cleanup(GenerateTaskCallable task) {
+        final File downloadFolder = task.getDownloadFolder();
+        if (downloadFolder != null && downloadFolder.exists()) {
+            if (!downloadFolder.delete()) {
+                LOG.warn("Unable to delete file {}", downloadFolder);
+            }
+        }
     }
 }

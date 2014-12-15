@@ -23,6 +23,7 @@ import com.codenvy.dto.shared.JsonStringMap;
 import com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -36,6 +37,7 @@ import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.
  */
 class GenerateTaskCallable implements Callable<GenerateTask> {
     private static String              serviceUrl;
+    private final  Long                id;
     private final  String              archetypeGroupId;
     private final  String              archetypeArtifactId;
     private final  String              archetypeVersion;
@@ -43,9 +45,14 @@ class GenerateTaskCallable implements Callable<GenerateTask> {
     private final  String              artifactId;
     private final  String              version;
     private final  Map<String, String> options;
+    private        boolean             done;
+    private        File                downloadFolder;
 
-    GenerateTaskCallable(String generatorServiceUrl, String archetypeGroupId, String archetypeArtifactId, String archetypeVersion,
-                         String groupId, String artifactId, String version, @Nullable Map<String, String> options) {
+    GenerateTaskCallable(String generatorServiceUrl, Long id, String archetypeGroupId, String archetypeArtifactId, String archetypeVersion,
+                         String groupId, String artifactId, String version, @Nullable Map<String, String> options, File downloadFolder) {
+        serviceUrl = generatorServiceUrl + "/maven-generator-archetype";
+        this.id = id;
+        this.downloadFolder = downloadFolder;
         this.archetypeGroupId = archetypeGroupId;
         this.archetypeArtifactId = archetypeArtifactId;
         this.archetypeVersion = archetypeVersion;
@@ -53,7 +60,6 @@ class GenerateTaskCallable implements Callable<GenerateTask> {
         this.artifactId = artifactId;
         this.version = version;
         this.options = options;
-        serviceUrl = generatorServiceUrl + "/maven-generator-archetype";
     }
 
     @Override
@@ -90,5 +96,21 @@ class GenerateTaskCallable implements Callable<GenerateTask> {
         } catch (IOException | ServerException | NotFoundException | UnauthorizedException | ForbiddenException | ConflictException e) {
             throw new ServerException(e);
         }
+    }
+
+    void done() {
+        done = true;
+    }
+
+    boolean isDone() {
+        return done;
+    }
+
+    Long getId() {
+        return id;
+    }
+
+    File getDownloadFolder() {
+        return downloadFolder;
     }
 }
