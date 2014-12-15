@@ -111,7 +111,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         ProjectDescriptor projectUpdate = wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE);
         ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
 
-        view.setArchetypeSectionVisibility(projectUpdate == null);
+        view.setArchetypeSectionVisibility(false);
         view.setPackagingVisibility(!view.isGenerateFromArchetypeSelected());
         view.enableArchetypes(view.isGenerateFromArchetypeSelected());
         if (projectUpdate == null && view.isGenerateFromArchetypeSelected()) {
