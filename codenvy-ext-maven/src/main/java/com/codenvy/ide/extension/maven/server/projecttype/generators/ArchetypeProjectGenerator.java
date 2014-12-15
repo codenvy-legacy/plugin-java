@@ -22,6 +22,7 @@ import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystem;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
+import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.commons.lang.NamedThreadFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask;
 import com.google.inject.name.Named;
@@ -218,7 +219,7 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     private void cleanup(GenerateTaskCallable task) {
         final File downloadFolder = task.getDownloadFolder();
         if (downloadFolder != null && downloadFolder.exists()) {
-            if (!downloadFolder.delete()) {
+            if (!IoUtil.deleteRecursive(downloadFolder)) {
                 LOG.warn("Unable to delete file {}", downloadFolder);
             }
         }
