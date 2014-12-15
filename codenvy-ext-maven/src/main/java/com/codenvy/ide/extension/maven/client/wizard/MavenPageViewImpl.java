@@ -58,6 +58,9 @@ public class MavenPageViewImpl implements MavenPageView {
     public MavenPageViewImpl() {
         rootElement = ourUiBinder.createAndBindUi(this);
         archetypes = Collections.createArray();
+
+        generateFromArchetype.setVisible(false);
+        archetypeField.setVisible(false);
     }
 
     @Override

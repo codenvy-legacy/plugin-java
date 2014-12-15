@@ -58,6 +58,6 @@ public class MavenModule extends AbstractModule {
 
         Multibinder<ProjectGenerator> projectGeneratorMultibinder = Multibinder.newSetBinder(binder(), ProjectGenerator.class);
         projectGeneratorMultibinder.addBinding().to(SimpleProjectGenerator.class);
-        projectGeneratorMultibinder.addBinding().to(ArchetypeProjectGenerator.class);
+//        projectGeneratorMultibinder.addBinding().to(ArchetypeProjectGenerator.class);
     }
 }
