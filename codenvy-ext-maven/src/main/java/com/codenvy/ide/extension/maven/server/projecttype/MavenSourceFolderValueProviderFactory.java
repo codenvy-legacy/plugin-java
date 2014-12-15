@@ -63,9 +63,6 @@ public class MavenSourceFolderValueProviderFactory extends AbstractMavenValuePro
 
                 try {
                     String srcPath = strings.get(0);
-//                    if (project.getBaseFolder().getChild(srcPath) == null) {
-//                        project.getBaseFolder().createFolder(srcPath);
-//                    }
                     if (!"src/main/java".equals(srcPath)) {
                         VirtualFile pom = getPom(project);
                         if (pom != null) {

@@ -10,14 +10,19 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client.wizard;
 
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.collections.Collections;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -30,20 +35,29 @@ public class MavenPageViewImpl implements MavenPageView {
     private static MavenPageViewImplUiBinder ourUiBinder = GWT.create(MavenPageViewImplUiBinder.class);
     private final DockLayoutPanel rootElement;
     @UiField
-    Style   style;
+    Style    style;
     @UiField
-    TextBox versionField;
+    TextBox  versionField;
     @UiField
-    TextBox groupId;
+    TextBox  groupId;
     @UiField
-    TextBox artifactId;
+    TextBox  artifactId;
     @UiField
-    ListBox packagingField;
-    private ActionDelegate delegate;
+    Label    packagingLabel;
+    @UiField
+    ListBox  packagingField;
+    @UiField
+    CheckBox generateFromArchetype;
+    @UiField
+    Label    archetypeLabel;
+    @UiField
+    ListBox  archetypeField;
+    private ActionDelegate        delegate;
+    private Array<MavenArchetype> archetypes;
 
     public MavenPageViewImpl() {
         rootElement = ourUiBinder.createAndBindUi(this);
-
+        archetypes = Collections.createArray();
     }
 
     @Override
@@ -92,18 +106,64 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
+    public MavenArchetype getArchetype() {
+        final String coordinates = archetypeField.getValue(archetypeField.getSelectedIndex());
+        for (MavenArchetype archetype : archetypes.asIterable()) {
+            if (coordinates.equals(archetype.toString())) {
+                return archetype;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void setArchetypes(Array<MavenArchetype> archetypes) {
+        this.archetypes.addAll(archetypes);
+        archetypeField.clear();
+        for (MavenArchetype archetype : archetypes.asIterable()) {
+            archetypeField.addItem(archetype.toString(), archetype.toString());
+        }
+    }
+
+    @Override
     public void reset() {
         artifactId.setText("");
         artifactId.setFocus(true);
         groupId.setText("");
         versionField.setText("1.0-SNAPSHOT");
         packagingField.setSelectedIndex(0);
+        generateFromArchetype.setValue(false);
 
+        archetypes.clear();
+        archetypeField.clear();
     }
 
     @Override
-    public void enablePackaging(boolean enabled) {
-        packagingField.setEnabled(enabled);
+    public void setPackagingVisibility(boolean visible) {
+        packagingLabel.setVisible(visible);
+        packagingField.setVisible(visible);
+    }
+
+    @Override
+    public void setArchetypesVisibility(boolean visible) {
+        archetypeField.setVisible(visible);
+    }
+
+    @Override
+    public void setArchetypeSectionVisibility(boolean visible) {
+        generateFromArchetype.setVisible(visible);
+        archetypeLabel.setVisible(visible);
+        archetypeField.setVisible(visible);
+    }
+
+    @Override
+    public void enableArchetypes(boolean enabled) {
+        archetypeField.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean isGenerateFromArchetypeSelected() {
+        return generateFromArchetype.getValue();
     }
 
     @Override
@@ -123,7 +183,17 @@ public class MavenPageViewImpl implements MavenPageView {
 
     @UiHandler("packagingField")
     void onPackagingChanged(ChangeEvent event) {
-        delegate.setPackaging(getPackaging());
+        delegate.packagingChanged(getPackaging());
+    }
+
+    @UiHandler({"generateFromArchetype"})
+    void generateFromArchetypeHandler(ValueChangeEvent<Boolean> event) {
+        delegate.generateFromArchetypeChanged(generateFromArchetype.getValue());
+    }
+
+    @UiHandler("archetypeField")
+    void onArchetypeChanged(ChangeEvent event) {
+        delegate.archetypeChanged(getArchetype());
     }
 
     @Override
@@ -151,6 +221,17 @@ public class MavenPageViewImpl implements MavenPageView {
         } else {
             versionField.removeStyleName(style.inputError());
         }
+    }
+
+    @Override
+    public void enableGenerateFromArchetype(boolean enabled) {
+        generateFromArchetype.setEnabled(enabled);
+    }
+
+    @Override
+    public void clearArchetypes() {
+        archetypes.clear();
+        archetypeField.clear();
     }
 
     interface MavenPageViewImplUiBinder

@@ -11,6 +11,7 @@
 package com.codenvy.ide.extension.maven.client.wizard;
 
 import com.codenvy.ide.api.mvp.View;
+import com.codenvy.ide.collections.Array;
 import com.google.inject.ImplementedBy;
 
 /**
@@ -21,6 +22,10 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
     String getPackaging();
 
     void setPackaging(String packaging);
+
+    MavenArchetype getArchetype();
+
+    void setArchetypes(Array<MavenArchetype> archetypes);
 
     void reset();
 
@@ -36,7 +41,15 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void setVersion(String value);
 
-    void enablePackaging(boolean enabled);
+    void setPackagingVisibility(boolean visible);
+
+    void setArchetypesVisibility(boolean visible);
+
+    void setArchetypeSectionVisibility(boolean visible);
+
+    void enableArchetypes(boolean enabled);
+
+    boolean isGenerateFromArchetypeSelected();
 
     void showArtifactIdMissingIndicator(boolean doShow);
 
@@ -44,10 +57,18 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void showVersionMissingIndicator(boolean doShow);
 
+    void enableGenerateFromArchetype(boolean enabled);
+
+    void clearArchetypes();
+
     public interface ActionDelegate {
 
         void onTextsChange();
 
-        void setPackaging(String packaging);
+        void packagingChanged(String packaging);
+
+        void generateFromArchetypeChanged(boolean isGenerateFromArchetype);
+
+        void archetypeChanged(MavenArchetype archetype);
     }
 }

@@ -40,6 +40,7 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
@@ -100,7 +101,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         attributes.put(PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(GROUP_ID)));
         attributes.put(PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(VERSION)));
         newProject.setAttributes(attributes);
-        newProject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class).withName(MAVEN_ID));
+        newProject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
         view.showButtonLoader(true);
         projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject,
                                     new AsyncRequestCallback<ProjectDescriptor>() {
