@@ -14,19 +14,18 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.Builders;
+import com.codenvy.api.project.newproj.ProjectConfig;
+import com.codenvy.api.project.newproj.ProjectType2;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ProjectDescription;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectType;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
+import com.codenvy.api.project.shared.Builders;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.Model;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
 
 import java.io.IOException;
 import java.util.List;
@@ -40,24 +39,24 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
     @Inject
     private ProjectManager projectManager;
 
-    private ProjectDescription createProjectDescriptor(ProjectType projectType) {
+    private ProjectConfig createProjectDescriptor(ProjectType2 projectType) {
         Builders builders = new Builders();
         builders.setDefault("maven");
-        return new ProjectDescription(projectType, builders, null);
+        return new ProjectConfig("Maven", projectType.getId(), null, null, builders, null);
     }
 
     @Override
     public boolean resolve(FolderEntry folderEntry) throws ServerException {
         try {
             if (!folderEntry.isProjectFolder()) {
-                ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(MavenAttributes.MAVEN_ID);
+                ProjectType2 projectType = projectManager.getProjectTypeRegistry().getProjectType(MavenAttributes.MAVEN_ID);
                 if (projectType == null)
                     throw new ServerException(String.format("Project type '%s' not registered. ", MavenAttributes.MAVEN_ID));
                 if (folderEntry.getChild("pom.xml") == null) {
                     return false;
                 }
                 Project project = new Project(folderEntry, projectManager);
-                project.updateDescription(createProjectDescriptor(projectType));
+                project.updateConfig(createProjectDescriptor(projectType));
                 fillMavenProject(projectType, project);
                 return true;
             }
@@ -67,7 +66,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
         }
     }
 
-    private void createProjectsOnModules(Model model, Project parentProject, String ws, ProjectType projectType)
+    private void createProjectsOnModules(Model model, Project parentProject, String ws, ProjectType2 projectType)
             throws ServerException, ForbiddenException, ConflictException, IOException {
         List<String> modules = model.getModules();
         for (String module : modules) {
@@ -81,7 +80,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
                     project.getMisc().setCreationDate(System.currentTimeMillis());
                 }
                 fillMavenProject(projectType, project);
-                project.updateDescription(createProjectDescriptor(projectType));
+                project.updateConfig(createProjectDescriptor(projectType));
             }
         }
     }
@@ -96,7 +95,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
         return parentFolder;
     }
 
-    private void fillMavenProject(ProjectType projectType, Project project)
+    private void fillMavenProject(ProjectType2 projectType, Project project)
             throws IOException, ForbiddenException, ServerException, ConflictException {
         VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
         if (pom != null) {

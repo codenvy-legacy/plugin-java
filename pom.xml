@@ -26,7 +26,7 @@
     <modules>
         <module>codenvy-jdt-core-repack</module>
         <module>codenvy-maven-tools</module>
-        <module>codenvy-ext-ant</module>
+        <!--module>codenvy-ext-ant</module-->
         <module>codenvy-ant-tools</module>
         <module>codenvy-builder-maven</module>
         <module>codenvy-builder-ant</module>

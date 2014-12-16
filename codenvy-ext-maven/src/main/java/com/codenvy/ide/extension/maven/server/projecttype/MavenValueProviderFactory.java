@@ -14,12 +14,15 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FileEntry;
+import com.codenvy.api.project.server.InvalidValueException;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
+import com.codenvy.ide.maven.tools.Build;
 import com.codenvy.ide.maven.tools.Model;
 
 import javax.annotation.Nullable;
@@ -30,12 +33,12 @@ import java.util.List;
 /**
  * @author Evgen Vidolob
  */
-public abstract class AbstractMavenValueProviderFactory implements ValueProviderFactory {
+public class MavenValueProviderFactory implements ValueProviderFactory {
 
     protected Model readModel(Project project) throws ValueStorageException, ServerException, ForbiddenException, IOException {
         FileEntry pomFile = (FileEntry)project.getBaseFolder().getChild("pom.xml");
         if (pomFile == null) {
-            throw new ValueStorageException("pom.xml does not exist.");
+            throw new ValueStorageException("pomN.xml does not exist.");
         }
         return Model.readFrom(pomFile.getInputStream());
     }
@@ -61,7 +64,12 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
         throw new ValueStorageException("Can't write pom.xml : " + e.getMessage());
     }
 
-    protected abstract class MavenValueProvider implements ValueProvider {
+    @Override
+    public ValueProvider newInstance(Project project) {
+        return new MavenValueProvider(project);
+    }
+
+    protected class MavenValueProvider implements ValueProvider {
 
         protected Project project;
 
@@ -70,13 +78,41 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
         }
 
         @Override
-        public List<String> getValues() throws ValueStorageException {
+        public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
+                String value = "";
                 Model model = readModel(project);
-                String value = getValue(model);
-                if (value == null) {
-                    return null;
+                if (attributeName.equals(MavenAttributes.ARTIFACT_ID))
+                    value = model.getArtifactId();
+                if (attributeName.equals(MavenAttributes.GROUP_ID))
+                    value = model.getGroupId();
+                if (attributeName.equals(MavenAttributes.PACKAGING))
+                    value = model.getPackaging();
+                if (attributeName.equals(MavenAttributes.VERSION))
+                    value = model.getVersion();
+                if (attributeName.equals(MavenAttributes.PARENT_ARTIFACT_ID) && model.getParent() != null)
+                    value = model.getParent().getArtifactId();
+                if (attributeName.equals(MavenAttributes.PARENT_GROUP_ID) && model.getParent() != null)
+                    value = model.getParent().getGroupId();
+                if (attributeName.equals(MavenAttributes.SOURCE_FOLDER)) {
+                    Build build = model.getBuild();
+                    if (build != null && build.getSourceDirectory() != null) {
+                        value = build.getSourceDirectory();
+                    } else {
+                        value = "src/main/java";
+                    }
                 }
+                if (attributeName.equals(MavenAttributes.TEST_SOURCE_FOLDER)) {
+                    Build build = model.getBuild();
+                    if(build != null && build.getTestSourceDirectory() != null) {
+                        value = build.getTestSourceDirectory();
+                    } else {
+                        value = "src/test/java";
+                    }
+                }
+
+
+
                 return Arrays.asList(value);
             } catch (ServerException | ForbiddenException | IOException e) {
                 throwReadException(e);
@@ -84,6 +120,22 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
             return null;
         }
 
-        protected abstract String getValue(Model model);
+        @Override
+        public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
+            try {
+                VirtualFile pom = getPom(project);
+                if (pom != null) {
+                    Model.readFrom(pom)
+                         .setArtifactId(value.get(0))
+                         .writeTo(pom);
+                }
+            } catch (ForbiddenException | ServerException | IOException e) {
+                throwWriteException(e);
+            }
+        }
+
+
+
+
     }
 }
