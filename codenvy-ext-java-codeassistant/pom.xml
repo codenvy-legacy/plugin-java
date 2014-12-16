@@ -44,6 +44,25 @@
         </dependency>
         <dependency>
             <groupId>com.codenvy.plugin-java</groupId>
+            <artifactId>codenvy-ext-java</artifactId>
+            <version>${codenvy.plugin-java.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>codenvy-ext-builder</artifactId>
+                    <groupId>com.codenvy.ide</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>codenvy-vfs-impl</artifactId>
+                    <groupId>com.codenvy.vfs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>codenvy-ide-jseditor</artifactId>
+                    <groupId>com.codenvy.ide</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-java</groupId>
             <artifactId>codenvy-jdt-core-repack</artifactId>
             <version>${codenvy.plugin-java.version}</version>
         </dependency>

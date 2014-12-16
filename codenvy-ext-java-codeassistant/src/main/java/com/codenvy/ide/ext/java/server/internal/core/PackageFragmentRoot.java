@@ -121,7 +121,9 @@ public class PackageFragmentRoot extends Openable implements  IPackageFragmentRo
 
     @Override
     public IPackageFragment getPackageFragment(String packageName) {
-        return null;
+        // tolerate package names with spaces (e.g. 'x . y') (http://bugs.eclipse.org/bugs/show_bug.cgi?id=21957)
+        String[] pkgName = org.eclipse.jdt.internal.core.util.Util.getTrimmedSimpleNames(packageName);
+        return getPackageFragment(pkgName);
     }
 
     @Override

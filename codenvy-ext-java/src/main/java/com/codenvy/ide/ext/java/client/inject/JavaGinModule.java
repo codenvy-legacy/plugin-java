@@ -19,6 +19,8 @@ import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocPresenter;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
 import com.codenvy.ide.ext.java.client.editor.JavaFormatter;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationServiceImpl;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorkerImpl;
 import com.codenvy.ide.ext.java.client.format.FormatController;
@@ -46,6 +48,7 @@ public class JavaGinModule extends AbstractGinModule {
         bind(ProjectStateListener.class).asEagerSingleton();
         bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
         bind(QuickDocumentation.class).to(QuickDocPresenter.class).in(Singleton.class);
+        bind(JavaNavigationService.class).to(JavaNavigationServiceImpl.class);
     }
 
     @Provides

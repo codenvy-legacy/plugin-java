@@ -54,7 +54,7 @@ public class QuickDocPresenter implements QuickDocumentation, QuickDocView.Actio
         }
 
         if (!(activeEditor instanceof EmbeddedTextEditorPresenter)) {
-            Log.info(getClass(), "Quick Document support only EmbeddedTextEditorPresenter as editor");
+            Log.error(getClass(), "Quick Document support only EmbeddedTextEditorPresenter as editor");
             return;
         }
 

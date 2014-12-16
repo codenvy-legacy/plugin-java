@@ -66,9 +66,9 @@ public interface JavaLocalizationConstant extends Messages {
     @Key("action.quickdoc.description")
     String actionQuickdocDescription();
 
-    @Key("action.quickdoc.back")
-    String actionQuickdocBack();
+    @Key("action.openDeclaration.title")
+    String actionOpenDeclarationTitle();
 
-    @Key("action.quickdoc.forward")
-    String actionQuickdocForward();
+    @Key("action.openDeclaration.description")
+    String actionOpenDeclarationDescription();
 }

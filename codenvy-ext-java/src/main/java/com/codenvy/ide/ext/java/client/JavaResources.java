@@ -216,4 +216,13 @@ public interface JavaResources extends ClientBundle {
 
     @Source("svg/category/java.svg")
     SVGResource javaCategoryIcon();
+
+    @Source("svg/libraries.svg")
+    SVGResource librariesIcon();
+
+    @Source("svg/jar10.svg")
+    SVGResource jarIcon();
+
+    @Source("svg/class.svg")
+    SVGResource javaClassIcon();
 }

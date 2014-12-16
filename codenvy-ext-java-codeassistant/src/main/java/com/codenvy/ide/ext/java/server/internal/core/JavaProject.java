@@ -848,22 +848,22 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IPackageFragmentRoot getPackageFragmentRoot(IResource resource) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public IPackageFragmentRoot[] getPackageFragmentRoots() throws JavaModelException {
-        return new IPackageFragmentRoot[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public IPackageFragmentRoot[] getPackageFragmentRoots(IClasspathEntry entry) {
-        return new IPackageFragmentRoot[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public IPackageFragment[] getPackageFragments() throws JavaModelException {
-        return new IPackageFragment[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -874,7 +874,13 @@ public class JavaProject extends Openable implements IJavaProject {
     @Override
     protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, File underlyingResource)
             throws JavaModelException {
-        return false;
+        // cannot refresh cp markers on opening (emulate cp check on startup) since can create deadlocks (see bug 37274)
+        IClasspathEntry[] resolvedClasspath = getResolvedClasspath();
+
+        // compute the pkg fragment roots
+        info.setChildren(computePackageFragmentRoots(resolvedClasspath, false, null /*no reverse map*/));
+
+        return true;
     }
 
     @Override
@@ -894,7 +900,7 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IResource getCorrespondingResource() throws JavaModelException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

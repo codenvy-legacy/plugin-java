@@ -22,6 +22,7 @@ import com.codenvy.ide.api.keybinding.KeyBindingAgent;
 import com.codenvy.ide.api.keybinding.KeyBuilder;
 import com.codenvy.ide.ext.java.client.action.NewJavaSourceFileAction;
 import com.codenvy.ide.ext.java.client.action.NewPackageAction;
+import com.codenvy.ide.ext.java.client.action.OpenDeclarationAction;
 import com.codenvy.ide.ext.java.client.action.QuickDocumentationAction;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.google.inject.Inject;
@@ -64,7 +65,8 @@ public class JavaExtension {
                                 KeyBindingAgent keyBinding,
                                 NewJavaSourceFileAction newJavaSourceFileAction,
                                 ActionManager actionManager,
-                                QuickDocumentationAction quickDocumentationAction) {
+                                QuickDocumentationAction quickDocumentationAction,
+                                OpenDeclarationAction openDeclarationAction) {
         // add actions in File -> New group
         actionManager.registerAction(localizationConstant.actionNewPackageId(), newPackageAction);
         actionManager.registerAction(localizationConstant.actionNewClassId(), newJavaSourceFileAction);
@@ -74,11 +76,14 @@ public class JavaExtension {
         newGroup.add(newPackageAction);
 
         actionManager.registerAction("showQuickDoc", quickDocumentationAction);
+        actionManager.registerAction("openJavaDeclaration", openDeclarationAction);
 
         DefaultActionGroup codeGroup = (DefaultActionGroup)actionManager.getAction(GROUP_CODE);
         codeGroup.add(quickDocumentationAction, Constraints.LAST);
+        codeGroup.add(openDeclarationAction, Constraints.LAST);
 
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('q').build(), "showQuickDoc");
+        keyBinding.getGlobal().addKey(new KeyBuilder().none().charCode(57358).build(), "openJavaDeclaration");
     }
 
     @Inject
@@ -86,6 +91,9 @@ public class JavaExtension {
         // icons for project tree nodes
         iconRegistry.registerIcon(new Icon("java.package", resources.packageIcon()));
         iconRegistry.registerIcon(new Icon("java.sourceFolder", resources.sourceFolder()));
+        iconRegistry.registerIcon(new Icon("java.libraries", resources.librariesIcon()));
+        iconRegistry.registerIcon(new Icon("java.jar", resources.jarIcon()));
+        iconRegistry.registerIcon(new Icon("java.class", resources.javaClassIcon()));
         // icon for category in Wizard
         iconRegistry.registerIcon(new Icon(Constants.JAVA_CATEGORY + ".samples.category.icon", resources.javaCategoryIcon()));
     }

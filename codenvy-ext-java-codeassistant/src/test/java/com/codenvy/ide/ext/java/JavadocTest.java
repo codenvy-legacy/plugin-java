@@ -112,14 +112,10 @@ public class JavadocTest extends BaseTest {
     public void exceptionMethod() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
         testDoc("<java.lang(Throwable.class☃Throwable~Throwable~Ljava.lang.String;~Ljava.lang.Throwable;~Z~Z☂☂getStackTrace",
                 "Provides programmatic access to the stack trace information printed by");
-//       String handle2 = URLDecoder.decode(", "UTF-8");
-//        System.out.println(handle2);
     }
 
     @Test
     public void getContextClassLoadingMethod() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
-//       String handle2 = URLDecoder.decode("%E2%98%82%2F%5C%2Fusr%5C%2Flib64%5C%2Fjdk1.7.0_51%5C%2Fjre%5C%2Flib%5C%2Frt.jar%3Cjava.nio.charset.spi%28CharsetProvider.class%E2%98%83CharsetProvider%E2%98%82java.lang.Thread%E2%98%82getContextClassLoader%E2%98%82", "UTF-8");
-//                                          System.out.println(handle2);
         testDoc("<java.nio.charset.spi(CharsetProvider.class☃CharsetProvider☂java.lang.Thread☂getContextClassLoader☂",
                 "Returns the context ClassLoader for this Thread.");
     }

@@ -49,7 +49,6 @@ public class BaseTest {
     protected static String getHanldeForRtJarStart(){
         String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
         javaHome = javaHome.replaceAll("/","\\\\/");
-//               "/lib/rt.jar"
         return "☂/" + javaHome;
     }
 
