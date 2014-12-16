@@ -44,7 +44,7 @@ public class ArchetypeProjectGeneratorTest {
 
     @Before
     public void setUp() throws Exception {
-        generator = new ArchetypeProjectGenerator("http://localhost/", vfsRegistry);
+        generator = new ArchetypeProjectGenerator(new String[]{"http://localhost:8080/api/internal/builder"}, vfsRegistry);
     }
 
     @Test

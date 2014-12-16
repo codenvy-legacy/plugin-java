@@ -8,36 +8,40 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype.generators.dto;
+package com.codenvy.generator.archetype.dto;
 
 import com.codenvy.dto.shared.DTO;
 
-/** @author Artem Zatsarynnyy */
+/**
+ * DTO for project generating task.
+ *
+ * @author Artem Zatsarynnyy
+ */
 @DTO
-public interface GenerateTask {
+public interface GenerationTaskDescriptor {
     Status getStatus();
 
     void setStatus(Status status);
 
-    GenerateTask withStatus(Status status);
+    GenerationTaskDescriptor withStatus(Status status);
 
     String getStatusUrl();
 
     void setStatusUrl(String StatusUrl);
 
-    GenerateTask withStatusUrl(String StatusUrl);
+    GenerationTaskDescriptor withStatusUrl(String StatusUrl);
 
     String getDownloadUrl();
 
     void setDownloadUrl(String downloadUrl);
 
-    GenerateTask withDownloadUrl(String downloadUrl);
+    GenerationTaskDescriptor withDownloadUrl(String downloadUrl);
 
     String getReport();
 
     void setReport(String report);
 
-    GenerateTask withReport(String report);
+    GenerationTaskDescriptor withReport(String report);
 
     enum Status {
         IN_PROGRESS,

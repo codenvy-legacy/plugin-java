@@ -14,7 +14,10 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
+import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.api.core.rest.HttpJsonHelper;
 import com.codenvy.api.core.util.DownloadPlugin;
+import com.codenvy.api.core.util.FileCleaner;
 import com.codenvy.api.core.util.HttpDownloadPlugin;
 import com.codenvy.api.core.util.ValueHolder;
 import com.codenvy.api.project.server.FolderEntry;
@@ -22,13 +25,12 @@ import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystem;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
-import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.commons.lang.NamedThreadFactory;
-import com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask;
+import com.codenvy.commons.lang.Pair;
+import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.generator.archetype.dto.GenerationTaskDescriptor;
+import com.codenvy.generator.archetype.dto.MavenArchetype;
 import com.google.inject.name.Named;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -37,48 +39,44 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
 
-import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask.Status.FAILED;
-import static com.codenvy.ide.extension.maven.server.projecttype.generators.dto.GenerateTask.Status.SUCCESSFUL;
+import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.FAILED;
+import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.IN_PROGRESS;
+import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.SUCCESSFUL;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
- * Generates sample Maven project using maven-archetype-quickstart.
+ * Generates Maven project using maven-archetype-plugin.
  *
  * @author Artem Zatsarynnyy
  */
 public class ArchetypeProjectGenerator implements ProjectGenerator {
-    private static final Logger     LOG            = LoggerFactory.getLogger(ArchetypeProjectGenerator.class);
-    private static final AtomicLong taskIdSequence = new AtomicLong(1);
-    private final ConcurrentMap<Long, GenerateTaskCallable> tasks;
-    private final String                                    generatorServiceUrl;
-    private final VirtualFileSystemRegistry                 vfsRegistry;
+    private static final long CHECK_GENERATION_STATUS_DELAY = 1000;
+    private final String                    generatorServiceUrl;
+    private final VirtualFileSystemRegistry vfsRegistry;
     private final DownloadPlugin downloadPlugin = new HttpDownloadPlugin();
-    private ExecutorService          executor;
-    private ScheduledExecutorService scheduler;
+    private ExecutorService executor;
 
     @Inject
-    public ArchetypeProjectGenerator(@Named("archetype_generator_service.url") String generatorServiceUrl,
+    public ArchetypeProjectGenerator(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
                                      VirtualFileSystemRegistry vfsRegistry) {
-        this.generatorServiceUrl = generatorServiceUrl;
+        this.generatorServiceUrl = getGeneratorServiceUrl(slaveBuilderURLs);
         this.vfsRegistry = vfsRegistry;
-        tasks = new ConcurrentHashMap<>();
+    }
+
+    private String getGeneratorServiceUrl(String[] slaveBuilderURLs) {
+        final String slaveBuilderURL = slaveBuilderURLs[0];
+        return slaveBuilderURL.replace("/internal/builder", "/generator-archetype");
     }
 
     @Override
@@ -94,38 +92,11 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     @PostConstruct
     void start() {
         executor = Executors.newCachedThreadPool(new NamedThreadFactory("-ProjectGenerator-" + getId() + "-", true));
-        scheduler =
-                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("-ProjectGeneratorSchedulerPool-" + getId() + "-", true));
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                int num = 0;
-                for (Iterator<GenerateTaskCallable> i = tasks.values().iterator(); i.hasNext(); ) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        return;
-                    }
-                    final GenerateTaskCallable task = i.next();
-                    if (task.isDone()) {
-                        i.remove();
-                        try {
-                            cleanup(task);
-                        } catch (RuntimeException e) {
-                            LOG.error(e.getMessage(), e);
-                        }
-                        num++;
-                    }
-                }
-                if (num > 0) {
-                    LOG.debug("Remove {} expired tasks", num);
-                }
-            }
-        }, 1, 1, MINUTES);
     }
 
     @PreDestroy
     void stop() {
         executor.shutdownNow();
-        scheduler.shutdownNow();
-        tasks.clear();
     }
 
     @Override
@@ -142,7 +113,8 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
         String archetypeGroupId = null;
         String archetypeArtifactId = null;
         String archetypeVersion = null;
-        Map<String, String> options = new HashMap<>();
+        String archetypeRepository = null;
+        Map<String, String> archetypeProperties = new HashMap<>();
 
         for (Map.Entry<String, String> entry : newProjectDescriptor.getGeneratorDescription().getOptions().entrySet()) {
             switch (entry.getKey()) {
@@ -155,8 +127,11 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
                 case "archetypeVersion":
                     archetypeVersion = entry.getValue();
                     break;
+                case "archetypeRepository":
+                    archetypeRepository = entry.getValue();
+                    break;
                 default:
-                    options.put(entry.getKey(), entry.getValue());
+                    archetypeProperties.put(entry.getKey(), entry.getValue());
             }
         }
 
@@ -166,29 +141,70 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
             throw new ServerException("Missed some required option (archetypeGroupId, archetypeArtifactId or archetypeVersion)");
         }
 
-        final Long internalId = taskIdSequence.getAndIncrement();
+        final MavenArchetype archetype = DtoFactory.getInstance().createDto(MavenArchetype.class)
+                                                   .withGroupId(archetypeGroupId)
+                                                   .withArtifactId(archetypeArtifactId)
+                                                   .withVersion(archetypeVersion)
+                                                   .withRepository(archetypeRepository)
+                                                   .withProperties(archetypeProperties);
+
         try {
-            final File downloadFolder = Files.createTempDirectory("generated-project-").toFile();
-            final GenerateTaskCallable callable = new GenerateTaskCallable(generatorServiceUrl, internalId,
-                                                                           archetypeGroupId, archetypeArtifactId, archetypeVersion,
-                                                                           groupId.get(0), artifactId.get(0), version.get(0), options,
-                                                                           downloadFolder);
-            tasks.put(internalId, callable);
-            Future<GenerateTask> futureTask = executor.submit(callable);
-            GenerateTask task = futureTask.get();
+            Callable<GenerationTaskDescriptor> callable =
+                    createGenerationTask(archetype, groupId.get(0), artifactId.get(0), version.get(0));
+            final GenerationTaskDescriptor task = executor.submit(callable).get();
             if (task.getStatus() == SUCCESSFUL) {
-                final File result = downloadTaskResult(task, downloadFolder);
-                copyFileToRemoteFolder(result, baseFolder);
+                final File downloadFolder = Files.createTempDirectory("generated-project-").toFile();
+                copyFileToRemoteFolder(downloadGeneratedProject(task, downloadFolder), baseFolder);
+                FileCleaner.addFile(downloadFolder);
             } else if (task.getStatus() == FAILED) {
                 throw new ServerException(task.getReport().isEmpty() ? "Failed to generate project: " : task.getReport());
             }
-            callable.done();
         } catch (NotFoundException | InterruptedException | ExecutionException | IOException e) {
             throw new ServerException(e.getMessage(), e);
         }
     }
 
-    private File downloadTaskResult(GenerateTask generateTask, File downloadFolder) throws ServerException, IOException {
+    private Callable<GenerationTaskDescriptor> createGenerationTask(final MavenArchetype archetype,
+                                                                    final String groupId, final String artifactId, final String version) {
+        return new Callable<GenerationTaskDescriptor>() {
+            @Override
+            public GenerationTaskDescriptor call() throws Exception {
+                final ValueHolder<String> statusUrlHolder = new ValueHolder<>();
+                try {
+                    GenerationTaskDescriptor task =
+                            HttpJsonHelper.post(GenerationTaskDescriptor.class, generatorServiceUrl + "/generate", archetype,
+                                                Pair.of("groupId", groupId),
+                                                Pair.of("artifactId", artifactId),
+                                                Pair.of("version", version));
+                    statusUrlHolder.set(task.getStatusUrl());
+                } catch (IOException | UnauthorizedException | NotFoundException e) {
+                    throw new ServerException(e);
+                }
+
+                final String statusUrl = statusUrlHolder.get();
+                try {
+                    for (; ; ) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            return null;
+                        }
+                        try {
+                            Thread.sleep(CHECK_GENERATION_STATUS_DELAY);
+                        } catch (InterruptedException e) {
+                            return null;
+                        }
+                        GenerationTaskDescriptor generateTask = HttpJsonHelper.get(GenerationTaskDescriptor.class, statusUrl);
+                        if (IN_PROGRESS != generateTask.getStatus()) {
+                            return generateTask;
+                        }
+                    }
+                } catch (IOException | ServerException | NotFoundException | UnauthorizedException | ForbiddenException | ConflictException e) {
+                    throw new ServerException(e);
+                }
+            }
+        };
+    }
+
+    private File downloadGeneratedProject(GenerationTaskDescriptor task, File downloadFolder) throws ServerException, IOException {
         final ValueHolder<File> resultHolder = new ValueHolder<>();
         final ValueHolder<IOException> errorHolder = new ValueHolder<>();
         DownloadPlugin.Callback callback = new DownloadPlugin.Callback() {
@@ -202,7 +218,7 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
                 errorHolder.set(e);
             }
         };
-        downloadPlugin.download(generateTask.getDownloadUrl(), downloadFolder, callback);
+        downloadPlugin.download(task.getDownloadUrl(), downloadFolder, callback);
         final IOException ioError = errorHolder.get();
         if (ioError != null) {
             throw new ServerException(ioError);
@@ -214,14 +230,5 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
         final VirtualFileSystem vfs = vfsRegistry.getProvider(baseFolder.getWorkspace()).newInstance(null);
         vfs.importZip(baseFolder.getVirtualFile().getId(), Files.newInputStream(file.toPath()), true, false);
-    }
-
-    private void cleanup(GenerateTaskCallable task) {
-        final File downloadFolder = task.getDownloadFolder();
-        if (downloadFolder != null && downloadFolder.exists()) {
-            if (!IoUtil.deleteRecursive(downloadFolder)) {
-                LOG.warn("Unable to delete file {}", downloadFolder);
-            }
-        }
     }
 }

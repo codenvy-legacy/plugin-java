@@ -10,19 +10,21 @@
  *******************************************************************************/
 package com.codenvy.generator.archetype;
 
+import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.util.CommandLine;
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.core.util.StreamPump;
 import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.commons.lang.NamedThreadFactory;
 import com.codenvy.commons.lang.ZipUtils;
+import com.codenvy.generator.archetype.dto.MavenArchetype;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -30,6 +32,10 @@ import javax.inject.Singleton;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,24 +52,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Generates projects from Maven-archetype.
+ * Generates projects with maven-archetype-plugin.
  *
  * @author Artem Zatsarynnyy
  */
 @Singleton
 public class ArchetypeGenerator {
-
     private static final Logger     LOG            = LoggerFactory.getLogger(ArchetypeGenerator.class);
     private static final AtomicLong taskIdSequence = new AtomicLong(1);
-    private final ConcurrentMap<Long, GenerateTask> tasks;
-    /**
-     * Time of keeping the results (generated projects and logs) of generating.
-     * After this time the results of generating may be removed.
-     */
-    private final long                              keepResultTimeMillis;
-    private       ExecutorService                   executor;
-    private       ScheduledExecutorService          scheduler;
-    private       File                              projectsFolder;
+    private final ConcurrentMap<Long, GenerationTask> tasks;
+    /** Time of keeping the results (generated projects and logs) of project generation. After this time the results may be removed. */
+    private final long                                keepResultTimeMillis;
+    private       ExecutorService                     executor;
+    private       ScheduledExecutorService            scheduler;
+    private       File                                projectsFolder;
 
     @Inject
     public ArchetypeGenerator() {
@@ -78,16 +80,17 @@ public class ArchetypeGenerator {
         if (!(projectsFolder.exists() || projectsFolder.mkdirs())) {
             throw new IllegalStateException(String.format("Unable to create directory %s", projectsFolder.getAbsolutePath()));
         }
+
         executor = Executors.newCachedThreadPool(new NamedThreadFactory("ArchetypeGenerator-", true));
         scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("ArchetypeGeneratorSchedulerPool-", true));
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 int num = 0;
-                for (Iterator<GenerateTask> i = tasks.values().iterator(); i.hasNext(); ) {
+                for (Iterator<GenerationTask> i = tasks.values().iterator(); i.hasNext(); ) {
                     if (Thread.currentThread().isInterrupted()) {
                         return;
                     }
-                    final GenerateTask task = i.next();
+                    final GenerationTask task = i.next();
                     if (task.isExpired()) {
                         i.remove();
                         try {
@@ -112,7 +115,7 @@ public class ArchetypeGenerator {
         scheduler.shutdownNow();
         try {
             if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                LOG.warn("Unable terminate scheduler");
+                LOG.warn("Unable to terminate scheduler");
             }
         } catch (InterruptedException e) {
             interrupted = true;
@@ -122,7 +125,7 @@ public class ArchetypeGenerator {
             if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
                 if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                    LOG.warn("Unable terminate main pool");
+                    LOG.warn("Unable to terminate main pool");
                 }
             }
         } catch (InterruptedException e) {
@@ -131,15 +134,15 @@ public class ArchetypeGenerator {
         }
         final File[] files = projectsFolder.listFiles();
         if (files != null && files.length > 0) {
-            for (File f : files) {
+            for (File file : files) {
                 boolean deleted;
-                if (f.isDirectory()) {
-                    deleted = IoUtil.deleteRecursive(f);
+                if (file.isDirectory()) {
+                    deleted = IoUtil.deleteRecursive(file);
                 } else {
-                    deleted = f.delete();
+                    deleted = file.delete();
                 }
                 if (!deleted) {
-                    LOG.warn("Failed delete {}", f);
+                    LOG.warn("Failed to delete {}", file);
                 }
             }
         }
@@ -149,12 +152,12 @@ public class ArchetypeGenerator {
         }
     }
 
-    File getProjectsDirectory() {
-        return projectsFolder;
-    }
-
-    private GeneratorConfigurationFactory getGeneratorConfigurationFactory() {
-        return new GeneratorConfigurationFactory(this);
+    public GenerationTask getTaskById(Long id) throws ServerException {
+        final GenerationTask task = tasks.get(id);
+        if (task == null) {
+            throw new ServerException(String.format("Invalid task id: %d", id));
+        }
+        return task;
     }
 
     /**
@@ -168,80 +171,72 @@ public class ArchetypeGenerator {
      *         artifactId of new project
      * @param version
      *         version of new project
-     * @param options
-     *         additional properties for archetype. May be {@code null}
      * @return generating task
-     * @throws GeneratorException
+     * @throws ServerException
+     *         if an error occurs while generating project
      */
-    public GenerateTask generateFromArchetype(@Nonnull MavenArchetype archetype, @Nonnull String groupId, @Nonnull String artifactId,
-                                              @Nonnull String version, @Nullable Map<String, String> options) throws GeneratorException {
-        Map<String, String> myOptions = new HashMap<>();
-        myOptions.put("-DinteractiveMode", "false"); // get rid of the interactivity of the archetype plugin
-        myOptions.put("-DarchetypeGroupId", archetype.getGroupId());
-        myOptions.put("-DarchetypeArtifactId", archetype.getArtifactId());
-        myOptions.put("-DarchetypeVersion", archetype.getVersion());
+    public GenerationTask generateFromArchetype(@Nonnull MavenArchetype archetype, @Nonnull String groupId, @Nonnull String artifactId,
+                                                @Nonnull String version) throws ServerException {
+        Map<String, String> archetypeProperties = new HashMap<>();
+        archetypeProperties.put("-DinteractiveMode", "false"); // get rid of the interactivity of the archetype plugin
+        archetypeProperties.put("-DarchetypeGroupId", archetype.getGroupId());
+        archetypeProperties.put("-DarchetypeArtifactId", archetype.getArtifactId());
+        archetypeProperties.put("-DarchetypeVersion", archetype.getVersion());
+        archetypeProperties.put("-DgroupId", groupId);
+        archetypeProperties.put("-DartifactId", artifactId);
+        archetypeProperties.put("-Dversion", version);
         if (archetype.getRepository() != null) {
-            myOptions.put("-DarchetypeRepository", archetype.getRepository());
+            archetypeProperties.put("-DarchetypeRepository", archetype.getRepository());
         }
-        myOptions.put("-DgroupId", groupId);
-        myOptions.put("-DartifactId", artifactId);
-        myOptions.put("-Dversion", version);
-        if (options != null) {
-            myOptions.putAll(options);
+        if (archetype.getProperties() != null) {
+            archetypeProperties.putAll(archetype.getProperties());
         }
-        return generate(artifactId, myOptions);
-    }
 
-    public GenerateTask getTaskById(Long id) throws GeneratorException {
-        final GenerateTask task = tasks.get(id);
-        if (task == null) {
-            throw new GeneratorException(String.format("Invalid task id: %d", id));
+        final File workDir;
+        try {
+            workDir = Files.createTempDirectory(projectsFolder.toPath(), "project-").toFile();
+        } catch (IOException e) {
+            throw new ServerException(e);
         }
-        return task;
-    }
 
-    /** Starts new project generating process. */
-    private GenerateTask generate(String artifactId, Map<String, String> options) throws GeneratorException {
-        final GeneratorConfiguration configuration = getGeneratorConfigurationFactory().createConfiguration(artifactId, options);
-        final File workDir = configuration.getWorkDir();
-        final File logFile = new File(workDir.getParentFile(), workDir.getName() + ".log");
+        final File logFile = new File(workDir, workDir.getName() + ".log");
         final GeneratorLogger logger = createLogger(logFile);
-        final CommandLine commandLine = createCommandLine(configuration);
-        final Callable<Boolean> callable = createTaskFor(commandLine, logger, configuration);
+        final CommandLine commandLine = createCommandLine(archetypeProperties);
+        final Callable<Boolean> callable = createTaskFor(commandLine, logger, workDir);
         final Long internalId = taskIdSequence.getAndIncrement();
-        final GenerateTask task = new GenerateTask(callable, internalId, configuration, logger);
+        final GenerationTask task = new GenerationTask(callable, internalId, workDir, artifactId, logger);
         tasks.put(internalId, task);
         executor.execute(task);
         return task;
     }
 
-    private GeneratorLogger createLogger(File logFile) throws GeneratorException {
+    private GeneratorLogger createLogger(File logFile) throws ServerException {
         try {
             return new GeneratorLogger(logFile);
         } catch (IOException e) {
-            throw new GeneratorException(e);
+            throw new ServerException(e);
         }
     }
 
-    private CommandLine createCommandLine(GeneratorConfiguration config) throws GeneratorException {
+    private CommandLine createCommandLine(Map<String, String> archetypeProperties) throws ServerException {
         final CommandLine commandLine = new CommandLine(MavenUtils.getMavenExecCommand());
         commandLine.add("--batch-mode");
         commandLine.add("org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate");
-        commandLine.add(config.getOptions());
+        commandLine.add(archetypeProperties);
         return commandLine;
     }
 
     private Callable<Boolean> createTaskFor(final CommandLine commandLine,
                                             final GeneratorLogger logger,
-                                            final GeneratorConfiguration configuration) {
+                                            final File workDir) {
         return new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 StreamPump output = null;
                 int result = -1;
                 try {
-                    ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).directory(
-                            configuration.getWorkDir()).redirectErrorStream(true);
+                    ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand())
+                                                                        .directory(workDir).redirectErrorStream(true);
                     Process process = processBuilder.start();
 
                     output = new StreamPump();
@@ -249,13 +244,13 @@ public class ArchetypeGenerator {
                     try {
                         result = process.waitFor();
                     } catch (InterruptedException e) {
-                        Thread.interrupted(); // we interrupt thread when cancel task
+                        Thread.interrupted();
                         ProcessUtil.kill(process);
                     }
                     try {
                         output.await(); // wait for logger
                     } catch (InterruptedException e) {
-                        Thread.interrupted(); // we interrupt thread when cancel task, NOTE: logs may be incomplete
+                        Thread.interrupted();
                     }
                 } finally {
                     if (output != null) {
@@ -269,7 +264,7 @@ public class ArchetypeGenerator {
     }
 
     /**
-     * Gets result of GenerateTask.
+     * Gets result of GenerationTask.
      *
      * @param task
      *         task
@@ -277,13 +272,12 @@ public class ArchetypeGenerator {
      *         reports whether generate process terminated normally or not.
      *         Note: {@code true} is not indicated successful generating but only normal process termination.
      * @return GenerateResult
-     * @throws GeneratorException
+     * @throws ServerException
      *         if an error occurs when try to get result
-     * @see GenerateTask#getResult()
      */
-    private GenerateResult getTaskResult(GenerateTask task, boolean successful) throws GeneratorException {
+    private GenerationResult getTaskResult(GenerationTask task, boolean successful) throws ServerException {
         if (!successful) {
-            return new GenerateResult(false, getReport(task));
+            return new GenerationResult(false, getLogFile(task));
         }
 
         boolean mavenSuccess = false;
@@ -299,7 +293,7 @@ public class ArchetypeGenerator {
                 }
             }
         } catch (IOException e) {
-            throw new GeneratorException(e);
+            throw new ServerException(e);
         } finally {
             if (logReader != null) {
                 try {
@@ -310,95 +304,91 @@ public class ArchetypeGenerator {
         }
 
         if (!mavenSuccess) {
-            return new GenerateResult(false, getReport(task));
+            return new GenerationResult(false, getLogFile(task));
         }
 
-        final GeneratorConfiguration config = task.getConfiguration();
-        final File workDir = config.getWorkDir();
-        final GenerateResult result = new GenerateResult(true, getReport(task));
+        final File workDir = task.getWorkDir();
+        final GenerationResult result = new GenerationResult(true, getLogFile(task));
 
-        final File projectFolder = new File(workDir, config.getArtifactId());
+        final File projectFolder = new File(workDir, task.getArtifactId());
         if (projectFolder.isDirectory() && projectFolder.list().length > 0) {
             final File zip = new File(workDir, "project.zip");
             try {
                 ZipUtils.zipDir(projectFolder.getAbsolutePath(), projectFolder, zip, IoUtil.ANY_FILTER);
             } catch (IOException e) {
-                throw new GeneratorException(e);
+                throw new ServerException(e);
             }
-            result.setResult(zip);
+            result.setGeneratedProject(zip);
         }
 
         return result;
     }
 
-    /** Get generating task report or {@code null} if report is not available. */
-    private File getReport(GenerateTask task) {
-        final File workDir = task.getConfiguration().getWorkDir();
-        final File logFile = new File(workDir.getParentFile(), workDir.getName() + ".log");
-        return logFile.exists() ? logFile : null;
+    private File getLogFile(GenerationTask task) {
+        return task.getLogger().getFile();
     }
 
-    /** Cleanup task - remove all local files which were created during project generating process, e.g logs, generated project, etc. */
-    private void cleanup(GenerateTask task) {
-        final GeneratorConfiguration configuration = task.getConfiguration();
-        final File workDir = configuration.getWorkDir();
+    private void cleanup(GenerationTask task) {
+        File workDir = task.getWorkDir();
         if (workDir != null && workDir.exists()) {
             if (!IoUtil.deleteRecursive(workDir)) {
-                LOG.warn("Unable delete directory {}", workDir);
-            }
-        }
-        final File log = task.getLogger().getFile();
-        if (log != null && log.exists()) {
-            if (!log.delete()) {
-                LOG.warn("Unable delete file {}", log);
-            }
-        }
-        GenerateResult result = null;
-        try {
-            result = task.getResult();
-        } catch (GeneratorException e) {
-            LOG.error("Skip cleanup of the task {}. Unable get task result.", task);
-        }
-        if (result != null) {
-            File artifact = result.getResult();
-            if (artifact.exists()) {
-                if (!artifact.delete()) {
-                    LOG.warn("Unable delete file {}", artifact);
-                }
-            }
-            if (result.hasGenerateReport()) {
-                File report = result.getGenerateReport();
-                if (report != null && report.exists()) {
-                    if (!report.delete()) {
-                        LOG.warn("Unable delete file {}", report);
-                    }
-                }
-            }
-        }
-        final File projectDir = configuration.getProjectDir();
-        if (projectDir != null && projectDir.exists()) {
-            if (!IoUtil.deleteRecursive(projectDir)) {
-                LOG.warn("Unable delete directory {}", projectDir);
+                LOG.warn("Unable to delete directory {}", workDir);
             }
         }
     }
 
-    class GenerateTask extends FutureTask<Boolean> {
-        private final Long                   id;
-        private final GeneratorConfiguration configuration;
-        private final GeneratorLogger        logger;
+    /** Logger that will write to file all the logs of the project generation process. */
+    private static class GeneratorLogger implements LineConsumer {
+        private final File    file;
+        private final Writer  writer;
+        private final boolean autoFlush;
 
-        private GenerateResult result;
+        GeneratorLogger(File file) throws IOException {
+            this.file = file;
+            autoFlush = true;
+            writer = Files.newBufferedWriter(file.toPath(), Charset.defaultCharset());
+        }
+
+        Reader getReader() throws IOException {
+            return Files.newBufferedReader(file.toPath(), Charset.defaultCharset());
+        }
+
+        /** Get {@code File} where logs stored. */
+        File getFile() {
+            return file;
+        }
+
+        @Override
+        public void writeLine(String line) throws IOException {
+            if (line != null) {
+                writer.write(line);
+            }
+            writer.write('\n');
+            if (autoFlush) {
+                writer.flush();
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            writer.close();
+        }
+    }
+
+    class GenerationTask extends FutureTask<Boolean> {
+        private final Long             id;
+        private final File             workDir;
+        private final String           artifactId;
+        private final GeneratorLogger  logger;
+        private       GenerationResult result;
         /** Time when task was done (successfully ends, fails, cancelled) or -1 if task is not done yet. */
-        private long           endTime;
+        private       long             endTime;
 
-        GenerateTask(Callable<Boolean> callable,
-                     Long id,
-                     GeneratorConfiguration configuration,
-                     GeneratorLogger logger) {
+        GenerationTask(Callable<Boolean> callable, Long id, File workDir, String artifactId, GeneratorLogger logger) {
             super(callable);
             this.id = id;
-            this.configuration = configuration;
+            this.workDir = workDir;
+            this.artifactId = artifactId;
             this.logger = logger;
             endTime = -1L;
         }
@@ -424,13 +414,13 @@ public class ArchetypeGenerator {
         }
 
         /**
-         * Get result of project generating.
+         * Get result of project generation.
          *
          * @return result of project generating or {@code null} if task is not done yet
-         * @throws GeneratorException
+         * @throws ServerException
          *         if an error occurs when try to start project generating process or get its result.
          */
-        GenerateResult getResult() throws GeneratorException {
+        GenerationResult getResult() throws ServerException {
             if (!isDone()) {
                 return null;
             }
@@ -446,10 +436,10 @@ public class ArchetypeGenerator {
                     final Throwable cause = e.getCause();
                     if (cause instanceof Error) {
                         throw (Error)cause;
-                    } else if (cause instanceof GeneratorException) {
-                        throw (GeneratorException)cause;
+                    } else if (cause instanceof ServerException) {
+                        throw (ServerException)cause;
                     } else {
-                        throw new GeneratorException(cause.getMessage(), cause);
+                        throw new ServerException(cause.getMessage(), cause);
                     }
                 } catch (CancellationException ce) {
                     successful = false;
@@ -459,20 +449,16 @@ public class ArchetypeGenerator {
             return result;
         }
 
-        GeneratorConfiguration getConfiguration() {
-            return configuration;
+        File getWorkDir() {
+            return workDir;
+        }
+
+        String getArtifactId() {
+            return artifactId;
         }
 
         synchronized boolean isExpired() {
             return endTime > 0 && (endTime + keepResultTimeMillis) < System.currentTimeMillis();
-        }
-
-        @Override
-        public String toString() {
-            return "GenerateTask{" +
-                   "id=" + id +
-                   ", workDir=" + configuration.getWorkDir() +
-                   '}';
         }
     }
 }

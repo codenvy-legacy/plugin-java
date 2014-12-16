@@ -17,19 +17,19 @@ import java.io.File;
  *
  * @author Artem Zatsarynnyy
  */
-public class GenerateResult {
+class GenerationResult {
     private final boolean success;
 
-    private File artifact;
+    private File generatedProject;
     private File report;
 
-    GenerateResult(boolean success, File artifact, File report) {
+    GenerationResult(boolean success, File generatedProject, File report) {
         this.success = success;
-        this.artifact = artifact;
+        this.generatedProject = generatedProject;
         this.report = report;
     }
 
-    GenerateResult(boolean success, File report) {
+    GenerationResult(boolean success, File report) {
         this(success, null, report);
     }
 
@@ -38,26 +38,26 @@ public class GenerateResult {
      *
      * @return {@code true} if project was successfully generated and {@code false} otherwise
      */
-    public boolean isSuccessful() {
+    boolean isSuccessful() {
         return success;
     }
 
-    /** Gets zipped file with generated project. */
-    public File getResult() {
-        return artifact;
+    /** Get zipped file with generated project. */
+    File getGeneratedProject() {
+        return generatedProject;
     }
 
-    void setResult(File artifact) {
-        this.artifact = artifact;
+    void setGeneratedProject(File generatedProject) {
+        this.generatedProject = generatedProject;
     }
 
     /**
      * Reports whether project generating report is available or not. In case if this method
-     * returns {@code false} method {@link #getGenerateReport()} always returns {@code null}.
+     * returns {@code false} method {@link #getGenerationReport()} always returns {@code null}.
      *
      * @return {@code true} if project generating report is available and {@code false} otherwise
      */
-    public boolean hasGenerateReport() {
+    boolean hasGenerationReport() {
         return null != report;
     }
 
@@ -66,7 +66,7 @@ public class GenerateResult {
      *
      * @return report about project generating or {@code null}
      */
-    public File getGenerateReport() {
+    File getGenerationReport() {
         return report;
     }
 }

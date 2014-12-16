@@ -10,21 +10,12 @@
  *******************************************************************************/
 package com.codenvy.generator.archetype;
 
-/**
- * Main exception to throw by {@link ArchetypeGenerator}.
- *
- * @author Artem Zatsarynnyy
- */
-public class GeneratorException extends Exception {
-    public GeneratorException(Throwable cause) {
-        super(cause);
-    }
+import com.google.inject.AbstractModule;
 
-    public GeneratorException(String message) {
-        super(message);
-    }
-
-    public GeneratorException(String message, Throwable cause) {
-        super(message, cause);
+/** @author Artem Zatsarynnyy */
+public class ArchetypeGeneratorModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(ArchetypeGeneratorService.class);
     }
 }
