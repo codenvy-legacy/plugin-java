@@ -271,7 +271,7 @@ public class ArchetypeGenerator {
      * @param successful
      *         reports whether generate process terminated normally or not.
      *         Note: {@code true} is not indicated successful generating but only normal process termination.
-     * @return GenerateResult
+     * @return GenerationResult
      * @throws ServerException
      *         if an error occurs when try to get result
      */
