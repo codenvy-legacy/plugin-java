@@ -80,12 +80,10 @@ public class ArchetypeGeneratorService {
             status.setDownloadUrl(downloadURL);
         } else {
             status.setStatus(FAILED);
-            if (task.getResult().hasGenerationReport()) {
-                try {
-                    status.setReport(new String(Files.readAllBytes(task.getResult().getGenerationReport().toPath())));
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                }
+            try {
+                status.setReport(new String(Files.readAllBytes(task.getResult().getGenerationReport().toPath())));
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
             }
         }
         return status;

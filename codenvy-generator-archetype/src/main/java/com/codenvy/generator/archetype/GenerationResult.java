@@ -29,12 +29,8 @@ class GenerationResult {
         this.report = report;
     }
 
-    GenerationResult(boolean success, File report) {
-        this(success, null, report);
-    }
-
     /**
-     * Reports whether project generating process successful or failed.
+     * Reports whether project generation process successful or failed.
      *
      * @return {@code true} if project was successfully generated and {@code false} otherwise
      */
@@ -49,16 +45,6 @@ class GenerationResult {
 
     void setGeneratedProject(File generatedProject) {
         this.generatedProject = generatedProject;
-    }
-
-    /**
-     * Reports whether project generating report is available or not. In case if this method
-     * returns {@code false} method {@link #getGenerationReport()} always returns {@code null}.
-     *
-     * @return {@code true} if project generating report is available and {@code false} otherwise
-     */
-    boolean hasGenerationReport() {
-        return null != report;
     }
 
     /**

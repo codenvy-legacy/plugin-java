@@ -277,7 +277,7 @@ public class ArchetypeGenerator {
      */
     private GenerationResult getTaskResult(GenerationTask task, boolean successful) throws ServerException {
         if (!successful) {
-            return new GenerationResult(false, getLogFile(task));
+            return new GenerationResult(false, null, getLogFile(task));
         }
 
         boolean mavenSuccess = false;
@@ -304,11 +304,11 @@ public class ArchetypeGenerator {
         }
 
         if (!mavenSuccess) {
-            return new GenerationResult(false, getLogFile(task));
+            return new GenerationResult(false, null, getLogFile(task));
         }
 
         final File workDir = task.getWorkDir();
-        final GenerationResult result = new GenerationResult(true, getLogFile(task));
+        final GenerationResult result = new GenerationResult(true, null, getLogFile(task));
 
         final File projectFolder = new File(workDir, task.getArtifactId());
         if (projectFolder.isDirectory() && projectFolder.list().length > 0) {
