@@ -16,10 +16,9 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.api.wizard.Wizard;
-import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.dto.DtoFactory;
+import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizard.GENERATOR;
+import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 
@@ -235,10 +235,5 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
             options.put("archetypeRepository", archetype.getRepository());
         }
         return dtoFactory.createDto(GeneratorDescription.class).withName(ARCHETYPE_GENERATOR_ID).withOptions(options);
-    }
-
-    private Array<MavenArchetype> getAvailableArchetypes() {
-        return Collections.createArray(new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "RELEASE", null),
-                                       new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null));
     }
 }

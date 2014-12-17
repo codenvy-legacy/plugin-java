@@ -13,7 +13,7 @@ package com.codenvy.ide.extension.maven.client.module;
 
 import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.extension.maven.client.wizard.MavenArchetype;
+import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.google.inject.ImplementedBy;
 
 /**

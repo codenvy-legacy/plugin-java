@@ -12,6 +12,7 @@ package com.codenvy.ide.extension.maven.client.wizard;
 
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.KeyUpEvent;
@@ -134,7 +135,6 @@ public class MavenPageViewImpl implements MavenPageView {
         versionField.setText("1.0-SNAPSHOT");
         packagingField.setSelectedIndex(0);
         generateFromArchetype.setValue(false);
-
         archetypes.clear();
         archetypeField.clear();
     }
@@ -217,11 +217,6 @@ public class MavenPageViewImpl implements MavenPageView {
         } else {
             versionField.removeStyleName(style.inputError());
         }
-    }
-
-    @Override
-    public void enableGenerateFromArchetype(boolean enabled) {
-        generateFromArchetype.setEnabled(enabled);
     }
 
     @Override

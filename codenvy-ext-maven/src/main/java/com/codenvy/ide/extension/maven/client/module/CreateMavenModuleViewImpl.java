@@ -13,7 +13,7 @@ package com.codenvy.ide.extension.maven.client.module;
 
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.extension.maven.client.wizard.MavenArchetype;
+import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.ui.buttonLoader.ButtonLoaderResources;
 import com.codenvy.ide.ui.window.Window;
 import com.codenvy.ide.wizard.project.ProjectWizardResources;
@@ -187,7 +187,7 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
     public void reset() {
         nameField.setValue("");
         artifactId.setValue("");
-
+        generateFromArchetype.setValue(false);
         archetypes.clear();
         archetypeField.clear();
     }

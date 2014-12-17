@@ -12,6 +12,7 @@ package com.codenvy.ide.extension.maven.client.wizard;
 
 import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.google.inject.ImplementedBy;
 
 /**
@@ -54,8 +55,6 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
     void showGroupIdMissingIndicator(boolean doShow);
 
     void showVersionMissingIndicator(boolean doShow);
-
-    void enableGenerateFromArchetype(boolean enabled);
 
     void clearArchetypes();
 

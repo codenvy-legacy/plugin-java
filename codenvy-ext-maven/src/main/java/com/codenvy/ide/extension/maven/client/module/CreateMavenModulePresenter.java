@@ -18,10 +18,8 @@ import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
-import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.extension.maven.client.wizard.MavenArchetype;
+import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.extension.maven.client.wizard.MavenPomServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
@@ -37,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.codenvy.ide.api.projecttype.wizard.ProjectWizard.GENERATOR;
+import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
@@ -60,7 +58,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
     private DtoFactory            dtoFactory;
     private EventBus              eventBus;
     private MavenPomServiceClient mavenPomServiceClient;
-    private  DialogFactory dialogFactory;
+    private DialogFactory         dialogFactory;
 
     private String moduleName;
 
@@ -197,11 +195,6 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         } else {
             view.setArchetypes(getAvailableArchetypes());
         }
-    }
-
-    private Array<MavenArchetype> getAvailableArchetypes() {
-        return Collections.createArray(new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "RELEASE", null),
-                                       new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null));
     }
 
     private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
