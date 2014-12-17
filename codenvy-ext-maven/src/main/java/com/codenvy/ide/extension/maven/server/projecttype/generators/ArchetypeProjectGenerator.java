@@ -75,6 +75,9 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     }
 
     private String getGeneratorServiceUrl(String[] slaveBuilderURLs) {
+        if (slaveBuilderURLs == null || slaveBuilderURLs.length == 0) {
+            return null;
+        }
         final String slaveBuilderURL = slaveBuilderURLs[0];
         return slaveBuilderURL.replace("/internal/builder", "/generator-archetype");
     }
@@ -102,6 +105,10 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     @Override
     public void generateProject(final FolderEntry baseFolder, NewProject newProjectDescriptor)
             throws ForbiddenException, ConflictException, ServerException {
+        if (generatorServiceUrl == null) {
+            throw new ServerException("Generator service URL is not initialized");
+        }
+
         Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
         List<String> artifactId = attributes.get(ARTIFACT_ID);
         List<String> groupId = attributes.get(GROUP_ID);
