@@ -215,7 +215,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         }
 
         if (isGenerateFromArchetype) {
-            wizardContext.putData(GENERATOR, archetypeToGeneratorDescription(view.getArchetype()));
+            wizardContext.putData(GENERATOR, getGeneratorDescription(view.getArchetype()));
         } else {
             wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
         }
@@ -223,10 +223,10 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     @Override
     public void archetypeChanged(MavenArchetype archetype) {
-        wizardContext.putData(GENERATOR, archetypeToGeneratorDescription(archetype));
+        wizardContext.putData(GENERATOR, getGeneratorDescription(archetype));
     }
 
-    private GeneratorDescription archetypeToGeneratorDescription(MavenArchetype archetype) {
+    private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
         HashMap<String, String> options = new HashMap<>();
         options.put("archetypeGroupId", archetype.getGroupId());
         options.put("archetypeArtifactId", archetype.getArtifactId());

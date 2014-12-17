@@ -43,8 +43,6 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void setPackagingVisibility(boolean visible);
 
-    void setArchetypesVisibility(boolean visible);
-
     void setArchetypeSectionVisibility(boolean visible);
 
     void enableArchetypes(boolean enabled);

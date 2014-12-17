@@ -118,6 +118,7 @@ public class MavenPageViewImpl implements MavenPageView {
 
     @Override
     public void setArchetypes(Array<MavenArchetype> archetypes) {
+        this.archetypes.clear();
         this.archetypes.addAll(archetypes);
         archetypeField.clear();
         for (MavenArchetype archetype : archetypes.asIterable()) {
@@ -142,11 +143,6 @@ public class MavenPageViewImpl implements MavenPageView {
     public void setPackagingVisibility(boolean visible) {
         packagingLabel.setVisible(visible);
         packagingField.setVisible(visible);
-    }
-
-    @Override
-    public void setArchetypesVisibility(boolean visible) {
-        archetypeField.setVisible(visible);
     }
 
     @Override

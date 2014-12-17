@@ -405,7 +405,7 @@ public class ArchetypeGenerator {
                 logger.close();
                 LOG.debug("Close logger {}", logger);
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                LOG.warn(e.getMessage(), e);
             }
         }
 

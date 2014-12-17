@@ -70,6 +70,8 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     @Inject
     public ArchetypeProjectGenerator(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
                                      VirtualFileSystemRegistry vfsRegistry) {
+        // As a temporary solution we're using first slave builder URL
+        // in order to get archetype-generator service URL.
         this.generatorServiceUrl = getGeneratorServiceUrl(slaveBuilderURLs);
         this.vfsRegistry = vfsRegistry;
     }
@@ -161,7 +163,9 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
             final GenerationTaskDescriptor task = executor.submit(callable).get();
             if (task.getStatus() == SUCCESSFUL) {
                 final File downloadFolder = Files.createTempDirectory("generated-project-").toFile();
-                copyFileToRemoteFolder(downloadGeneratedProject(task, downloadFolder), baseFolder);
+                final File generatedProject = new File(downloadFolder, "project.zip");
+                downloadGeneratedProject(task, generatedProject);
+                importZipToFolder(generatedProject, baseFolder);
                 FileCleaner.addFile(downloadFolder);
             } else if (task.getStatus() == FAILED) {
                 throw new ServerException(task.getReport().isEmpty() ? "Failed to generate project: " : task.getReport());
@@ -211,29 +215,11 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
         };
     }
 
-    private File downloadGeneratedProject(GenerationTaskDescriptor task, File downloadFolder) throws ServerException, IOException {
-        final ValueHolder<File> resultHolder = new ValueHolder<>();
-        final ValueHolder<IOException> errorHolder = new ValueHolder<>();
-        DownloadPlugin.Callback callback = new DownloadPlugin.Callback() {
-            @Override
-            public void done(File downloaded) {
-                resultHolder.set(downloaded);
-            }
-
-            @Override
-            public void error(IOException e) {
-                errorHolder.set(e);
-            }
-        };
-        downloadPlugin.download(task.getDownloadUrl(), downloadFolder, callback);
-        final IOException ioError = errorHolder.get();
-        if (ioError != null) {
-            throw new ServerException(ioError);
-        }
-        return resultHolder.get();
+    private void downloadGeneratedProject(GenerationTaskDescriptor task, File file) throws IOException {
+        downloadPlugin.download(task.getDownloadUrl(), file.getParentFile(), file.getName(), true);
     }
 
-    private void copyFileToRemoteFolder(File file, FolderEntry baseFolder)
+    private void importZipToFolder(File file, FolderEntry baseFolder)
             throws ForbiddenException, ServerException, NotFoundException, ConflictException, IOException {
         final VirtualFileSystem vfs = vfsRegistry.getProvider(baseFolder.getWorkspace()).newInstance(null);
         vfs.importZip(baseFolder.getVirtualFile().getId(), Files.newInputStream(file.toPath()), true, false);

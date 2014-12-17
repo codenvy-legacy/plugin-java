@@ -12,6 +12,8 @@
 package com.codenvy.ide.extension.maven.client.module;
 
 import com.codenvy.ide.api.mvp.View;
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.extension.maven.client.wizard.MavenArchetype;
 import com.google.inject.ImplementedBy;
 
 /**
@@ -19,6 +21,14 @@ import com.google.inject.ImplementedBy;
  */
 @ImplementedBy(CreateMavenModuleViewImpl.class)
 public interface CreateMavenModuleView extends View<CreateMavenModuleView.ActionDelegate> {
+
+    MavenArchetype getArchetype();
+
+    void setArchetypes(Array<MavenArchetype> archetypes);
+
+    void enableArchetypes(boolean enabled);
+
+    boolean isGenerateFromArchetypeSelected();
 
     void setParentArtifactId(String artifactId);
 
@@ -40,10 +50,13 @@ public interface CreateMavenModuleView extends View<CreateMavenModuleView.Action
 
     String getVersion();
 
+    void setPackagingVisibility(boolean visible);
+
     void close();
 
     void showButtonLoader(boolean showLoader);
 
+    void clearArchetypes();
 
     public interface ActionDelegate{
 
@@ -54,6 +67,8 @@ public interface CreateMavenModuleView extends View<CreateMavenModuleView.Action
         void projectNameChanged(String name);
 
         void artifactIdChanged(String artifactId);
+
+        void generateFromArchetypeChanged(boolean isGenerateFromArchetype);
     }
 
     void show();

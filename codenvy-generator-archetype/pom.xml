@@ -120,8 +120,8 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>com.codenvy.plugin-java</groupId>
-                        <artifactId>codenvy-generator-archetype</artifactId>
+                        <groupId>${project.groupId}</groupId>
+                        <artifactId>${project.artifactId}</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>

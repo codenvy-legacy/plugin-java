@@ -11,6 +11,9 @@
 
 package com.codenvy.ide.extension.maven.client.module;
 
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.extension.maven.client.wizard.MavenArchetype;
 import com.codenvy.ide.ui.buttonLoader.ButtonLoaderResources;
 import com.codenvy.ide.ui.window.Window;
 import com.codenvy.ide.wizard.project.ProjectWizardResources;
@@ -19,11 +22,14 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
@@ -34,25 +40,33 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class CreateMavenModuleViewImpl extends Window implements CreateMavenModuleView {
-    public static final String CREATE = "Create";
-    private static CreateMavenModuleViewImplUiBinder ourUiBinder = GWT.create(CreateMavenModuleViewImplUiBinder.class);
+    public static final String                            CREATE      = "Create";
+    private static      CreateMavenModuleViewImplUiBinder ourUiBinder = GWT.create(CreateMavenModuleViewImplUiBinder.class);
     private final Button createButton;
     @UiField
-    TextBox parentArtifactId;
+    CheckBox                       generateFromArchetype;
     @UiField
-    TextBox nameField;
+    Label                          archetypeLabel;
     @UiField
-    TextBox artifactId;
+    ListBox                        archetypeField;
     @UiField
-    TextBox groupIdField;
+    TextBox                        parentArtifactId;
     @UiField
-    TextBox versionField;
+    TextBox                        nameField;
     @UiField
-    ListBox packagingField;
-
+    TextBox                        artifactId;
+    @UiField
+    TextBox                        groupIdField;
+    @UiField
+    TextBox                        versionField;
+    @UiField
+    Label                          packagingLabel;
+    @UiField
+    ListBox                        packagingField;
     @UiField(provided = true)
     CreateMavenModuleResources.Css styles;
-    private ActionDelegate delegate;
+    private Array<MavenArchetype> archetypes;
+    private ActionDelegate        delegate;
 
     @Inject
     public CreateMavenModuleViewImpl(ProjectWizardResources wizardResources, CreateMavenModuleResources resources,
@@ -60,6 +74,7 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
         super(true);
         styles = resources.css();
         styles.ensureInjected();
+        archetypes = Collections.createArray();
         setTitle("Create Maven Module");
         FlowPanel rootElement = ourUiBinder.createAndBindUi(this);
         setWidget(rootElement);
@@ -94,6 +109,11 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
         delegate.artifactIdChanged(artifactId.getText());
     }
 
+    @UiHandler({"generateFromArchetype"})
+    void generateFromArchetypeHandler(ValueChangeEvent<Boolean> event) {
+        delegate.generateFromArchetypeChanged(generateFromArchetype.getValue());
+    }
+
     @Override
     protected void onClose() {
         delegate.onClose();
@@ -105,18 +125,39 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
     }
 
     @Override
+    public MavenArchetype getArchetype() {
+        final String coordinates = archetypeField.getValue(archetypeField.getSelectedIndex());
+        for (MavenArchetype archetype : archetypes.asIterable()) {
+            if (coordinates.equals(archetype.toString())) {
+                return archetype;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void setArchetypes(Array<MavenArchetype> archetypes) {
+        this.archetypes.clear();
+        this.archetypes.addAll(archetypes);
+        archetypeField.clear();
+        for (MavenArchetype archetype : archetypes.asIterable()) {
+            archetypeField.addItem(archetype.toString(), archetype.toString());
+        }
+    }
+
+    @Override
+    public void enableArchetypes(boolean enabled) {
+        archetypeField.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean isGenerateFromArchetypeSelected() {
+        return generateFromArchetype.getValue();
+    }
+
+    @Override
     public void setParentArtifactId(String artifactId) {
         parentArtifactId.setValue(artifactId);
-    }
-
-    @Override
-    public void setGroupId(String groupId) {
-        groupIdField.setValue(groupId);
-    }
-
-    @Override
-    public void setVersion(String version) {
-        versionField.setValue(version);
     }
 
     @Override
@@ -146,6 +187,9 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
     public void reset() {
         nameField.setValue("");
         artifactId.setValue("");
+
+        archetypes.clear();
+        archetypeField.clear();
     }
 
     @Override
@@ -159,8 +203,24 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
     }
 
     @Override
+    public void setGroupId(String groupId) {
+        groupIdField.setValue(groupId);
+    }
+
+    @Override
     public String getVersion() {
         return versionField.getText();
+    }
+
+    @Override
+    public void setVersion(String version) {
+        versionField.setValue(version);
+    }
+
+    @Override
+    public void setPackagingVisibility(boolean visible) {
+        packagingLabel.setVisible(visible);
+        packagingField.setVisible(visible);
     }
 
     @Override
@@ -179,9 +239,12 @@ public class CreateMavenModuleViewImpl extends Window implements CreateMavenModu
         }
     }
 
-    interface CreateMavenModuleViewImplUiBinder extends
-                                                UiBinder<FlowPanel, CreateMavenModuleViewImpl> {
+    @Override
+    public void clearArchetypes() {
+        archetypes.clear();
+        archetypeField.clear();
     }
 
-
+    interface CreateMavenModuleViewImplUiBinder extends UiBinder<FlowPanel, CreateMavenModuleViewImpl> {
+    }
 }
