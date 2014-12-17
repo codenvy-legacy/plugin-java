@@ -48,9 +48,9 @@ class GenerationResult {
     }
 
     /**
-     * Provides report about project generating process. If report is not available  this method always returns {@code null}.
+     * Provides report about project generation process.
      *
-     * @return report about project generating or {@code null}
+     * @return report about project generation
      */
     File getGenerationReport() {
         return report;
