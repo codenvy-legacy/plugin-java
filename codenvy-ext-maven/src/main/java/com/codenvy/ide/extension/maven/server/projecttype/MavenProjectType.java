@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.project.newproj.server.AbstractProjectType;
+import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.ProjectTemplateDescriptionLoader;
 import com.codenvy.api.project.shared.Builders;
 import com.codenvy.api.project.shared.Runners;
@@ -25,13 +25,13 @@ import javax.inject.Singleton;
 
 /** @author Evgen Vidolob */
 @Singleton
-public class MavenProjectTypeExtension extends AbstractProjectType {
-    private static final Logger LOG = LoggerFactory.getLogger(MavenProjectTypeExtension.class);
+public class MavenProjectType extends ProjectType2 {
+    private static final Logger LOG = LoggerFactory.getLogger(MavenProjectType.class);
     private final ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader;
 
     @Inject
-    public MavenProjectTypeExtension(ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader,
-                                     MavenValueProviderFactory mavenArtifactIdValueProviderFactory) {
+    public MavenProjectType(ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader,
+                            MavenValueProviderFactory mavenArtifactIdValueProviderFactory) {
         super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME);
 
         addConstantDefinition(Constants.LANGUAGE, "language", "java");

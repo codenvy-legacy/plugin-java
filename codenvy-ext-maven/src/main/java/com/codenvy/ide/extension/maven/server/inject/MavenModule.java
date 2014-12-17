@@ -15,11 +15,8 @@ import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.MavenMultimoduleAutoBuilder;
 import com.codenvy.ide.extension.maven.server.MavenPomService;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectGenerator;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeDescriptionsExtension;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeExtension;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeResolver;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenValueProviderFactory;
+import com.codenvy.ide.extension.maven.server.projecttype.*;
+import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectType;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -29,7 +26,7 @@ import com.google.inject.multibindings.Multibinder;
 public class MavenModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(MavenProjectTypeExtension.class);
+        bind(MavenProjectType.class);
         bind(MavenProjectTypeDescriptionsExtension.class);
         bind(MavenPomService.class);
         bind(MavenMultimoduleAutoBuilder.class);
