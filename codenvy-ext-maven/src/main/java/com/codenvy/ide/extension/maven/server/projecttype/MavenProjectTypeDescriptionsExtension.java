@@ -24,6 +24,8 @@ import java.util.List;
 
 /**
  * @author Evgen Vidolob
+ *
+ * @deprecated
  */
 @Singleton
 public class MavenProjectTypeDescriptionsExtension implements ProjectTypeDescriptionExtension {

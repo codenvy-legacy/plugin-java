@@ -14,6 +14,7 @@ import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.ProjectTemplateDescriptionLoader;
 import com.codenvy.api.project.shared.Builders;
 import com.codenvy.api.project.shared.Runners;
+import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
@@ -31,11 +32,13 @@ public class MavenProjectType extends ProjectType2 {
 
     @Inject
     public MavenProjectType(ProjectTemplateDescriptionLoader projectTemplateDescriptionLoader,
-                            MavenValueProviderFactory mavenArtifactIdValueProviderFactory) {
+                            MavenValueProviderFactory mavenArtifactIdValueProviderFactory,
+                            JavaProjectType javaProjectType) {
+
         super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME);
 
-        addConstantDefinition(Constants.LANGUAGE, "language", "java");
-        addConstantDefinition(Constants.LANGUAGE_VERSION, "language", "1.6");
+        //addConstantDefinition(Constants.LANGUAGE, "language", "java");
+        //addConstantDefinition(Constants.LANGUAGE_VERSION, "language version", "1.6");
         addVariableDefinition(MavenAttributes.GROUP_ID, "", true, mavenArtifactIdValueProviderFactory);
         addVariableDefinition(MavenAttributes.ARTIFACT_ID, "", true, mavenArtifactIdValueProviderFactory);
         addVariableDefinition(MavenAttributes.VERSION, "", true, mavenArtifactIdValueProviderFactory);
@@ -45,19 +48,22 @@ public class MavenProjectType extends ProjectType2 {
         addVariableDefinition(MavenAttributes.PACKAGING, "", true, mavenArtifactIdValueProviderFactory);
         addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", true, mavenArtifactIdValueProviderFactory);
         addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", true, mavenArtifactIdValueProviderFactory);
+
+        addParent(javaProjectType);
+
         this.projectTemplateDescriptionLoader = projectTemplateDescriptionLoader;
     }
 
 
-    //    @Override
-    public Builders getBuilders() {
-        return new Builders("maven");
-    }
-
-    //    @Override
-    public Runners getRunners() {
-        return null;
-    }
+//    //    @Override
+//    public Builders getBuilders() {
+//        return new Builders("maven");
+//    }
+//
+//    //    @Override
+//    public Runners getRunners() {
+//        return null;
+//    }
 
 //    @Override
 //    public List<ProjectTemplateDescription> getTemplates() {
