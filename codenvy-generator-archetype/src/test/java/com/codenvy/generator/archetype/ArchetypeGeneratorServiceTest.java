@@ -18,7 +18,6 @@ import com.codenvy.generator.archetype.dto.MavenArchetype;
 import org.everrest.core.impl.uri.UriBuilderImpl;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -26,7 +25,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.UriInfo;
+import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.FAILED;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.IN_PROGRESS;
@@ -63,7 +66,6 @@ public class ArchetypeGeneratorServiceTest {
         when(taskMock.getId()).thenReturn(taskId);
     }
 
-    @Ignore
     @Test
     public void testGenerate() throws Exception {
         MavenArchetype archetype = DtoFactory.getInstance().createDto(MavenArchetype.class)
@@ -80,7 +82,6 @@ public class ArchetypeGeneratorServiceTest {
         Assert.assertEquals("http://localhost:8080/generator-archetype/status/" + taskId, task.getStatusUrl());
     }
 
-    @Ignore
     @Test
     public void testGetStatusWhenTaskIsNotDone() throws Exception {
         doReturn(false).when(taskMock).isDone();
@@ -91,7 +92,6 @@ public class ArchetypeGeneratorServiceTest {
         Assert.assertEquals(IN_PROGRESS, task.getStatus());
     }
 
-    @Ignore
     @Test
     public void testGetStatusWhenTaskIsSuccessful() throws Exception {
         doReturn(true).when(taskMock).isDone();
@@ -108,13 +108,14 @@ public class ArchetypeGeneratorServiceTest {
         Assert.assertEquals("http://localhost:8080/generator-archetype/download/1", task.getDownloadUrl());
     }
 
-    @Ignore
     @Test
     public void testGetStatusWhenTaskIsFailed() throws Exception {
+        final Path testLogFile = Paths.get(Thread.currentThread().getContextClassLoader().getResource("test.log").toURI());
         doReturn(true).when(taskMock).isDone();
 
         GenerationResult generationResult = mock(GenerationResult.class);
         doReturn(false).when(generationResult).isSuccessful();
+        doReturn(new File(testLogFile.toString())).when(generationResult).getGenerationReport();
 
         doReturn(generationResult).when(taskMock).getResult();
         doReturn(taskMock).when(archetypeGenerator).getTaskById(anyLong());
@@ -122,6 +123,7 @@ public class ArchetypeGeneratorServiceTest {
         GenerationTaskDescriptor task = service.getStatus(uriInfo, String.valueOf(taskId));
 
         Assert.assertEquals(FAILED, task.getStatus());
+        Assert.assertEquals(new String(Files.readAllBytes(testLogFile)), task.getReport());
     }
 
     @Test(expected = ServerException.class)
