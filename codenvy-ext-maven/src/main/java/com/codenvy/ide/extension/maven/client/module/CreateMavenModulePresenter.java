@@ -45,6 +45,8 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTI
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
@@ -105,6 +107,8 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         attributes.put(PARENT_ARTIFACT_ID, Arrays.asList(parentProject.getAttributeValue(ARTIFACT_ID)));
         attributes.put(PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(GROUP_ID)));
         attributes.put(PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(VERSION)));
+        attributes.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
+        attributes.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
         newProject.setAttributes(attributes);
 
         GeneratorDescription generatorDescription;
