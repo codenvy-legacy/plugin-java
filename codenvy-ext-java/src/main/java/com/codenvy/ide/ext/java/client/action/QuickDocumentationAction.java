@@ -16,6 +16,7 @@ import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInput;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
 import com.google.inject.Inject;
@@ -41,7 +42,8 @@ public class QuickDocumentationAction extends ProjectAction {
     protected void updateProjectAction(ActionEvent e) {
         if (editorAgent.getActiveEditor() != null) {
             EditorInput input = editorAgent.getActiveEditor().getEditorInput();
-            if (input.getFile().getMediaType().equals(MimeType.APPLICATION_JAVA)) {
+            VirtualFile file = input.getFile();
+            if (file.getMediaType().equals(MimeType.APPLICATION_JAVA) || file.getMediaType().equals("application/java-class")) {
                 e.getPresentation().setEnabledAndVisible(true);
                 return;
             }

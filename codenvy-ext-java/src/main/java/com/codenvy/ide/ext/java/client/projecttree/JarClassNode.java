@@ -86,6 +86,11 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
     }
 
     @Override
+    public boolean isReadOnly() {
+        return true;
+    }
+
+    @Override
     public String getContentUrl() {
         return null;
     }
