@@ -94,10 +94,9 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
     @Override
     public void create() {
         NewProject newProject = dtoFactory.createDto(NewProject.class);
-        BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class);
-        builders.setDefault("maven");
         newProject.setType(MAVEN_ID);
         newProject.setVisibility(parentProject.getProjectDescription().getVisibility());
+        newProject.setBuilders(dtoFactory.createDto(BuildersDescriptor.class).withDefault("maven"));
         Map<String, List<String>> attributes = new HashMap<>();
         attributes.put(ARTIFACT_ID, Arrays.asList(artifactId));
         attributes.put(GROUP_ID, Arrays.asList(view.getGroupId()));
