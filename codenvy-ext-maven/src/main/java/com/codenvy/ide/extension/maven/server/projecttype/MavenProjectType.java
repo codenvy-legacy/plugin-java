@@ -50,20 +50,11 @@ public class MavenProjectType extends ProjectType2 {
         addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", true, mavenArtifactIdValueProviderFactory);
 
         addParent(javaProjectType);
+        setDefaultBuilder("maven");
 
         this.projectTemplateDescriptionLoader = projectTemplateDescriptionLoader;
     }
 
-
-//    //    @Override
-//    public Builders getBuilders() {
-//        return new Builders("maven");
-//    }
-//
-//    //    @Override
-//    public Runners getRunners() {
-//        return null;
-//    }
 
 //    @Override
 //    public List<ProjectTemplateDescription> getTemplates() {
