@@ -25,9 +25,12 @@ import com.codenvy.ide.newresource.AbstractNewResourceAction;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.ui.dialogs.InputCallback;
+import com.codenvy.ide.ui.dialogs.input.InputValidator;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import javax.annotation.Nullable;
 
 /**
  * Action to create new Java package.
@@ -36,6 +39,7 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class NewPackageAction extends AbstractNewResourceAction {
+    private final InputValidator nameValidator = new NameValidator();
     private JavaLocalizationConstant localizationConstant;
 
     @Inject
@@ -72,7 +76,7 @@ public class NewPackageAction extends AbstractNewResourceAction {
                 }
 
             }
-        }, null).show();
+        }, null).withValidator(nameValidator).show();
     }
 
     @Override
@@ -99,5 +103,24 @@ public class NewPackageAction extends AbstractNewResourceAction {
                         callback.onFailure(exception);
                     }
                 });
+    }
+
+    private class NameValidator implements InputValidator {
+        @Nullable
+        @Override
+        public Violation validate(String value) {
+            try {
+                JavaUtils.checkPackageName(value);
+            } catch (final IllegalStateException e) {
+                return new Violation() {
+                    @Nullable
+                    @Override
+                    public String getMessage() {
+                        return e.getMessage();
+                    }
+                };
+            }
+            return null;
+        }
     }
 }
