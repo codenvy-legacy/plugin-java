@@ -16,7 +16,7 @@ import elemental.json.JsonObject;
 
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
@@ -55,7 +55,7 @@ public class OpenDeclarationFinder {
         }
         EmbeddedTextEditorPresenter editor = ((EmbeddedTextEditorPresenter)activeEditor);
         int offset = editor.getCursorOffset();
-        final FileNode file = editor.getEditorInput().getFile();
+        final VirtualFile file = editor.getEditorInput().getFile();
         worker.computeJavadocHandle(offset, file.getPath(), new JavaParserWorker.Callback<String>() {
             @Override
             public void onCallback(String result) {

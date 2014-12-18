@@ -51,6 +51,11 @@ import java.util.HashMap;
 	 * The type parameters in this class file.
 	 */
 	protected ITypeParameter[] typeParameters;
+	private JavaModelManager manager;
+
+	public ClassFileInfo(JavaModelManager manager) {
+		this.manager = manager;
+	}
 
 	private void generateAnnotationsInfos(JavaElement member, IBinaryAnnotation[] binaryAnnotations, long tagBits, HashMap newElements) {
 		generateAnnotationsInfos(member, null, binaryAnnotations, tagBits, newElements);
@@ -79,7 +84,7 @@ import java.util.HashMap;
 	private void generateAnnotationInfo(JavaElement parent, char[] parameterName, HashMap newElements, IBinaryAnnotation annotationInfo,
 										String memberValuePairName) {
 		char[] typeName = org.eclipse.jdt.core.Signature.toCharArray(CharOperation.replaceOnCopy(annotationInfo.getTypeName(), '/', '.'));
-		Annotation annotation = new Annotation(parent,parent.manager, new String(typeName), memberValuePairName);
+		Annotation annotation = new Annotation(parent, parent.manager, new String(typeName), memberValuePairName);
 		while (newElements.containsKey(annotation)) {
 			annotation.occurrenceCount++;
 		}
@@ -459,26 +464,23 @@ protected void readBinaryChildren(ClassFile classFile, HashMap newElements, IBin
  * the <code>JavaModelManager</code>'s cache.
  */
 void removeBinaryChildren() throws JavaModelException {
-//	if (this.binaryChildren != null) {
-//		JavaModelManager manager = JavaModelManager.getJavaModelManager();
-//		for (int i = 0; i <this.binaryChildren.length; i++) {
-//			JavaElement child = this.binaryChildren[i];
-//			if (child instanceof BinaryType) {
-//				manager.removeInfoAndChildren((JavaElement)child.getParent());
-//			} else {
-//				manager.removeInfoAndChildren(child);
-//			}
-//		}
-//		this.binaryChildren = JavaElement.NO_ELEMENTS;
-//	}
-//	if (this.typeParameters != null) {
-//		JavaModelManager manager = JavaModelManager.getJavaModelManager();
-//		for (int i = 0; i <this.typeParameters.length; i++) {
-//			TypeParameter typeParameter = (TypeParameter) this.typeParameters[i];
-//			manager.removeInfoAndChildren(typeParameter);
-//		}
-//		this.typeParameters = TypeParameter.NO_TYPE_PARAMETERS;
-//	}
-	throw new UnsupportedOperationException();
+	if (this.binaryChildren != null) {
+		for (int i = 0; i <this.binaryChildren.length; i++) {
+			JavaElement child = this.binaryChildren[i];
+			if (child instanceof BinaryType) {
+				manager.removeInfoAndChildren((JavaElement)child.getParent());
+			} else {
+				manager.removeInfoAndChildren(child);
+			}
+		}
+		this.binaryChildren = JavaElement.NO_ELEMENTS;
+	}
+	if (this.typeParameters != null) {
+		for (int i = 0; i <this.typeParameters.length; i++) {
+			TypeParameter typeParameter = (TypeParameter) this.typeParameters[i];
+			manager.removeInfoAndChildren(typeParameter);
+		}
+		this.typeParameters = TypeParameter.NO_TYPE_PARAMETERS;
+	}
 }
 }

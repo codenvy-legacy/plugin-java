@@ -11,19 +11,26 @@
 
 package com.codenvy.ide.ext.java.client.projecttree;
 
+import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.StringUnmarshaller;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Represent non java file
  * @author Evgen Vidolob
  */
-public class JarFileNode extends JarEntryNode {
+public class JarFileNode extends JarEntryNode implements VirtualFile {
     /**
      * Creates new node with the specified parent, associated data and display name.
      *  @param parent
@@ -54,5 +61,53 @@ public class JarFileNode extends JarEntryNode {
     @Override
     public void refreshChildren(AsyncCallback<TreeNode<?>> callback) {
 
+    }
+
+    @Override
+    public void processNodeAction() {
+        eventBus.fireEvent(new FileEvent(this, FileEvent.FileOperation.OPEN));
+    }
+
+    @Nonnull
+    @Override
+    public String getPath() {
+        return data.getPath();
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return data.getName();
+    }
+
+    @Nullable
+    @Override
+    public String getMediaType() {
+        return null;
+    }
+
+    @Override
+    public String getContentUrl() {
+        return service.getContentUrl(getProject().getPath(), libId, data.getPath());
+    }
+
+    @Override
+    public void getContent(final AsyncCallback<String> callback) {
+        service.getContent(getProject().getPath(), libId, data.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+            @Override
+            protected void onSuccess(String result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
+    }
+
+    @Override
+    public void updateContent(String content, AsyncCallback<Void> callback) {
+        throw new UnsupportedOperationException("Update content on class file is not supported.");
     }
 }

@@ -43,7 +43,8 @@ public class BaseTest {
         options.put(JavaCore.COMPILER_PB_UNUSED_PARAMETER_INCLUDE_DOC_COMMENT_REFERENCE, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
-        project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/test", "/temp", "ws", options);
+
+        project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/test", getClass().getResource("/temp").getPath(), "ws", options);
     }
 
     protected static String getHanldeForRtJarStart(){

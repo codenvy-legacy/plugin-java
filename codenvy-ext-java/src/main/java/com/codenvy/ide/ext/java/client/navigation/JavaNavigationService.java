@@ -41,4 +41,13 @@ public interface JavaNavigationService {
 
     void getChildren(String projectPath, int libId, String path, AsyncRequestCallback<Array<JarEntry>> callback);
 
+    void getContent(String projectPath, int libId, String path, AsyncRequestCallback<String> callback);
+
+    /**
+     * @param projectPath
+     * @param libId
+     * @param path
+     * @return
+     */
+    String getContentUrl(String projectPath, int libId, String path);
 }

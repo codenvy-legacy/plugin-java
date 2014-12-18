@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client.fqn;
 
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 
 import javax.annotation.Nonnull;
 
@@ -19,5 +19,5 @@ import javax.annotation.Nonnull;
  */
 public interface FqnResolver {
     @Nonnull
-    String resolveFqn(@Nonnull FileNode file);
+    String resolveFqn(@Nonnull VirtualFile file);
 }

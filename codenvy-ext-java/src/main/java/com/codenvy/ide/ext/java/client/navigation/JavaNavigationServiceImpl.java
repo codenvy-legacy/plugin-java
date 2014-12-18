@@ -65,4 +65,16 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
                 restContext + "/navigation/" + workspaceId + "/children?projectpath=" + projectPath + "&root=" + libId + "&path=" + path;
         requestFactory.createGetRequest(url).send(callback);
     }
+
+    @Override
+    public void getContent(String projectPath, int libId, String path, AsyncRequestCallback<String> callback) {
+        String url = getContentUrl(projectPath, libId, path);
+
+        requestFactory.createGetRequest(url).send(callback);
+    }
+
+    @Override
+    public String getContentUrl(String projectPath, int libId, String path) {
+        return restContext + "/navigation/" + workspaceId + "/content?projectpath=" + projectPath + "&root=" + libId + "&path=" + path;
+    }
 }

@@ -279,7 +279,7 @@ public IJavaElement[] codeSelect(int offset, int length, WorkingCopyOwner owner)
  * Returns a new element info for this element.
  */
 protected Object createElementInfo() {
-	return new ClassFileInfo();
+	return new ClassFileInfo(manager);
 }
 
 public boolean equals(Object o) {

@@ -151,6 +151,10 @@ public class JarPackageFragmentRoot extends PackageFragmentRoot {
     public ZipFile getJar() throws CoreException {
         return manager.getZipFile(getPath());
     }
+
+    public void closeJar(ZipFile jar){
+        manager.closeZipFile(jar);
+    }
     /**
      * @see IPackageFragmentRoot
      */

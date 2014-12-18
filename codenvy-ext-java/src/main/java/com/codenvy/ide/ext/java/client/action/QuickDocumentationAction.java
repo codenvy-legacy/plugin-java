@@ -41,7 +41,7 @@ public class QuickDocumentationAction extends ProjectAction {
     protected void updateProjectAction(ActionEvent e) {
         if (editorAgent.getActiveEditor() != null) {
             EditorInput input = editorAgent.getActiveEditor().getEditorInput();
-            if (input.getFile().getData().getMediaType().equals(MimeType.APPLICATION_JAVA)) {
+            if (input.getFile().getMediaType().equals(MimeType.APPLICATION_JAVA)) {
                 e.getPresentation().setEnabledAndVisible(true);
                 return;
             }

@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.ext.java.server;
 
+import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.internal.core.JarEntryDirectory;
 import com.codenvy.ide.ext.java.server.internal.core.JarEntryFile;
@@ -20,11 +21,13 @@ import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.javadoc.JavaElementLabels;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.ext.java.shared.JarEntry.JarEntryType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.inject.Singleton;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJarEntryResource;
@@ -33,21 +36,74 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.ISourceReference;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * @author Evgen Vidolob
  */
 @Singleton
 public class JavaNavigation {
+    private static final Logger              LOG           = LoggerFactory.getLogger(JavaNavigation.class);
     private static final ArrayList<JarEntry> NO_ENTRIES    = new ArrayList<>(1);
     private              Gson                gson          = new GsonBuilder().disableHtmlEscaping().serializeNulls().create();
     private              boolean             fFoldPackages = true;
+
+    private static Comparator<JarEntry> comparator = new Comparator<JarEntry>() {
+        @Override
+        public int compare(JarEntry o1, JarEntry o2) {
+            if (o1.getType() == JarEntryType.PACKAGE && o2.getType() != JarEntryType.PACKAGE){
+                return 1;
+            }
+
+            if (o2.getType() == JarEntryType.PACKAGE && o1.getType() != JarEntryType.PACKAGE){
+                return 1;
+            }
+
+            if (o1.getType() == JarEntryType.CLASS_FILE && o2.getType() != JarEntryType.CLASS_FILE){
+                return 1;
+            }
+
+            if (o1.getType() != JarEntryType.CLASS_FILE && o2.getType() == JarEntryType.CLASS_FILE){
+                return 1;
+            }
+
+            if (o1.getType() == JarEntryType.FOLDER && o2.getType() != JarEntryType.FOLDER){
+                return 1;
+            }
+
+            if (o1.getType() != JarEntryType.FOLDER && o2.getType() == JarEntryType.FOLDER){
+                return 1;
+            }
+
+            if (o1.getType() == JarEntryType.FILE && o2.getType() != JarEntryType.FILE){
+                return -1;
+            }
+
+            if (o1.getType() != JarEntryType.FILE && o2.getType() == JarEntryType.FILE){
+                return -1;
+            }
+
+
+            if(o1.getType() == o2.getType()){
+                return o1.getName().compareTo(o2.getName());
+            }
+
+            return 0;
+        }
+    };
 
     /**
      * Utility method to concatenate two arrays.
@@ -142,7 +198,7 @@ public class JavaNavigation {
 
         Object[] rootContent = getPackageFragmentRootContent(packageFragmentRoot);
 
-        return convertToJarEntry(rootContent);
+        return convertToJarEntry(rootContent, packageFragmentRoot);
     }
 
     private IPackageFragmentRoot getPackageFragmentRoot(JavaProject project, int hash) throws JavaModelException {
@@ -157,7 +213,7 @@ public class JavaNavigation {
         return packageFragmentRoot;
     }
 
-    private List<JarEntry> convertToJarEntry(Object[] rootContent) {
+    private List<JarEntry> convertToJarEntry(Object[] rootContent, IPackageFragmentRoot root) throws JavaModelException {
         List<JarEntry> result = new ArrayList<>();
         for (Object o : rootContent) {
             if (o instanceof IPackageFragment) {
@@ -165,16 +221,17 @@ public class JavaNavigation {
                 IPackageFragment packageFragment = (IPackageFragment)o;
                 entry.setName(getSpecificText((IJavaElement)o));
                 entry.setPath(packageFragment.getElementName());
-                entry.setType(JarEntry.JarEntryType.PACKAGE);
+                entry.setType(JarEntryType.PACKAGE);
                 result.add(entry);
             }
 
             if (o instanceof IClassFile) {
                 JarEntry entry = DtoFactory.getInstance().createDto(JarEntry.class);
                 IClassFile classFile = (IClassFile)o;
-                entry.setType(JarEntry.JarEntryType.CLASS_FILE);
+                entry.setType(JarEntryType.CLASS_FILE);
                 entry.setName(classFile.getElementName());
                 entry.setPath(classFile.getType().getFullyQualifiedName());
+                entry.setSource(root.getSourceAttachmentPath() != null);
                 result.add(entry);
             }
 
@@ -182,15 +239,16 @@ public class JavaNavigation {
                 result.add(getJarEntryResource((JarEntryResource)o));
             }
         }
+        Collections.sort(result, comparator);
         return result;
     }
 
     private String getSpecificText(IJavaElement element) {
         if (element instanceof IPackageFragment) {
-            IPackageFragment fragment = (IPackageFragment) element;
-            Object parent= getHierarchicalPackageParent(fragment);
+            IPackageFragment fragment = (IPackageFragment)element;
+            Object parent = getHierarchicalPackageParent(fragment);
             if (parent instanceof IPackageFragment) {
-                return getNameDelta((IPackageFragment) parent, fragment);
+                return getNameDelta((IPackageFragment)parent, fragment);
             }
         }
 
@@ -198,8 +256,8 @@ public class JavaNavigation {
     }
 
     private String getNameDelta(IPackageFragment parent, IPackageFragment fragment) {
-        String prefix= parent.getElementName() + '.';
-        String fullName= fragment.getElementName();
+        String prefix = parent.getElementName() + '.';
+        String fullName = fragment.getElementName();
         if (fullName.startsWith(prefix)) {
             return fullName.substring(prefix.length());
         }
@@ -207,12 +265,12 @@ public class JavaNavigation {
     }
 
     public Object getHierarchicalPackageParent(IPackageFragment child) {
-        String name= child.getElementName();
-        IPackageFragmentRoot parent= (IPackageFragmentRoot) child.getParent();
-        int index= name.lastIndexOf('.');
+        String name = child.getElementName();
+        IPackageFragmentRoot parent = (IPackageFragmentRoot)child.getParent();
+        int index = name.lastIndexOf('.');
         if (index != -1) {
-            String realParentName= name.substring(0, index);
-            IPackageFragment element= parent.getPackageFragment(realParentName);
+            String realParentName = name.substring(0, index);
+            IPackageFragment element = parent.getPackageFragment(realParentName);
             if (element.exists()) {
                 try {
                     if (fFoldPackages && isEmpty(element) && findSinglePackageChild(element, parent.getChildren()) != null) {
@@ -238,10 +296,11 @@ public class JavaNavigation {
     private JarEntry getJarEntryResource(JarEntryResource resource) {
         JarEntry entry = DtoFactory.getInstance().createDto(JarEntry.class);
         if (resource instanceof JarEntryDirectory) {
-            entry.setType(JarEntry.JarEntryType.FOLDER);
+            entry.setType(JarEntryType.FOLDER);
         }
         if (resource instanceof JarEntryFile) {
-            entry.setType(JarEntry.JarEntryType.FILE);
+            entry.setType(JarEntryType.FILE);
+            entry.setSource(true);
         }
         entry.setName(resource.getName());
         entry.setPath(resource.getFullPath().toOSString());
@@ -273,7 +332,7 @@ public class JavaNavigation {
         List<IClassFile> filtered = new ArrayList<>();
         //filter inner classes
         for (IClassFile classFile : classFiles) {
-            if(!classFile.getElementName().contains("$")){
+            if (!classFile.getElementName().contains("$")) {
                 filtered.add(classFile);
             }
         }
@@ -311,7 +370,7 @@ public class JavaNavigation {
                 result.add(curr);
             } else if (fragment == null && curr.isDefaultPackage()) {
                 IJavaElement[] currChildren = curr.getChildren();
-                if(currChildren != null && currChildren.length >= 1) {
+                if (currChildren != null && currChildren.length >= 1) {
                     result.add(curr);
                 }
             }
@@ -339,18 +398,18 @@ public class JavaNavigation {
         return null;
     }
 
-    private Object[] findJarDirectoryChildren(JarEntryDirectory directory, String path){
+    private Object[] findJarDirectoryChildren(JarEntryDirectory directory, String path) {
         String directoryPath = directory.getFullPath().toOSString();
-        if(directoryPath.equals(path)){
+        if (directoryPath.equals(path)) {
             return directory.getChildren();
         }
-        if(path.startsWith(directoryPath)){
+        if (path.startsWith(directoryPath)) {
             for (IJarEntryResource resource : directory.getChildren()) {
                 String childrenPath = resource.getFullPath().toOSString();
-                if(childrenPath.equals(path)){
+                if (childrenPath.equals(path)) {
                     return resource.getChildren();
                 }
-                if (path.startsWith(childrenPath) && resource instanceof JarEntryDirectory){
+                if (path.startsWith(childrenPath) && resource instanceof JarEntryDirectory) {
                     findJarDirectoryChildren((JarEntryDirectory)resource, path);
                 }
             }
@@ -371,8 +430,8 @@ public class JavaNavigation {
                 if (resource instanceof JarEntryDirectory) {
                     JarEntryDirectory directory = (JarEntryDirectory)resource;
                     Object[] children = findJarDirectoryChildren(directory, path);
-                    if(children != null) {
-                        return convertToJarEntry(children);
+                    if (children != null) {
+                        return convertToJarEntry(children, root);
                     }
                 }
             }
@@ -383,8 +442,91 @@ public class JavaNavigation {
             if (fragment == null) {
                 return NO_ENTRIES;
             }
-            return convertToJarEntry(getPackageContent(fragment));
+            return convertToJarEntry(getPackageContent(fragment), root);
         }
         return NO_ENTRIES;
+    }
+
+    public String getContent(JavaProject project, int rootId, String path) throws CoreException {
+        IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId);
+        if (root == null) {
+            return null;
+        }
+
+        if (path.startsWith("/")) {
+            //non java file
+            if (root instanceof JarPackageFragmentRoot) {
+                JarPackageFragmentRoot jarPackageFragmentRoot = (JarPackageFragmentRoot)root;
+                ZipFile jar = null;
+                try {
+                    jar = jarPackageFragmentRoot.getJar();
+                    ZipEntry entry = jar.getEntry(path.substring(1));
+                    if (entry != null) {
+                        try (InputStream stream = jar.getInputStream(entry)) {
+                            return IoUtil.readStream(stream);
+                        } catch (IOException e) {
+                            LOG.error("Can't read file content: " + entry.getName(), e);
+                        }
+                    }
+                } finally {
+                    if (jar != null) {
+                        jarPackageFragmentRoot.closeJar(jar);
+                    }
+                }
+            }
+            Object[] resources = root.getNonJavaResources();
+
+            for (Object resource : resources) {
+                if (resource instanceof JarEntryFile) {
+                    JarEntryFile file = (JarEntryFile)resource;
+                    if (file.getFullPath().toOSString().equals(path)) {
+                        return readFileContent(file);
+                    }
+                }
+                if (resource instanceof JarEntryDirectory) {
+                    JarEntryDirectory directory = (JarEntryDirectory)resource;
+                    JarEntryFile file = findJarFile(directory, path);
+                    if (file != null) {
+                        return readFileContent(file);
+                    }
+                }
+            }
+        } else {
+            //java class or file
+            IType type = project.findType(path);
+            if (type != null && type.isBinary()) {
+                IClassFile classFile = type.getClassFile();
+                if (classFile.getSourceRange() != null) {
+                    return classFile.getSource();
+                } else {
+                    //binary class
+                }
+            }
+        }
+        return null;
+    }
+
+    private String readFileContent(JarEntryFile file) {
+        try (InputStream stream = (file.getContents())) {
+            return IoUtil.readStream(stream);
+        } catch (IOException | CoreException e) {
+            LOG.error("Can't read file content: " + file.getFullPath(), e);
+        }
+        return null;
+    }
+
+    private JarEntryFile findJarFile(JarEntryDirectory directory, String path) {
+        for (IJarEntryResource children : directory.getChildren()) {
+            if (children.isFile() && children.getFullPath().toOSString().equals(path)) {
+                return (JarEntryFile)children;
+            }
+            if (!children.isFile()) {
+                JarEntryFile file = findJarFile((JarEntryDirectory)children, path);
+                if (file != null) {
+                    return file;
+                }
+            }
+        }
+        return null;
     }
 }

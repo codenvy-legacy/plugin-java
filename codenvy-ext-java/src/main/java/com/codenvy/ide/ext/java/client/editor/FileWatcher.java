@@ -16,7 +16,7 @@ import com.codenvy.ide.api.event.ItemEvent;
 import com.codenvy.ide.api.event.ItemHandler;
 import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PropertyListener;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
@@ -64,7 +64,7 @@ public class FileWatcher {
             public void propertyChanged(PartPresenter source, int propId) {
                 if (propId == EditorPartPresenter.PROP_DIRTY) {
                     if (!editor.isDirty()) {
-                        FileNode file = editor.getEditorInput().getFile();
+                        VirtualFile file = editor.getEditorInput().getFile();
                         String fqn = getFQN(file);
                         worker.removeFqnFromCache(fqn);
                         reparseAllOpenedFiles();
@@ -81,10 +81,12 @@ public class FileWatcher {
         });
     }
 
-    private String getFQN(FileNode file) {
+    private String getFQN(VirtualFile file) {
         String packageName = "";
-        if (file.getParent() instanceof PackageNode) {
-            packageName = ((PackageNode)file.getParent()).getQualifiedName() + '.';
+        if(file instanceof SourceFileNode) {
+            if (((SourceFileNode)file).getParent() instanceof PackageNode) {
+                packageName = ((PackageNode)((SourceFileNode)file).getParent()).getQualifiedName() + '.';
+            }
         }
         return packageName + file.getName().substring(0, file.getName().indexOf('.'));
     }

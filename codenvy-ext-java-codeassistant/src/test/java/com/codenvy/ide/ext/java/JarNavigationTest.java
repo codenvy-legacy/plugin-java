@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -107,4 +108,85 @@ public class JarNavigationTest extends BaseTest {
         List<JarEntry> rootContent = new JavaNavigation().getChildren(project, root.hashCode(),"java.lang");
         assertThat(rootContent).isNotNull().isNotEmpty().onProperty("name").excludes("Character$Subset.class");
     }
+
+    @Test
+    public void testDoesNotContainsSources() throws Exception {
+        String javaHome = System.getProperty("java.home") + "/lib/ext/zipfs.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        List<JarEntry> rootContent = new JavaNavigation().getChildren(project, root.hashCode(),"com.sun.nio.zipfs");
+        assertThat(rootContent).isNotNull().isNotEmpty().onProperty("source").containsOnly(false);
+    }
+
+    @Test
+    public void testShouldContainsSources() throws Exception {
+        String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        List<JarEntry> rootContent = new JavaNavigation().getChildren(project, root.hashCode(),"java.lang");
+        List<JarEntry> files = new ArrayList<>();
+        for (JarEntry jarEntry : rootContent) {
+            if(jarEntry.getType() == JarEntry.JarEntryType.CLASS_FILE) {
+                files.add(jarEntry);
+            }
+        }
+        assertThat(files).isNotNull().isNotEmpty().onProperty("source").containsOnly(true);
+    }
+
+    @Test
+    public void testJavaSource() throws Exception {
+        String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        String content = new JavaNavigation().getContent(project, root.hashCode(),"java.lang.Object");
+        assertThat(content).isNotNull().isNotEmpty().contains("public class Object");
+    }
+
+    @Test
+    public void testNonJavaFileContent() throws Exception {
+        String javaHome = System.getProperty("java.home") + "/lib/ext/zipfs.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        String content = new JavaNavigation().getContent(project, root.hashCode(), "/META-INF/services/java.nio.file.spi.FileSystemProvider");
+        assertThat(content).isNotNull().isNotEmpty().contains("");
+    }
+
+    @Test
+    public void testExternalJar() throws Exception {
+        String javaHome = getClass().getResource("/temp").getPath() + "/ws/test/gwt-user.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        List<JarEntry> content = new JavaNavigation().getPackageFragmentRootContent(project, root.hashCode());
+        assertThat(content).isNotNull().isNotEmpty().onProperty("name").contains("com.google", "javax", "org", "META-INF", "about.html");
+    }
+
+    @Test
+    public void testSortJarEntries() throws Exception {
+        String javaHome = getClass().getResource("/temp").getPath() + "/ws/test/gwt-user.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        List<JarEntry> content = new JavaNavigation().getPackageFragmentRootContent(project, root.hashCode());
+        assertThat(content).isNotNull().isNotEmpty().onProperty("name").containsSequence("about_files","com.google", "javax", "org", "META-INF", "about.html", "plugin.properties");
+    }
+
+    @Test
+    public void testSortJarEntriesWithClasses() throws Exception {
+        String javaHome = getClass().getResource("/temp").getPath() + "/ws/test/gwt-user.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        List<JarEntry> content = new JavaNavigation().getChildren(project, root.hashCode(), "org.hibernate.validator");
+        assertThat(content).isNotNull().isNotEmpty().onProperty("name").containsSequence("engine","HibernateValidationMessageResolver.class", "ValidationMessages.class", "HibernateValidator.gwt.xml", "README.txt");
+    }
+
+    @Test
+    public void testExternalJarFileContentInRoot() throws Exception {
+        String javaHome = getClass().getResource("/temp").getPath() + "/ws/test/gwt-user.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        String content = new JavaNavigation().getContent(project, root.hashCode(), "/about.html");
+        assertThat(content).isNotNull().contains("<p>The Eclipse Foundation makes available all content in this plug-in");
+    }
+
+    @Test
+    public void testFileContentInPackage() throws Exception {
+        String javaHome = getClass().getResource("/temp").getPath() + "/ws/test/gwt-user.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        String content = new JavaNavigation().getContent(project, root.hashCode(), "/com/google/gwt/user/User.gwt.xml");
+        assertThat(content).isNotNull().contains("<!-- Combines all user facilities into a single module for convenience.     -->")
+                           .contains("<!-- Most new code should inherit this module.                              -->")
+        .contains("<source path=\"client\" />");
+    }
+
 }

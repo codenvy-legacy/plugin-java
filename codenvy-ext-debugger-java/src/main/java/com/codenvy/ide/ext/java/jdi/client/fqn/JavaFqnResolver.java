@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.jdi.client.fqn;
 
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.google.inject.Singleton;
 
@@ -27,7 +27,7 @@ public class JavaFqnResolver implements FqnResolver {
     /** {@inheritDoc} */
     @Nonnull
     @Override
-    public String resolveFqn(@Nonnull final FileNode file) {
+    public String resolveFqn(@Nonnull final VirtualFile file) {
         final ProjectNode project = file.getProject();
         final BuildersDescriptor builders = project.getData().getBuilders();
         final List<String> sourceFolders = new ArrayList<>();

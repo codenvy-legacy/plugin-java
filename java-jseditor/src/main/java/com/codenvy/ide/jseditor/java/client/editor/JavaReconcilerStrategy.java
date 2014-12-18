@@ -10,16 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
-import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
-
-import javax.validation.constraints.NotNull;
-
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorWithErrors;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.texteditor.outline.OutlineModel;
 import com.codenvy.ide.collections.Array;
@@ -27,6 +23,7 @@ import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.outline.OutlineUpdater;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;
@@ -38,26 +35,30 @@ import com.codenvy.ide.util.loging.Log;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+import javax.validation.constraints.NotNull;
+
+import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
+
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 
 
-    private final BuildContext buildContext;
-    private final EmbeddedTextEditorPresenter< ? > editor;
+    private final BuildContext                   buildContext;
+    private final EmbeddedTextEditorPresenter<?> editor;
 
-    private final JavaParserWorker worker;
-    private final OutlineModel outlineModel;
-    private final NotificationManager notificationManager;
-    private final JavaCodeAssistProcessor codeAssistProcessor;
+    private final JavaParserWorker         worker;
+    private final OutlineModel             outlineModel;
+    private final NotificationManager      notificationManager;
+    private final JavaCodeAssistProcessor  codeAssistProcessor;
     private final JavaLocalizationConstant localizationConstant;
-    private final AnnotationModel annotationModel;
+    private final AnnotationModel          annotationModel;
 
-    private FileNode file;
+    private VirtualFile      file;
     private EmbeddedDocument document;
     private boolean first = true;
     private Notification notification;
 
     @AssistedInject
-    public JavaReconcilerStrategy(@Assisted @NotNull final EmbeddedTextEditorPresenter< ? > editor,
+    public JavaReconcilerStrategy(@Assisted @NotNull final EmbeddedTextEditorPresenter<?> editor,
                                   @Assisted final OutlineModel outlineModel,
                                   @Assisted final JavaCodeAssistProcessor codeAssistProcessor,
                                   @Assisted final AnnotationModel annotationModel,
@@ -111,8 +112,10 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
         }
 
         String packageName = "";
-        if (file.getParent() instanceof PackageNode) {
-            packageName = ((PackageNode)file.getParent()).getQualifiedName();
+        if(file instanceof SourceFileNode) {
+            if (((SourceFileNode)file).getParent() instanceof PackageNode) {
+                packageName = ((PackageNode)((SourceFileNode)file).getParent()).getQualifiedName();
+            }
         }
         worker.parse(document.getContents(), file.getName(), file.getPath(), packageName, file.getProject().getPath(), this);
     }
@@ -122,7 +125,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
         parse();
     }
 
-    public FileNode getFile() {
+    public VirtualFile getFile() {
         return file;
     }
 

@@ -39,11 +39,13 @@ public class JavaExtension {
     @Inject
     public JavaExtension(FileTypeRegistry fileTypeRegistry,
                          @Named("JavaFileType") FileType javaFile,
+                         @Named("JavaClassFileType") FileType classFile,
                          @Named("JspFileType") FileType jspFile) {
         JavaResources.INSTANCE.css().ensureInjected();
 
         fileTypeRegistry.registerFileType(javaFile);
         fileTypeRegistry.registerFileType(jspFile);
+        fileTypeRegistry.registerFileType(classFile);
     }
 
     /** For test use only. */
