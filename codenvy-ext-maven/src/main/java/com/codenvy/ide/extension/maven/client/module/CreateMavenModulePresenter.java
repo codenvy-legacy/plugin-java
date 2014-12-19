@@ -107,16 +107,19 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         attributes.put(PARENT_ARTIFACT_ID, Arrays.asList(parentProject.getAttributeValue(ARTIFACT_ID)));
         attributes.put(PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(GROUP_ID)));
         attributes.put(PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(VERSION)));
-        attributes.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
-        attributes.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
-        newProject.setAttributes(attributes);
 
         GeneratorDescription generatorDescription;
         if (view.isGenerateFromArchetypeSelected()) {
             generatorDescription = getGeneratorDescription(view.getArchetype());
         } else {
             generatorDescription = dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID);
+            if (!"pom".equals(view.getPackaging())) {
+                attributes.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
+                attributes.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+            }
         }
+
+        newProject.setAttributes(attributes);
         newProject.setGeneratorDescription(generatorDescription);
 
         view.showButtonLoader(true);
