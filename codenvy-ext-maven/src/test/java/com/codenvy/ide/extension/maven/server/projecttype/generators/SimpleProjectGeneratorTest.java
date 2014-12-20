@@ -8,23 +8,20 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype;
+package com.codenvy.ide.extension.maven.server.projecttype.generators;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
-import com.codenvy.api.project.server.AttributeDescription;
 import com.codenvy.api.project.server.DefaultProjectManager;
 import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectDescription;
+import com.codenvy.api.project.server.ProjectConfig;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectType;
-import com.codenvy.api.project.server.ProjectTypeDescriptionExtension;
-import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
-import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.VirtualFileEntry;
+import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
@@ -32,39 +29,46 @@ import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.util.*;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-//import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_GENERATOR_ID;
-//import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.*;
+
+
 
 /** @author Artem Zatsarynnyy */
-public class MavenProjectGeneratorTest {
+public class SimpleProjectGeneratorTest {
     private static final String workspace = "my_ws";
 
-    private ProjectManager        pm;
-    private MavenProjectGenerator generator;
+    private ProjectManager         pm;
+    private SimpleProjectGenerator generator;
 
     @Before
     public void setUp() throws Exception {
-        generator = new MavenProjectGenerator();
+        generator = new SimpleProjectGenerator();
     }
 
     @Test
     public void testGetId() throws Exception {
-        Assert.assertEquals(MAVEN_GENERATOR_ID, generator.getId());
+        Assert.assertEquals(MavenAttributes.SIMPLE_GENERATOR_ID, generator.getId());
     }
 
     @Test
     public void testGetProjectTypeId() throws Exception {
-        Assert.assertEquals(MAVEN_ID, generator.getProjectTypeId());
+        Assert.assertEquals(MavenAttributes.MAVEN_ID, generator.getProjectTypeId());
     }
 
     @Test
@@ -73,12 +77,12 @@ public class MavenProjectGeneratorTest {
         final Path pomXml = Paths.get(Thread.currentThread().getContextClassLoader().getResource("test-pom.xml").toURI());
 
         Map<String, List<String>> attributeValues = new HashMap<>();
-        attributeValues.put(ARTIFACT_ID, Arrays.asList("my_artifact"));
-        attributeValues.put(GROUP_ID, Arrays.asList("my_group"));
-        attributeValues.put(PACKAGING, Arrays.asList("jar"));
-        attributeValues.put(VERSION, Arrays.asList("1.0-SNAPSHOT"));
-        attributeValues.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
-        attributeValues.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+        attributeValues.put(MavenAttributes.ARTIFACT_ID, Arrays.asList("my_artifact"));
+        attributeValues.put(MavenAttributes.GROUP_ID, Arrays.asList("my_group"));
+        attributeValues.put(MavenAttributes.PACKAGING, Arrays.asList("jar"));
+        attributeValues.put(MavenAttributes.VERSION, Arrays.asList("1.0-SNAPSHOT"));
+        attributeValues.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
+        attributeValues.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
         GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class).withName("my_generator");
         NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
                                                     .withType("my_project_type")
