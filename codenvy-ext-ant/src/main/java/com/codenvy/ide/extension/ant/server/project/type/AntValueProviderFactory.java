@@ -12,6 +12,7 @@ package com.codenvy.ide.extension.ant.server.project.type;
 
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
+import com.codenvy.api.project.server.InvalidValueException;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
@@ -19,8 +20,11 @@ import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.ant.tools.AntUtils;
+import com.codenvy.ide.extension.ant.shared.AntAttributes;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +35,7 @@ import static com.codenvy.ide.extension.ant.shared.AntAttributes.BUILD_FILE;
  *
  * @author Vladyslav Zhukovskii
  */
-public abstract class AbstractAntValueProviderFactory implements ValueProviderFactory {
+public class AntValueProviderFactory implements ValueProviderFactory {
 
     /**
      * Try to find build.xml in project root directory and parse it into {@link org.apache.tools.ant.Project} to ba able to obtain various
@@ -64,8 +68,13 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
         return new ValueStorageException("Can't write build.xml: " + e.getMessage());
     }
 
+    @Override
+    public ValueProvider newInstance(Project project) {
+        return new AntValueProvider(project);
+    }
+
     /** Provide access to value of various information from {@link org.apache.tools.ant.Project}. */
-    protected abstract class AntValueProvider implements ValueProvider {
+    protected class AntValueProvider implements ValueProvider {
 
         /** IDE project. */
         protected Project project;
@@ -77,16 +86,38 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
 
         /** {@inheritDoc} */
         @Override
-        public List<String> getValues() throws ValueStorageException {
+        public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
                 org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(project));
-                return Collections.unmodifiableList(getValues(antProject));
+                if (AntAttributes.SOURCE_FOLDER.equals(attributeName)) {
+                    String srcDir = antProject.getProperty("src.dir");
+                    if (srcDir == null) {
+                        srcDir = AntAttributes.DEF_TEST_SRC_PATH;
+                    } else {
+                        // Don't show absolute path (seems Ant parser resolves it automatically). User shouldn't know any absolute paths on our
+                        // file system. This is temporary solution, this shouldn't be actual when get rid form ant parsers for build.xml files.
+                        final java.nio.file.Path relPath = antProject.getBaseDir().toPath().relativize(Paths.get(srcDir));
+                        srcDir = relPath.toString();
+                    }
+                    return Arrays.asList(srcDir);
+                } else if(AntAttributes.TEST_SOURCE_FOLDER.equals(attributeName)) {
+                    String testDir = antProject.getProperty("test.dir");
+                    if (testDir == null) {
+                        testDir = AntAttributes.DEF_TEST_SRC_PATH;
+                    }
+                    return Arrays.asList(testDir);
+                }
+                return Collections.emptyList();
             } catch (IOException | ForbiddenException | ServerException e) {
                 throw readException(e);
             }
         }
 
-        /** @return value for the specified attribute from {@link org.apache.tools.ant.Project}. */
-        public abstract List<String> getValues(org.apache.tools.ant.Project antProject);
+        @Override
+        public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
+
+        }
+
+
     }
 }

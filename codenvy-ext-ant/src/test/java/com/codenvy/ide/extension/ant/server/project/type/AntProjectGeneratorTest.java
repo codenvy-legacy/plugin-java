@@ -18,6 +18,7 @@ import com.codenvy.api.project.server.AttributeDescription;
 import com.codenvy.api.project.server.DefaultProjectManager;
 import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.FolderEntry;
+import com.codenvy.api.project.server.ProjectConfig;
 import com.codenvy.api.project.server.ProjectDescription;
 import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.ProjectType;
@@ -25,6 +26,8 @@ import com.codenvy.api.project.server.ProjectTypeDescriptionExtension;
 import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.VirtualFileEntry;
+import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
@@ -44,6 +47,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -107,22 +111,19 @@ public class AntProjectGeneratorTest {
     private void prepareProject() throws ServerException, ConflictException, ForbiddenException {
         final String vfsUser = "dev";
         final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
-
-        final ProjectTypeDescriptionRegistry ptdr = new ProjectTypeDescriptionRegistry("test");
-        final ProjectType projectType = new ProjectType("my_project_type", "my project type", "my_category");
-        ptdr.registerDescription(new ProjectTypeDescriptionExtension() {
-            @Nonnull
-            @Override
-            public List<ProjectType> getProjectTypes() {
-                return Arrays.asList(projectType);
+        Set<ProjectType2> pts = new HashSet<>();
+        final ProjectType2 pt = new ProjectType2("my_project_type", "mytype type") {
+            {
+                //addParent(parent);
+                //addConstantDefinition("child_const", "Constant", "const_value");
             }
+        };
 
-            @Nonnull
-            @Override
-            public List<AttributeDescription> getAttributeDescriptions() {
-                return Collections.emptyList();
-            }
-        });
+
+        pts.add(pt);
+
+        final ProjectTypeRegistry projectTypeRegistry = new ProjectTypeRegistry(pts);
+
         final EventService eventService = new EventService();
         final VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
         final MemoryFileSystemProvider memoryFileSystemProvider =
@@ -133,7 +134,7 @@ public class AntProjectGeneratorTest {
                     }
                 }, vfsRegistry);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
-        pm = new DefaultProjectManager(ptdr, Collections.<ValueProviderFactory>emptySet(), vfsRegistry, eventService);
-        pm.createProject(workspace, "my_project", new ProjectDescription(projectType));
+        pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry);
+        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()));
     }
 }
