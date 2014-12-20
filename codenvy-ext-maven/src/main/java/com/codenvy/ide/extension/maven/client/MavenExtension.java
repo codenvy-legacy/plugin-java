@@ -31,6 +31,8 @@ import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
 import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.extension.maven.client.actions.CreateMavenModuleAction;
 import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
@@ -65,6 +67,7 @@ import static com.codenvy.ide.api.action.IdeActions.GROUP_FILE_NEW;
 @Singleton
 @Extension(title = "Maven", version = "3.0.0")
 public class MavenExtension {
+    private static Array<MavenArchetype> archetypes;
 
     @Inject
     public MavenExtension(Provider<MavenPagePresenter> mavenPagePresenter,
@@ -83,6 +86,15 @@ public class MavenExtension {
         treeStructureProviderRegistry.registerProvider(MavenAttributes.MAVEN_ID, mavenProjectTreeStructureProvider);
 
         preSelectedProjectManager.setProjectTypeIdToPreselect(MavenAttributes.MAVEN_ID, 100);
+
+        archetypes =
+                Collections.createArray(new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "RELEASE", null),
+                                        new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null));
+    }
+
+    // TODO: consider special service for getting available archetypes
+    public static Array<MavenArchetype> getAvailableArchetypes() {
+        return archetypes;
     }
 
     @Inject
