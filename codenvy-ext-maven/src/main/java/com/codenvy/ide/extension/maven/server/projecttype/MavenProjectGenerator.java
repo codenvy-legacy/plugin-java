@@ -49,12 +49,12 @@ public class MavenProjectGenerator implements ProjectGenerator {
     }
 
     @Override
-    public String getProjectTypeId() {
+    public ProjectType2 getProjectTypeId() {
         return MAVEN_ID;
     }
 
     @Override
-    public void generateProject(FolderEntry baseFolder, NewProject newProjectDescriptor)
+    public void generateProject(FolderEntry baseFolder)
             throws ForbiddenException, ConflictException, ServerException {
         Model model = Model.createModel();
         model.setModelVersion("4.0.0");
