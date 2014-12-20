@@ -28,7 +28,6 @@ import com.google.inject.multibindings.Multibinder;
 public class MavenModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(MavenProjectType.class);
         bind(MavenPomService.class);
         bind(MavenMultimoduleAutoBuilder.class);
 

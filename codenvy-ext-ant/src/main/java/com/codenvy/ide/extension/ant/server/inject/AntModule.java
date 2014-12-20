@@ -28,7 +28,6 @@ public class AntModule extends AbstractModule {
     /** {@inheritDoc} */
     @Override
     protected void configure() {
-        bind(AntProjectType.class);
         Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(AntProjectTypeResolver.class);
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
