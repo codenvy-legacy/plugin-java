@@ -49,17 +49,17 @@ public class MavenProjectGenerator implements ProjectGenerator {
     }
 
     @Override
-    public ProjectType2 getProjectTypeId() {
+    public String getProjectTypeId() {
         return MAVEN_ID;
     }
 
     @Override
-    public void generateProject(FolderEntry baseFolder)
+    public void generateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes)
             throws ForbiddenException, ConflictException, ServerException {
         Model model = Model.createModel();
         model.setModelVersion("4.0.0");
         baseFolder.createFile("pom.xml", new byte[0], "text/xml");
-        Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
+        //Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
 
         List<String> parentArtifactId = attributes.get(PARENT_ARTIFACT_ID);
         if (parentArtifactId != null) {
