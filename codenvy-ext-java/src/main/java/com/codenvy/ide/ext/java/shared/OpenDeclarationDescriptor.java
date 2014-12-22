@@ -17,20 +17,25 @@ import com.codenvy.dto.shared.DTO;
  * @author Evgen Vidolob
  */
 @DTO
-public interface JarEntry {
-    public enum JarEntryType {
-        PACKAGE, FOLDER, CLASS_FILE, FILE
-    }
+public interface OpenDeclarationDescriptor {
+    int getLibId();
 
-    JarEntryType getType();
+    void setLibId(int libId);
 
-    void setType(JarEntryType type);
+    int getOffset();
 
-    String getName();
+    void setOffset(int offset);
 
-    void setName(String name);
+    int getLength();
+
+    void setLength(int length);
 
     String getPath();
 
     void setPath(String path);
+
+    boolean isBinary();
+
+    void setBinary(boolean binary);
+
 }

@@ -11,8 +11,6 @@
 
 package com.codenvy.ide.ext.java.server;
 
-import com.codenvy.ide.ext.java.server.javadoc.JavaElementLabelComposer;
-import com.codenvy.ide.ext.java.server.javadoc.JavaElementLabels;
 import com.google.inject.Singleton;
 
 import org.eclipse.jdt.core.Flags;
@@ -120,11 +118,12 @@ public class SourcesFromBytecodeGenerator {
 //                builder.append(Signature.toCharArray(("<" + typeParameter + ">").toCharArray())).append(" ");
 //            }
             ITypeParameter[] typeParameters = method.getTypeParameters();
-            for (ITypeParameter typeParameter : typeParameters) {
-                StringBuffer buffer = new StringBuffer();
-                new JavaElementLabelComposer(buffer).appendTypeParameterLabel(typeParameter, /*JavaElementLabels.M_PARAMETER_TYPES | */JavaElementLabels.M_FULLY_QUALIFIED /*| JavaElementLabels.T_FULLY_QUALIFIED| JavaElementLabels.P_COMPRESSED | JavaElementLabels.USE_RESOLVED*/);
-                System.out.println(buffer.toString());
-            }
+            //todo implement generics method generation
+//            for (ITypeParameter typeParameter : typeParameters) {
+//                StringBuffer buffer = new StringBuffer();
+//                new JavaElementLabelComposer(buffer).appendTypeParameterLabel(typeParameter, /*JavaElementLabels.M_PARAMETER_TYPES | */JavaElementLabels.M_FULLY_QUALIFIED /*| JavaElementLabels.T_FULLY_QUALIFIED| JavaElementLabels.P_COMPRESSED | JavaElementLabels.USE_RESOLVED*/);
+////                System.out.println(buffer.toString());
+//            }
 //            if(method instanceof JavaElement){
 //                IBinaryMethod elementInfo = (IBinaryMethod)((JavaElement)method).getElementInfo();
 //                char[] signature = elementInfo.getGenericSignature();

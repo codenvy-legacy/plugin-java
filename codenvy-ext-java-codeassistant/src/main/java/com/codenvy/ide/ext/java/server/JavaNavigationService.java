@@ -14,6 +14,7 @@ package com.codenvy.ide.ext.java.server;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaModelException;
@@ -45,7 +46,7 @@ public class JavaNavigationService {
     @GET
     @Path("find-declaration")
     @Produces("application/json")
-    public String findDeclaration(@QueryParam("projectpath") String projectPath, @QueryParam("bindingkey") String bindingKey)
+    public OpenDeclarationDescriptor findDeclaration(@QueryParam("projectpath") String projectPath, @QueryParam("bindingkey") String bindingKey)
             throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
         return navigation.findDeclaration(project, bindingKey);

@@ -28,7 +28,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class JavadocFromSourceTest extends BaseTest {
 
-    private JavadocFinder finder = new JavadocFinder("test", "testUrl");
+    private JavadocFinder finder = new JavadocFinder("test");
 
     @Test
     public void testJavadoc4Class() throws Exception {
@@ -70,7 +70,7 @@ public class JavadocFromSourceTest extends BaseTest {
 
     @Test
     public void methodHandleWithParam() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
-        JavadocFinder finder = new JavadocFinder("test", "testUrl");
+        JavadocFinder finder = new JavadocFinder("test");
         String javadoc = finder.findJavadoc(project, "Lcom/codenvy/test/MyClass;.greetServer(Ljava.lang.String;)Ljava.lang.String;|Ljava.lang.IllegalArgumentException;#input");
         assertThat(javadoc).isNotNull().contains(
                 "Method with param and exception");

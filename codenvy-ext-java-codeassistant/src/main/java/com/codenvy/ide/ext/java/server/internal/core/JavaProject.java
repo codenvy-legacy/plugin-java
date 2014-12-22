@@ -948,7 +948,7 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     public IPath getPath() {
-        return new Path(projectPath);
+        return new Path(projectDir.getAbsolutePath());
     }
 
     @Override

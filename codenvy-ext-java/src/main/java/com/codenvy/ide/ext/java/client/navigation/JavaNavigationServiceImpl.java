@@ -14,6 +14,7 @@ package com.codenvy.ide.ext.java.client.navigation;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
 import com.google.inject.Inject;
@@ -40,7 +41,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<String> callback) {
+    public void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<OpenDeclarationDescriptor> callback) {
         String url =
                 restContext + "/navigation/" + workspaceId + "/find-declaration?projectpath=" + projectPath + "&bindingkey=" + keyBinding;
         requestFactory.createGetRequest(url).send(callback);

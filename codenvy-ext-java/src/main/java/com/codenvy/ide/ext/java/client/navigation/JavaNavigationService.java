@@ -14,6 +14,7 @@ package com.codenvy.ide.ext.java.client.navigation;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 
 /**
@@ -27,7 +28,7 @@ public interface JavaNavigationService {
      * @param keyBinding binding key
      * @param callback
      */
-    void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<String> callback);
+    void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<OpenDeclarationDescriptor> callback);
 
 
     /**

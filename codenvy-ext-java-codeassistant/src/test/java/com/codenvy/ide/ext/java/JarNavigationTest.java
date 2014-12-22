@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -111,28 +110,6 @@ public class JarNavigationTest extends BaseTest {
         IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
         List<JarEntry> rootContent = navigation.getChildren(project, root.hashCode(), "java.lang");
         assertThat(rootContent).isNotNull().isNotEmpty().onProperty("name").excludes("Character$Subset.class");
-    }
-
-    @Test
-    public void testDoesNotContainsSources() throws Exception {
-        String javaHome = System.getProperty("java.home") + "/lib/ext/zipfs.jar";
-        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
-        List<JarEntry> rootContent = navigation.getChildren(project, root.hashCode(), "com.sun.nio.zipfs");
-        assertThat(rootContent).isNotNull().isNotEmpty().onProperty("source").containsOnly(false);
-    }
-
-    @Test
-    public void testShouldContainsSources() throws Exception {
-        String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
-        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
-        List<JarEntry> rootContent = navigation.getChildren(project, root.hashCode(), "java.lang");
-        List<JarEntry> files = new ArrayList<>();
-        for (JarEntry jarEntry : rootContent) {
-            if(jarEntry.getType() == JarEntry.JarEntryType.CLASS_FILE) {
-                files.add(jarEntry);
-            }
-        }
-        assertThat(files).isNotNull().isNotEmpty().onProperty("source").containsOnly(true);
     }
 
     @Test
