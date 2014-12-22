@@ -29,45 +29,45 @@ import java.util.List;
 @Singleton
 public class MavenProjectType extends ProjectType2 {
     private static final Logger LOG = LoggerFactory.getLogger(MavenProjectType.class);
-    private ProjectTemplateRegistry templateRegistry;
-    private ProjectTemplateDescriptionLoader templateLoader;
+    //private ProjectTemplateRegistry templateRegistry;
+    //private ProjectTemplateDescriptionLoader templateLoader;
 
     @Inject
-    public MavenProjectType(ProjectTemplateRegistry templateRegistry,
-                            ProjectTemplateDescriptionLoader templateLoader,
-                            MavenValueProviderFactory mavenArtifactIdValueProviderFactory,
+    public MavenProjectType(/*ProjectTemplateRegistry templateRegistry,
+                            ProjectTemplateDescriptionLoader templateLoader,*/
+                            MavenValueProviderFactory mavenValueProviderFactory,
                             JavaProjectType javaProjectType) {
 
         super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME);
-        this.templateRegistry = templateRegistry;
-        this.templateLoader = templateLoader;
-        addVariableDefinition(MavenAttributes.GROUP_ID, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.ARTIFACT_ID, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.VERSION, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PARENT_VERSION, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PARENT_ARTIFACT_ID, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PARENT_GROUP_ID, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PACKAGING, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", true, mavenArtifactIdValueProviderFactory);
-        addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", true, mavenArtifactIdValueProviderFactory);
+        //this.templateRegistry = templateRegistry;
+        //this.templateLoader = templateLoader;
+        addVariableDefinition(MavenAttributes.GROUP_ID, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.ARTIFACT_ID, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.VERSION, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PARENT_VERSION, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PARENT_ARTIFACT_ID, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PARENT_GROUP_ID, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PACKAGING, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", true, mavenValueProviderFactory);
 
         addParent(javaProjectType);
         setDefaultBuilder("maven");
 
-        registerTemplates();
+        //registerTemplates();
 
     }
 
-    private void registerTemplates() {
-        try {
-            List<ProjectTemplateDescriptor> list = templateLoader.load(MavenAttributes.MAVEN_ID);
-            for(ProjectTemplateDescriptor templateDescriptor : list) {
-                templateRegistry.register(templateDescriptor);
-            }
-        } catch (IOException e) {
-           LOG.info("MavenProjectType", "Templates not loaded for maven project type");
-        }
-
-
-    }
+//    private void registerTemplates() {
+//        try {
+//            List<ProjectTemplateDescriptor> list = templateLoader.load(MavenAttributes.MAVEN_ID);
+//            for(ProjectTemplateDescriptor templateDescriptor : list) {
+//                templateRegistry.register(templateDescriptor);
+//            }
+//        } catch (IOException e) {
+//           LOG.info("MavenProjectType", "Templates not loaded for maven project type");
+//        }
+//
+//
+//    }
 }

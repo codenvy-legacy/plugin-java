@@ -64,14 +64,15 @@ public class MavenProjectTypeTest {
 
         Set<ProjectType2> projTypes = new HashSet<>();
         projTypes.add(new JavaProjectType ());
-        projTypes.add(new MavenProjectType(null,
-                new MavenValueProviderFactory(),
+        projTypes.add(new MavenProjectType(new MavenValueProviderFactory(),
                 new JavaProjectType ()));
 
         ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(projTypes);
 
+        ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+
         pm = new DefaultProjectManager(vfsRegistry, eventService,
-                ptRegistry);
+                ptRegistry, generatorRegistry);
 
     }
 
@@ -90,17 +91,19 @@ public class MavenProjectTypeTest {
     @Test
     public void testMavenProject() throws Exception {
 
-        Project project = pm.createProject(workspace, "myProject", new ProjectConfig("my config", "maven"));
+        // TODO
 
-        ProjectConfig config = project.getConfig();
-
-        System.out.println(">>>>>" + config.getBuilders()+" "+config.getRunners()+" "+config.getAttributes());
-
-
-
-        for(String name:config.getAttributes().keySet())
-            System.out.println(">>a>>> " + config.getAttributes().get(name));
-
+//        Project project = pm.createProject(workspace, "myProject", new ProjectConfig("my config", "maven"), null);
+//
+//        ProjectConfig config = project.getConfig();
+//
+//        System.out.println(">>>>>" + config.getBuilders()+" "+config.getRunners()+" "+config.getAttributes());
+//
+//
+//
+//        for(String name:config.getAttributes().keySet())
+//            System.out.println(">>a>>> " + config.getAttributes().get(name));
+//
 
 
 

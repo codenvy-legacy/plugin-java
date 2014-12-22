@@ -14,12 +14,8 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
-import com.codenvy.api.project.server.DefaultProjectManager;
-import com.codenvy.api.project.server.FileEntry;
-import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectConfig;
-import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.VirtualFileEntry;
+import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
@@ -54,17 +50,17 @@ public class SimpleProjectGeneratorTest {
     private static final String workspace = "my_ws";
 
     private ProjectManager         pm;
-    private SimpleProjectGenerator generator;
+    private MavenProjectGenerator generator;
 
     @Before
     public void setUp() throws Exception {
-        generator = new SimpleProjectGenerator();
+        generator = new MavenProjectGenerator(null, null);
     }
 
-    @Test
-    public void testGetId() throws Exception {
-        Assert.assertEquals(MavenAttributes.SIMPLE_GENERATOR_ID, generator.getId());
-    }
+//    @Test
+//    public void testGetId() throws Exception {
+//        Assert.assertEquals(MavenAttributes.SIMPLE_GENERATOR_ID, generator.getId());
+//    }
 
     @Test
     public void testGetProjectTypeId() throws Exception {
@@ -76,22 +72,23 @@ public class SimpleProjectGeneratorTest {
         prepareProject();
         final Path pomXml = Paths.get(Thread.currentThread().getContextClassLoader().getResource("test-pom.xml").toURI());
 
-        Map<String, List<String>> attributeValues = new HashMap<>();
-        attributeValues.put(MavenAttributes.ARTIFACT_ID, Arrays.asList("my_artifact"));
-        attributeValues.put(MavenAttributes.GROUP_ID, Arrays.asList("my_group"));
-        attributeValues.put(MavenAttributes.PACKAGING, Arrays.asList("jar"));
-        attributeValues.put(MavenAttributes.VERSION, Arrays.asList("1.0-SNAPSHOT"));
-        attributeValues.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
-        attributeValues.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
-        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class).withName("my_generator");
-        NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
-                                                    .withType("my_project_type")
-                                                    .withDescription("new project")
-                                                    .withAttributes(attributeValues)
-                                                    .withGeneratorDescription(generatorDescription);
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+        attributeValues.put(MavenAttributes.ARTIFACT_ID, new AttributeValue("my_artifact"));
+        attributeValues.put(MavenAttributes.GROUP_ID, new AttributeValue("my_group"));
+        attributeValues.put(MavenAttributes.PACKAGING, new AttributeValue("jar"));
+        attributeValues.put(MavenAttributes.VERSION, new AttributeValue("1.0-SNAPSHOT"));
+        attributeValues.put(MavenAttributes.SOURCE_FOLDER, new AttributeValue("src/main/java"));
+        attributeValues.put(MavenAttributes.TEST_SOURCE_FOLDER, new AttributeValue("src/test/java"));
+//        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
+//        NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
+//                                                    .withType("my_project_type")
+//                                                    .withDescription("new project")
+//                                                    .withAttributes(attributeValues)
+//                                                    .withGeneratorDescription(generatorDescription);
 
         FolderEntry folder = pm.getProject(workspace, "my_project").getBaseFolder();
-        generator.generateProject(folder, newProjectDescriptor);
+
+        generator.generateProject(folder, attributeValues, null);
 
         VirtualFileEntry pomFile = pm.getProject(workspace, "my_project").getBaseFolder().getChild("pom.xml");
         Assert.assertTrue(pomFile.isFile());
@@ -130,7 +127,10 @@ public class SimpleProjectGeneratorTest {
                     }
                 }, vfsRegistry);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
-        pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry);
-        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()));
+
+        ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+
+        pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry, generatorRegistry);
+        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()), null);
     }
 }

@@ -18,6 +18,7 @@ import com.codenvy.ide.extension.maven.server.MavenPomService;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectType;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.generators.ArchetypeProjectGenerator;
+import com.codenvy.ide.extension.maven.server.projecttype.generators.MavenProjectGenerator;
 import com.codenvy.ide.extension.maven.server.projecttype.generators.SimpleProjectGenerator;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
@@ -38,7 +39,7 @@ public class MavenModule extends AbstractModule {
         projectTypeMultibinder.addBinding().to(MavenProjectType.class);
 
         Multibinder<ProjectGenerator> projectGeneratorMultibinder = Multibinder.newSetBinder(binder(), ProjectGenerator.class);
-        projectGeneratorMultibinder.addBinding().to(SimpleProjectGenerator.class);
-        projectGeneratorMultibinder.addBinding().to(ArchetypeProjectGenerator.class);
+        projectGeneratorMultibinder.addBinding().to(MavenProjectGenerator.class);
+//        projectGeneratorMultibinder.addBinding().to(ArchetypeProjectGenerator.class);
     }
 }

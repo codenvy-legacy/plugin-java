@@ -64,7 +64,7 @@ public class FileWatcher {
             public void propertyChanged(PartPresenter source, int propId) {
                 if (propId == EditorPartPresenter.PROP_DIRTY) {
                     if (!editor.isDirty()) {
-                        FileNode file = editor.getEditorInput().getFile();
+                        FileNode file = (FileNode)editor.getEditorInput().getFile();
                         String fqn = getFQN(file);
                         worker.removeFqnFromCache(fqn);
                         reparseAllOpenedFiles();

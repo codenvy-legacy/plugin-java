@@ -11,13 +11,10 @@
 package com.codenvy.ide.extension.maven.server.projecttype;
 
 import com.codenvy.api.core.notification.EventService;
+import com.codenvy.api.project.server.*;
 import com.codenvy.api.project.server.type.Attribute2;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
-import com.codenvy.api.project.server.DefaultProjectManager;
-import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
@@ -109,10 +106,11 @@ public class MavenProjectTypeResolverTest {
 
         VirtualFileSystemRegistry virtualFileSystemRegistry = new VirtualFileSystemRegistry();
         EventService eventService = new EventService();
+        ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
         projectManager =
                 new DefaultProjectManager(virtualFileSystemRegistry,
                                           eventService,
-                                          projectTypeRegistry);
+                                          projectTypeRegistry, generatorRegistry);
         MockitoAnnotations.initMocks(this);
         // Bind components
         Injector injector = Guice.createInjector(new AbstractModule() {

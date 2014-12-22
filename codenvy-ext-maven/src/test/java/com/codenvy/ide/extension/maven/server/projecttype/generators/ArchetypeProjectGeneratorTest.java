@@ -11,11 +11,13 @@
 package com.codenvy.ide.extension.maven.server.projecttype.generators;
 
 import com.codenvy.api.core.ServerException;
+import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.dto.server.DtoFactory;
 
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,17 +42,17 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 public class ArchetypeProjectGeneratorTest {
 
     private final VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
-    private ArchetypeProjectGenerator generator;
+    private MavenProjectGenerator generator;
 
     @Before
     public void setUp() throws Exception {
-        generator = new ArchetypeProjectGenerator(new String[]{"http://localhost:8080/api/internal/builder"}, vfsRegistry);
+        generator = new MavenProjectGenerator(new String[]{"http://localhost:8080/api/internal/builder"}, vfsRegistry);
     }
 
-    @Test
-    public void testGetId() throws Exception {
-        Assert.assertEquals(ARCHETYPE_GENERATOR_ID, generator.getId());
-    }
+//    @Test
+//    public void testGetId() throws Exception {
+//        Assert.assertEquals(ARCHETYPE_GENERATOR_ID, generator.getId());
+//    }
 
     @Test
     public void testGetProjectTypeId() throws Exception {
@@ -59,20 +61,26 @@ public class ArchetypeProjectGeneratorTest {
 
     @Test(expected = ServerException.class)
     public void shouldNotGenerateWhenRequiredAttributeMissed() throws Exception {
-        Map<String, List<String>> attributeValues = new HashMap<>();
-//        attributeValues.put(ARTIFACT_ID, Arrays.asList("my_artifact"));
-        attributeValues.put(GROUP_ID, Arrays.asList("my_group"));
-        attributeValues.put(PACKAGING, Arrays.asList("jar"));
-        attributeValues.put(VERSION, Arrays.asList("1.0-SNAPSHOT"));
-        attributeValues.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
-        attributeValues.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
-        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class).withName("my_generator");
-        NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
-                                                    .withType("my_project_type")
-                                                    .withDescription("new project")
-                                                    .withAttributes(attributeValues)
-                                                    .withGeneratorDescription(generatorDescription);
 
-        generator.generateProject(null, newProjectDescriptor);
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+//        attributeValues.put(MavenAttributes.ARTIFACT_ID, new AttributeValue("my_artifact"));
+        attributeValues.put(MavenAttributes.GROUP_ID, new AttributeValue("my_group"));
+        attributeValues.put(MavenAttributes.PACKAGING, new AttributeValue("jar"));
+        attributeValues.put(MavenAttributes.VERSION, new AttributeValue("1.0-SNAPSHOT"));
+        attributeValues.put(MavenAttributes.SOURCE_FOLDER, new AttributeValue("src/main/java"));
+        attributeValues.put(MavenAttributes.TEST_SOURCE_FOLDER, new AttributeValue("src/test/java"));
+
+        HashMap<String, String> options = new HashMap<>();
+        options.put("type", MavenAttributes.ARCHETYPE_GENERATOR_ID);
+
+//        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class)
+//                .withOptions(options);
+//        NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
+//                                                    .withType("my_project_type")
+//                                                    .withDescription("new project")
+//                                                    .withAttributes(attributeValues)
+//                                                    .withGeneratorDescription(generatorDescription);
+
+        generator.generateProject(null, attributeValues, options);
     }
 }
