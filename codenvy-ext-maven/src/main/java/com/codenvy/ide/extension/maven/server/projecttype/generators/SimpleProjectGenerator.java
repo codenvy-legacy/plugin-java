@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype;
+package com.codenvy.ide.extension.maven.server.projecttype.generators;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
@@ -16,36 +16,34 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.shared.dto.NewProject;
-import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.maven.tools.Build;
 import com.codenvy.ide.maven.tools.Model;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
- * Generates Maven-project structure.
+ * Generates simple Maven project.
  *
  * @author Artem Zatsarynnyy
  */
-public class MavenProjectGenerator implements ProjectGenerator {
+public class SimpleProjectGenerator implements ProjectGenerator {
 
     @Override
     public String getId() {
-        return MAVEN_GENERATOR_ID;
+        return SIMPLE_GENERATOR_ID;
     }
 
     @Override
@@ -54,12 +52,19 @@ public class MavenProjectGenerator implements ProjectGenerator {
     }
 
     @Override
-    public void generateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes)
+    public void generateProject(FolderEntry baseFolder, NewProject newProjectDescriptor)
             throws ForbiddenException, ConflictException, ServerException {
+        Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
+        List<String> artifactId = attributes.get(ARTIFACT_ID);
+        List<String> groupId = attributes.get(GROUP_ID);
+        List<String> version = attributes.get(VERSION);
+        if (artifactId == null || artifactId.isEmpty() || groupId == null || groupId.isEmpty() || version == null || version.isEmpty()) {
+            throw new ServerException("Missed some required attribute (groupId, artifactId or version)");
+        }
+
         Model model = Model.createModel();
         model.setModelVersion("4.0.0");
         baseFolder.createFile("pom.xml", new byte[0], "text/xml");
-        //Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
 
         List<String> parentArtifactId = attributes.get(PARENT_ARTIFACT_ID);
         if (parentArtifactId != null) {
@@ -73,18 +78,9 @@ public class MavenProjectGenerator implements ProjectGenerator {
         if (parentVersion != null) {
             model.setVersion(parentVersion.get(0));
         }
-        List<String> artifactId = attributes.get(ARTIFACT_ID);
-        if (artifactId != null) {
-            model.setArtifactId(artifactId.get(0));
-        }
-        List<String> groupId = attributes.get(GROUP_ID);
-        if (groupId != null) {
-            model.setGroupId(groupId.get(0));
-        }
-        List<String> version = attributes.get(VERSION);
-        if (version != null) {
-            model.setVersion(version.get(0));
-        }
+        model.setArtifactId(artifactId.get(0));
+        model.setGroupId(groupId.get(0));
+        model.setVersion(version.get(0));
         List<String> packaging = attributes.get(PACKAGING);
         if (packaging != null) {
             model.setPackaging(packaging.get(0));
@@ -110,11 +106,6 @@ public class MavenProjectGenerator implements ProjectGenerator {
                 }
             }
         }
-        VirtualFile pom = baseFolder.getChild("pom.xml").getVirtualFile();
-        try {
-            model.writeTo(pom);
-        } catch (ServerException | ForbiddenException  e) {
-            throw new ForbiddenException("Can't write pom.xml: " + e.getMessage());
-        }
+        model.writeTo(baseFolder.getChild("pom.xml").getVirtualFile());
     }
 }

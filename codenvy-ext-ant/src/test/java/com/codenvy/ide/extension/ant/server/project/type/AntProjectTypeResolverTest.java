@@ -13,11 +13,11 @@ package com.codenvy.ide.extension.ant.server.project.type;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.DefaultProjectManager;
 import com.codenvy.api.project.server.FolderEntry;
+import com.codenvy.api.project.server.ProjectConfig;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectType;
-import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
 import com.codenvy.api.project.server.ProjectTypeResolver;
-import com.codenvy.api.project.server.ValueProviderFactory;
+import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -58,12 +58,35 @@ public class AntProjectTypeResolverTest {
 
     @Before
     public void setUp() throws Exception {
-        final ProjectTypeDescriptionRegistry projectTypeRegistry = new ProjectTypeDescriptionRegistry("test");
-        VirtualFileSystemRegistry virtualFileSystemRegistry = new VirtualFileSystemRegistry();
-        EventService eventService = new EventService();
-        projectManager =
-                new DefaultProjectManager(projectTypeRegistry, Collections.<ValueProviderFactory>emptySet(), virtualFileSystemRegistry,
-                                          eventService);
+        final String vfsUser = "dev";
+        final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
+        Set<ProjectType2> pts = new HashSet<>();
+        final ProjectType2 pt = new ProjectType2("ant", "ant") {
+            {
+                setDefaultBuilder("ant");
+            }
+        };
+
+
+
+        pts.add(pt);
+
+
+        final ProjectTypeRegistry projectTypeRegistry = new ProjectTypeRegistry(pts);
+
+        final EventService eventService = new EventService();
+        final VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
+        final MemoryFileSystemProvider memoryFileSystemProvider =
+                new MemoryFileSystemProvider(workspace, eventService, new VirtualFileSystemUserContext() {
+                    @Override
+                    public VirtualFileSystemUser getVirtualFileSystemUser() {
+                        return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
+                    }
+                }, vfsRegistry);
+        vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
+        projectManager = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry);
+        projectManager.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()));
+
         MockitoAnnotations.initMocks(this);
         // Bind components
         Injector injector = Guice.createInjector(new AbstractModule() {
@@ -75,20 +98,6 @@ public class AntProjectTypeResolverTest {
                 bind(ProjectManager.class).toInstance(projectManager);
             }
         });
-
-
-        final MemoryFileSystemProvider memoryFileSystemProvider =
-                new MemoryFileSystemProvider(workspace, eventService, new VirtualFileSystemUserContext() {
-                    @Override
-                    public VirtualFileSystemUser getVirtualFileSystemUser() {
-                        return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
-                    }
-                }, virtualFileSystemRegistry);
-        virtualFileSystemRegistry.registerProvider(workspace, memoryFileSystemProvider);
-
-
-        final ProjectType projectType = new ProjectType("ant", "ant", "java");
-        projectTypeRegistry.registerProjectType(projectType);
         antProjectTypeResolver = injector.getInstance(AntProjectTypeResolver.class);
         projectManager = injector.getInstance(ProjectManager.class);
     }
@@ -108,11 +117,12 @@ public class AntProjectTypeResolverTest {
         boolean resolve = antProjectTypeResolver.resolve(test);
         Assert.assertTrue(resolve);
         Assert.assertNotNull(projectManager.getProject(workspace, "test"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription());
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription().getProjectType());
-        Assert.assertEquals("ant", projectManager.getProject(workspace, "test").getDescription().getProjectType().getId());
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription().getBuilders());
-        Assert.assertEquals("ant", projectManager.getProject(workspace, "test").getDescription().getBuilders().getDefault());
+        ;
+        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig());
+        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig().getTypeId());
+        Assert.assertEquals("ant", projectManager.getProject(workspace, "test").getConfig().getTypeId());
+        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig().getBuilders());
+        Assert.assertEquals("ant", projectManager.getProject(workspace, "test").getConfig().getBuilders().getDefault());
     }
 
     @Test
