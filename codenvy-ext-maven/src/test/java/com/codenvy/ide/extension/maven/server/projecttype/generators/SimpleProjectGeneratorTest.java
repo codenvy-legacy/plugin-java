@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype;
+package com.codenvy.ide.extension.maven.server.projecttype.generators;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
@@ -51,28 +51,28 @@ import java.util.Set;
 
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /** @author Artem Zatsarynnyy */
-public class MavenProjectGeneratorTest {
+public class SimpleProjectGeneratorTest {
     private static final String workspace = "my_ws";
 
-    private ProjectManager        pm;
-    private MavenProjectGenerator generator;
+    private ProjectManager         pm;
+    private SimpleProjectGenerator generator;
 
     @Before
     public void setUp() throws Exception {
-        generator = new MavenProjectGenerator();
+        generator = new SimpleProjectGenerator();
     }
 
     @Test
     public void testGetId() throws Exception {
-        Assert.assertEquals(MAVEN_GENERATOR_ID, generator.getId());
+        Assert.assertEquals(SIMPLE_GENERATOR_ID, generator.getId());
     }
 
     @Test
@@ -110,6 +110,25 @@ public class MavenProjectGeneratorTest {
         Assert.assertTrue(srcFolder.isFolder());
         VirtualFileEntry testFolder = pm.getProject(workspace, "my_project").getBaseFolder().getChild("src/test/java");
         Assert.assertTrue(testFolder.isFolder());
+    }
+
+    @Test(expected = ServerException.class)
+    public void testGeneratingProjectWhenRequiredAttributeMissed() throws Exception {
+        Map<String, List<String>> attributeValues = new HashMap<>();
+//        attributeValues.put(ARTIFACT_ID, Arrays.asList("my_artifact"));
+        attributeValues.put(GROUP_ID, Arrays.asList("my_group"));
+        attributeValues.put(PACKAGING, Arrays.asList("jar"));
+        attributeValues.put(VERSION, Arrays.asList("1.0-SNAPSHOT"));
+        attributeValues.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
+        attributeValues.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class).withName("my_generator");
+        NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
+                                                    .withType("my_project_type")
+                                                    .withDescription("new project")
+                                                    .withAttributes(attributeValues)
+                                                    .withGeneratorDescription(generatorDescription);
+
+        generator.generateProject(null, newProjectDescriptor);
     }
 
     private void prepareProject() throws ServerException, ConflictException, ForbiddenException {
