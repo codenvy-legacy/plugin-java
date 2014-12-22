@@ -18,6 +18,7 @@ import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.TreeStructureProvider;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -36,22 +37,26 @@ public class AntProjectTreeStructureProvider implements TreeStructureProvider {
     private IconRegistry           iconRegistry;
     private ProjectServiceClient   projectServiceClient;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private JavaNavigationService service;
 
     /** Create instance of {@link AntProjectTreeStructureProvider}. */
     @Inject
     public AntProjectTreeStructureProvider(EventBus eventBus, EditorAgent editorAgent, AppContext appContext, IconRegistry iconRegistry,
-                                             ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                                           ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                           JavaNavigationService service) {
         this.eventBus = eventBus;
         this.editorAgent = editorAgent;
         this.appContext = appContext;
         this.iconRegistry = iconRegistry;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.service = service;
     }
 
     /** {@inheritDoc} */
     @Override
     public AbstractTreeStructure newTreeStructure(ProjectDescriptor project) {
-        return new AntProjectTreeStructure(TreeSettings.DEFAULT, project, eventBus, editorAgent, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory);
+        return new AntProjectTreeStructure(TreeSettings.DEFAULT, project, eventBus, editorAgent, appContext, projectServiceClient,
+                                           iconRegistry, dtoUnmarshallerFactory, service);
     }
 }

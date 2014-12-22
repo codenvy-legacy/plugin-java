@@ -1,18 +1,19 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -25,28 +26,35 @@ import org.eclipse.jdt.internal.core.search.indexing.IIndexConstants;
 
 public class SuperTypeReferenceLocator extends PatternLocator {
 
-    protected SuperTypeReferencePattern pattern;
+	protected SuperTypeReferencePattern pattern;
 
-    public SuperTypeReferenceLocator(SuperTypeReferencePattern pattern) {
-        super(pattern);
+	public SuperTypeReferenceLocator(SuperTypeReferencePattern pattern) {
+		super(pattern);
 
-        this.pattern = pattern;
-    }
-
-    //public int match(ASTNode node, MatchingNodeSet nodeSet) - SKIP IT
+		this.pattern = pattern;
+	}
+//public int match(ASTNode node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(ConstructorDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(Expression node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(FieldDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
-//public int match(MethodDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
+
+	public int match(LambdaExpression node, MatchingNodeSet nodeSet) {
+		if (this.pattern.superRefKind != SuperTypeReferencePattern.ONLY_SUPER_INTERFACES)
+			return IMPOSSIBLE_MATCH;
+		nodeSet.mustResolve = true;
+		return nodeSet.addMatch(node, POSSIBLE_MATCH);
+	}
+
+	//public int match(MethodDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(MessageSend node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(Reference node, MatchingNodeSet nodeSet) - SKIP IT
 //public int match(TypeDeclaration node, MatchingNodeSet nodeSet) - SKIP IT
-    public int match(TypeReference node, MatchingNodeSet nodeSet) {
-        if (this.flavors != SUPERTYPE_REF_FLAVOR) return IMPOSSIBLE_MATCH;
-        if (this.pattern.superSimpleName == null)
-            return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
+	public int match(TypeReference node, MatchingNodeSet nodeSet) {
+		if (this.flavors != SUPERTYPE_REF_FLAVOR) return IMPOSSIBLE_MATCH;
+		if (this.pattern.superSimpleName == null)
+			return nodeSet.addMatch(node, this.pattern.mustResolve ? POSSIBLE_MATCH : ACCURATE_MATCH);
 
-        char[] typeRefSimpleName = null;
+		char[] typeRefSimpleName = null;
 	if (node instanceof SingleTypeReference) {
 		typeRefSimpleName = ((SingleTypeReference) node).token;
 	} else { // QualifiedTypeReference
@@ -63,11 +71,12 @@ protected int matchContainer() {
 	return CLASS_CONTAINER;
 }
 /* (non-Javadoc)
- * @see PatternLocator#matchReportReference(org.eclipse.jdt.internal.compiler.ast.ASTNode, org.eclipse.jdt.core.IJavaElement, org.eclipse.jdt.internal.compiler.lookup.Binding, int, MatchLocator)
+ * @see org.eclipse.jdt.internal.core.search.matching.PatternLocator#matchReportReference(org.eclipse.jdt.internal.compiler.ast.ASTNode,
+ * org.eclipse.jdt.core.IJavaElement, org.eclipse.jdt.internal.compiler.lookup.Binding, int, org.eclipse.jdt.internal.core.search
+ * .matching.MatchLocator)
  */
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                         CoreException {
-
+protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator)
+		throws CoreException {
 	if (elementBinding instanceof ReferenceBinding) {
 		ReferenceBinding referenceBinding = (ReferenceBinding) elementBinding;
 		if (referenceBinding.isClass() && this.pattern.typeSuffix == IIndexConstants.INTERFACE_SUFFIX) {
@@ -85,10 +94,16 @@ protected int referenceType() {
 	return IJavaElement.TYPE;
 }
 public int resolveLevel(ASTNode node) {
-	if (!(node instanceof TypeReference)) return IMPOSSIBLE_MATCH;
+	TypeBinding typeBinding = null;
+	if (node instanceof LambdaExpression) {
+		LambdaExpression lambda = (LambdaExpression)node;
+		typeBinding = lambda.resolvedType;
+	} else {
+		if (!(node instanceof TypeReference)) return IMPOSSIBLE_MATCH;
+		TypeReference typeRef = (TypeReference)node;
+		typeBinding = typeRef.resolvedType;
+	}
 
-	TypeReference typeRef = (TypeReference) node;
-	TypeBinding typeBinding = typeRef.resolvedType;
 	if (typeBinding instanceof ArrayBinding)
 		typeBinding = ((ArrayBinding) typeBinding).leafComponentType;
 	if (typeBinding instanceof ProblemReferenceBinding)

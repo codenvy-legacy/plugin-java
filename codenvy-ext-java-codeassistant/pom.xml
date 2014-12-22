@@ -44,6 +44,25 @@
         </dependency>
         <dependency>
             <groupId>com.codenvy.plugin-java</groupId>
+            <artifactId>codenvy-ext-java</artifactId>
+            <version>${codenvy.plugin-java.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>codenvy-ext-builder</artifactId>
+                    <groupId>com.codenvy.ide</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>codenvy-vfs-impl</artifactId>
+                    <groupId>com.codenvy.vfs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>codenvy-ide-jseditor</artifactId>
+                    <groupId>com.codenvy.ide</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-java</groupId>
             <artifactId>codenvy-jdt-core-repack</artifactId>
             <version>${codenvy.plugin-java.version}</version>
         </dependency>
@@ -74,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.core</groupId>
-            <artifactId>org.eclipse.core.contenttype</artifactId>
+            <artifactId>contenttype</artifactId>
             <version>${org.eclipse.core.contenttype.version}</version>
         </dependency>
         <dependency>
@@ -87,9 +106,70 @@
             <artifactId>org.eclipse.osgi</artifactId>
             <version>${org.eclipse.osgi.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${ch.qos.logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <version>${org.easytesting.fest-assert.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${org.mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <outputDirectory>target/classes</outputDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-tomcat-libs</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.google.gwt</groupId>
+                                    <artifactId>gwt-user</artifactId>
+                                    <version>${com.google.gwt.version}</version>
+                                    <outputDirectory>${project.build.testOutputDirectory}/temp/ws/test</outputDirectory>
+                                    <destFileName>gwt-user.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -105,10 +185,15 @@
                         <exclude>**/*.rsc</exclude>
                         <exclude>**/readableNames</exclude>
                         <exclude>**/project</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/javadoc/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/dom/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/corext/util/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/internal/core/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/IVMInstallType.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/JREContainer.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/LibraryInfo.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/launching/LibraryLocation.java</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/core/launching/StandardVMType.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/core/search/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/format/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/builder/**</exclude>
@@ -136,6 +221,7 @@
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/search/TypeNameRequestorWrapper.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/util/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/ClasspathEntry.java</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/internal/corext/CorextMessages.properties</exclude>
                     </excludes>
                 </configuration>
             </plugin>

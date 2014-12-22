@@ -28,6 +28,7 @@ import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
 import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.debug.Breakpoint;
 import com.codenvy.ide.debug.BreakpointManager;
@@ -267,7 +268,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
             return;
         }
 
-        FileNode activeFile = null;
+        VirtualFile activeFile = null;
         EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
         if (activeEditor != null) {
             activeFile = activeEditor.getEditorInput().getFile();
@@ -340,7 +341,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                         @Override
                         public void onActivePartChanged(ActivePartChangedEvent event) {
                             if (event.getActivePart() instanceof EditorPartPresenter) {
-                                final FileNode openedFile = ((EditorPartPresenter)event.getActivePart()).getEditorInput().getFile();
+                                final VirtualFile openedFile = ((EditorPartPresenter)event.getActivePart()).getEditorInput().getFile();
                                 if (fileToOpen.getPath().equals(openedFile.getPath())) {
                                     handlerRegistration.removeHandler();
                                     // give the editor some time to fully render it's view
@@ -715,11 +716,11 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
-    public void addBreakpoint(@Nonnull final FileNode file, final int lineNumber, final AsyncCallback<Breakpoint> callback) {
+    public void addBreakpoint(@Nonnull final VirtualFile file, final int lineNumber, final AsyncCallback<Breakpoint> callback) {
         if (debuggerInfo != null) {
             Location location = dtoFactory.createDto(Location.class);
             location.setLineNumber(lineNumber + 1);
-            final FqnResolver resolver = resolverFactory.getResolver(file.getData().getMediaType());
+            final FqnResolver resolver = resolverFactory.getResolver(file.getMediaType());
             if (resolver != null) {
                 location.setClassName(resolver.resolveFqn(file));
             } else {
@@ -750,11 +751,11 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
-    public void deleteBreakpoint(@Nonnull FileNode file, int lineNumber, final AsyncCallback<Void> callback) {
+    public void deleteBreakpoint(@Nonnull VirtualFile file, int lineNumber, final AsyncCallback<Void> callback) {
         if (debuggerInfo != null) {
             Location location = dtoFactory.createDto(Location.class);
             location.setLineNumber(lineNumber + 1);
-            FqnResolver resolver = resolverFactory.getResolver(file.getData().getMediaType());
+            FqnResolver resolver = resolverFactory.getResolver(file.getMediaType());
             if (resolver != null) {
                 location.setClassName(resolver.resolveFqn(file));
             } else {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,32 +23,35 @@ import org.eclipse.jdt.internal.core.index.Index;
  * @since 3.0
  */
 public abstract class SearchDocument {
-    private Index                                         index;
-    private String                                        containerRelativePath;
-    private SourceElementParser                           parser;
-    private String                                        documentPath;
-    private SearchParticipant participant;
+	private Index               index;
+	private String              containerRelativePath;
+	private SourceElementParser parser;
+	private String              documentPath;
+	private SearchParticipant   participant;
+	private boolean shouldIndexResolvedDocument = false;
 
-    /**
-     * Creates a new search document. The given document path is a string that uniquely identifies the document.
-     * Most of the time it is a workspace-relative path, but it can also be a file system path, or a path inside a zip file.
-     *
-     * @param documentPath the path to the document,
-     * or <code>null</code> if none
-     * @param participant the participant that creates the search document
-     */
-    protected SearchDocument(String documentPath, SearchParticipant participant) {
-        this.documentPath = documentPath;
-        this.participant = participant;
-    }
+	/**
+	 * Creates a new search document. The given document path is a string that uniquely identifies the document.
+	 * Most of the time it is a workspace-relative path, but it can also be a file system path, or a path inside a zip file.
+	 *
+	 * @param documentPath
+	 *         the path to the document,
+	 *         or <code>null</code> if none
+	 * @param participant
+	 *         the participant that creates the search document
+	 */
+	protected SearchDocument(String documentPath, SearchParticipant participant) {
+		this.documentPath = documentPath;
+		this.participant = participant;
+	}
 
-    /**
-     * Adds the given index entry (category and key) coming from this
-     * document to the index. This method must be called from
-     * {@link SearchParticipant#indexDocument(SearchDocument document, org.eclipse.core.runtime.IPath indexPath)}.
-     *
-     * @param category the category of the index entry
-     * @param key the key of the index entry
+	/**
+	 * Adds the given index entry (category and key) coming from this
+	 * document to the index. This method must be called from
+	 * {@link SearchParticipant#indexDocument(SearchDocument document, org.eclipse.core.runtime.IPath indexPath)}.
+	 *
+	 * @param category the category of the index entry
+	 * @param key the key of the index entry
 	 */
 	public void addIndexEntry(char[] category, char[] key) {
 		if (this.index != null)
@@ -147,7 +150,7 @@ public abstract class SearchDocument {
 		if (this.index != null)
 			this.index.remove(getContainerRelativePath());
 	}
-	
+
 	/**
 	 * @nooverride This method is not intended to be re-implemented or extended by clients.
 	 * @noreference This method is not intended to be referenced by clients.
@@ -155,12 +158,31 @@ public abstract class SearchDocument {
 	public void setIndex(Index indexToSet) {
 		this.index = indexToSet;
 	}
-	
+
 	/**
 	 * @nooverride This method is not intended to be re-implemented or extended by clients.
 	 * @noreference This method is not intended to be referenced by clients.
 	 */
 	public void setParser(SourceElementParser sourceElementParser) {
 		this.parser = sourceElementParser;
+	}
+
+	/**
+	 * Flags the document as requiring indexing after symbol and type resolution. A participant would be asked
+	 * to resolve the document via {@link SearchParticipant#resolveDocument} and to index the document adding
+	 * additional entries via {@link SearchParticipant#indexResolvedDocument}
+	 *
+	 * @since 3.10
+	 */
+	public void requireIndexingResolvedDocument() {
+		this.shouldIndexResolvedDocument = true;
+	}
+
+	/**
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 * @noreference This method is not intended to be referenced by clients.
+	 */
+	public boolean shouldIndexResolvedDocument() {
+		return this.shouldIndexResolvedDocument;
 	}
 }

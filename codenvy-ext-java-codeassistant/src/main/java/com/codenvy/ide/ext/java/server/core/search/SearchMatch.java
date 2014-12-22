@@ -25,95 +25,103 @@ import org.eclipse.jdt.internal.core.JavaElement;
  * This class is intended to be instantiated and subclassed by clients.
  * </p>
  *
- * @see SearchEngine#search(SearchPattern, SearchParticipant[], IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)
+ * @see org.eclipse.jdt.core.search.SearchEngine#search(org.eclipse.jdt.core.search.SearchPattern, org.eclipse.jdt.core.search
+ * .SearchParticipant[], org.eclipse.jdt.core.search.IJavaSearchScope, org.eclipse.jdt.core.search.SearchRequestor, org.eclipse.core
+ * .runtime.IProgressMonitor)
  * @since 3.0
  */
 public class SearchMatch {
 
-    /**
-     * The search result corresponds an exact match of the search pattern.
-     *
-     * @see #getAccuracy()
-     */
-    public static final int A_ACCURATE = 0;
+	/**
+	 * The search result corresponds an exact match of the search pattern.
+	 *
+	 * @see #getAccuracy()
+	 */
+	public static final int A_ACCURATE = 0;
 
-    /**
-     * The search result is potentially a match for the search pattern,
-     * but the search engine is unable to fully check it (for example, because
-     * there are errors in the code or the classpath are not correctly set).
-     *
-     * @see #getAccuracy()
-     */
-    public static final int A_INACCURATE = 1;
+	/**
+	 * The search result is potentially a match for the search pattern,
+	 * but the search engine is unable to fully check it (for example, because
+	 * there are errors in the code or the classpath are not correctly set).
+	 *
+	 * @see #getAccuracy()
+	 */
+	public static final int A_INACCURATE = 1;
 
-    private Object element;
-    private int    length;
-    private int    offset;
+	private Object element;
+	private int    length;
+	private int    offset;
 
-    private int               accuracy;
-    private SearchParticipant participant;
-    private IResource         resource;
+	private int               accuracy;
+	private SearchParticipant participant;
+	private IResource         resource;
 
-    private boolean insideDocComment = false;
+	private boolean insideDocComment = false;
 
-    // store the rule used while reporting the match
-    private final static int ALL_GENERIC_FLAVORS = SearchPattern.R_FULL_MATCH |
-                                                   SearchPattern.R_EQUIVALENT_MATCH |
-                                                   SearchPattern.R_ERASURE_MATCH;
-    private              int rule                = ALL_GENERIC_FLAVORS;
+	// store the rule used while reporting the match
+	private final static int ALL_GENERIC_FLAVORS = SearchPattern.R_FULL_MATCH |
+												   SearchPattern.R_EQUIVALENT_MATCH |
+												   SearchPattern.R_ERASURE_MATCH;
+	private              int rule                = ALL_GENERIC_FLAVORS;
 
-    // store other necessary information
-    private boolean raw      = false;
-    private boolean implicit = false;
+	// store other necessary information
+	private boolean raw      = false;
+	private boolean implicit = false;
 
-    /**
-     * Creates a new search match.
-     * <p>
-     * Note that <code>isInsideDocComment()</code> defaults to false.
-     * </p>
-     *
-     * @param element the element that encloses or corresponds to the match,
-     * or <code>null</code> if none
-     * @param accuracy one of {@link #A_ACCURATE} or {@link #A_INACCURATE}
-     * @param offset the offset the match starts at, or -1 if unknown
-     * @param length the length of the match, or -1 if unknown
-     * @param participant the search participant that created the match
-     * @param resource the resource of the element, or <code>null</code> if none
-     */
-    public SearchMatch(
-            IJavaElement element,
-            int accuracy,
-            int offset,
-            int length,
-            SearchParticipant participant,
-            IResource resource) {
-        this.element = element;
-        this.offset = offset;
-        this.length = length;
-        this.accuracy = accuracy & A_INACCURATE;
-        if (accuracy > A_INACCURATE) {
-            int genericFlavors = accuracy & ALL_GENERIC_FLAVORS;
-            if (genericFlavors > 0) {
-                this.rule &= ~ALL_GENERIC_FLAVORS; // reset generic flavors
-            }
-            this.rule |= accuracy & ~A_INACCURATE; // accuracy may have also some rule information
-        }
-        this.participant = participant;
-        this.resource = resource;
-    }
+	/**
+	 * Creates a new search match.
+	 * <p>
+	 * Note that <code>isInsideDocComment()</code> defaults to false.
+	 * </p>
+	 *
+	 * @param element
+	 *         the element that encloses or corresponds to the match,
+	 *         or <code>null</code> if none
+	 * @param accuracy
+	 *         one of {@link #A_ACCURATE} or {@link #A_INACCURATE}
+	 * @param offset
+	 *         the offset the match starts at, or -1 if unknown
+	 * @param length
+	 *         the length of the match, or -1 if unknown
+	 * @param participant
+	 *         the search participant that created the match
+	 * @param resource
+	 *         the resource of the element, or <code>null</code> if none
+	 */
+	public SearchMatch(
+			IJavaElement element,
+			int accuracy,
+			int offset,
+			int length,
+			SearchParticipant participant,
+			IResource resource) {
+		this.element = element;
+		this.offset = offset;
+		this.length = length;
+		this.accuracy = accuracy & A_INACCURATE;
+		if (accuracy > A_INACCURATE) {
+			int genericFlavors = accuracy & ALL_GENERIC_FLAVORS;
+			if (genericFlavors > 0) {
+				this.rule &= ~ALL_GENERIC_FLAVORS; // reset generic flavors
+			}
+			this.rule |= accuracy & ~A_INACCURATE; // accuracy may have also some rule information
+		}
+		this.participant = participant;
+		this.resource = resource;
+	}
 
-    /**
-     * Returns the accuracy of this search match.
-     *
-     * @return one of {@link #A_ACCURATE} or {@link #A_INACCURATE}
-     */
-    public final int getAccuracy() {
-        return this.accuracy;
-    }
+	/**
+	 * Returns the accuracy of this search match.
+	 *
+	 * @return one of {@link #A_ACCURATE} or {@link #A_INACCURATE}
+	 */
+	public final int getAccuracy() {
+		return this.accuracy;
+	}
 
-    /**
-     * Returns the element of this search match.
-     * In case of a reference match, this is the inner-most enclosing element of the reference.
+	/**
+	 * Returns the element of this search match.
+	 * In case of a reference match, this is the inner-most enclosing element of the reference.
 	 * In case of a declaration match, this is the declaration.
 	 *
 	 * @return the element of the search match, or <code>null</code> if none

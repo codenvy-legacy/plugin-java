@@ -1,13 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
+
 package com.codenvy.ide.ext.java.server.internal.core;
 
 import com.codenvy.api.project.server.Builders;
@@ -16,6 +17,7 @@ import com.codenvy.ide.ant.tools.AntUtils;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
+import com.codenvy.ide.ext.java.server.internal.core.util.JavaElementFinder;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.eclipse.core.resources.IProject;
@@ -33,7 +35,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaModelStatus;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IRegion;
@@ -43,10 +44,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.eval.IEvaluationContext;
 import org.eclipse.jdt.internal.compiler.util.ObjectVector;
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
-import org.eclipse.jdt.internal.core.NameLookup;
-import org.eclipse.jdt.internal.core.OpenableElementInfo;
-import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +67,10 @@ import java.util.Map;
  */
 public class JavaProject extends Openable implements IJavaProject {
 
+    /**
+     * Value of the project's raw classpath if the .classpath file contains invalid entries.
+     */
+    public static final IClasspathEntry[] INVALID_CLASSPATH = new IClasspathEntry[0];
     private static final Logger                                     LOG       = LoggerFactory.getLogger(JavaProject.class);
     private final        DirectoryStream.Filter<java.nio.file.Path> jarFilter = new DirectoryStream.Filter<java.nio.file.Path>() {
         @Override
@@ -87,7 +90,7 @@ public class JavaProject extends Openable implements IJavaProject {
     private IndexManager        indexManager;
 
     public JavaProject(File root, String projectPath, String tempDir, String ws, Map<String, String> options) {
-        super(null);
+        super(null, new JavaModelManager());
         this.projectPath = projectPath;
         this.tempDir = tempDir;
         wsId = ws;
@@ -131,7 +134,13 @@ public class JavaProject extends Openable implements IJavaProject {
                              Files.newDirectoryStream(depDir.toPath(), jarFilter)) {
 
                     for (java.nio.file.Path dep : deps) {
-                        paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), null, null));
+                        String name = dep.getFileName().toString();
+                        File srcJar = new File(dep.getParent().toFile(), "sources/" + name.substring(0, name.lastIndexOf('.')) + "-sources.jar");
+                        IPath srcPath = null;
+                        if(srcJar.exists()){
+                            srcPath = new Path(srcJar.getAbsolutePath());
+                        }
+                        paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), srcPath, null));
                     }
                 }
             }
@@ -140,10 +149,11 @@ public class JavaProject extends Openable implements IJavaProject {
             LOG.error("Can't find jar dependency's: ", e);
         }
         rawClassPath = paths.toArray(new IClasspathEntry[paths.size()]);
-        indexManager = new IndexManager(tempDir + "/indexes/" + ws + projectPath + "/");
+        indexManager = new IndexManager(tempDir + "/indexes/" + ws + projectPath + "/", this);
         indexManager.reset();
         indexManager.indexAll(this);
         indexManager.saveIndexes();
+        manager.setIndexManager(indexManager);
         nameEnvironment = new JavaSearchNameEnvironment(this, null);
     }
 
@@ -444,9 +454,32 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IJavaElement findElement(String bindingKey, WorkingCopyOwner owner) throws JavaModelException {
-        return null;
+        JavaElementFinder elementFinder = new JavaElementFinder(bindingKey, this, owner);
+        elementFinder.parse();
+        if (elementFinder.exception != null)
+            throw elementFinder.exception;
+        return elementFinder.element;
     }
+    public IJavaElement findPackageFragment(String packageName)
+            throws JavaModelException {
+        NameLookup lookup = newNameLookup((WorkingCopyOwner)null/*no need to look at working copies for pkgs*/);
+        IPackageFragment[] pkgFragments = lookup.findPackageFragments(packageName, false);
+        if (pkgFragments == null) {
+            return null;
 
+        } else {
+            // try to return one that is a child of this project
+            for (int i = 0, length = pkgFragments.length; i < length; i++) {
+
+                IPackageFragment pkgFragment = pkgFragments[i];
+                if (equals(pkgFragment.getParent().getParent())) {
+                    return pkgFragment;
+                }
+            }
+            // default to the first one
+            return pkgFragments[0];
+        }
+    }
     @Override
     public IPackageFragment findPackageFragment(IPath path) throws JavaModelException {
         return null;
@@ -464,43 +497,113 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IType findType(String fullyQualifiedName) throws JavaModelException {
-        return null;
+        return findType(fullyQualifiedName, DefaultWorkingCopyOwner.PRIMARY);
     }
 
     @Override
     public IType findType(String fullyQualifiedName, IProgressMonitor progressMonitor) throws JavaModelException {
-        return null;
+        return findType(fullyQualifiedName, DefaultWorkingCopyOwner.PRIMARY, progressMonitor);
+    }
+
+    /*
+ * Internal findType with instanciated name lookup
+ */
+    IType findType(String fullyQualifiedName, NameLookup lookup, boolean considerSecondaryTypes, IProgressMonitor progressMonitor)
+            throws JavaModelException {
+        NameLookup.Answer answer = lookup.findType(
+                fullyQualifiedName,
+                false,
+                org.eclipse.jdt.internal.core.NameLookup.ACCEPT_ALL,
+                considerSecondaryTypes,
+                true, /* wait for indexes (only if consider secondary types)*/
+                false/*don't check restrictions*/,
+                progressMonitor);
+        if (answer == null) {
+            // try to find enclosing type
+            int lastDot = fullyQualifiedName.lastIndexOf('.');
+            if (lastDot == -1) return null;
+            IType type = findType(fullyQualifiedName.substring(0, lastDot), lookup, considerSecondaryTypes, progressMonitor);
+            if (type != null) {
+                type = type.getType(fullyQualifiedName.substring(lastDot + 1));
+                if (!type.exists()) {
+                    return null;
+                }
+            }
+            return type;
+        }
+        return answer.type;
     }
 
     @Override
     public IType findType(String fullyQualifiedName, WorkingCopyOwner owner) throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(fullyQualifiedName, lookup, false, null);
     }
 
     @Override
     public IType findType(String fullyQualifiedName, WorkingCopyOwner owner, IProgressMonitor progressMonitor) throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(fullyQualifiedName, lookup, true, progressMonitor);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName) throws JavaModelException {
-        return null;
+        return findType(packageName, typeQualifiedName, DefaultWorkingCopyOwner.PRIMARY);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName, IProgressMonitor progressMonitor) throws JavaModelException {
-        return null;
+        return findType(packageName, typeQualifiedName, DefaultWorkingCopyOwner.PRIMARY, progressMonitor);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName, WorkingCopyOwner owner) throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(
+                packageName,
+                typeQualifiedName,
+                lookup,
+                false, // do not consider secondary types
+                null);
     }
 
     @Override
     public IType findType(String packageName, String typeQualifiedName, WorkingCopyOwner owner, IProgressMonitor progressMonitor)
             throws JavaModelException {
-        return null;
+        NameLookup lookup = newNameLookup(owner);
+        return findType(
+                packageName,
+                typeQualifiedName,
+                lookup,
+                true, // consider secondary types
+                progressMonitor);
+    }
+
+    /*
+ * Internal findType with instanciated name lookup
+ */
+    IType findType(String packageName, String typeQualifiedName, NameLookup lookup, boolean considerSecondaryTypes,
+                   IProgressMonitor progressMonitor) throws JavaModelException {
+        NameLookup.Answer answer = lookup.findType(
+                typeQualifiedName,
+                packageName,
+                false,
+                NameLookup.ACCEPT_ALL,
+                considerSecondaryTypes,
+                true, // wait for indexes (in case we need to consider secondary types)
+                false/*don't check restrictions*/,
+                progressMonitor);
+        return answer == null ? null : answer.type;
+    }
+
+    /*
+ * Returns a new name lookup. This name lookup first looks in the working copies of the given owner.
+ */
+    public NameLookup newNameLookup(WorkingCopyOwner owner) throws JavaModelException {
+
+//        JavaModelManager manager = org.eclipse.jdt.internal.core.JavaModelManager.getJavaModelManager();
+        ICompilationUnit[] workingCopies = owner == null ? null : manager.getWorkingCopies(owner, true/*add primary WCs*/);
+        return newNameLookup(workingCopies);
     }
 
     @Override
@@ -646,7 +749,7 @@ public class JavaProject extends Openable implements IJavaProject {
                 if (target instanceof File) {
                     // external target
                     if (JavaModelManager.isFile(target)) {
-                        root = new JarPackageFragmentRoot((File)target, this);
+                        root = new JarPackageFragmentRoot((File)target, this, manager);
                     } else if (((File)target).isDirectory()) {
                         root = getPackageFragmentRoot((File)target, entryPath);
 //                        root = new ExternalPackageFragmentRoot(entryPath, this);
@@ -699,9 +802,9 @@ public class JavaProject extends Openable implements IJavaProject {
         if (resource.isDirectory()) {
 //            if (ExternalFoldersManager.isInternalPathForExternalFolder(resource.getFullPath()))
 //                return new ExternalPackageFragmentRoot(resource, entryPath, this);
-            return new PackageFragmentRoot(resource, this);
+            return new PackageFragmentRoot(resource, this, manager);
         } else {
-            return new JarPackageFragmentRoot(resource, this);
+            return new JarPackageFragmentRoot(resource, this, manager);
         }
 //        return null;
 
@@ -745,22 +848,22 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IPackageFragmentRoot getPackageFragmentRoot(IResource resource) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public IPackageFragmentRoot[] getPackageFragmentRoots() throws JavaModelException {
-        return new IPackageFragmentRoot[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public IPackageFragmentRoot[] getPackageFragmentRoots(IClasspathEntry entry) {
-        return new IPackageFragmentRoot[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public IPackageFragment[] getPackageFragments() throws JavaModelException {
-        return new IPackageFragment[0];
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -769,9 +872,15 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     @Override
-    protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, IResource underlyingResource)
+    protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, File underlyingResource)
             throws JavaModelException {
-        return false;
+        // cannot refresh cp markers on opening (emulate cp check on startup) since can create deadlocks (see bug 37274)
+        IClasspathEntry[] resolvedClasspath = getResolvedClasspath();
+
+        // compute the pkg fragment roots
+        info.setChildren(computePackageFragmentRoots(resolvedClasspath, false, null /*no reverse map*/));
+
+        return true;
     }
 
     @Override
@@ -779,10 +888,10 @@ public class JavaProject extends Openable implements IJavaProject {
         return false;
     }
 
-    @Override
-    public IJavaElement getAncestor(int ancestorType) {
-        return null;
-    }
+//    @Override
+//    public IJavaElement getAncestor(int ancestorType) {
+//        return null;
+//    }
 
     @Override
     public String getAttachedJavadoc(IProgressMonitor monitor) throws JavaModelException {
@@ -791,51 +900,50 @@ public class JavaProject extends Openable implements IJavaProject {
 
     @Override
     public IResource getCorrespondingResource() throws JavaModelException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getElementName() {
-        return null;
+        return projectName;
     }
 
     @Override
     public IJavaElement getHandleFromMemento(String token, MementoTokenizer memento, WorkingCopyOwner owner) {
+        switch (token.charAt(0)) {
+            case JEM_PACKAGEFRAGMENTROOT:
+                String rootPath = IPackageFragmentRoot.DEFAULT_PACKAGEROOT_PATH;
+                token = null;
+                while (memento.hasMoreTokens()) {
+                    token = memento.nextToken();
+                    // https://bugs.eclipse.org/bugs/show_bug.cgi?id=331821
+                    if (token == MementoTokenizer.PACKAGEFRAGMENT || token == MementoTokenizer.COUNT) {
+                        break;
+                    }
+                    rootPath += token;
+                }
+                JavaElement root = (JavaElement)getPackageFragmentRoot(new File(rootPath));
+                if (token != null && token.charAt(0) == JEM_PACKAGEFRAGMENT) {
+                    return root.getHandleFromMemento(token, memento, owner);
+                } else {
+                    return root.getHandleFromMemento(memento, owner);
+                }
+        }
         return null;
     }
 
     @Override
     public int getElementType() {
-        return 0;
-    }
-
-    @Override
-    public String getHandleIdentifier() {
-        return null;
+        return IJavaElement.JAVA_PROJECT;
     }
 
     @Override
     protected char getHandleMementoDelimiter() {
-        return 0;
+        return JEM_JAVAPROJECT;
     }
 
     @Override
     public IJavaModel getJavaModel() {
-        return null;
-    }
-
-    @Override
-    public IJavaProject getJavaProject() {
-        return null;
-    }
-
-    @Override
-    public IOpenable getOpenable() {
-        return null;
-    }
-
-    @Override
-    public IJavaElement getParent() {
         return null;
     }
 
@@ -854,8 +962,8 @@ public class JavaProject extends Openable implements IJavaProject {
     }
 
     @Override
-    protected IResource resource(org.eclipse.jdt.internal.core.PackageFragmentRoot root) {
-        return null;
+    protected File resource(PackageFragmentRoot root) {
+        return projectDir;
     }
 
     @Override
@@ -893,6 +1001,7 @@ public class JavaProject extends Openable implements IJavaProject {
         if (list == null || list.length == 0) {
             file.delete();
         }
+        super.close();
     }
 
     @Override
@@ -935,20 +1044,51 @@ public class JavaProject extends Openable implements IJavaProject {
 
     }
 
-    @Override
-    protected IStatus validateExistence(IResource underlyingResource) {
-        return null;
+    /**
+     * The path is known to match a source/library folder entry.
+     *
+     * @param path
+     *         IPath
+     * @return IPackageFragmentRoot
+     */
+    public IPackageFragmentRoot getFolderPackageFragmentRoot(IPath path) {
+        if (path.segmentCount() == 1) { // default project root
+            return getPackageFragmentRoot();
+        }
+        return getPackageFragmentRoot(path.toFile());
+    }
+
+    public JavaProjectElementInfo.ProjectCache getProjectCache() throws JavaModelException {
+        return ((JavaProjectElementInfo)getElementInfo()).getProjectCache(this);
+    }
+
+    /**
+     * Returns a new element info for this element.
+     */
+    protected Object createElementInfo() {
+        return new JavaProjectElementInfo();
     }
 
     @Override
-    public IJavaElement[] getChildren() throws JavaModelException {
-        return new IJavaElement[0];
+    protected IStatus validateExistence(File underlyingResource) {
+        return JavaModelStatus.VERIFIED_OK;
+    }
+    /**
+     * @see org.eclipse.jdt.internal.core.JavaElement#getHandleMemento(StringBuffer)
+     */
+    protected void getHandleMemento(StringBuffer buff) {
+//        buff.append(getElementName());
     }
 
-    @Override
-    public boolean hasChildren() throws JavaModelException {
-        return false;
-    }
+//    @Override
+//    public IJavaElement[] getChildren() throws JavaModelException {
+//        return new IJavaElement[0];
+//    }
+//
+//    @Override
+//    public boolean hasChildren() throws JavaModelException {
+//        return false;
+//    }
 
     private void addToResult(IClasspathEntry rawEntry, IClasspathEntry resolvedEntry, ResolvedClasspath result,
                              LinkedHashSet<IClasspathEntry> resolvedEntries) {
@@ -966,16 +1106,57 @@ public class JavaProject extends Openable implements IJavaProject {
         return indexManager;
     }
 
-    public NameLookup newNameLookup(ICompilationUnit[] workingCopies) {
-        return null;
+    /**
+     * Convenience method that returns the specific type of info for a Java project.
+     */
+    protected JavaProjectElementInfo getJavaProjectElementInfo()
+            throws JavaModelException {
+
+        return (JavaProjectElementInfo)getElementInfo();
     }
 
-    public SearchableEnvironment newSearchableNameEnvironment(ICompilationUnit[] workingCopies) {
-        return null;
+    public NameLookup newNameLookup(ICompilationUnit[] workingCopies) throws JavaModelException {
+        return getJavaProjectElementInfo().newNameLookup(this, workingCopies);
+    }
+
+    public SearchableEnvironment newSearchableNameEnvironment(ICompilationUnit[] workingCopies) throws JavaModelException {
+        return new SearchableEnvironment(this, workingCopies);
+    }
+
+    /**
+     * Returns true if this handle represents the same Java project
+     * as the given handle. Two handles represent the same
+     * project if they are identical or if they represent a project with
+     * the same underlying resource and occurrence counts.
+     *
+     * @see org.eclipse.jdt.internal.core.JavaElement#equals(Object)
+     */
+    public boolean equals(Object o) {
+
+        if (this == o)
+            return true;
+
+        if (!(o instanceof JavaProject))
+            return false;
+
+        JavaProject other = (JavaProject) o;
+        return this.getFullPath().equals(other.getFullPath());
+    }
+
+    /*
+     * Returns a new search name environment for this project. This name environment first looks in the working copies
+     * of the given owner.
+     */
+    public SearchableEnvironment newSearchableNameEnvironment(WorkingCopyOwner owner) throws JavaModelException {
+        return new SearchableEnvironment(this, owner);
     }
 
     public String getVfsId() {
         return wsId;
+    }
+
+    public JavaModelManager getJavaModelManager() {
+        return manager;
     }
 
     public static class ResolvedClasspath {

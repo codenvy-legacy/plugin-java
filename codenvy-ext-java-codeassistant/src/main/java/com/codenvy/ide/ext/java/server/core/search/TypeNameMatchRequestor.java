@@ -13,33 +13,34 @@ package com.codenvy.ide.ext.java.server.core.search;
 /**
  * A <code>TypeNameMatchRequestor</code> collects matches from a <code>searchAllTypeNames</code>
  * query to a <code>SearchEngine</code>. Clients must subclass this abstract class and pass an instance to the
- * {@link SearchEngine#searchAllTypeNames(
+ * {@link org.eclipse.jdt.core.search.SearchEngine#searchAllTypeNames(
  *		char[] packageName,
  *		int packageMatchRule,
  *		char[] typeName,
  *		int typeMatchRule,
  *		int searchFor,
- *        IJavaSearchScope scope,
- *        TypeNameMatchRequestor nameMatchRequestor,
+ *        org.eclipse.jdt.core.search.IJavaSearchScope scope,
+ *        org.eclipse.jdt.core.search.TypeNameMatchRequestor nameMatchRequestor,
  *		int waitingPolicy,
  * 	org.eclipse.core.runtime.IProgressMonitor monitor)} method.
  * Only top-level and member types are reported. Local types are not reported.
  * <p>
- * While {@link TypeNameRequestor} only reports type names information (e.g. package, enclosing types, simple name, modifiers, etc.),
- * this class reports {@link TypeNameMatch} objects instead, which store this information and can return
+ * While {@link org.eclipse.jdt.core.search.TypeNameRequestor} only reports type names information (e.g. package, enclosing types, simple
+ * name, modifiers, etc.),
+ * this class reports {@link org.eclipse.jdt.core.search.TypeNameMatch} objects instead, which store this information and can return
  * an {@link org.eclipse.jdt.core.IType} handle.
  * </p>
  * <p>
  * This class may be subclassed by clients.
  * </p>
- * @see TypeNameMatch
- * @see TypeNameRequestor
+ * @see org.eclipse.jdt.core.search.TypeNameMatch
+ * @see org.eclipse.jdt.core.search.TypeNameRequestor
  *
  * @since 3.3
  */
 public abstract class TypeNameMatchRequestor {
 	/**
-	 * Accepts a type name match ({@link TypeNameMatch}) which contains top-level or a member type
+	 * Accepts a type name match ({@link org.eclipse.jdt.core.search.TypeNameMatch}) which contains top-level or a member type
 	 * information as package name, enclosing types names, simple type name, modifiers, etc.
 	 *
 	 * @param match the match which contains all type information

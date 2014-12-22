@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -16,33 +16,33 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 
 public class QualifiedTypeDeclarationPattern extends TypeDeclarationPattern {
 
-    public char[] qualification;
-    PackageDeclarationPattern packagePattern;
-    public int packageIndex = -1;
+	public char[] qualification;
+	public int packageIndex = -1;
+	PackageDeclarationPattern packagePattern;
 
-    public QualifiedTypeDeclarationPattern(char[] qualification, char[] simpleName, char typeSuffix, int matchRule) {
-        this(matchRule);
+	public QualifiedTypeDeclarationPattern(char[] qualification, char[] simpleName, char typeSuffix, int matchRule) {
+		this(matchRule);
 
-        this.qualification = this.isCaseSensitive ? qualification : CharOperation.toLowerCase(qualification);
-        this.simpleName = (this.isCaseSensitive || this.isCamelCase) ? simpleName : CharOperation.toLowerCase(simpleName);
-        this.typeSuffix = typeSuffix;
+		this.qualification = this.isCaseSensitive ? qualification : CharOperation.toLowerCase(qualification);
+		this.simpleName = (this.isCaseSensitive || this.isCamelCase) ? simpleName : CharOperation.toLowerCase(simpleName);
+		this.typeSuffix = typeSuffix;
 
-        this.mustResolve = this.qualification != null || typeSuffix != TYPE_SUFFIX;
-    }
+		this.mustResolve = this.qualification != null || typeSuffix != TYPE_SUFFIX;
+	}
 
-    public QualifiedTypeDeclarationPattern(char[] qualification, int qualificationMatchRule, char[] simpleName, char typeSuffix,
-                                           int matchRule) {
-        this(qualification, simpleName, typeSuffix, matchRule);
-        this.packagePattern = new PackageDeclarationPattern(qualification, qualificationMatchRule);
-    }
+	public QualifiedTypeDeclarationPattern(char[] qualification, int qualificationMatchRule, char[] simpleName, char typeSuffix,
+										   int matchRule) {
+		this(qualification, simpleName, typeSuffix, matchRule);
+		this.packagePattern = new PackageDeclarationPattern(qualification, qualificationMatchRule);
+	}
 
-    QualifiedTypeDeclarationPattern(int matchRule) {
-        super(matchRule);
-    }
+	QualifiedTypeDeclarationPattern(int matchRule) {
+		super(matchRule);
+	}
 
-    public void decodeIndexKey(char[] key) {
-        int slash = CharOperation.indexOf(SEPARATOR, key, 0);
-        this.simpleName = CharOperation.subarray(key, 0, slash);
+	public void decodeIndexKey(char[] key) {
+		int slash = CharOperation.indexOf(SEPARATOR, key, 0);
+		this.simpleName = CharOperation.subarray(key, 0, slash);
 
 	int start = ++slash;
 	if (key[start] == SEPARATOR) {
@@ -86,7 +86,7 @@ public SearchPattern getBlankPattern() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	QualifiedTypeDeclarationPattern
-            pattern = (QualifiedTypeDeclarationPattern) decodedPattern;
+			pattern = (QualifiedTypeDeclarationPattern)decodedPattern;
 
 	// check type suffix
 	if (this.typeSuffix != pattern.typeSuffix && this.typeSuffix != TYPE_SUFFIX) {

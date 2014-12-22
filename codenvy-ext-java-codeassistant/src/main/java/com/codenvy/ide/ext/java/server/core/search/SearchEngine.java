@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.core.search;
 
+import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.BasicSearchEngine;
 import com.codenvy.ide.ext.java.server.internal.core.search.IRestrictedAccessTypeRequestor;
 import com.codenvy.ide.ext.java.server.internal.core.search.TypeNameMatchRequestorWrapper;
@@ -53,182 +54,189 @@ public class SearchEngine {
 
     private IndexManager indexManager;
 
-    /**
+	/**
 	 * Internal adapter class.
 	 * @deprecated marking deprecated as it uses deprecated ISearchPattern
 	 */
 	static class SearchPatternAdapter implements ISearchPattern {
-        SearchPattern pattern;
+		SearchPattern pattern;
 
-        SearchPatternAdapter(SearchPattern pattern) {
-            this.pattern = pattern;
-        }
-    }
+		SearchPatternAdapter(SearchPattern pattern) {
+			this.pattern = pattern;
+		}
+	}
 
-    /**
-     * Internal adapter class.
-     * @deprecated marking deprecated as it uses deprecated IJavaSearchResultCollector
-     */
-    static class ResultCollectorAdapter extends SearchRequestor {
-        IJavaSearchResultCollector resultCollector;
+	/**
+	 * Internal adapter class.
+	 *
+	 * @deprecated marking deprecated as it uses deprecated IJavaSearchResultCollector
+	 */
+	static class ResultCollectorAdapter extends SearchRequestor {
+		IJavaSearchResultCollector resultCollector;
 
-        ResultCollectorAdapter(IJavaSearchResultCollector resultCollector) {
-            this.resultCollector = resultCollector;
-        }
+		ResultCollectorAdapter(IJavaSearchResultCollector resultCollector) {
+			this.resultCollector = resultCollector;
+		}
 
-        /**
-         * @see SearchRequestor#acceptSearchMatch(SearchMatch)
-         */
-        public void acceptSearchMatch(SearchMatch match) throws CoreException {
-            this.resultCollector.accept(
-                    match.getResource(),
-                    match.getOffset(),
-                    match.getOffset() + match.getLength(),
-                    (IJavaElement)match.getElement(),
-                    match.getAccuracy()
-                                       );
-        }
+		/**
+		 * @see SearchRequestor#acceptSearchMatch(SearchMatch)
+		 */
+		public void acceptSearchMatch(SearchMatch match) throws CoreException {
+			this.resultCollector.accept(
+					match.getResource(),
+					match.getOffset(),
+					match.getOffset() + match.getLength(),
+					(IJavaElement)match.getElement(),
+					match.getAccuracy()
+									   );
+		}
 
-        /**
-         * @see SearchRequestor#beginReporting()
-         */
-        public void beginReporting() {
-            this.resultCollector.aboutToStart();
-        }
+		/**
+		 * @see SearchRequestor#beginReporting()
+		 */
+		public void beginReporting() {
+			this.resultCollector.aboutToStart();
+		}
 
-        /**
-         * @see SearchRequestor#endReporting()
-         */
-        public void endReporting() {
-            this.resultCollector.done();
-        }
-    }
+		/**
+		 * @see SearchRequestor#endReporting()
+		 */
+		public void endReporting() {
+			this.resultCollector.done();
+		}
+	}
 
-    /**
-     * Internal adapter class.
-     * @deprecated marking deprecated as it uses deprecated ITypeNameRequestor
-     */
-    static class TypeNameRequestorAdapter implements IRestrictedAccessTypeRequestor {
-        ITypeNameRequestor nameRequestor;
+	/**
+	 * Internal adapter class.
+	 *
+	 * @deprecated marking deprecated as it uses deprecated ITypeNameRequestor
+	 */
+	static class TypeNameRequestorAdapter implements IRestrictedAccessTypeRequestor {
+		ITypeNameRequestor nameRequestor;
 
-        TypeNameRequestorAdapter(ITypeNameRequestor requestor) {
-            this.nameRequestor = requestor;
-        }
+		TypeNameRequestorAdapter(ITypeNameRequestor requestor) {
+			this.nameRequestor = requestor;
+		}
 
-        public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
-                               AccessRestriction access) {
-            if (Flags.isInterface(modifiers)) {
-                this.nameRequestor.acceptInterface(packageName, simpleTypeName, enclosingTypeNames, path);
-            } else {
-                this.nameRequestor.acceptClass(packageName, simpleTypeName, enclosingTypeNames, path);
-            }
-        }
-    }
+		public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
+							   AccessRestriction access) {
+			if (Flags.isInterface(modifiers)) {
+				this.nameRequestor.acceptInterface(packageName, simpleTypeName, enclosingTypeNames, path);
+			} else {
+				this.nameRequestor.acceptClass(packageName, simpleTypeName, enclosingTypeNames, path);
+			}
+		}
+	}
 
-    // Search engine now uses basic engine functionalities
-    private BasicSearchEngine basicEngine;
+	// Search engine now uses basic engine functionalities
+	private BasicSearchEngine basicEngine;
 
-    /**
-     * Creates a new search engine.
-     */
-    public SearchEngine(IndexManager indexManager) {
-        this.indexManager = indexManager;
-        this.basicEngine = new BasicSearchEngine(indexManager);
-    }
+	/**
+	 * Creates a new search engine.
+	 */
+	public SearchEngine(IndexManager indexManager, JavaProject javaProject) {
+		this.indexManager = indexManager;
+		this.basicEngine = new BasicSearchEngine(indexManager, javaProject);
+	}
+
+//	/**
+//	 * Creates a new search engine with a list of working copies that will take precedence over
+//	 * their original compilation units in the subsequent search operations.
+//	 * <p>
+//	 * Note that passing an empty working copy will be as if the original compilation
+//	 * unit had been deleted.</p>
+//	 * <p>
+//	 * Since 3.0 the given working copies take precedence over primary working copies (if any).
+//	 *
+//	 * @param workingCopies the working copies that take precedence over their original compilation units
+//	 * @since 3.0
+//	 */
+//	public SearchEngine(ICompilationUnit[] workingCopies) {
+//		this.basicEngine = new BasicSearchEngine(workingCopies);
+//	}
 //
-//    /**
-//     * Creates a new search engine with a list of working copies that will take precedence over
-//     * their original compilation units in the subsequent search operations.
-//     * <p>
-//     * Note that passing an empty working copy will be as if the original compilation
-//     * unit had been deleted.</p>
-//     * <p>
-//     * Since 3.0 the given working copies take precedence over primary working copies (if any).
-//     *
-//     * @param workingCopies the working copies that take precedence over their original compilation units
-//     * @since 3.0
-//     */
-//    public SearchEngine(ICompilationUnit[] workingCopies, IndexManager indexManager) {
-//        this.basicEngine = new BasicSearchEngine(indexManager);
-//    }
-
-//    /**
-//     * Creates a new search engine with a list of working copies that will take precedence over
-//     * their original compilation units in the subsequent search operations.
-//     * <p>
-//     * Note that passing an empty working copy will be as if the original compilation
-//     * unit had been deleted.</p>
-//     * <p>
-//     * Since 3.0 the given working copies take precedence over primary working copies (if any).
-//     *
-//     * @param workingCopies the working copies that take precedence over their original compilation units
-//     * @since 2.0
-//     * @deprecated Use {@link #SearchEngine(org.eclipse.jdt.core.ICompilationUnit[])} instead.
-//     */
-//    public SearchEngine(IWorkingCopy[] workingCopies) {
-//        int length = workingCopies.length;
-//        ICompilationUnit[] units = new ICompilationUnit[length];
-//        System.arraycopy(workingCopies, 0, units, 0, length);
-//        this.basicEngine = new BasicSearchEngine(units);
-//    }
+//	/**
+//	 * Creates a new search engine with a list of working copies that will take precedence over
+//	 * their original compilation units in the subsequent search operations.
+//	 * <p>
+//	 * Note that passing an empty working copy will be as if the original compilation
+//	 * unit had been deleted.</p>
+//	 * <p>
+//	 * Since 3.0 the given working copies take precedence over primary working copies (if any).
+//	 *
+//	 * @param workingCopies the working copies that take precedence over their original compilation units
+//	 * @since 2.0
+//	 * @deprecated Use {@link #SearchEngine(org.eclipse.jdt.core.ICompilationUnit[])} instead.
+//	 */
+//	public SearchEngine(IWorkingCopy[] workingCopies) {
+//		int length = workingCopies.length;
+//		ICompilationUnit[] units = new ICompilationUnit[length];
+//		System.arraycopy(workingCopies, 0, units, 0, length);
+//		this.basicEngine = new BasicSearchEngine(units);
+//	}
 //
-//    /**
-//     * Creates a new search engine with the given working copy owner.
-//     * The working copies owned by this owner will take precedence over
-//     * the primary compilation units in the subsequent search operations.
-//     *
-//     * @param workingCopyOwner the owner of the working copies that take precedence over their original compilation units
-//     * @since 3.0
-//     */
-//    public SearchEngine(WorkingCopyOwner workingCopyOwner) {
-//        this.basicEngine = new BasicSearchEngine(workingCopyOwner);
-//    }
+//	/**
+//	 * Creates a new search engine with the given working copy owner.
+//	 * The working copies owned by this owner will take precedence over
+//	 * the primary compilation units in the subsequent search operations.
+//	 *
+//	 * @param workingCopyOwner the owner of the working copies that take precedence over their original compilation units
+//	 * @since 3.0
+//	 */
+//	public SearchEngine(WorkingCopyOwner workingCopyOwner) {
+//		this.basicEngine = new BasicSearchEngine(workingCopyOwner);
+//	}
 
-    /**
-     * Returns a Java search scope limited to the hierarchy of the given type.
-     * The Java elements resulting from a search with this scope will
-     * be types in this hierarchy, or members of the types in this hierarchy.
-     *
-     * @param type the focus of the hierarchy scope
-     * @return a new hierarchy scope
-     * @exception org.eclipse.jdt.core.JavaModelException if the hierarchy could not be computed on the given type
-     */
-    public static IJavaSearchScope createHierarchyScope(IType type) throws JavaModelException {
-        return BasicSearchEngine.createHierarchyScope(type);
-    }
+	/**
+	 * Returns a Java search scope limited to the hierarchy of the given type.
+	 * The Java elements resulting from a search with this scope will
+	 * be types in this hierarchy, or members of the types in this hierarchy.
+	 *
+	 * @param type
+	 *         the focus of the hierarchy scope
+	 * @return a new hierarchy scope
+	 * @throws org.eclipse.jdt.core.JavaModelException
+	 *         if the hierarchy could not be computed on the given type
+	 */
+	public static IJavaSearchScope createHierarchyScope(IType type) throws JavaModelException {
+		return BasicSearchEngine.createHierarchyScope(type);
+	}
 
-    /**
-     * Returns a Java search scope limited to the hierarchy of the given type.
-     * When the hierarchy is computed, the types defined in the working copies owned
-     * by the given owner take precedence over the original compilation units.
-     * The Java elements resulting from a search with this scope will
-     * be types in this hierarchy, or members of the types in this hierarchy.
-     *
-     * @param type the focus of the hierarchy scope
-     * @param owner the owner of working copies that take precedence over original compilation units
-     * @return a new hierarchy scope
-     * @exception org.eclipse.jdt.core.JavaModelException if the hierarchy could not be computed on the given type
-     * @since 3.0
-     */
-    public static IJavaSearchScope createHierarchyScope(IType type, WorkingCopyOwner owner) throws JavaModelException {
-        return BasicSearchEngine.createHierarchyScope(type, owner);
-    }
+	/**
+	 * Returns a Java search scope limited to the hierarchy of the given type.
+	 * When the hierarchy is computed, the types defined in the working copies owned
+	 * by the given owner take precedence over the original compilation units.
+	 * The Java elements resulting from a search with this scope will
+	 * be types in this hierarchy, or members of the types in this hierarchy.
+	 *
+	 * @param type
+	 *         the focus of the hierarchy scope
+	 * @param owner
+	 *         the owner of working copies that take precedence over original compilation units
+	 * @return a new hierarchy scope
+	 * @throws org.eclipse.jdt.core.JavaModelException
+	 *         if the hierarchy could not be computed on the given type
+	 * @since 3.0
+	 */
+	public static IJavaSearchScope createHierarchyScope(IType type, WorkingCopyOwner owner) throws JavaModelException {
+		return BasicSearchEngine.createHierarchyScope(type, owner);
+	}
 
-    /**
-     * Returns a Java search scope limited to the hierarchy of the given type and to a given project.
-     * The Java elements resulting from a search with this scope will be types in this hierarchy.
-     * <p>
-     * Unlike the <code>createHierarchyScope</code> methods, this method creates <em>strict</em>
-     * scopes that only contain types that actually span the hierarchy of the focus
-     * type, but do not include additional enclosing or member types.
-     * </p>
-     * <p>
-     * By default, hierarchy scopes include all direct and indirect supertypes and subtypes of the
-     * focus type. This method, however, allows to restrict the hierarchy to true subtypes,
-     * and exclude supertypes. Also, inclusion of the focus type itself is controlled by a parameter.
-     * </p>
-     *
-     * @param project the project to which to constrain the search, or <code>null</code> if
+	/**
+	 * Returns a Java search scope limited to the hierarchy of the given type and to a given project.
+	 * The Java elements resulting from a search with this scope will be types in this hierarchy.
+	 * <p>
+	 * Unlike the <code>createHierarchyScope</code> methods, this method creates <em>strict</em>
+	 * scopes that only contain types that actually span the hierarchy of the focus
+	 * type, but do not include additional enclosing or member types.
+	 * </p>
+	 * <p>
+	 * By default, hierarchy scopes include all direct and indirect supertypes and subtypes of the
+	 * focus type. This method, however, allows to restrict the hierarchy to true subtypes,
+	 * and exclude supertypes. Also, inclusion of the focus type itself is controlled by a parameter.
+	 * </p>
+	 *
+	 * @param project the project to which to constrain the search, or <code>null</code> if
 	 *        search should consider all types in the workspace
 	 * @param type the focus of the hierarchy scope
 	 * @param onlySubtypes if <code>true</code> only subtypes of <code>type</code> are considered
@@ -241,7 +249,7 @@ public class SearchEngine {
 	 * @since 3.6
 	 */
 	public static IJavaSearchScope createStrictHierarchyScope(IJavaProject project, IType type, boolean onlySubtypes, boolean includeFocusType, WorkingCopyOwner owner) throws
-                                                                                                                                                                        JavaModelException {
+																																										JavaModelException {
 		return BasicSearchEngine.createStrictHierarchyScope(project, type, onlySubtypes, includeFocusType, owner);
 	}
 
@@ -359,7 +367,7 @@ public class SearchEngine {
 	 * @param leftPattern the left pattern
 	 * @param rightPattern the right pattern
 	 * @return a "or" pattern
-	 * @deprecated Use {@link SearchPattern#createOrPattern(SearchPattern, SearchPattern)} instead.
+	 * @deprecated Use {@link org.eclipse.jdt.core.search.SearchPattern#createOrPattern(org.eclipse.jdt.core.search.SearchPattern, org.eclipse.jdt.core.search.SearchPattern)} instead.
 	 */
 	public static ISearchPattern createOrSearchPattern(ISearchPattern leftPattern, ISearchPattern rightPattern) {
 		SearchPattern left = ((SearchPatternAdapter) leftPattern).pattern;
@@ -385,35 +393,37 @@ public class SearchEngine {
 	 * @param stringPattern the given pattern
 	 * @param searchFor determines the nature of the searched elements
 	 *	<ul>
-	 * 	<li>{@link IJavaSearchConstants#CLASS}: only look for classes</li>
-	 *		<li>{@link IJavaSearchConstants#INTERFACE}: only look for interfaces</li>
-	 * 	<li>{@link IJavaSearchConstants#TYPE}: look for both classes and interfaces</li>
-	 *		<li>{@link IJavaSearchConstants#FIELD}: look for fields</li>
-	 *		<li>{@link IJavaSearchConstants#METHOD}: look for methods</li>
-	 *		<li>{@link IJavaSearchConstants#CONSTRUCTOR}: look for constructors</li>
-	 *		<li>{@link IJavaSearchConstants#PACKAGE}: look for packages</li>
+	 * 	<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#CLASS}: only look for classes</li>
+	 *		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#INTERFACE}: only look for interfaces</li>
+	 * 	<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#TYPE}: look for both classes and interfaces</li>
+	 *		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#FIELD}: look for fields</li>
+	 *		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#METHOD}: look for methods</li>
+	 *		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#CONSTRUCTOR}: look for constructors</li>
+	 *		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#PACKAGE}: look for packages</li>
 	 *	</ul>
 	 * @param limitTo determines the nature of the expected matches
 	 *	<ul>
-	 * 		<li>{@link IJavaSearchConstants#DECLARATIONS}: will search declarations matching with the corresponding
+	 * 		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#DECLARATIONS}: will search declarations matching with the corresponding
 	 * 			element. In case the element is a method, declarations of matching methods in subtypes will also
 	 *  		be found, allowing to find declarations of abstract methods, etc.</li>
 	 *
-	 *		 <li>{@link IJavaSearchConstants#REFERENCES}: will search references to the given element.</li>
+	 *		 <li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#REFERENCES}: will search references to the given element.</li>
 	 *
-	 *		 <li>{@link IJavaSearchConstants#ALL_OCCURRENCES}: will search for either declarations or references as specified
+	 *		 <li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#ALL_OCCURRENCES}: will search for either declarations or
+	 *		                 references as specified
 	 *  		above.</li>
 	 *
-	 *		 <li>{@link IJavaSearchConstants#IMPLEMENTORS}: for types, will find all types
+	 *		 <li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#IMPLEMENTORS}: for types, will find all types
 	 *				which directly implement/extend a given interface.
-	 *				Note that types may be only classes or only interfaces if {@link IJavaSearchConstants#CLASS } or
-	 *				{@link IJavaSearchConstants#INTERFACE} is respectively used instead of {@link IJavaSearchConstants#TYPE}.
+	 *				Note that types may be only classes or only interfaces if {@link org.eclipse.jdt.core.search
+	 *				.IJavaSearchConstants#CLASS } or
+	 *				{@link org.eclipse.jdt.core.search.IJavaSearchConstants#INTERFACE} is respectively used instead of {@link org.eclipse.jdt.core.search.IJavaSearchConstants#TYPE}.
 	 *		</li>
 	 *	</ul>
 	 *
 	 * @param isCaseSensitive indicates whether the search is case sensitive or not.
 	 * @return a search pattern on the given string pattern, or <code>null</code> if the string pattern is ill-formed.
-	 * @deprecated Use {@link SearchPattern#createPattern(String, int, int, int)} instead.
+	 * @deprecated Use {@link org.eclipse.jdt.core.search.SearchPattern#createPattern(String, int, int, int)} instead.
 	 */
 	public static ISearchPattern createSearchPattern(String stringPattern, int searchFor, int limitTo, boolean isCaseSensitive) {
 		int matchMode = stringPattern.indexOf('*') != -1 || stringPattern.indexOf('?') != -1
@@ -430,20 +440,21 @@ public class SearchEngine {
 	 * @param element the Java element the search pattern is based on
 	 * @param limitTo determines the nature of the expected matches
 	 * 	<ul>
-	 * 		<li>{@link IJavaSearchConstants#DECLARATIONS}: will search declarations matching with the corresponding
+	 * 		<li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#DECLARATIONS}: will search declarations matching with the corresponding
 	 * 			element. In case the element is a method, declarations of matching methods in subtypes will also
 	 *  		be found, allowing to find declarations of abstract methods, etc.</li>
 	 *
-	 *		 <li>{@link IJavaSearchConstants#REFERENCES}: will search references to the given element.</li>
+	 *		 <li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#REFERENCES}: will search references to the given element.</li>
 	 *
-	 *		 <li>{@link IJavaSearchConstants#ALL_OCCURRENCES}: will search for either declarations or references as specified
+	 *		 <li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#ALL_OCCURRENCES}: will search for either declarations or
+	 *		                 references as specified
 	 *  		above.</li>
 	 *
-	 *		 <li>{@link IJavaSearchConstants#IMPLEMENTORS}: for types, will find all types
+	 *		 <li>{@link org.eclipse.jdt.core.search.IJavaSearchConstants#IMPLEMENTORS}: for types, will find all types
 	 *				which directly implement/extend a given interface.</li>
 	 *	</ul>
 	 * @return a search pattern for a Java element or <code>null</code> if the given element is ill-formed
-	 * @deprecated Use {@link SearchPattern#createPattern(org.eclipse.jdt.core.IJavaElement, int)} instead.
+	 * @deprecated Use {@link org.eclipse.jdt.core.search.SearchPattern#createPattern(org.eclipse.jdt.core.IJavaElement, int)} instead.
 	 */
 	public static ISearchPattern createSearchPattern(IJavaElement element, int limitTo) {
 		return new SearchPatternAdapter(SearchPattern.createPattern(element, limitTo));
@@ -469,14 +480,15 @@ public class SearchEngine {
 	public static IJavaSearchScope createWorkspaceScope() {
 		return BasicSearchEngine.createWorkspaceScope();
 	}
+
 	/**
 	 * Returns a new default Java search participant.
 	 *
 	 * @return a new default Java search participant
 	 * @since 3.0
 	 */
-	public static SearchParticipant getDefaultSearchParticipant(IndexManager indexManager) {
-		return BasicSearchEngine.getDefaultSearchParticipant(indexManager);
+	public static SearchParticipant getDefaultSearchParticipant(IndexManager indexManager, JavaProject javaProject) {
+		return BasicSearchEngine.getDefaultSearchParticipant(indexManager, javaProject);
 	}
 
 	/**
@@ -512,25 +524,28 @@ public class SearchEngine {
 	 *	<ul>
 	 *		<li>the classpath is incorrectly set</li>
 	 *	</ul>
-	 * @deprecated Use {@link  #search(SearchPattern, SearchParticipant[], IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)} instead.
+	 * @deprecated Use {@link  #search(SearchPattern, SearchParticipant[], IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime
+	 * .IProgressMonitor)} instead.
 	 */
-	public void search(IWorkspace workspace, String patternString, int searchFor, int limitTo, IJavaSearchScope scope, IJavaSearchResultCollector resultCollector) throws
-                                                                                                                                                                   JavaModelException {
-		try {
-			int matchMode = patternString.indexOf('*') != -1 || patternString.indexOf('?') != -1
-				? SearchPattern.R_PATTERN_MATCH
-				: SearchPattern.R_EXACT_MATCH;
-			search(
-				SearchPattern.createPattern(patternString, searchFor, limitTo, matchMode | SearchPattern.R_CASE_SENSITIVE),
-				new SearchParticipant[] {getDefaultSearchParticipant(indexManager)},
-				scope,
-				new ResultCollectorAdapter(resultCollector),
-				resultCollector.getProgressMonitor());
-		} catch (CoreException e) {
-			if (e instanceof JavaModelException)
-				throw (JavaModelException) e;
-			throw new JavaModelException(e);
-		}
+	public void search(IWorkspace workspace, String patternString, int searchFor, int limitTo, IJavaSearchScope scope,
+					   IJavaSearchResultCollector resultCollector) throws
+																   JavaModelException {
+//		try {
+//			int matchMode = patternString.indexOf('*') != -1 || patternString.indexOf('?') != -1
+//				? SearchPattern.R_PATTERN_MATCH
+//				: SearchPattern.R_EXACT_MATCH;
+//			search(
+//				SearchPattern.createPattern(patternString, searchFor, limitTo, matchMode | SearchPattern.R_CASE_SENSITIVE),
+//				new SearchParticipant[] {getDefaultSearchParticipant(indexManager, )},
+//				scope,
+//				new ResultCollectorAdapter(resultCollector),
+//				resultCollector.getProgressMonitor());
+//		} catch (CoreException e) {
+//			if (e instanceof JavaModelException)
+//				throw (JavaModelException) e;
+//			throw new JavaModelException(e);
+//		}
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -559,7 +574,7 @@ public class SearchEngine {
 	 * @deprecated Use {@link #search(SearchPattern, SearchParticipant[], IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)} instead.
 	 */
 	public void search(IWorkspace workspace, IJavaElement element, int limitTo, IJavaSearchScope scope, IJavaSearchResultCollector resultCollector) throws
-                                                                                                                                                    JavaModelException {
+																																					JavaModelException {
 		search(workspace, createSearchPattern(element, limitTo), scope, resultCollector);
 	}
 
@@ -576,22 +591,25 @@ public class SearchEngine {
 	 *	<ul>
 	 *		<li>the classpath is incorrectly set</li>
 	 *	</ul>
-	 * @deprecated Use {@link  #search(SearchPattern, SearchParticipant[], IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)} instead.
+	 * @deprecated Use {@link  #search(SearchPattern, SearchParticipant[], IJavaSearchScope, SearchRequestor, org.eclipse.core.runtime
+	 * .IProgressMonitor)} instead.
 	 */
-	public void search(IWorkspace workspace, ISearchPattern searchPattern, IJavaSearchScope scope, IJavaSearchResultCollector resultCollector) throws
-                                                                                                                                               JavaModelException {
-		try {
-			search(
-				((SearchPatternAdapter)searchPattern).pattern,
-				new SearchParticipant[] {getDefaultSearchParticipant(indexManager)},
-				scope,
-				new ResultCollectorAdapter(resultCollector),
-				resultCollector.getProgressMonitor());
-		} catch (CoreException e) {
-			if (e instanceof JavaModelException)
-				throw (JavaModelException) e;
-			throw new JavaModelException(e);
-		}
+	public void search(IWorkspace workspace, ISearchPattern searchPattern, IJavaSearchScope scope,
+					   IJavaSearchResultCollector resultCollector) throws
+																   JavaModelException {
+//		try {
+//			search(
+//				((SearchPatternAdapter)searchPattern).pattern,
+//				new SearchParticipant[] {getDefaultSearchParticipant(indexManager)},
+//				scope,
+//				new ResultCollectorAdapter(resultCollector),
+//				resultCollector.getProgressMonitor());
+//		} catch (CoreException e) {
+//			if (e instanceof JavaModelException)
+//				throw (JavaModelException) e;
+//			throw new JavaModelException(e);
+//		}
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -1150,7 +1168,8 @@ public class SearchEngine {
 	 * @since 3.0
 	 */
 	public void searchDeclarationsOfAccessedFields(IJavaElement enclosingElement, SearchRequestor requestor, IProgressMonitor monitor) throws
-                                                                                                                                                                   JavaModelException {
+
+																																	   JavaModelException {
 		this.basicEngine.searchDeclarationsOfAccessedFields(enclosingElement, requestor, monitor);
 	}
 
@@ -1192,7 +1211,7 @@ public class SearchEngine {
 	 * @deprecated Use {@link  #searchDeclarationsOfAccessedFields(org.eclipse.jdt.core.IJavaElement, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)} instead.
 	 */
 	public void searchDeclarationsOfAccessedFields(IWorkspace workspace, IJavaElement enclosingElement, IJavaSearchResultCollector resultCollector) throws
-                                                                                                                                                    JavaModelException {
+																																					JavaModelException {
 		SearchPattern pattern = new DeclarationOfAccessedFieldsPattern(enclosingElement);
 		this.basicEngine.searchDeclarations(enclosingElement, new ResultCollectorAdapter(resultCollector), pattern, resultCollector.getProgressMonitor());
 	}
@@ -1236,7 +1255,7 @@ public class SearchEngine {
 	 * @since 3.0
 	 */
 	public void searchDeclarationsOfReferencedTypes(IJavaElement enclosingElement, SearchRequestor requestor, IProgressMonitor monitor) throws
-                                                                                                                                                                    JavaModelException {
+																																									JavaModelException {
 		this.basicEngine.searchDeclarationsOfReferencedTypes(enclosingElement, requestor, monitor);
 	}
 
@@ -1278,7 +1297,7 @@ public class SearchEngine {
 	 * @deprecated Use {@link #searchDeclarationsOfReferencedTypes(org.eclipse.jdt.core.IJavaElement, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)} instead.
 	 */
 	public void searchDeclarationsOfReferencedTypes(IWorkspace workspace, IJavaElement enclosingElement, IJavaSearchResultCollector resultCollector) throws
-                                                                                                                                                     JavaModelException {
+																																					 JavaModelException {
 		SearchPattern pattern = new DeclarationOfReferencedTypesPattern(enclosingElement);
 		this.basicEngine.searchDeclarations(enclosingElement, new ResultCollectorAdapter(resultCollector), pattern, resultCollector.getProgressMonitor());
 	}
@@ -1325,7 +1344,7 @@ public class SearchEngine {
 	 * @since 3.0
 	 */
 	public void searchDeclarationsOfSentMessages(IJavaElement enclosingElement, SearchRequestor requestor, IProgressMonitor monitor) throws
-                                                                                                                                                                 JavaModelException {
+																																								 JavaModelException {
 		this.basicEngine.searchDeclarationsOfSentMessages(enclosingElement, requestor, monitor);
 	}
 
@@ -1369,8 +1388,9 @@ public class SearchEngine {
 	 *	</ul>
 	 * @deprecated Use {@link #searchDeclarationsOfSentMessages(org.eclipse.jdt.core.IJavaElement, SearchRequestor, org.eclipse.core.runtime.IProgressMonitor)} instead.
 	 */
-	public void searchDeclarationsOfSentMessages(IWorkspace workspace, IJavaElement enclosingElement, IJavaSearchResultCollector resultCollector) throws
-                                                                                                                                                  JavaModelException {
+	public void searchDeclarationsOfSentMessages(IWorkspace workspace, IJavaElement enclosingElement, IJavaSearchResultCollector
+			resultCollector) throws
+																																				  JavaModelException {
 		SearchPattern pattern = new DeclarationOfReferencedMethodsPattern(enclosingElement);
 		this.basicEngine.searchDeclarations(enclosingElement, new ResultCollectorAdapter(resultCollector), pattern, resultCollector.getProgressMonitor());
 	}

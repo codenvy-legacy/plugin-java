@@ -59,7 +59,6 @@ public class MavenFolderNode extends JavaFolderNode {
                     public void onSuccess(Array<ItemReference> children) {
                         final boolean isShowHiddenItems = settings.isShowHiddenItems();
                         Array<TreeNode<?>> newChildren = Collections.createArray();
-                        setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {
                                 AbstractTreeNode node = createChildNode(item, modules);
@@ -68,6 +67,7 @@ public class MavenFolderNode extends JavaFolderNode {
                                 }
                             }
                         }
+                        setChildren(newChildren);
                         callback.onSuccess(MavenFolderNode.this);
                     }
 

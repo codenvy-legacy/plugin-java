@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
@@ -15,6 +15,7 @@ import com.codenvy.ide.ext.java.server.core.search.SearchDocument;
 import com.codenvy.ide.ext.java.server.core.search.SearchParticipant;
 import com.codenvy.ide.ext.java.server.core.search.SearchPattern;
 import com.codenvy.ide.ext.java.server.core.search.SearchRequestor;
+import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.BinaryIndexer;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.SourceIndexer;
@@ -30,25 +31,29 @@ import org.eclipse.jdt.internal.core.index.IndexLocation;
 /**
  * A search participant describes a particular extension to a generic search mechanism, allowing thus to
  * perform combined search actions which will involve all required participants
- *
+ * <p/>
  * A search scope defines which participants are involved.
- *
+ * <p/>
  * A search participant is responsible for holding index files, and selecting the appropriate ones to feed to
  * index queries. It also can map a document path to an actual document (note that documents could live outside
  * the workspace or no exist yet, and thus aren't just resources).
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class JavaSearchParticipant extends SearchParticipant {
 
     private ThreadLocal indexSelector = new ThreadLocal();
-    private IndexManager indexManager;
+    private SourceIndexer sourceIndexer;
+    private IndexManager  indexManager;
+    private JavaProject   javaProject;
 
-    public JavaSearchParticipant(IndexManager indexManager) {
+    public JavaSearchParticipant(IndexManager indexManager, JavaProject javaProject) {
         this.indexManager = indexManager;
+        this.javaProject = javaProject;
     }
 
     /* (non-Javadoc)
-         * @see org.eclipse.jdt.core.search.SearchParticipant#beginSearching()
-         */
+     * @see org.eclipse.jdt.core.search.SearchParticipant#beginSearching()
+     */
     public void beginSearching() {
         super.beginSearching();
         this.indexSelector.set(null);
@@ -85,9 +90,34 @@ public class JavaSearchParticipant extends SearchParticipant {
 
         String documentPath = document.getPath();
         if (com.codenvy.ide.ext.java.server.internal.core.search.Util.isJavaLikeFileName(documentPath)) {
-            new SourceIndexer(document).indexDocument();
+            this.sourceIndexer = new SourceIndexer(document, indexManager, javaProject);
+            this.sourceIndexer.indexDocument();
         } else if (org.eclipse.jdt.internal.compiler.util.Util.isClassFileName(documentPath)) {
             new BinaryIndexer(document).indexDocument();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.jdt.core.search.SearchParticipant#indexResolvedDocument(SearchDocument, IPath)
+     */
+    @Override
+    public void indexResolvedDocument(SearchDocument document, IPath indexPath) {
+        String documentPath = document.getPath();
+        if (com.codenvy.ide.ext.java.server.internal.core.search.Util.isJavaLikeFileName(documentPath)) {
+            if (this.sourceIndexer != null)
+                this.sourceIndexer.indexResolvedDocument();
+            this.sourceIndexer = null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.jdt.core.search.SearchParticipant#resolveDocument(SearchDocument document)
+     */
+    public void resolveDocument(SearchDocument document) {
+        String documentPath = document.getPath();
+        if (com.codenvy.ide.ext.java.server.internal.core.search.Util.isJavaLikeFileName(documentPath)) {
+            if (this.sourceIndexer != null)
+                this.sourceIndexer.resolveDocument();
         }
     }
 
@@ -108,32 +138,33 @@ public class JavaSearchParticipant extends SearchParticipant {
 		/* eliminating false matches and locating them */
         if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
         matchLocator.locateMatches(indexMatches);
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.core.search.SearchParticipant#selectIndexes(org.eclipse.jdt.core.search.SearchQuery, org.eclipse.jdt.core.search.SearchContext)
-	 */
-	public IPath[] selectIndexes(SearchPattern pattern, IJavaSearchScope scope) {
-		IndexSelector selector = (IndexSelector) this.indexSelector.get();
-		if (selector == null) {
-			selector = new IndexSelector(scope, pattern, indexManager);
-			this.indexSelector.set(selector);
-		}
-		IndexLocation[] urls = selector.getIndexLocations();
-		IPath[] paths = new IPath[urls.length];
-		for (int i = 0; i < urls.length; i++) {
-			paths[i] = new Path(urls[i].getIndexFile().getPath());
-		}
-		return paths;
-	}
+    /* (non-Javadoc)
+     * @see org.eclipse.jdt.core.search.SearchParticipant#selectIndexes(org.eclipse.jdt.core.search.SearchQuery, org.eclipse.jdt.core
+     * .search.SearchContext)
+     */
+    public IPath[] selectIndexes(SearchPattern pattern, IJavaSearchScope scope) {
+        IndexSelector selector = (IndexSelector)this.indexSelector.get();
+        if (selector == null) {
+            selector = new IndexSelector(scope, pattern, indexManager);
+            this.indexSelector.set(selector);
+        }
+        IndexLocation[] urls = selector.getIndexLocations();
+        IPath[] paths = new IPath[urls.length];
+        for (int i = 0; i < urls.length; i++) {
+            paths[i] = new Path(urls[i].getIndexFile().getPath());
+        }
+        return paths;
+    }
 
-	public IndexLocation[] selectIndexURLs(SearchPattern pattern, IJavaSearchScope scope) {
-		IndexSelector selector = (IndexSelector) this.indexSelector.get();
-		if (selector == null) {
-			selector = new IndexSelector(scope, pattern, indexManager);
-			this.indexSelector.set(selector);
-		}
-		return selector.getIndexLocations();
-	}
+    public IndexLocation[] selectIndexURLs(SearchPattern pattern, IJavaSearchScope scope) {
+        IndexSelector selector = (IndexSelector)this.indexSelector.get();
+        if (selector == null) {
+            selector = new IndexSelector(scope, pattern, indexManager);
+            this.indexSelector.set(selector);
+        }
+        return selector.getIndexLocations();
+    }
 
 }

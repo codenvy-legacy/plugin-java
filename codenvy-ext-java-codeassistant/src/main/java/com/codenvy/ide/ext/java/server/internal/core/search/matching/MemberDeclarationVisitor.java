@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -18,6 +18,7 @@ import org.eclipse.jdt.internal.compiler.ASTVisitor;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
@@ -28,6 +29,7 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
+import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.util.HashtableOfIntValues;
 
 /**
@@ -39,106 +41,109 @@ import org.eclipse.jdt.internal.compiler.util.HashtableOfIntValues;
  * </p>
  */
 class MemberDeclarationVisitor extends ASTVisitor {
-    // Matches information
-    private final MatchLocator    locator;
-    private final IJavaElement    enclosingElement;
-    private final MatchingNodeSet nodeSet;
-    private final ASTNode[]       matchingNodes;
-    private final ASTNode         matchingNode;
+	// Matches information
+	private final MatchLocator    locator;
+	private final IJavaElement    enclosingElement;
+	private final MatchingNodeSet nodeSet;
+	private final ASTNode[]       matchingNodes;
+	private final ASTNode         matchingNode;
 
-    // Local type storage
-    HashtableOfIntValues occurrencesCounts = new HashtableOfIntValues(); // key = class name (char[]), value = occurrenceCount (int)
-    int                  nodesCount        = 0;
+	// Local type storage
+	HashtableOfIntValues occurrencesCounts = new HashtableOfIntValues(); // key = class name (char[]), value = occurrenceCount (int)
+	int                  nodesCount        = 0;
 
-    // Local and other elements storage
-    private Annotation       annotation;
-    private LocalDeclaration localDeclaration;
-    IJavaElement   localElement;
-    IJavaElement[] localElements, otherElements;
-    IJavaElement[][] allOtherElements;
-    int ptr = -1;
-    int[] ptrs;
+	// Local and other elements storage
+	private Annotation       annotation;
+	private LocalDeclaration localDeclaration;
+	IJavaElement   localElement;
+	IJavaElement[] localElements, otherElements;
+	IJavaElement[][] allOtherElements;
+	int ptr = -1;
+	int[] ptrs;
+	private boolean typeInHierarchy;
 
-    public MemberDeclarationVisitor(IJavaElement element, ASTNode[] nodes, MatchingNodeSet set, MatchLocator locator) {
-        this.enclosingElement = element;
-        this.nodeSet = set;
-        this.locator = locator;
-        if (nodes == null) {
-            this.matchingNode = null;
-            this.matchingNodes = null;
-        } else {
-            this.nodesCount = nodes.length;
-            if (nodes.length == 1) {
-                this.matchingNode = nodes[0];
-                this.matchingNodes = null;
-            } else {
-                this.matchingNode = null;
-                this.matchingNodes = nodes;
-                this.localElements = new IJavaElement[this.nodesCount];
-                this.ptrs = new int[this.nodesCount];
-                this.allOtherElements = new IJavaElement[this.nodesCount][];
-            }
-        }
-    }
+	public MemberDeclarationVisitor(IJavaElement element, ASTNode[] nodes, MatchingNodeSet set, MatchLocator locator,
+									boolean typeInHierarchy) {
+		this.enclosingElement = element;
+		this.typeInHierarchy = typeInHierarchy;
+		this.nodeSet = set;
+		this.locator = locator;
+		if (nodes == null) {
+			this.matchingNode = null;
+			this.matchingNodes = null;
+		} else {
+			this.nodesCount = nodes.length;
+			if (nodes.length == 1) {
+				this.matchingNode = nodes[0];
+				this.matchingNodes = null;
+			} else {
+				this.matchingNode = null;
+				this.matchingNodes = nodes;
+				this.localElements = new IJavaElement[this.nodesCount];
+				this.ptrs = new int[this.nodesCount];
+				this.allOtherElements = new IJavaElement[this.nodesCount][];
+			}
+		}
+	}
 
-    public void endVisit(Argument argument, BlockScope scope) {
-        this.localDeclaration = null;
-    }
+	public void endVisit(Argument argument, BlockScope scope) {
+		this.localDeclaration = null;
+	}
 
-    public void endVisit(LocalDeclaration declaration, BlockScope scope) {
-        this.localDeclaration = null;
-    }
+	public void endVisit(LocalDeclaration declaration, BlockScope scope) {
+		this.localDeclaration = null;
+	}
 
-    public void endVisit(MarkerAnnotation markerAnnotation, BlockScope unused) {
-        this.annotation = null;
-    }
+	public void endVisit(MarkerAnnotation markerAnnotation, BlockScope unused) {
+		this.annotation = null;
+	}
 
-    public void endVisit(NormalAnnotation normalAnnotation, BlockScope unused) {
-        this.annotation = null;
-    }
+	public void endVisit(NormalAnnotation normalAnnotation, BlockScope unused) {
+		this.annotation = null;
+	}
 
-    public void endVisit(SingleMemberAnnotation singleMemberAnnotation, BlockScope unused) {
-        this.annotation = null;
-    }
+	public void endVisit(SingleMemberAnnotation singleMemberAnnotation, BlockScope unused) {
+		this.annotation = null;
+	}
 
-    IJavaElement getLocalElement(int idx) {
-        if (this.nodesCount == 1) {
-            return this.localElement;
-        }
-        if (this.localElements != null) {
-            return this.localElements[idx];
-        }
-        return null;
-    }
+	IJavaElement getLocalElement(int idx) {
+		if (this.nodesCount == 1) {
+			return this.localElement;
+		}
+		if (this.localElements != null) {
+			return this.localElements[idx];
+		}
+		return null;
+	}
 
-    IJavaElement[] getOtherElements(int idx) {
-        if (this.nodesCount == 1) {
-            if (this.otherElements != null) {
-                int length = this.otherElements.length;
-                if (this.ptr < (length - 1)) {
-                    System.arraycopy(this.otherElements, 0, this.otherElements = new IJavaElement[this.ptr + 1], 0, this.ptr + 1);
-                }
-            }
-            return this.otherElements;
-        }
-        IJavaElement[] elements = this.allOtherElements == null ? null : this.allOtherElements[idx];
-        if (elements != null) {
-            int length = elements.length;
-            if (this.ptrs[idx] < (length - 1)) {
-                System.arraycopy(elements, 0, elements = this.allOtherElements[idx] = new IJavaElement[this.ptrs[idx] + 1], 0,
-                                 this.ptrs[idx] + 1);
-            }
-        }
-        return elements;
-    }
+	IJavaElement[] getOtherElements(int idx) {
+		if (this.nodesCount == 1) {
+			if (this.otherElements != null) {
+				int length = this.otherElements.length;
+				if (this.ptr < (length - 1)) {
+					System.arraycopy(this.otherElements, 0, this.otherElements = new IJavaElement[this.ptr + 1], 0, this.ptr + 1);
+				}
+			}
+			return this.otherElements;
+		}
+		IJavaElement[] elements = this.allOtherElements == null ? null : this.allOtherElements[idx];
+		if (elements != null) {
+			int length = elements.length;
+			if (this.ptrs[idx] < (length - 1)) {
+				System.arraycopy(elements, 0, elements = this.allOtherElements[idx] = new IJavaElement[this.ptrs[idx] + 1], 0,
+								 this.ptrs[idx] + 1);
+			}
+		}
+		return elements;
+	}
 
-    private int matchNode(ASTNode reference) {
-        if (this.matchingNode != null) {
-            if (this.matchingNode == reference) return 0;
-        } else {
-            int length = this.matchingNodes.length;
-		for (int i=0; i<length; i++) {
-			if (this.matchingNodes[i] == reference)  { // == is intentional
+	private int matchNode(ASTNode reference) {
+		if (this.matchingNode != null) {
+			if (this.matchingNode == reference) return 0;
+		} else {
+			int length = this.matchingNodes.length;
+			for (int i = 0; i < length; i++) {
+				if (this.matchingNodes[i] == reference) { // == is intentional
 				return i;
 			}
 		}
@@ -221,6 +226,21 @@ private void storeHandle(int idx) {
 public boolean visit(Argument argument, BlockScope scope) {
     this.localDeclaration = argument;
     return true;
+}
+
+	public boolean visit(LambdaExpression lambdaExpression, BlockScope scope) {
+		Integer level = (Integer)this.nodeSet.matchingNodes.removeKey(lambdaExpression);
+		try {
+			if (lambdaExpression.resolvedType != null && lambdaExpression.resolvedType.isValidBinding() &&
+				!(lambdaExpression.descriptor instanceof ProblemMethodBinding))
+				this.locator.reportMatching(lambdaExpression, this.enclosingElement, level != null ? level.intValue() : -1, this.nodeSet,
+											this.typeInHierarchy);
+			else
+				return true;
+		} catch (CoreException e) {
+			throw new MatchLocator.WrappedCoreException(e);
+		}
+		return false; // Don't visit the children as they get traversed under control of reportMatching.
 }
 public boolean visit(LocalDeclaration declaration, BlockScope scope) {
     this.localDeclaration = declaration;

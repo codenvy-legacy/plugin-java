@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -20,29 +20,29 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 
 public class VariableLocator extends PatternLocator {
 
-    protected VariablePattern pattern;
+	protected VariablePattern pattern;
 
-    public VariableLocator(VariablePattern pattern) {
-        super(pattern);
+	public VariableLocator(VariablePattern pattern) {
+		super(pattern);
 
-        this.pattern = pattern;
-    }
+		this.pattern = pattern;
+	}
 
-    public int match(Expression node, MatchingNodeSet nodeSet) { // interested in Assignment
-        if (this.pattern.writeAccess) {
-            if (this.pattern.readAccess) return IMPOSSIBLE_MATCH; // already checked the lhs in match(Reference...) before we reached here
+	public int match(Expression node, MatchingNodeSet nodeSet) { // interested in Assignment
+		if (this.pattern.writeAccess) {
+			if (this.pattern.readAccess) return IMPOSSIBLE_MATCH; // already checked the lhs in match(Reference...) before we reached here
 
-            if (node instanceof Assignment) {
-                Expression lhs = ((Assignment)node).lhs;
-                if (lhs instanceof Reference)
-                    return matchReference((Reference)lhs, nodeSet, true);
-            }
-        } else if (this.pattern.readAccess || this.pattern.fineGrain != 0) {
-            if (node instanceof Assignment && !(node instanceof CompoundAssignment)) {
-                // the lhs of a simple assignment may be added in match(Reference...) before we reach here
-                // for example, the fieldRef to 'this.x' in the statement this.x = x; is not considered a readAccess
-                char[] lastToken = null;
-                Expression lhs = ((Assignment) node).lhs;
+			if (node instanceof Assignment) {
+				Expression lhs = ((Assignment)node).lhs;
+				if (lhs instanceof Reference)
+					return matchReference((Reference)lhs, nodeSet, true);
+			}
+		} else if (this.pattern.readAccess || this.pattern.fineGrain != 0) {
+			if (node instanceof Assignment && !(node instanceof CompoundAssignment)) {
+				// the lhs of a simple assignment may be added in match(Reference...) before we reach here
+				// for example, the fieldRef to 'this.x' in the statement this.x = x; is not considered a readAccess
+				char[] lastToken = null;
+				Expression lhs = ((Assignment)node).lhs;
 			if (lhs instanceof QualifiedNameReference) {
 				char[][] tokens = ((QualifiedNameReference)lhs).tokens;
 				lastToken = tokens[tokens.length-1];

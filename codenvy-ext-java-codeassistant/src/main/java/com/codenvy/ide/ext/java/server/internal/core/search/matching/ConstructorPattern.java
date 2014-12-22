@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -28,71 +28,72 @@ import java.io.IOException;
 
 public class ConstructorPattern extends JavaSearchPattern {
 
-    protected boolean findDeclarations = true;
-    protected boolean findReferences   = true;
+	protected boolean findDeclarations = true;
+	protected boolean findReferences   = true;
 
-    public char[] declaringQualification;
-    public char[] declaringSimpleName;
+	public char[] declaringQualification;
+	public char[] declaringSimpleName;
 
-    public char[][] parameterQualifications;
-    public char[][] parameterSimpleNames;
-    public int      parameterCount;
-    public boolean varargs = false;
+	public char[][] parameterQualifications;
+	public char[][] parameterSimpleNames;
+	public int      parameterCount;
+	public boolean varargs = false;
 
-    // Signatures and arguments for generic search
-    char[][][]   parametersTypeSignatures;
-    char[][][][] parametersTypeArguments;
-    boolean constructorParameters = false;
-    char[][] constructorArguments;
+	// Signatures and arguments for generic search
+	char[][][]   parametersTypeSignatures;
+	char[][][][] parametersTypeArguments;
+	boolean constructorParameters = false;
+	char[][] constructorArguments;
 
-    protected static char[][] REF_CATEGORIES          = {CONSTRUCTOR_REF};
-    protected static char[][] REF_AND_DECL_CATEGORIES = {CONSTRUCTOR_REF, CONSTRUCTOR_DECL};
-    protected static char[][] DECL_CATEGORIES         = {CONSTRUCTOR_DECL};
+	protected static char[][] REF_CATEGORIES          = {CONSTRUCTOR_REF};
+	protected static char[][] REF_AND_DECL_CATEGORIES = {CONSTRUCTOR_REF, CONSTRUCTOR_DECL};
+	protected static char[][] DECL_CATEGORIES         = {CONSTRUCTOR_DECL};
 
-    public final static int FINE_GRAIN_MASK =
-            IJavaSearchConstants.SUPER_REFERENCE |
-            IJavaSearchConstants.QUALIFIED_REFERENCE |
-            IJavaSearchConstants.THIS_REFERENCE |
-            IJavaSearchConstants.IMPLICIT_THIS_REFERENCE;
+	public final static int FINE_GRAIN_MASK =
+			IJavaSearchConstants.SUPER_REFERENCE |
+			IJavaSearchConstants.QUALIFIED_REFERENCE |
+			IJavaSearchConstants.THIS_REFERENCE |
+			IJavaSearchConstants.IMPLICIT_THIS_REFERENCE |
+			IJavaSearchConstants.METHOD_REFERENCE_EXPRESSION;
 
 
-    /**
-     * Constructor entries are encoded as described
-     *
-     * Binary constructor for class
-     * TypeName '/' Arity '/' TypeModifers '/' PackageName '/' Signature '/' ParameterNamesopt '/' Modifiers
-     * Source constructor for class
-     * TypeName '/' Arity '/' TypeModifers '/' PackageName '/' ParameterTypes '/' ParameterNamesopt '/' Modifiers
-     * Constructor with 0 arity for class
-     * TypeName '/' 0 '/' TypeModifers '/' PackageName '/' Modifiers
-     * Constructor for enum, interface (annotation) and class with default constructor
-     * TypeName '/' # '/' TypeModifers '/' PackageName
-     * Constructor for member type
-     * TypeName '/' Arity '/' TypeModifers
-     *
-     * TypeModifiers contains some encoded extra information
-     *        {@link org.eclipse.jdt.internal.compiler.ExtraFlags#IsMemberType}
-     *        {@link org.eclipse.jdt.internal.compiler.ExtraFlags#HasNonPrivateStaticMemberTypes}
-     *        {@link org.eclipse.jdt.internal.compiler.ExtraFlags#ParameterTypesStoredAsSignature}
-     */
-    public static char[] createDeclarationIndexKey(
-            char[] typeName,
-            int argCount,
-            char[] signature,
-            char[][] parameterTypes,
-            char[][] parameterNames,
-            int modifiers,
-            char[] packageName,
-            int typeModifiers,
-            int extraFlags) {
+	/**
+	 * Constructor entries are encoded as described
+	 * <p/>
+	 * Binary constructor for class
+	 * TypeName '/' Arity '/' TypeModifers '/' PackageName '/' Signature '/' ParameterNamesopt '/' Modifiers
+	 * Source constructor for class
+	 * TypeName '/' Arity '/' TypeModifers '/' PackageName '/' ParameterTypes '/' ParameterNamesopt '/' Modifiers
+	 * Constructor with 0 arity for class
+	 * TypeName '/' 0 '/' TypeModifers '/' PackageName '/' Modifiers
+	 * Constructor for enum, interface (annotation) and class with default constructor
+	 * TypeName '/' # '/' TypeModifers '/' PackageName
+	 * Constructor for member type
+	 * TypeName '/' Arity '/' TypeModifers
+	 * <p/>
+	 * TypeModifiers contains some encoded extra information
+	 * {@link org.eclipse.jdt.internal.compiler.ExtraFlags#IsMemberType}
+	 * {@link org.eclipse.jdt.internal.compiler.ExtraFlags#HasNonPrivateStaticMemberTypes}
+	 * {@link org.eclipse.jdt.internal.compiler.ExtraFlags#ParameterTypesStoredAsSignature}
+	 */
+	public static char[] createDeclarationIndexKey(
+			char[] typeName,
+			int argCount,
+			char[] signature,
+			char[][] parameterTypes,
+			char[][] parameterNames,
+			int modifiers,
+			char[] packageName,
+			int typeModifiers,
+			int extraFlags) {
 
-        char[] countChars;
-        char[] parameterTypesChars = null;
-        char[] parameterNamesChars = null;
+		char[] countChars;
+		char[] parameterTypesChars = null;
+		char[] parameterNamesChars = null;
 
-        if (argCount < 0) {
-            countChars = DEFAULT_CONSTRUCTOR;
-        } else {
+		if (argCount < 0) {
+			countChars = DEFAULT_CONSTRUCTOR;
+		} else {
 		countChars = argCount < 10
 		? COUNTS[argCount]
 		: ("/" + String.valueOf(argCount)).toCharArray(); //$NON-NLS-1$
@@ -322,11 +323,11 @@ public ConstructorPattern(
 
 	this.declaringQualification = this.isCaseSensitive ? declaringQualification : CharOperation.toLowerCase(declaringQualification);
 	this.declaringSimpleName = (this.isCaseSensitive || this.isCamelCase) ? declaringSimpleName : CharOperation
-            .toLowerCase(declaringSimpleName);
+			.toLowerCase(declaringSimpleName);
 	if (parameterSimpleNames != null) {
 		this.parameterCount = parameterSimpleNames.length;
-		boolean synthetic = this.parameterCount>0 && declaringQualification != null && CharOperation
-                .equals(CharOperation.concat(parameterQualifications[0], parameterSimpleNames[0], '.'), declaringQualification);
+		boolean synthetic = this.parameterCount > 0 && declaringQualification != null && CharOperation
+				.equals(CharOperation.concat(parameterQualifications[0], parameterSimpleNames[0], '.'), declaringQualification);
 		int offset = 0;
 		if (synthetic) {
 			// skip first synthetic parameter
@@ -336,19 +337,20 @@ public ConstructorPattern(
 		this.parameterQualifications = new char[this.parameterCount][];
 		this.parameterSimpleNames = new char[this.parameterCount][];
 		for (int i = 0; i < this.parameterCount; i++) {
-			this.parameterQualifications[i] = this.isCaseSensitive ? parameterQualifications[i+offset] : CharOperation
-                    .toLowerCase(parameterQualifications[i + offset]);
-			this.parameterSimpleNames[i] = this.isCaseSensitive ? parameterSimpleNames[i+offset] : CharOperation
-                    .toLowerCase(parameterSimpleNames[i + offset]);
+			this.parameterQualifications[i] = this.isCaseSensitive ? parameterQualifications[i + offset] : CharOperation
+					.toLowerCase(parameterQualifications[i + offset]);
+			this.parameterSimpleNames[i] = this.isCaseSensitive ? parameterSimpleNames[i + offset] : CharOperation
+					.toLowerCase(parameterSimpleNames[i + offset]);
 		}
 	} else {
 		this.parameterCount = -1;
 	}
 	this.mustResolve = mustResolve();
 }
-/*
- * Instanciate a method pattern with signatures for generics search
- */
+
+	/*
+	 * Instantiate a method pattern with signatures for generics search
+     */
 public ConstructorPattern(
 	char[] declaringSimpleName,
 	char[] declaringQualification,
@@ -406,11 +408,12 @@ public ConstructorPattern(
 
 	// Store type signatures and arguments for method
 	this.constructorArguments = extractMethodArguments(method);
-	if (hasConstructorArguments())  this.mustResolve = true;
+	if (hasConstructorArguments()) this.mustResolve = true;
 }
-/*
- * Instanciate a method pattern with signatures for generics search
- */
+
+	/*
+	 * Instantiate a method pattern with signatures for generics search
+     */
 public ConstructorPattern(
 	char[] declaringSimpleName,
 	char[] declaringQualification,
@@ -503,7 +506,7 @@ boolean hasConstructorParameters() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	ConstructorPattern
-            pattern = (ConstructorPattern) decodedPattern;
+			pattern = (ConstructorPattern) decodedPattern;
 
 	return pattern.parameterCount != -1
 		&& (this.parameterCount == pattern.parameterCount || this.parameterCount == -1 || this.varargs)
@@ -536,8 +539,8 @@ public EntryResult[] queryIn(Index index) throws IOException {
 		case R_PATTERN_MATCH :
 			if (this.parameterCount >= 0 && !this.varargs) {
 				key = CharOperation
-                        .concat(createIndexKey(this.declaringSimpleName == null ? ONE_STAR : this.declaringSimpleName, this.parameterCount),
-                                ONE_STAR);
+						.concat(createIndexKey(this.declaringSimpleName == null ? ONE_STAR : this.declaringSimpleName, this.parameterCount),
+								ONE_STAR);
 			} else if (this.declaringSimpleName != null && this.declaringSimpleName[this.declaringSimpleName.length - 1] != '*') {
 				key = CharOperation.concat(this.declaringSimpleName, ONE_STAR, SEPARATOR);
 			} else if (key != null){

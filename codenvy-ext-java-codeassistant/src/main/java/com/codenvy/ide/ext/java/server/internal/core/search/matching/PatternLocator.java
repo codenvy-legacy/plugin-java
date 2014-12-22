@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -23,11 +23,14 @@ import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
+import org.eclipse.jdt.internal.compiler.ast.LambdaExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Reference;
+import org.eclipse.jdt.internal.compiler.ast.ReferenceExpression;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -36,6 +39,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
+import org.eclipse.jdt.internal.compiler.lookup.IQualifiedTypeResolutionListener;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
@@ -44,126 +48,128 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import org.eclipse.jdt.internal.core.search.indexing.IIndexConstants;
 
-public abstract class PatternLocator implements IIndexConstants {
+public abstract class PatternLocator implements IIndexConstants, IQualifiedTypeResolutionListener {
 
-    // store pattern info
-    protected int     matchMode;
-    protected boolean isCaseSensitive;
-    protected boolean isEquivalentMatch;
-    protected boolean isErasureMatch;
-    protected boolean mustResolve;
-    protected boolean mayBeGeneric;
+	// store pattern info
+	protected int     matchMode;
+	protected boolean isCaseSensitive;
+	protected boolean isEquivalentMatch;
+	protected boolean isErasureMatch;
+	protected boolean mustResolve;
+	protected boolean mayBeGeneric;
 
-    // match to report
-    SearchMatch match = null;
+	// match to report
+	SearchMatch match = null;
 
-    /* match levels */
-    public static final int IMPOSSIBLE_MATCH = 0;
-    public static final int INACCURATE_MATCH = 1;
-    public static final int POSSIBLE_MATCH   = 2;
-    public static final int ACCURATE_MATCH   = 3;
-    public static final int ERASURE_MATCH    = 4;
+	/* match levels */
+	public static final int IMPOSSIBLE_MATCH = 0;
+	public static final int INACCURATE_MATCH = 1;
+	public static final int POSSIBLE_MATCH   = 2;
+	public static final int ACCURATE_MATCH   = 3;
+	public static final int ERASURE_MATCH    = 4;
 
-    // Possible rule match flavors
-    int flavors = 0;
-    // see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=79866
-    public static final int NO_FLAVOR                = 0x0000;
-    public static final int EXACT_FLAVOR             = 0x0010;
-    public static final int PREFIX_FLAVOR            = 0x0020;
-    public static final int PATTERN_FLAVOR           = 0x0040;
-    public static final int REGEXP_FLAVOR            = 0x0080;
-    public static final int CAMELCASE_FLAVOR         = 0x0100;
-    public static final int SUPER_INVOCATION_FLAVOR  = 0x0200;
-    public static final int SUB_INVOCATION_FLAVOR    = 0x0400;
-    public static final int OVERRIDDEN_METHOD_FLAVOR = 0x0800;
-    public static final int SUPERTYPE_REF_FLAVOR     = 0x1000;
-    public static final int MATCH_LEVEL_MASK         = 0x0F;
-    public static final int FLAVORS_MASK             = ~MATCH_LEVEL_MASK;
+	// Possible rule match flavors
+	int flavors = 0;
+	// see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=79866
+	public static final int NO_FLAVOR                = 0x0000;
+	public static final int EXACT_FLAVOR             = 0x0010;
+	public static final int PREFIX_FLAVOR            = 0x0020;
+	public static final int PATTERN_FLAVOR           = 0x0040;
+	public static final int REGEXP_FLAVOR            = 0x0080;
+	public static final int CAMELCASE_FLAVOR         = 0x0100;
+	public static final int SUPER_INVOCATION_FLAVOR  = 0x0200;
+	public static final int SUB_INVOCATION_FLAVOR    = 0x0400;
+	public static final int OVERRIDDEN_METHOD_FLAVOR = 0x0800;
+	public static final int SUPERTYPE_REF_FLAVOR     = 0x1000;
+	public static final int MATCH_LEVEL_MASK         = 0x0F;
+	public static final int FLAVORS_MASK             = ~MATCH_LEVEL_MASK;
 
-    /* match container */
-    public static final int COMPILATION_UNIT_CONTAINER = 1;
-    public static final int CLASS_CONTAINER            = 2;
-    public static final int METHOD_CONTAINER           = 4;
-    public static final int FIELD_CONTAINER            = 8;
-    public static final int ALL_CONTAINER              =
-            COMPILATION_UNIT_CONTAINER | CLASS_CONTAINER | METHOD_CONTAINER | FIELD_CONTAINER;
+	/* match container */
+	public static final int COMPILATION_UNIT_CONTAINER = 1;
+	public static final int CLASS_CONTAINER            = 2;
+	public static final int METHOD_CONTAINER           = 4;
+	public static final int FIELD_CONTAINER            = 8;
+	public static final int ALL_CONTAINER              =
+			COMPILATION_UNIT_CONTAINER | CLASS_CONTAINER | METHOD_CONTAINER | FIELD_CONTAINER;
 
-    /* match rule */
-    public static final int RAW_MASK  = SearchPattern.R_EQUIVALENT_MATCH | SearchPattern.R_ERASURE_MATCH;
-    public static final int RULE_MASK = RAW_MASK; // no other values for the while...
+	/* match rule */
+	public static final int RAW_MASK  = SearchPattern.R_EQUIVALENT_MATCH | SearchPattern.R_ERASURE_MATCH;
+	public static final int RULE_MASK = RAW_MASK; // no other values for the while...
 
-    public static PatternLocator patternLocator(SearchPattern pattern) {
-        switch (pattern.kind) {
-            case IIndexConstants.PKG_REF_PATTERN:
-                return new PackageReferenceLocator((PackageReferencePattern)pattern);
-            case IIndexConstants.PKG_DECL_PATTERN:
-                return new PackageDeclarationLocator((PackageDeclarationPattern)pattern);
-            case IIndexConstants.TYPE_REF_PATTERN:
-                return new TypeReferenceLocator((TypeReferencePattern)pattern);
-            case IIndexConstants.TYPE_DECL_PATTERN:
-                return new TypeDeclarationLocator((TypeDeclarationPattern)pattern);
-            case IIndexConstants.SUPER_REF_PATTERN:
-                return new SuperTypeReferenceLocator((SuperTypeReferencePattern)pattern);
-            case IIndexConstants.CONSTRUCTOR_PATTERN:
-                return new ConstructorLocator((ConstructorPattern)pattern);
-            case IIndexConstants.FIELD_PATTERN:
-                return new FieldLocator((FieldPattern)pattern);
-            case IIndexConstants.METHOD_PATTERN:
-                return new MethodLocator((MethodPattern)pattern);
-            case IIndexConstants.OR_PATTERN:
-                return new OrLocator((OrPattern)pattern);
-            case IIndexConstants.AND_PATTERN:
-                return new AndLocator((AndPattern)pattern);
-            case IIndexConstants.LOCAL_VAR_PATTERN:
-                return new LocalVariableLocator((LocalVariablePattern)pattern);
-            case IIndexConstants.TYPE_PARAM_PATTERN:
-                return new TypeParameterLocator((TypeParameterPattern)pattern);
-        }
-        return null;
-    }
+	public static PatternLocator patternLocator(SearchPattern pattern) {
+		switch (pattern.kind) {
+			case IIndexConstants.PKG_REF_PATTERN:
+				return new PackageReferenceLocator((PackageReferencePattern)pattern);
+			case IIndexConstants.PKG_DECL_PATTERN:
+				return new PackageDeclarationLocator((PackageDeclarationPattern)pattern);
+			case IIndexConstants.TYPE_REF_PATTERN:
+				return new TypeReferenceLocator((TypeReferencePattern)pattern);
+			case IIndexConstants.TYPE_DECL_PATTERN:
+				return new TypeDeclarationLocator((TypeDeclarationPattern)pattern);
+			case IIndexConstants.SUPER_REF_PATTERN:
+				return new SuperTypeReferenceLocator((SuperTypeReferencePattern)pattern);
+			case IIndexConstants.CONSTRUCTOR_PATTERN:
+				return new ConstructorLocator((ConstructorPattern)pattern);
+			case IIndexConstants.FIELD_PATTERN:
+				return new FieldLocator((FieldPattern)pattern);
+			case IIndexConstants.METHOD_PATTERN:
+				return new MethodLocator((MethodPattern)pattern);
+			case IIndexConstants.OR_PATTERN:
+				return new OrLocator((OrPattern)pattern);
+			case IIndexConstants.AND_PATTERN:
+				return new AndLocator((AndPattern)pattern);
+			case IIndexConstants.LOCAL_VAR_PATTERN:
+				return new LocalVariableLocator((LocalVariablePattern)pattern);
+			case IIndexConstants.TYPE_PARAM_PATTERN:
+				return new TypeParameterLocator((TypeParameterPattern)pattern);
+		}
+		return null;
+	}
 
-    public static char[] qualifiedPattern(char[] simpleNamePattern, char[] qualificationPattern) {
-        // NOTE: if case insensitive search then simpleNamePattern & qualificationPattern are assumed to be lowercase
-        if (simpleNamePattern == null) {
-            if (qualificationPattern == null) return null;
-            return CharOperation.concat(qualificationPattern, ONE_STAR, '.');
-        } else {
-            return qualificationPattern == null
-                   ? CharOperation.concat(ONE_STAR, simpleNamePattern)
-                   : CharOperation.concat(qualificationPattern, simpleNamePattern, '.');
-        }
-    }
+	public static char[] qualifiedPattern(char[] simpleNamePattern, char[] qualificationPattern) {
+		// NOTE: if case insensitive search then simpleNamePattern & qualificationPattern are assumed to be lowercase
+		if (simpleNamePattern == null) {
+			if (qualificationPattern == null) return null;
+			return CharOperation.concat(qualificationPattern, ONE_STAR, '.');
+		} else {
+			return qualificationPattern == null
+				   ? CharOperation.concat(ONE_STAR, simpleNamePattern)
+				   : CharOperation.concat(qualificationPattern, simpleNamePattern, '.');
+		}
+	}
 
-    public static char[] qualifiedSourceName(TypeBinding binding) {
-        if (binding instanceof ReferenceBinding) {
-            ReferenceBinding type = (ReferenceBinding)binding;
-            if (type.isLocalType())
-                return type.isMemberType()
-                       ? CharOperation.concat(qualifiedSourceName(type.enclosingType()), type.sourceName(), '.')
-                       : CharOperation.concat(qualifiedSourceName(type.enclosingType()), new char[]{'.', '1', '.'}, type.sourceName());
-        }
-	return binding != null ? binding.qualifiedSourceName() : null;
-}
+	public static char[] qualifiedSourceName(TypeBinding binding) {
+		if (binding instanceof ReferenceBinding) {
+			ReferenceBinding type = (ReferenceBinding)binding;
+			if (type.isLocalType())
+				return type.isMemberType()
+					   ? CharOperation.concat(qualifiedSourceName(type.enclosingType()), type.sourceName(), '.')
+					   : CharOperation.concat(qualifiedSourceName(type.enclosingType()), new char[]{'.', '1', '.'}, type.sourceName());
+		}
+		return binding != null ? binding.qualifiedSourceName() : null;
+	}
 
-public PatternLocator(SearchPattern pattern) {
-	int matchRule = pattern.getMatchRule();
-	this.isCaseSensitive = (matchRule & SearchPattern.R_CASE_SENSITIVE) != 0;
-	this.isErasureMatch = (matchRule & SearchPattern.R_ERASURE_MATCH) != 0;
-	this.isEquivalentMatch = (matchRule & SearchPattern.R_EQUIVALENT_MATCH) != 0;
-	this.matchMode = matchRule & JavaSearchPattern.MATCH_MODE_MASK;
-	this.mustResolve = pattern.mustResolve;
-}
-/*
- * Clear caches
- */
-protected void clear() {
-	// nothing to clear by default
-}
-/* (non-Javadoc)
- * Modify PatternLocator.qualifiedPattern behavior:
- * do not add star before simple name pattern when qualification pattern is null.
- * This avoid to match p.X when pattern is only X...
- */
+	public PatternLocator(SearchPattern pattern) {
+		int matchRule = pattern.getMatchRule();
+		this.isCaseSensitive = (matchRule & SearchPattern.R_CASE_SENSITIVE) != 0;
+		this.isErasureMatch = (matchRule & SearchPattern.R_ERASURE_MATCH) != 0;
+		this.isEquivalentMatch = (matchRule & SearchPattern.R_EQUIVALENT_MATCH) != 0;
+		this.matchMode = matchRule & JavaSearchPattern.MATCH_MODE_MASK;
+		this.mustResolve = pattern.mustResolve;
+	}
+
+	/*
+	 * Clear caches
+     */
+	protected void clear() {
+		// nothing to clear by default
+	}
+
+	/* (non-Javadoc)
+	 * Modify PatternLocator.qualifiedPattern behavior:
+     * do not add star before simple name pattern when qualification pattern is null.
+     * This avoid to match p.X when pattern is only X...
+     */
 protected char[] getQualifiedPattern(char[] simpleNamePattern, char[] qualificationPattern) {
 	// NOTE: if case insensitive search then simpleNamePattern & qualificationPattern are assumed to be lowercase
 	if (simpleNamePattern == null) {
@@ -177,7 +183,7 @@ protected char[] getQualifiedPattern(char[] simpleNamePattern, char[] qualificat
 }
 /* (non-Javadoc)
  * Modify PatternLocator.qualifiedSourceName behavior:
- * also concatene enclosing type name when type is a only a member type.
+ * also concatenate enclosing type name when type is a only a member type.
  */
 protected char[] getQualifiedSourceName(TypeBinding binding) {
 	TypeBinding type = binding instanceof ArrayBinding ? ((ArrayBinding)binding).leafComponentType : binding;
@@ -229,6 +235,11 @@ public int match(FieldDeclaration node, MatchingNodeSet nodeSet) {
 	// each subtype should override if needed
 	return IMPOSSIBLE_MATCH;
 }
+
+	public int match(LambdaExpression node, MatchingNodeSet nodeSet) {
+		// each subtype should override if needed
+		return IMPOSSIBLE_MATCH;
+	}
 public int match(LocalDeclaration node, MatchingNodeSet nodeSet) {
 	// each subtype should override if needed
 	return IMPOSSIBLE_MATCH;
@@ -249,6 +260,11 @@ public int match(Reference node, MatchingNodeSet nodeSet) {
 	// each subtype should override if needed
 	return IMPOSSIBLE_MATCH;
 }
+
+	public int match(ReferenceExpression node, MatchingNodeSet nodeSet) {
+		// each subtype should override if needed
+		return IMPOSSIBLE_MATCH;
+	}
 public int match(TypeDeclaration node, MatchingNodeSet nodeSet) {
 	// each subtype should override if needed
 	return IMPOSSIBLE_MATCH;
@@ -408,8 +424,8 @@ protected void matchLevelAndReportImportRef(ImportReference importRef, Binding b
 /**
  * Reports the match of the given import reference.
  */
-protected void matchReportImportRef(ImportReference importRef, Binding binding, IJavaElement element, int accuracy, MatchLocator locator) throws
-                                                                                                                                          CoreException {
+protected void matchReportImportRef(ImportReference importRef, Binding binding, IJavaElement element, int accuracy, MatchLocator locator)
+		throws CoreException {
 	if (locator.encloses(element)) {
 		// default is to report a match as a regular ref.
 		this.matchReportReference(importRef, element, null/*no binding*/, accuracy, locator);
@@ -418,8 +434,8 @@ protected void matchReportImportRef(ImportReference importRef, Binding binding, 
 /**
  * Reports the match of the given reference.
  */
-protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                         CoreException {
+protected void matchReportReference(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, MatchLocator locator)
+		throws CoreException {
 	this.match = null;
 	int referenceType = referenceType();
 	int offset = reference.sourceStart;
@@ -447,8 +463,8 @@ protected void matchReportReference(ASTNode reference, IJavaElement element, Bin
 /**
  * Reports the match of the given reference. Also provide a local element to eventually report in match.
  */
-protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements, Binding elementBinding, int accuracy, MatchLocator locator) throws
-                                                                                                                                                                                                  CoreException {
+protected void matchReportReference(ASTNode reference, IJavaElement element, IJavaElement localElement, IJavaElement[] otherElements,
+									Binding elementBinding, int accuracy, MatchLocator locator) throws CoreException {
 	matchReportReference(reference, element, elementBinding, accuracy, locator);
 }
 public SearchMatch newDeclarationMatch(ASTNode reference, IJavaElement element, Binding elementBinding, int accuracy, int length, MatchLocator locator) {
@@ -474,7 +490,7 @@ public int resolveLevel(ASTNode possibleMatchingNode) {
  * Set the flavors for which the locator has to be focused on.
  * If not set, the locator will accept all matches with or without flavors.
  * When set, the locator will only accept match having the corresponding flavors.
- * 
+ *
  * @param flavors Bits mask specifying the flavors to be accepted or
  * 	<code>0</code> to ignore the flavors while accepting matches.
  */
@@ -512,7 +528,7 @@ protected void updateMatch(ParameterizedTypeBinding parameterizedBinding, char[]
 			int length = argumentsBindings.length;
 			if (length == typeVariables.length) {
 				for (int i=0; i<length; i++) {
-					if (argumentsBindings[i] != typeVariables[i]) {
+					if (TypeBinding.notEquals(argumentsBindings[i], typeVariables[i])) {
 						needUpdate = true;
 						break;
 					}
@@ -633,7 +649,7 @@ protected void updateMatch(TypeBinding[] argumentsBinding, MatchLocator locator,
 				continue;
 			}
 
-			// Verify tha pattern binding is compatible with match type argument binding
+			// Verify the pattern binding is compatible with match type argument binding
 			switch (patternWildcard) {
 				case Signature.C_STAR : // UNBOUND pattern
 					// unbound always match => skip to next argument
@@ -643,7 +659,8 @@ protected void updateMatch(TypeBinding[] argumentsBinding, MatchLocator locator,
 					if (argumentBinding.isWildcard()) { // argument is a wildcard
 						WildcardBinding wildcardBinding = (WildcardBinding) argumentBinding;
 						// It's ok if wildcards are identical
-						if (wildcardBinding.boundKind == patternWildcardKind && wildcardBinding.bound == patternBinding) {
+						if (wildcardBinding.boundKind == patternWildcardKind && TypeBinding
+								.equalsEquals(wildcardBinding.bound, patternBinding)) {
 							continue;
 						}
 						// Look for wildcard compatibility
@@ -671,7 +688,8 @@ protected void updateMatch(TypeBinding[] argumentsBinding, MatchLocator locator,
 					if (argumentBinding.isWildcard()) { // argument is a wildcard
 						WildcardBinding wildcardBinding = (WildcardBinding) argumentBinding;
 						// It's ok if wildcards are identical
-						if (wildcardBinding.boundKind == patternWildcardKind && wildcardBinding.bound == patternBinding) {
+						if (wildcardBinding.boundKind == patternWildcardKind && TypeBinding
+								.equalsEquals(wildcardBinding.bound, patternBinding)) {
 							continue;
 						}
 						// Look for wildcard compatibility
@@ -717,7 +735,7 @@ protected void updateMatch(TypeBinding[] argumentsBinding, MatchLocator locator,
 								matchRule &= ~SearchPattern.R_FULL_MATCH;
 								continue;
 						}
-					} else if (argumentBinding == patternBinding)
+					} else if (TypeBinding.equalsEquals(argumentBinding, patternBinding))
 						// valid only when arg is equals to pattern
 						continue;
 					break;
@@ -992,7 +1010,7 @@ protected int resolveLevelForType (char[] simpleNamePattern,
 		int lastDot = CharOperation.lastIndexOf('.', qualificationPattern);
 		char[] enclosingQualificationPattern = lastDot==-1 ? null : CharOperation.subarray(qualificationPattern, 0, lastDot);
 		char[] enclosingSimpleNamePattern = lastDot==-1 ? qualificationPattern : CharOperation
-                .subarray(qualificationPattern, lastDot + 1, qualificationPattern.length);
+				.subarray(qualificationPattern, lastDot + 1, qualificationPattern.length);
 		int enclosingLevel = resolveLevelForType(enclosingSimpleNamePattern, enclosingQualificationPattern, patternTypeArguments, depth+1, enclosingType);
 		if (enclosingLevel == impossible) return impossible;
 		if (enclosingLevel == IMPOSSIBLE_MATCH) return IMPOSSIBLE_MATCH;
@@ -1001,5 +1019,9 @@ protected int resolveLevelForType (char[] simpleNamePattern,
 }
 public String toString(){
 	return "SearchPattern"; //$NON-NLS-1$
+}
+
+	public void recordResolution(QualifiedTypeReference typeReference, TypeBinding resolution) {
+		// noop by default
 }
 }

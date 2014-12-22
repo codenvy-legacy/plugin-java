@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -101,7 +101,6 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
         }
     }
 
-
     private void computeClasspathLocations(JavaProject javaProject) {
 
         IPackageFragmentRoot[] roots = null;
@@ -115,7 +114,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
         int length = roots.length;
         CodenvyClasspathLocation[] cpLocations = new CodenvyClasspathLocation[length];
         int index = 0;
-        JavaModelManager manager = JavaModelManager.getJavaModelManager();
+        JavaModelManager manager = javaProject.getJavaModelManager();
         for (int i = 0; i < length; i++) {
             PackageFragmentRoot root = (PackageFragmentRoot)roots[i];
             IPath path = root.getPath();
@@ -356,7 +355,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
             if (monitor != null) {
                 if (indexManager.awaitingJobsCount() == 0) {
                     // indexes were already there, so perform an immediate search to avoid any index rebuilt
-                    new BasicSearchEngine(indexManager).searchAllTypeNames(
+                    new BasicSearchEngine(indexManager, javaProject).searchAllTypeNames(
                             qualification,
                             SearchPattern.R_EXACT_MATCH,
                             simpleName,
@@ -378,7 +377,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
                     }
                     if (indexManager.awaitingJobsCount() == 0) {
                         // indexes are now ready, so perform an immediate search to avoid any index rebuilt
-                        new BasicSearchEngine(indexManager).searchAllTypeNames(
+                        new BasicSearchEngine(indexManager, javaProject).searchAllTypeNames(
                                 qualification,
                                 SearchPattern.R_EXACT_MATCH,
                                 simpleName,
@@ -399,7 +398,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
                 }
             } else {
                 try {
-                    new BasicSearchEngine(indexManager).searchAllTypeNames(
+                    new BasicSearchEngine(indexManager, javaProject).searchAllTypeNames(
                             qualification,
                             SearchPattern.R_EXACT_MATCH,
                             simpleName,
@@ -529,7 +528,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
                         throw new OperationCanceledException();
                     }
                 }
-                new BasicSearchEngine(indexManager).searchAllConstructorDeclarations(
+                new BasicSearchEngine(indexManager, javaProject).searchAllConstructorDeclarations(
                         qualification,
                         simpleName,
                         matchRule,
@@ -539,7 +538,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
                         progressMonitor);
             } else {
                 try {
-                    new BasicSearchEngine(indexManager).searchAllConstructorDeclarations(
+                    new BasicSearchEngine(indexManager, javaProject).searchAllConstructorDeclarations(
                             qualification,
                             simpleName,
                             matchRule,
@@ -625,7 +624,7 @@ public class JavaSearchNameEnvironment implements INameEnvironment, SuffixConsta
                 }
             };
             try {
-                new BasicSearchEngine(javaProject.getIndexManager()).searchAllTypeNames(
+                new BasicSearchEngine(javaProject.getIndexManager(), javaProject).searchAllTypeNames(
                         null,
                         SearchPattern.R_EXACT_MATCH,
                         name,

@@ -21,6 +21,7 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -37,8 +38,9 @@ public class MavenProjectTreeStructure extends JavaTreeStructure {
 
     protected MavenProjectTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, EditorAgent editorAgent,
                                         AppContext appContext, ProjectServiceClient projectServiceClient,
-                                        DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory);
+                                        DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry,
+                                        JavaNavigationService service) {
+        super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory, service);
         this.iconRegistry = iconRegistry;
     }
 

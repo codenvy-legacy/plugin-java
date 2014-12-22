@@ -21,6 +21,7 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -41,8 +42,9 @@ public class AntProjectTreeStructure extends JavaTreeStructure {
                                    AppContext appContext,
                                    ProjectServiceClient projectServiceClient,
                                    IconRegistry iconRegistry,
-                                   DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory);
+                                   DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                   JavaNavigationService service) {
+        super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory, service);
     }
 
     /** {@inheritDoc} */

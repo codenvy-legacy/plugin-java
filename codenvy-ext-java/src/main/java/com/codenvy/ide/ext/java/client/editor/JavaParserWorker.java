@@ -27,34 +27,36 @@ public interface JavaParserWorker {
 
     void dependenciesUpdated();
 
-    void parse(String content, String fileName, String filePath, String packageName, String projectPath, WorkerCallback<IProblem> callback);
+    void parse(String content, String fileName, String filePath, String packageName, String projectPath, boolean needParseMethodBody,
+               WorkerCallback<IProblem> callback);
 
-    void computeCAProposals(String content, int offset, String fileName, String projectPath, WorkerCallback<WorkerProposal> callback);
+    void computeCAProposals(String content, int offset, String fileName, String projectPath, String filePath,
+                            WorkerCallback<WorkerProposal> callback);
 
-    void applyCAProposal(String id, ApplyCallback callback);
+    void applyCAProposal(String id, Callback<ProposalAppliedMessage> callback);
 
     void addOutlineUpdateHandler(String filePath, WorkerCallback<WorkerCodeBlock> callback);
 
     void computeQAProposals(String content, int offset, int selectionLength, boolean updatedContent,
                             JsoArray<ProblemLocationMessage> problems,
-                            WorkerCallback<WorkerProposal> callback);
+                            String filePath, WorkerCallback<WorkerProposal> callback);
 
     void removeFqnFromCache(String fqn);
 
-    void format(int offset, int length, String content, FormatResultCallback callback);
+    void format(int offset, int length, String content, Callback<TextEdit> callback);
 
     void preferenceFormatSettings(JsoStringMap<String> settings);
+
+    void computeJavadocHandle(int offset, String filePath, Callback<String> callback);
+
+    void fileClosed(String path);
 
     public interface WorkerCallback<T> {
         void onResult(Array<T> problems);
     }
 
-    public interface ApplyCallback {
-        void onApply(ProposalAppliedMessage message);
-    }
-
-    public interface FormatResultCallback {
-        void onApplyFormat(TextEdit edit);
+    public interface Callback<T>{
+        void onCallback(T result);
     }
 
 }
