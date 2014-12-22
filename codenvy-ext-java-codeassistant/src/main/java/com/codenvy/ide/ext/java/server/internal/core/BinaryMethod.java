@@ -37,7 +37,7 @@ import org.eclipse.jdt.internal.compiler.parser.ScannerHelper;
  * @see org.eclipse.jdt.core.IMethod
  */
 
-/* package */ class BinaryMethod extends BinaryMember implements IMethod {
+/* pack?age */ class BinaryMethod extends BinaryMember implements IMethod {
 	/**
 	 * The parameter type signatures of the method - stored locally
 	 * to perform equality test. <code>CharOperation.NO_STRINGS</code> indicates no
@@ -294,13 +294,13 @@ public String[] getParameterNames() throws JavaModelException {
 		}
 		JavadocContents javadocContents = null;
 		IType declaringType = getDeclaringType();
-//		PerProjectInfo projectInfo = JavaModelManager.getJavaModelManager().getPerProjectInfoCheckExistence(getJavaProject().getProject());
-//		synchronized (projectInfo.javadocCache) {
-//			javadocContents = (JavadocContents) projectInfo.javadocCache.get(declaringType);
-//			if (javadocContents == null) {
-//				projectInfo.javadocCache.put(declaringType, BinaryType.EMPTY_JAVADOC);
-//			}
-//		}
+		JavaModelManager.PerProjectInfo projectInfo = manager.getPerProjectInfoCheckExistence();
+		synchronized (projectInfo.javadocCache) {
+			javadocContents = (JavadocContents) projectInfo.javadocCache.get(declaringType);
+			if (javadocContents == null) {
+				projectInfo.javadocCache.put(declaringType, BinaryType.EMPTY_JAVADOC);
+			}
+		}
 
 		String methodDoc = null;
 		if (javadocContents == null) {

@@ -27,7 +27,8 @@ public interface JavaParserWorker {
 
     void dependenciesUpdated();
 
-    void parse(String content, String fileName, String filePath, String packageName, String projectPath, WorkerCallback<IProblem> callback);
+    void parse(String content, String fileName, String filePath, String packageName, String projectPath, boolean needParseMethodBody,
+               WorkerCallback<IProblem> callback);
 
     void computeCAProposals(String content, int offset, String fileName, String projectPath, String filePath,
                             WorkerCallback<WorkerProposal> callback);

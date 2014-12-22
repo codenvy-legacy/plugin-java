@@ -313,7 +313,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     /** {@inheritDoc} */
     @Override
     public void parse(String content, String fileName, String filePath, String packageName, String projectPath,
-                      WorkerCallback<IProblem> callback) {
+                      boolean needParseMethodBody, WorkerCallback<IProblem> callback) {
         if (worker == null) {
             return;
         }
@@ -322,7 +322,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         String uuid = UUID.uuid();
         arrayCallbacks.put(uuid, callback);
         parseMessage.setSource(content).setFileName(fileName).setFilePath(filePath).setId(uuid).setPackageName(packageName)
-                    .setProjectPath(projectPath);
+                    .setProjectPath(projectPath).setIgnoreMethodBodiess(needParseMethodBody);
         worker.postMessage(parseMessage.serialize());
     }
 

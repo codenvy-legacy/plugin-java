@@ -28,4 +28,6 @@ public interface ParseMessage extends Message {
     String packageName();
 
     String projectPath();
+
+    boolean ignoreMethodBodies();
 }

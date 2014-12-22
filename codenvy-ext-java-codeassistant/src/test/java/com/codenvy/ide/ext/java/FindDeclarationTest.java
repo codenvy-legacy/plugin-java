@@ -12,6 +12,7 @@
 package com.codenvy.ide.ext.java;
 
 import com.codenvy.ide.ext.java.server.JavaNavigation;
+import com.codenvy.ide.ext.java.server.SourcesFromBytecodeGenerator;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -25,7 +26,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class FindDeclarationTest extends BaseTest {
 
-    private JavaNavigation navigation = new JavaNavigation();
+    private JavaNavigation navigation = new JavaNavigation(new SourcesFromBytecodeGenerator());
 
     @Test
     public void testFindClassIsNotNullOrEmpty() throws Exception {
@@ -40,7 +41,8 @@ public class FindDeclarationTest extends BaseTest {
         JsonObject object = new JsonParser().parse(declaration).getAsJsonObject();
         JsonElement source = object.get("source");
         assertThat(source).isNotNull();
-        assertThat(source.getAsString()).contains("public final class String").contains("implements java.io.Serializable, Comparable<String>, CharSequence {");
+        assertThat(source.getAsString()).contains("public final class String")
+                                        .contains("implements java.io.Serializable, Comparable<String>, CharSequence {");
     }
 
     @Test

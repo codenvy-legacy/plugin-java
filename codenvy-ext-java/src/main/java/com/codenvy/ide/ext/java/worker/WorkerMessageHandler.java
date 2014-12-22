@@ -313,6 +313,7 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 parser.setKind(ASTParser.K_COMPILATION_UNIT);
                 parser.setUnitName(message.fileName().substring(0, message.fileName().lastIndexOf('.')));
                 parser.setResolveBindings(true);
+                parser.setIgnoreMethodBodies(message.ignoreMethodBodies());
                 parser.setNameEnvironment(nameEnvironment);
                 ASTNode ast = parser.createAST();
                 CompilationUnit unit = (CompilationUnit)ast;

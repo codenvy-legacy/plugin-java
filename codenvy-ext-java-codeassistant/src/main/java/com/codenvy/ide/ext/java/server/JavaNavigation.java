@@ -25,6 +25,7 @@ import com.codenvy.ide.ext.java.shared.JarEntry.JarEntryType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.core.runtime.CoreException;
@@ -64,46 +65,52 @@ public class JavaNavigation {
     private static Comparator<JarEntry> comparator = new Comparator<JarEntry>() {
         @Override
         public int compare(JarEntry o1, JarEntry o2) {
-            if (o1.getType() == JarEntryType.PACKAGE && o2.getType() != JarEntryType.PACKAGE){
+            if (o1.getType() == JarEntryType.PACKAGE && o2.getType() != JarEntryType.PACKAGE) {
                 return 1;
             }
 
-            if (o2.getType() == JarEntryType.PACKAGE && o1.getType() != JarEntryType.PACKAGE){
+            if (o2.getType() == JarEntryType.PACKAGE && o1.getType() != JarEntryType.PACKAGE) {
                 return 1;
             }
 
-            if (o1.getType() == JarEntryType.CLASS_FILE && o2.getType() != JarEntryType.CLASS_FILE){
+            if (o1.getType() == JarEntryType.CLASS_FILE && o2.getType() != JarEntryType.CLASS_FILE) {
                 return 1;
             }
 
-            if (o1.getType() != JarEntryType.CLASS_FILE && o2.getType() == JarEntryType.CLASS_FILE){
+            if (o1.getType() != JarEntryType.CLASS_FILE && o2.getType() == JarEntryType.CLASS_FILE) {
                 return 1;
             }
 
-            if (o1.getType() == JarEntryType.FOLDER && o2.getType() != JarEntryType.FOLDER){
+            if (o1.getType() == JarEntryType.FOLDER && o2.getType() != JarEntryType.FOLDER) {
                 return 1;
             }
 
-            if (o1.getType() != JarEntryType.FOLDER && o2.getType() == JarEntryType.FOLDER){
+            if (o1.getType() != JarEntryType.FOLDER && o2.getType() == JarEntryType.FOLDER) {
                 return 1;
             }
 
-            if (o1.getType() == JarEntryType.FILE && o2.getType() != JarEntryType.FILE){
+            if (o1.getType() == JarEntryType.FILE && o2.getType() != JarEntryType.FILE) {
                 return -1;
             }
 
-            if (o1.getType() != JarEntryType.FILE && o2.getType() == JarEntryType.FILE){
+            if (o1.getType() != JarEntryType.FILE && o2.getType() == JarEntryType.FILE) {
                 return -1;
             }
 
 
-            if(o1.getType() == o2.getType()){
+            if (o1.getType() == o2.getType()) {
                 return o1.getName().compareTo(o2.getName());
             }
 
             return 0;
         }
     };
+    private SourcesFromBytecodeGenerator sourcesGenerator;
+
+    @Inject
+    public JavaNavigation(SourcesFromBytecodeGenerator sourcesGenerator) {
+        this.sourcesGenerator = sourcesGenerator;
+    }
 
     /**
      * Utility method to concatenate two arrays.
@@ -499,7 +506,7 @@ public class JavaNavigation {
                 if (classFile.getSourceRange() != null) {
                     return classFile.getSource();
                 } else {
-                    //binary class
+                    return sourcesGenerator.generateSource(classFile.getType());
                 }
             }
         }

@@ -22,6 +22,7 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.outline.OutlineUpdater;
+import com.codenvy.ide.ext.java.client.projecttree.JarClassNode;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
@@ -55,6 +56,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private VirtualFile      file;
     private EmbeddedDocument document;
     private boolean first = true;
+    private boolean sourceFromClass;
     private Notification notification;
 
     @AssistedInject
@@ -92,6 +94,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     public void setDocument(final EmbeddedDocument document) {
         this.document = document;
         file = editor.getEditorInput().getFile();
+        sourceFromClass = file instanceof JarClassNode;
         new OutlineUpdater(file.getPath(), outlineModel, worker);
     }
 
@@ -117,7 +120,8 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
                 packageName = ((PackageNode)((SourceFileNode)file).getParent()).getQualifiedName();
             }
         }
-        worker.parse(document.getContents(), file.getName(), file.getPath(), packageName, file.getProject().getPath(), this);
+
+        worker.parse(document.getContents(), file.getName(), file.getPath(), packageName, file.getProject().getPath(), sourceFromClass, this);
     }
 
     @Override

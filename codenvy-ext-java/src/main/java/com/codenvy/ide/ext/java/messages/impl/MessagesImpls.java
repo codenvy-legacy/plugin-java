@@ -630,6 +630,20 @@ public class MessagesImpls {
       return this.hasOwnProperty("source");
     }-*/;
 
+    @Override
+    public final native boolean ignoreMethodBodies() /*-{
+      return this["ignoreMethodBodies"];
+    }-*/;
+
+    public final native ParseMessageImpl setIgnoreMethodBodiess(boolean ignoreMethodBodies) /*-{
+      this["ignoreMethodBodies"] = ignoreMethodBodies;
+      return this;
+    }-*/;
+
+    public final native boolean hasIgnoreMethodBodies() /*-{
+      return this.hasOwnProperty("ignoreMethodBodies");
+    }-*/;
+
     public static native ParseMessageImpl make() /*-{
       return {
         _type: 2
