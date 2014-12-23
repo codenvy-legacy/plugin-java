@@ -50,7 +50,7 @@ public abstract class JarEntryNode extends AbstractTreeNode<JarEntry> {
     @Nonnull
     @Override
     public String getId() {
-        return data.getPath();
+        return data.getName();
     }
 
     @Nonnull

@@ -17,6 +17,7 @@ import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
+import com.google.gwt.http.client.URL;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -43,7 +44,7 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     @Override
     public void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<OpenDeclarationDescriptor> callback) {
         String url =
-                restContext + "/navigation/" + workspaceId + "/find-declaration?projectpath=" + projectPath + "&bindingkey=" + keyBinding;
+                restContext + "/navigation/" + workspaceId + "/find-declaration?projectpath=" + projectPath + "&bindingkey=" + URL.encodeQueryString(keyBinding);
         requestFactory.createGetRequest(url).send(callback);
     }
 
