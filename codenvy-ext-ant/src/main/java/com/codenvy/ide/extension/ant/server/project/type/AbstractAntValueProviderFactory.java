@@ -81,7 +81,7 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
             try {
                 org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(project));
                 return Collections.unmodifiableList(getValues(antProject));
-            } catch (IOException | ForbiddenException | ServerException e) {
+            } catch (Exception e) {
                 throw readException(e);
             }
         }
