@@ -125,9 +125,15 @@ public class MavenValueProviderFactory implements ValueProviderFactory {
             try {
                 VirtualFile pom = getPom(project);
                 if (pom != null) {
-                    Model.readFrom(pom)
-                         .setArtifactId(value.get(0))
-                         .writeTo(pom);
+                    if (attributeName.equals(MavenAttributes.ARTIFACT_ID))
+                        Model.readFrom(pom).setArtifactId(value.get(0)).writeTo(pom);
+                    if (attributeName.equals(MavenAttributes.GROUP_ID))
+                        Model.readFrom(pom).setGroupId(value.get(0)).writeTo(pom);
+                    if (attributeName.equals(MavenAttributes.PACKAGING))
+                        Model.readFrom(pom).setPackaging(value.get(0)).writeTo(pom);
+                    if (attributeName.equals(MavenAttributes.VERSION))
+                        Model.readFrom(pom).setVersion(value.get(0)).writeTo(pom);
+
                 }
             } catch (ForbiddenException | ServerException | IOException e) {
                 throwWriteException(e);
