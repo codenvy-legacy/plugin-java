@@ -25,7 +25,9 @@ import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.util.Pair;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
@@ -49,6 +51,34 @@ public class JavaTreeStructure extends GenericTreeStructure {
         this.service = service;
     }
 
+    public void getClassFileByPath( final int libId, String path, final AsyncCallback<TreeNode<?>> callback) {
+        Unmarshallable<JarEntry> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(JarEntry.class);
+        service.getEntry(project.getPath(), libId, path, new AsyncRequestCallback<JarEntry>(unmarshaller) {
+            @Override
+            protected void onSuccess(JarEntry result) {
+                callback.onSuccess(createNode(createProject(), result, libId));
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
+    }
+    public TreeNode<?> createNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
+        switch (entry.getType()){
+            case FOLDER:
+            case PACKAGE:
+                return newJarContainerNode(parent, entry, libId);
+
+            case FILE:
+                return newJarFileNode(parent, entry, libId);
+
+            case CLASS_FILE:
+                return newJarClassNode(parent, entry, libId);
+        }
+        return null;
+    }
     /**
      * Find class in external libs.
      *
@@ -58,7 +88,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
      *         is FQN of the class like 'java.lang.String';
      * @param callback
      */
-    public void getClassFileByPath(final int libId, final String path, final AsyncCallback<TreeNode<?>> callback) {
+    public void getFindClassFileByPath(final int libId, final String path, final AsyncCallback<TreeNode<?>> callback) {
         getRoots(new AsyncCallback<Array<TreeNode<?>>>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -164,9 +194,12 @@ public class JavaTreeStructure extends GenericTreeStructure {
     /** {@inheritDoc} */
     @Override
     public void getRoots(AsyncCallback<Array<TreeNode<?>>> callback) {
-        AbstractTreeNode projectRoot =
-                new JavaProjectNode(null, project, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        AbstractTreeNode projectRoot = createProject();
         callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
+    }
+
+    private AbstractTreeNode createProject() {
+        return new JavaProjectNode(null, project, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     public JavaFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {
@@ -206,4 +239,5 @@ public class JavaTreeStructure extends GenericTreeStructure {
     public TreeNode<?> newJarClassNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
         return new JarClassNode(parent, entry, eventBus, libId, service, dtoUnmarshallerFactory, iconRegistry);
     }
+
 }

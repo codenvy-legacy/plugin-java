@@ -11,7 +11,6 @@
 package com.codenvy.ide.ext.java;
 
 import com.codenvy.ide.ext.java.server.JavadocFinder;
-import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.javadoc.JavadocContentAccess2;
 
 import org.eclipse.jdt.core.IField;
@@ -22,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
@@ -43,7 +41,6 @@ public class JavadocTest extends BaseTest {
 
     @Test
     public void binaryObjectDoc() throws JavaModelException {
-        JavaProject project = new JavaProject(new File("/temp"), "", "/temp", "ws", options);
         IType type = project.findType("java.lang.Object");
         assertThat(type).isNotNull();
         String htmlContent = JavadocContentAccess2.getHTMLContent(type, true, urlPart);

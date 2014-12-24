@@ -57,7 +57,7 @@ public class JavaNavigationService {
     @Produces("application/json")
     public List<Jar> getExternalLibraries(@QueryParam("projectpath") String projectPath) throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
-        return navigation.getProjectDepandecyJars(project);
+        return navigation.getProjectDependecyJars(project);
     }
 
     @GET
@@ -85,5 +85,13 @@ public class JavaNavigationService {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
         String content = navigation.getContent(project, rootId, path);
         return Response.ok().entity(content).build();
+    }
+
+    @GET
+    @Path("entry")
+    public JarEntry getEntry(@QueryParam("projectpath") String projectPath, @QueryParam("path") String path,
+                               @QueryParam("root") int rootId) throws CoreException {
+        JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
+        return navigation.getEntry(project, rootId, path);
     }
 }

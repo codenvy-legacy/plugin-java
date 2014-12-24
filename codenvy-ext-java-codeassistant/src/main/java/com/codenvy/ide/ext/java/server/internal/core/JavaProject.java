@@ -123,7 +123,7 @@ public class JavaProject extends Openable implements IJavaProject {
                 }
             }
         } catch (IOException e) {
-            LOG.error("Can't find sources folder attribute");
+            LOG.error("Can't find sources folder attribute", e);
         }
 
         paths.add(JavaCore.newContainerEntry(new Path("codenvy:Jre")));
@@ -949,6 +949,10 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public IPath getPath() {
         return new Path(projectDir.getAbsolutePath());
+    }
+
+    public String getProjectPath(){
+        return projectPath;
     }
 
     @Override

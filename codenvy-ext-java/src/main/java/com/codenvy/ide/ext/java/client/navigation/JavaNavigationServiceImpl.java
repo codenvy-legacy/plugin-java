@@ -69,6 +69,13 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
+    public void getEntry(String projectPath, int libId, String path, AsyncRequestCallback<JarEntry> callback) {
+        String url =
+                restContext + "/navigation/" + workspaceId + "/entry?projectpath=" + projectPath + "&root=" + libId + "&path=" + path;
+        requestFactory.createGetRequest(url).send(callback);
+    }
+
+    @Override
     public void getContent(String projectPath, int libId, String path, AsyncRequestCallback<String> callback) {
         String url = getContentUrl(projectPath, libId, path);
 
