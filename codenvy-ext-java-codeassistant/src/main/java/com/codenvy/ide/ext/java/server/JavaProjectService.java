@@ -71,7 +71,7 @@ public class JavaProjectService {
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
     }
 
-    public JavaProject getOrCreateJavaProject(String wsId, String projectPath, String sessionId) {
+    public JavaProject getOrCreateJavaProject(String wsId, String projectPath) {
         String key = wsId + projectPath;
         if (cache.containsKey(key)) {
             return cache.get(key);

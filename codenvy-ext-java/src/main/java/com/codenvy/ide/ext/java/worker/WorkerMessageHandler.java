@@ -58,6 +58,7 @@ import com.codenvy.ide.ext.java.jdt.templates.TypeVariableResolver;
 import com.codenvy.ide.ext.java.jdt.templates.VarResolver;
 import com.codenvy.ide.ext.java.messages.ConfigMessage;
 import com.codenvy.ide.ext.java.messages.DependenciesUpdatedMessage;
+import com.codenvy.ide.ext.java.messages.FileClosedMessage;
 import com.codenvy.ide.ext.java.messages.FormatMessage;
 import com.codenvy.ide.ext.java.messages.ParseMessage;
 import com.codenvy.ide.ext.java.messages.PreferenceFormatSetMessage;
@@ -80,10 +81,12 @@ import java.util.Map;
  */
 public class WorkerMessageHandler implements MessageHandler, MessageFilter.MessageRecipient<ParseMessage> {
 
-    private static WorkerMessageHandler      instance;
-    private final  WorkerOutlineModelUpdater outlineModelUpdater;
-    private        WorkerCorrectionProcessor correctionProcessor;
-    private        INameEnvironment     nameEnvironment;
+    private static WorkerMessageHandler        instance;
+    private final  WorkerOutlineModelUpdater   outlineModelUpdater;
+    private final  WorkerJavadocHandleComputer javadocHandleComputer;
+    private final WorkerCuCache cuCache;
+    private WorkerCorrectionProcessor correctionProcessor;
+    private INameEnvironment          nameEnvironment;
     private HashMap<String, String> options                  = new HashMap<String, String>();
     private Map<String, String>     preferenceFormatSettings = new HashMap<String, String>();
     private MessageFilter                      messageFilter;
@@ -101,6 +104,8 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
         instance = this;
         initOptions();
         messageFilter = new MessageFilter();
+        cuCache = new WorkerCuCache();
+        javadocHandleComputer = new WorkerJavadocHandleComputer(worker, cuCache);
         MessageFilter.MessageRecipient<ConfigMessage> configMessageRecipient = new MessageFilter.MessageRecipient<ConfigMessage>() {
             @Override
             public void onMessageReceived(ConfigMessage config) {
@@ -111,8 +116,8 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 workerCodeAssist =
                         new WorkerCodeAssist(WorkerMessageHandler.this.worker, messageFilter, applier, nameEnvironment,
                                              templateCompletionProposalComputer,
-                                             config.javaDocContext());
-                correctionProcessor = new WorkerCorrectionProcessor(WorkerMessageHandler.this.worker, messageFilter, applier);
+                                             config.javaDocContext(), cuCache);
+                correctionProcessor = new WorkerCorrectionProcessor(WorkerMessageHandler.this.worker, messageFilter, applier, cuCache);
             }
         };
         messageFilter.registerMessageRecipient(RoutingTypes.CONFIG, configMessageRecipient);
@@ -169,6 +174,16 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 }
             }
         });
+
+        messageFilter.registerMessageRecipient(RoutingTypes.FILE_CLOSED, new MessageFilter.MessageRecipient<FileClosedMessage>() {
+            @Override
+            public void onMessageReceived(FileClosedMessage message) {
+                cuCache.removeCompilationUnit(message.getFilePath());
+            }
+        });
+
+        messageFilter.registerMessageRecipient(RoutingTypes.COMPUTE_JAVADOC_HANDE, javadocHandleComputer);
+
     }
 
     public static WorkerMessageHandler get() {
@@ -298,11 +313,11 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 parser.setKind(ASTParser.K_COMPILATION_UNIT);
                 parser.setUnitName(message.fileName().substring(0, message.fileName().lastIndexOf('.')));
                 parser.setResolveBindings(true);
+                parser.setIgnoreMethodBodies(message.ignoreMethodBodies());
                 parser.setNameEnvironment(nameEnvironment);
                 ASTNode ast = parser.createAST();
                 CompilationUnit unit = (CompilationUnit)ast;
-                workerCodeAssist.setCu(unit);
-                correctionProcessor.setCu(unit);
+                cuCache.putCompilationUnit(message.filePath(), unit, message.source());
                 IProblem[] problems = unit.getProblems();
                 MessagesImpls.ProblemsMessageImpl problemsMessage = MessagesImpls.ProblemsMessageImpl.make();
                 JsoArray<Problem> problemsArray = JsoArray.create();

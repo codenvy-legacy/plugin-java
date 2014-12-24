@@ -27,4 +27,6 @@ public interface ComputeCAProposalsMessage extends Message {
 
     String projectPath();
 
+    String filePath();
+
 }

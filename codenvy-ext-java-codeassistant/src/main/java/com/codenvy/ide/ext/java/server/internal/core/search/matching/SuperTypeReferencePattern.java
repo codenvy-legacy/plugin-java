@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -20,30 +20,57 @@ import java.io.IOException;
 
 public class SuperTypeReferencePattern extends JavaSearchPattern {
 
-public char[] superQualification;
-public char[] superSimpleName;
-public char superClassOrInterface;
-
-// set to CLASS_SUFFIX for only matching classes
+	public static final int      ALL_SUPER_TYPES       = 0;
+	public static final int      ONLY_SUPER_INTERFACES = 1; // used for IMPLEMENTORS
+	public static final int      ONLY_SUPER_CLASSES    = 2; // used for hierarchy with a class focus
+	protected static    char[][] CATEGORIES            = {SUPER_REF};
+	public    char[]   superQualification;
+	public    char[]   superSimpleName;
+	public    char     superClassOrInterface;
+	// set to CLASS_SUFFIX for only matching classes
 // set to INTERFACE_SUFFIX for only matching interfaces
 // set to TYPE_SUFFIX for matching both classes and interfaces
-public char typeSuffix;
-public char[] pkgName;
-public char[] simpleName;
-public char[] enclosingTypeName;
-public char classOrInterface;
-public int modifiers;
-public char[][] typeParameterSignatures;
+	public    char     typeSuffix;
+	public    char[]   pkgName;
+	public    char[]   simpleName;
+	public    char[]   enclosingTypeName;
+	public    char     classOrInterface;
+	public    int      modifiers;
+	public    char[][] typeParameterSignatures;
+	protected int      superRefKind;
 
-protected int superRefKind;
-public static final int ALL_SUPER_TYPES = 0;
-public static final int ONLY_SUPER_INTERFACES = 1; // used for IMPLEMENTORS
-public static final int ONLY_SUPER_CLASSES = 2; // used for hierarchy with a class focus
+	public SuperTypeReferencePattern(
+			char[] superQualification,
+			char[] superSimpleName,
+			int superRefKind,
+			int matchRule) {
 
-protected static char[][] CATEGORIES = { SUPER_REF };
+		this(matchRule);
 
-public static char[] createIndexKey(
-	int modifiers,
+		this.superQualification = this.isCaseSensitive ? superQualification : CharOperation.toLowerCase(superQualification);
+		this.superSimpleName = (this.isCaseSensitive || this.isCamelCase) ? superSimpleName : CharOperation.toLowerCase(superSimpleName);
+		this.mustResolve = superQualification != null;
+		this.superRefKind = superRefKind;
+	}
+
+	public SuperTypeReferencePattern(
+			char[] superQualification,
+			char[] superSimpleName,
+			int superRefKind,
+			char typeSuffix,
+			int matchRule) {
+
+		this(superQualification, superSimpleName, superRefKind, matchRule);
+		this.typeSuffix = typeSuffix;
+		this.mustResolve = superQualification != null || typeSuffix != TYPE_SUFFIX;
+	}
+
+	SuperTypeReferencePattern(int matchRule) {
+		super(SUPER_REF_PATTERN, matchRule);
+	}
+
+	public static char[] createIndexKey(
+			int modifiers,
 	char[] packageName,
 	char[] typeName,
 	char[][] enclosingTypeNames,
@@ -144,33 +171,6 @@ public static char[] createIndexKey(
 	return result;
 }
 
-public SuperTypeReferencePattern(
-	char[] superQualification,
-	char[] superSimpleName,
-	int superRefKind,
-	int matchRule) {
-
-	this(matchRule);
-
-	this.superQualification = this.isCaseSensitive ? superQualification : CharOperation.toLowerCase(superQualification);
-	this.superSimpleName = (this.isCaseSensitive || this.isCamelCase) ? superSimpleName : CharOperation.toLowerCase(superSimpleName);
-	this.mustResolve = superQualification != null;
-	this.superRefKind = superRefKind;
-}
-public SuperTypeReferencePattern(
-	char[] superQualification,
-	char[] superSimpleName,
-	int superRefKind,
-	char typeSuffix,
-	int matchRule) {
-
-	this(superQualification, superSimpleName, superRefKind, matchRule);
-	this.typeSuffix = typeSuffix;
-	this.mustResolve = superQualification != null || typeSuffix != TYPE_SUFFIX;
-}
-SuperTypeReferencePattern(int matchRule) {
-	super(SUPER_REF_PATTERN, matchRule);
-}
 /*
  * superSimpleName / superQualification / simpleName / enclosingTypeName / typeParameters / pkgName / superClassOrInterface classOrInterface modifiers
  */
@@ -232,7 +232,7 @@ public char[][] getIndexCategories() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	SuperTypeReferencePattern
-            pattern = (SuperTypeReferencePattern) decodedPattern;
+			pattern = (SuperTypeReferencePattern)decodedPattern;
 	if (this.superRefKind == ONLY_SUPER_CLASSES && pattern.enclosingTypeName != ONE_ZERO/*not an anonymous*/)
 		// consider enumerations as classes, reject interfaces and annotations
 		if (pattern.superClassOrInterface == INTERFACE_SUFFIX

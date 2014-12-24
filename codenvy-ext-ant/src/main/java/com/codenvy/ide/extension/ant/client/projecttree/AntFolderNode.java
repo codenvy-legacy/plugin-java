@@ -16,13 +16,10 @@ import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
-import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nullable;
@@ -42,33 +39,6 @@ public class AntFolderNode extends JavaFolderNode {
                          ProjectServiceClient projectServiceClient,
                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
-        getChildren(data.getPath(), new AsyncCallback<Array<ItemReference>>() {
-            @Override
-            public void onSuccess(Array<ItemReference> children) {
-                final boolean isShowHiddenItems = settings.isShowHiddenItems();
-                Array<TreeNode<?>> newChildren = Collections.createArray();
-                setChildren(newChildren);
-                for (ItemReference item : children.asIterable()) {
-                    if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                        AbstractTreeNode node = createChildNode(item);
-                        if (node != null) {
-                            newChildren.add(node);
-                        }
-                    }
-                }
-                callback.onSuccess(AntFolderNode.this);
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
-            }
-        });
     }
 
     /** {@inheritDoc} */

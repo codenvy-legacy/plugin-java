@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2012 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Terry Parker <tparker@google.com> - DeltaProcessor misses state changes in archive files, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=357425
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core;
 
@@ -1338,11 +1337,11 @@ public class ClasspathEntry implements IClasspathEntry {
 	 */
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
-		Object target = JavaModel.getTarget(getPath(), true);
-		if (target instanceof File)
+//		Object target = JavaModel.getTarget(getPath(), true);
+//		if (target instanceof File)
 			buffer.append(getPath().toOSString());
-		else
-			buffer.append(String.valueOf(getPath()));
+//		else
+//			buffer.append(String.valueOf(getPath()));
 		buffer.append('[');
 		switch (getEntryKind()) {
 			case IClasspathEntry.CPE_LIBRARY :

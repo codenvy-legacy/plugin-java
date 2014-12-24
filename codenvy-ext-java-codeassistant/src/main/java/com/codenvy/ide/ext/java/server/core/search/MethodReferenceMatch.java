@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,7 +39,8 @@ public class MethodReferenceMatch extends ReferenceMatch {
  * @param participant the search participant that created the match
  * @param resource the resource of the element
  */
-public MethodReferenceMatch(IJavaElement enclosingElement, int accuracy, int offset, int length, boolean insideDocComment,SearchParticipant participant, IResource resource) {
+public MethodReferenceMatch(IJavaElement enclosingElement, int accuracy, int offset, int length, boolean insideDocComment,
+							SearchParticipant participant, IResource resource) {
 	super(enclosingElement, accuracy, offset, length, insideDocComment, participant, resource);
 }
 
@@ -119,7 +120,7 @@ public final boolean isSynthetic() {
  * the search target, depending on the run-time type of the receiver object.
  *
  * @return <code>true</code> if the reference is on a message sent from
- * a super-type of the searched method declaring class, <code>false </code> otherwise
+ * a super-type of the searched method declaring class, <code>false</code> otherwise
  * @since 3.3
  */
 public boolean isSuperInvocation() {

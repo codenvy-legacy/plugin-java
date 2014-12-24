@@ -16,7 +16,11 @@ import com.codenvy.ide.api.filetypes.FileType;
 import com.codenvy.ide.api.texteditor.ContentFormatter;
 import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.JavaResources;
+import com.codenvy.ide.ext.java.client.documentation.QuickDocPresenter;
+import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
 import com.codenvy.ide.ext.java.client.editor.JavaFormatter;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationServiceImpl;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorkerImpl;
 import com.codenvy.ide.ext.java.client.format.FormatController;
@@ -43,10 +47,13 @@ public class JavaGinModule extends AbstractGinModule {
         bind(FormatController.class).asEagerSingleton();
         bind(ProjectStateListener.class).asEagerSingleton();
         bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
+        bind(QuickDocumentation.class).to(QuickDocPresenter.class).in(Singleton.class);
+        bind(JavaNavigationService.class).to(JavaNavigationServiceImpl.class);
     }
 
     @Provides
     @Named("javaCA")
+    @Singleton
     protected String getJavaCAPath() {
         return JavaExtension.getJavaCAPath();
     }
@@ -56,6 +63,13 @@ public class JavaGinModule extends AbstractGinModule {
     @Named("JavaFileType")
     protected FileType provideJavaFile() {
         return new FileType("Java", JavaResources.INSTANCE.javaFile(), MimeType.APPLICATION_JAVA, "java");
+    }
+
+    @Provides
+    @Singleton
+    @Named("JavaClassFileType")
+    protected FileType provideJavaClassFile() {
+        return new FileType("Java Class", JavaResources.INSTANCE.javaClassIcon(), "application/java-class", "class");
     }
 
     @Provides

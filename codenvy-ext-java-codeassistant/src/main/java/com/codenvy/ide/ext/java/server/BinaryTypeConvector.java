@@ -42,6 +42,7 @@ import static org.eclipse.jdt.internal.compiler.lookup.TypeIds.T_short;
 /**
  * @author Evgen Vidolob
  */
+//todo add support of java8 type annotations
 public class BinaryTypeConvector {
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().serializeNulls().create();
 

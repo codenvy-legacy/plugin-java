@@ -67,23 +67,25 @@ public class WorkerCodeAssist {
         }
     };
     private JavaParserWorker                   worker;
-    private INameEnvironment              nameEnvironment;
+    private INameEnvironment                   nameEnvironment;
     private TemplateCompletionProposalComputer templateCompletionProposalComputer;
     private String                             projectPath;
     private String                             docContext;
-    private String                             vfsId;
-    private CompilationUnit                    unit;
-    private String                             documentContent;
-    private WorkerDocument                     document;
+    private WorkerCuCache cuCache;
+    private String          vfsId;
+    private String          documentContent;
+    private WorkerDocument  document;
 
     public WorkerCodeAssist(JavaParserWorker worker, MessageFilter messageFilter, WorkerProposalApplier workerProposalApplier,
                             INameEnvironment nameEnvironment,
-                            TemplateCompletionProposalComputer templateCompletionProposalComputer, String docContext) {
+                            TemplateCompletionProposalComputer templateCompletionProposalComputer, String docContext,
+                            WorkerCuCache cuCache) {
         this.worker = worker;
         this.workerProposalApplier = workerProposalApplier;
         this.nameEnvironment = nameEnvironment;
         this.templateCompletionProposalComputer = templateCompletionProposalComputer;
         this.docContext = docContext;
+        this.cuCache = cuCache;
         messageFilter.registerMessageRecipient(RoutingTypes.CA_COMPUTE_PROPOSALS,
                                                new MessageFilter.MessageRecipient<ComputeCAProposalsMessage>() {
                                                    @Override
@@ -113,8 +115,9 @@ public class WorkerCodeAssist {
         nameEnvironment.setProjectPath(message.projectPath());
         JsoStringMap<JavaCompletionProposal> proposalMap = JsoStringMap.create();
         documentContent = message.docContent();
+
         JavaCompletionProposal[] proposals =
-                computeCompletionProposals(unit, message.offset(), documentContent, message.fileName());
+                computeCompletionProposals(cuCache.getCompilationUnit(message.filePath()), message.offset(), documentContent, message.fileName());
 
         MessagesImpls.CAProposalsComputedMessageImpl caComputedMessage = MessagesImpls.CAProposalsComputedMessageImpl.make();
         caComputedMessage.setId(message.id());
@@ -141,7 +144,6 @@ public class WorkerCodeAssist {
         }
         document = new WorkerDocument(documentContent);
         CompletionProposalCollector collector =
-                //TODO receive vfs id
                 new FillArgumentNamesCompletionProposalCollector(unit, document, offset, projectPath, docContext, vfsId);
 
         collector
@@ -260,9 +262,5 @@ public class WorkerCodeAssist {
 
         return new LazyGenericTypeProposal(proposal, context);
 
-    }
-
-    public void setCu(CompilationUnit unit) {
-        this.unit = unit;
     }
 }

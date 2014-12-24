@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Nikolay Botev - Bug 348507
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
@@ -27,7 +26,6 @@ import org.eclipse.jdt.internal.core.ExternalFoldersManager;
 import org.eclipse.jdt.internal.core.JavaModel;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
-import org.eclipse.jdt.internal.core.search.AbstractJavaSearchScope;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 import org.eclipse.jdt.internal.core.util.Util;
 
@@ -40,61 +38,62 @@ import java.util.Set;
  * The scope can be configured to not search binaries. By default, binaries
  * are included.
  */
-public class JavaWorkspaceScope extends AbstractJavaSearchScope {
+@SuppressWarnings({"rawtypes", "unchecked"})
+public class JavaWorkspaceScope extends org.eclipse.jdt.internal.core.search.AbstractJavaSearchScope {
 
-    private IPath[] enclosingPaths = null;
+	private IPath[] enclosingPaths = null;
 
-    public JavaWorkspaceScope() {
-        // As nothing is stored in the JavaWorkspaceScope now, no initialization is longer needed
-    }
+	public JavaWorkspaceScope() {
+		// As nothing is stored in the JavaWorkspaceScope now, no initialization is longer needed
+	}
 
-    public boolean encloses(IJavaElement element) {
+	public boolean encloses(IJavaElement element) {
 	/*A workspace scope encloses all java elements (this assumes that the index selector
 	 * and thus enclosingProjectAndJars() returns indexes on the classpath only and that these
 	 * indexes are consistent.)
 	 * NOTE: Returning true gains 20% of a hierarchy build on Object
 	 */
-        return true;
-    }
+		return true;
+	}
 
-    public boolean encloses(String resourcePathString) {
+	public boolean encloses(String resourcePathString) {
 	/*A workspace scope encloses all resources (this assumes that the index selector
 	 * and thus enclosingProjectAndJars() returns indexes on the classpath only and that these
 	 * indexes are consistent.)
 	 * NOTE: Returning true gains 20% of a hierarchy build on Object
 	 */
-        return true;
-    }
+		return true;
+	}
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jdt.core.search.IJavaSearchScope#enclosingProjectsAndJars()
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.core.search.IJavaSearchScope#enclosingProjectsAndJars()
      */
-    public IPath[] enclosingProjectsAndJars() {
-        IPath[] result = this.enclosingPaths;
-        if (result != null) {
-            return result;
-        }
-        long start = BasicSearchEngine.VERBOSE ? System.currentTimeMillis() : -1;
-        try {
-            IJavaProject[] projects = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProjects();
-            // use a linked set to preserve the order during search: see bug 348507
-            Set paths = new LinkedHashSet(projects.length * 2);
-            for (int i = 0, length = projects.length; i < length; i++) {
-                JavaProject javaProject = (JavaProject)projects[i];
+	public IPath[] enclosingProjectsAndJars() {
+		IPath[] result = this.enclosingPaths;
+		if (result != null) {
+			return result;
+		}
+		long start = org.eclipse.jdt.internal.core.search.BasicSearchEngine.VERBOSE ? System.currentTimeMillis() : -1;
+		try {
+			IJavaProject[] projects = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProjects();
+			// use a linked set to preserve the order during search: see bug 348507
+			Set paths = new LinkedHashSet(projects.length * 2);
+			for (int i = 0, length = projects.length; i < length; i++) {
+				JavaProject javaProject = (JavaProject)projects[i];
 
-                // Add project full path
-                IPath projectPath = javaProject.getProject().getFullPath();
-                paths.add(projectPath);
-            }
+				// Add project full path
+				IPath projectPath = javaProject.getProject().getFullPath();
+				paths.add(projectPath);
+			}
 
-            // add the project source paths first in a separate loop above
-            // to ensure source files always get higher precedence during search.
-            // see bug 348507
+			// add the project source paths first in a separate loop above
+			// to ensure source files always get higher precedence during search.
+			// see bug 348507
 
-            for (int i = 0, length = projects.length; i < length; i++) {
-                JavaProject javaProject = (JavaProject)projects[i];
+			for (int i = 0, length = projects.length; i < length; i++) {
+				JavaProject javaProject = (JavaProject)projects[i];
 
-                // Add project libraries paths
+				// Add project libraries paths
 			IClasspathEntry[] entries = javaProject.getResolvedClasspath();
 			for (int j = 0, eLength = entries.length; j < eLength; j++) {
 				IClasspathEntry entry = entries[j];
@@ -147,8 +146,8 @@ public IPackageFragmentRoot packageFragmentRoot(String resourcePathString, int j
 	} else {
 		IPath path = new Path(resourcePathString);
 		if (ExternalFoldersManager.isInternalPathForExternalFolder(path)) {
-			IResource
-                    resource = JavaModel.getWorkspaceTarget(path.uptoSegment(2/*linked folders for external folders are always of size 2*/));
+			IResource resource = JavaModel
+					.getWorkspaceTarget(path.uptoSegment(2/*linked folders for external folders are always of size 2*/));
 			if (resource != null)
 				rootInfo = (DeltaProcessor.RootInfo) rootInfos.get(resource.getLocation());
 		} else {

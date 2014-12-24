@@ -1,20 +1,24 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
+
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.IJavaModelStatusConstants;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaModelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,6 +186,39 @@ public class Util {
             }
         }
 
+    }
+
+    /**
+     * Returns true if the given folder name is valid for a package,
+     * false if it is not.
+     * @param folderName the name of the folder
+     * @param sourceLevel the source level
+     * @param complianceLevel the compliance level
+     */
+    public static boolean isValidFolderNameForPackage(String folderName, String sourceLevel, String complianceLevel) {
+        return JavaConventions.validateIdentifier(folderName, sourceLevel, complianceLevel).getSeverity() != IStatus.ERROR;
+    }
+
+    /**
+     * Converts the given relative path into a package name.
+     * Returns null if the path is not a valid package name.
+     * @param pkgPath the package path
+     * @param sourceLevel the source level
+     * @param complianceLevel the compliance level
+     */
+    public static String packageName(IPath pkgPath, String sourceLevel, String complianceLevel) {
+        StringBuffer pkgName = new StringBuffer(IPackageFragment.DEFAULT_PACKAGE_NAME);
+        for (int j = 0, max = pkgPath.segmentCount(); j < max; j++) {
+            String segment = pkgPath.segment(j);
+            if (!isValidFolderNameForPackage(segment, sourceLevel, complianceLevel)) {
+                return null;
+            }
+            pkgName.append(segment);
+            if (j < pkgPath.segmentCount() - 1) {
+                pkgName.append("." ); //$NON-NLS-1$
+            }
+        }
+        return pkgName.toString();
     }
 
     public static void log(Throwable e, String s) {

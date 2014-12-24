@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
+import elemental.dom.Element;
+
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
@@ -19,8 +21,6 @@ import com.codenvy.ide.jseditor.client.codeassist.Completion;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
 import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
 import com.codenvy.ide.jseditor.client.text.LinearRange;
-
-import elemental.dom.Element;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
@@ -59,9 +59,9 @@ public class JavaCompletionProposal implements CompletionProposal {
 
     @Override
     public void getCompletion(final CompletionCallback callback) {
-        worker.applyCAProposal(id, new JavaParserWorker.ApplyCallback() {
+        worker.applyCAProposal(id, new JavaParserWorker.Callback<ProposalAppliedMessage>() {
             @Override
-            public void onApply(final ProposalAppliedMessage message) {
+            public void onCallback(final ProposalAppliedMessage message) {
                 callback.onCompletion(new CompletionImpl(message.changes(), message.selectionRegion()));
             }
         });

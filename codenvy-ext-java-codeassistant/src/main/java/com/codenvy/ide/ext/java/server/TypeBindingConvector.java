@@ -32,6 +32,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 /**
  * @author Evgen Vidolob
  */
+//todo add support of java8 type annotations
 public class TypeBindingConvector {
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().serializeNulls().create();
 

@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2009 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -27,6 +27,24 @@ import org.eclipse.jdt.internal.core.util.Util;
 
 public class JavaSearchPattern extends SearchPattern implements IIndexConstants {
 
+	/**
+	 * Mask used on match rule for match mode.
+	 */
+	public static final int MATCH_MODE_MASK = R_EXACT_MATCH
+		| R_PREFIX_MATCH
+		| R_PATTERN_MATCH
+		| R_REGEXP_MATCH
+		| R_CAMELCASE_MATCH
+		| R_CAMELCASE_SAME_PART_COUNT_MATCH;
+	/**
+	 * Mask used on match rule for generic relevance.
+	 */
+	public static final int MATCH_COMPATIBILITY_MASK = R_ERASURE_MATCH | R_EQUIVALENT_MATCH | R_FULL_MATCH;
+	static final int HAS_TYPE_ARGUMENTS = 1;
+	/**
+	 * Fine grain limitation
+	 */
+	public int fineGrain = 0;
 	/*
 	 * Whether this pattern is case sensitive.
 	 */
@@ -35,7 +53,6 @@ public class JavaSearchPattern extends SearchPattern implements IIndexConstants 
 	 * Whether this pattern is camel case.
 	 */
 	boolean isCamelCase;
-
 	/**
 	 * One of following pattern value:
 	 * <ul>
@@ -48,37 +65,14 @@ public class JavaSearchPattern extends SearchPattern implements IIndexConstants 
 	 * </ul>
 	 */
 	int matchMode;
-
 	/**
 	 * One of {@link #R_ERASURE_MATCH}, {@link #R_EQUIVALENT_MATCH}, {@link #R_FULL_MATCH}.
 	 */
 	int matchCompatibility;
-
-	/**
-	 * Fine grain limitation
-	 */
-	public int fineGrain = 0;
-
-	/**
-	 * Mask used on match rule for match mode.
-	 */
-	public static final int MATCH_MODE_MASK = R_EXACT_MATCH
-		| R_PREFIX_MATCH
-		| R_PATTERN_MATCH
-		| R_REGEXP_MATCH
-		| R_CAMELCASE_MATCH
-		| R_CAMELCASE_SAME_PART_COUNT_MATCH;
-
-	/**
-	 * Mask used on match rule for generic relevance.
-	 */
-	public static final int MATCH_COMPATIBILITY_MASK = R_ERASURE_MATCH | R_EQUIVALENT_MATCH | R_FULL_MATCH;
-
 	// Signatures and arguments for parameterized types search
 	char[][] typeSignatures;
 	private char[][][] typeArguments;
 	private int flags = 0;
-	static final int HAS_TYPE_ARGUMENTS = 1;
 
 	protected JavaSearchPattern(int patternKind, int matchRule) {
 		super(matchRule);
@@ -158,6 +152,9 @@ public class JavaSearchPattern extends SearchPattern implements IIndexConstants 
 				case IJavaSearchConstants.IMPLICIT_THIS_REFERENCE:
 					buffer.append("IMPLICIT_THIS_REFERENCE"); //$NON-NLS-1$
 					break;
+				case IJavaSearchConstants.METHOD_REFERENCE_EXPRESSION:
+					buffer.append("METHOD_REFERENCE_EXPRESSION"); //$NON-NLS-1$
+					break;
 			}
 		}
 		return buffer.toString();
@@ -236,6 +233,23 @@ public class JavaSearchPattern extends SearchPattern implements IIndexConstants 
 	 */
 	final char[][][] getTypeArguments() {
 		return this.typeArguments;
+	}
+
+	/**
+	 * @param typeArguments The typeArguments to set.
+	 */
+	final void setTypeArguments(char[][][] typeArguments) {
+		this.typeArguments = typeArguments;
+		// update flags
+		if (this.typeArguments != null) {
+			int length = this.typeArguments.length;
+			for (int i=0; i<length; i++) {
+				if (this.typeArguments[i] != null && this.typeArguments[i].length > 0) {
+					this.flags |= HAS_TYPE_ARGUMENTS;
+					break;
+				}
+			}
+		}
 	}
 
 	/**
@@ -371,23 +385,6 @@ public class JavaSearchPattern extends SearchPattern implements IIndexConstants 
 		output.append("fine grain: "); //$NON-NLS-1$
 		output.append(getFineGrainFlagString(this.fineGrain));
 		return output;
-	}
-
-	/**
-	 * @param typeArguments The typeArguments to set.
-	 */
-	final void setTypeArguments(char[][][] typeArguments) {
-		this.typeArguments = typeArguments;
-		// update flags
-		if (this.typeArguments != null) {
-			int length = this.typeArguments.length;
-			for (int i=0; i<length; i++) {
-				if (this.typeArguments[i] != null && this.typeArguments[i].length > 0) {
-					this.flags |= HAS_TYPE_ARGUMENTS;
-					break;
-				}
-			}
-		}
 	}
 
 	/*
