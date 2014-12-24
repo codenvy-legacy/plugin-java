@@ -102,8 +102,8 @@ public class MavenProjectTypeTest {
 
     }
 
-    @Test
-    public void testMavenProject() throws Exception {
+//    @Test
+//    public void testMavenProject() throws Exception {
 
 
         Map<String, AttributeValue> attributes = new HashMap<>();
@@ -142,7 +142,7 @@ public class MavenProjectTypeTest {
 
         }
 
-    }
+//    }
 
 
 

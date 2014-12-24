@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2012 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -27,89 +27,90 @@ import java.io.IOException;
 
 public class MethodPattern extends JavaSearchPattern {
 
-    protected boolean findDeclarations = true;
-    protected boolean findReferences   = true;
+	protected boolean findDeclarations = true;
+	protected boolean findReferences   = true;
 
-    public char[] selector;
+	public char[] selector;
 
-    public char[] declaringQualification;
-    public char[] declaringSimpleName;
-    public char[] declaringPackageName; //set only when focus is not null
+	public char[] declaringQualification;
+	public char[] declaringSimpleName;
+	public char[] declaringPackageName; //set only when focus is not null
 
-    public char[] returnQualification;
-    public char[] returnSimpleName;
+	public char[] returnQualification;
+	public char[] returnSimpleName;
 
-    public char[][] parameterQualifications;
-    public char[][] parameterSimpleNames;
-    public int      parameterCount;
-    public boolean varargs = false;
+	public char[][] parameterQualifications;
+	public char[][] parameterSimpleNames;
+	public int      parameterCount;
+	public boolean varargs = false;
 
-    // extra reference info
-    protected IType declaringType;
+	// extra reference info
+	protected IType declaringType;
 
-    // Signatures and arguments for generic search
-    char[][]     returnTypeSignatures;
-    char[][][]   parametersTypeSignatures;
-    char[][][][] parametersTypeArguments;
-    boolean methodParameters = false;
-    char[][] methodArguments;
+	// Signatures and arguments for generic search
+	char[][]     returnTypeSignatures;
+	char[][][]   parametersTypeSignatures;
+	char[][][][] parametersTypeArguments;
+	boolean methodParameters = false;
+	char[][] methodArguments;
 
-    protected static char[][] REF_CATEGORIES          = {METHOD_REF};
-    protected static char[][] REF_AND_DECL_CATEGORIES = {METHOD_REF, METHOD_DECL};
-    protected static char[][] DECL_CATEGORIES         = {METHOD_DECL};
+	protected static char[][] REF_CATEGORIES          = {METHOD_REF};
+	protected static char[][] REF_AND_DECL_CATEGORIES = {METHOD_REF, METHOD_DECL};
+	protected static char[][] DECL_CATEGORIES         = {METHOD_DECL};
 
-    public final static int FINE_GRAIN_MASK =
-            IJavaSearchConstants.SUPER_REFERENCE |
-            IJavaSearchConstants.QUALIFIED_REFERENCE |
-            IJavaSearchConstants.THIS_REFERENCE |
-            IJavaSearchConstants.IMPLICIT_THIS_REFERENCE;
+	public final static int FINE_GRAIN_MASK =
+			IJavaSearchConstants.SUPER_REFERENCE |
+			IJavaSearchConstants.QUALIFIED_REFERENCE |
+			IJavaSearchConstants.THIS_REFERENCE |
+			IJavaSearchConstants.IMPLICIT_THIS_REFERENCE |
+			IJavaSearchConstants.METHOD_REFERENCE_EXPRESSION;
 
-    /**
-     * Method entries are encoded as selector '/' Arity:
-     * e.g. 'foo/0'
-     */
-    public static char[] createIndexKey(char[] selector, int argCount) {
-        char[] countChars = argCount < 10
-                            ? COUNTS[argCount]
-                            : ("/" + String.valueOf(argCount)).toCharArray(); //$NON-NLS-1$
-        return CharOperation.concat(selector, countChars);
-    }
+	/**
+	 * Method entries are encoded as selector '/' Arity:
+	 * e.g. 'foo/0'
+	 */
+	public static char[] createIndexKey(char[] selector, int argCount) {
+		char[] countChars = argCount < 10
+							? COUNTS[argCount]
+							: ("/" + String.valueOf(argCount)).toCharArray(); //$NON-NLS-1$
+		return CharOperation.concat(selector, countChars);
+	}
 
-    MethodPattern(int matchRule) {
-        super(METHOD_PATTERN, matchRule);
-    }
+	MethodPattern(int matchRule) {
+		super(METHOD_PATTERN, matchRule);
+	}
 
-    public MethodPattern(
-            char[] selector,
-            char[] declaringQualification,
-            char[] declaringSimpleName,
-            char[] returnQualification,
-            char[] returnSimpleName,
-            char[][] parameterQualifications,
-            char[][] parameterSimpleNames,
-            IType declaringType,
-            int limitTo,
-            int matchRule) {
+	public MethodPattern(
+			char[] selector,
+			char[] declaringQualification,
+			char[] declaringSimpleName,
+			char[] returnQualification,
+			char[] returnSimpleName,
+			char[][] parameterQualifications,
+			char[][] parameterSimpleNames,
+			IType declaringType,
+			int limitTo,
+			int matchRule) {
 
-        this(matchRule);
+		this(matchRule);
 
-        this.fineGrain = limitTo & FINE_GRAIN_MASK;
-        if (this.fineGrain == 0) {
-            switch (limitTo & 0xF) {
-                case IJavaSearchConstants.DECLARATIONS:
-                    this.findReferences = false;
-                    break;
-                case IJavaSearchConstants.REFERENCES:
-                    this.findDeclarations = false;
-                    break;
-                case IJavaSearchConstants.ALL_OCCURRENCES:
-                    break;
-            }
-        } else {
-            this.findDeclarations = false;
-    }
+		this.fineGrain = limitTo & FINE_GRAIN_MASK;
+		if (this.fineGrain == 0) {
+			switch (limitTo & 0xF) {
+				case IJavaSearchConstants.DECLARATIONS:
+					this.findReferences = false;
+					break;
+				case IJavaSearchConstants.REFERENCES:
+					this.findDeclarations = false;
+					break;
+				case IJavaSearchConstants.ALL_OCCURRENCES:
+					break;
+			}
+		} else {
+			this.findDeclarations = false;
+		}
 
-	this.selector = (this.isCaseSensitive || this.isCamelCase) ? selector : CharOperation.toLowerCase(selector);
+		this.selector = (this.isCaseSensitive || this.isCamelCase) ? selector : CharOperation.toLowerCase(selector);
 	this.declaringQualification = this.isCaseSensitive ? declaringQualification : CharOperation.toLowerCase(declaringQualification);
 	this.declaringSimpleName = this.isCaseSensitive ? declaringSimpleName : CharOperation.toLowerCase(declaringSimpleName);
 	this.returnQualification = this.isCaseSensitive ? returnQualification : CharOperation.toLowerCase(returnQualification);
@@ -120,9 +121,9 @@ public class MethodPattern extends JavaSearchPattern {
 		this.parameterSimpleNames = new char[this.parameterCount][];
 		for (int i = 0; i < this.parameterCount; i++) {
 			this.parameterQualifications[i] = this.isCaseSensitive ? parameterQualifications[i] : CharOperation
-                    .toLowerCase(parameterQualifications[i]);
+					.toLowerCase(parameterQualifications[i]);
 			this.parameterSimpleNames[i] = this.isCaseSensitive ? parameterSimpleNames[i] : CharOperation
-                    .toLowerCase(parameterSimpleNames[i]);
+					.toLowerCase(parameterSimpleNames[i]);
 		}
 	} else {
 		this.parameterCount = -1;

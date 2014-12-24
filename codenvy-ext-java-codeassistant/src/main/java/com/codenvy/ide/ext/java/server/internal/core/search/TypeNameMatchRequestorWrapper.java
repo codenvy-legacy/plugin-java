@@ -1,18 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Stephan Herrmann - Contribution for bug 215139
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
 import com.codenvy.ide.ext.java.server.core.search.IJavaSearchScope;
 import com.codenvy.ide.ext.java.server.core.search.TypeNameMatchRequestor;
+import com.codenvy.ide.ext.java.server.internal.core.util.HandleFactory;
 
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IAccessRule;
@@ -32,7 +32,6 @@ import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.core.Openable;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jdt.internal.core.search.HierarchyScope;
-import org.eclipse.jdt.internal.core.util.HandleFactory;
 import org.eclipse.jdt.internal.core.util.HashtableOfArrayToObject;
 
 /**
@@ -59,109 +58,107 @@ import org.eclipse.jdt.internal.core.util.HashtableOfArrayToObject;
  * 	org.eclipse.core.runtime.IProgressMonitor monitor) }.
  */
 public class TypeNameMatchRequestorWrapper implements IRestrictedAccessTypeRequestor {
-    TypeNameMatchRequestor requestor;
-    private IJavaSearchScope scope; // scope is needed to retrieve project path for external resource
-    private HandleFactory    handleFactory; // in case of IJavaSearchScope defined by clients, use an HandleFactory instead
+	TypeNameMatchRequestor requestor;
+	private IJavaSearchScope scope; // scope is needed to retrieve project path for external resource
+	private HandleFactory    handleFactory; // in case of IJavaSearchScope defined by clients, use an HandleFactory instead
 
-    /**
-     * Cache package fragment root information to optimize speed performance.
+	/**
+	 * Cache package fragment root information to optimize speed performance.
+	 */
+	private String               lastPkgFragmentRootPath;
+	private IPackageFragmentRoot lastPkgFragmentRoot;
+
+	/**
+	 * Cache package handles to optimize memory.
+	 */
+	private HashtableOfArrayToObject packageHandles;
+	private Object                   lastProject;
+	private long                     complianceValue;
+
+	public TypeNameMatchRequestorWrapper(TypeNameMatchRequestor requestor, IJavaSearchScope scope) {
+		this.requestor = requestor;
+		this.scope = scope;
+		if (!(scope instanceof AbstractJavaSearchScope)) {
+			this.handleFactory = new HandleFactory();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.internal.core.search.IRestrictedAccessTypeRequestor#acceptType(int, char[], char[], char[][], java.lang
+     * .String, org.eclipse.jdt.internal.compiler.env.AccessRestriction)
      */
-    private String               lastPkgFragmentRootPath;
-    private IPackageFragmentRoot lastPkgFragmentRoot;
+	public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
+						   AccessRestriction access) {
 
-    /**
-     * Cache package handles to optimize memory.
-     */
-    private HashtableOfArrayToObject packageHandles;
-    private Object                   lastProject;
-    private long                     complianceValue;
+		// Get type
+		try {
+			IType type = null;
+			if (this.handleFactory != null) {
+				Openable openable = this.handleFactory.createOpenable(path, this.scope);
+				if (openable == null) return;
+				switch (openable.getElementType()) {
+					case IJavaElement.COMPILATION_UNIT:
+						ICompilationUnit cu = (ICompilationUnit)openable;
+						if (enclosingTypeNames != null && enclosingTypeNames.length > 0) {
+							type = cu.getType(new String(enclosingTypeNames[0]));
+							for (int j = 1, l = enclosingTypeNames.length; j < l; j++) {
+								type = type.getType(new String(enclosingTypeNames[j]));
+							}
+							type = type.getType(new String(simpleTypeName));
+						} else {
+							type = cu.getType(new String(simpleTypeName));
+						}
+						break;
+					case IJavaElement.CLASS_FILE:
+						type = ((IClassFile)openable).getType();
+						break;
+				}
+			} else {
+				int separatorIndex = path.indexOf(IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR);
+				type = separatorIndex == -1
+					   ? createTypeFromPath(path, new String(simpleTypeName), enclosingTypeNames)
+					   : createTypeFromJar(path, separatorIndex);
+			}
 
-    public TypeNameMatchRequestorWrapper(TypeNameMatchRequestor requestor, IJavaSearchScope scope) {
-        this.requestor = requestor;
-        this.scope = scope;
-        if (!(scope instanceof AbstractJavaSearchScope)) {
-            this.handleFactory = new HandleFactory();
-        }
-    }
+			// Accept match if the type has been found
+			if (type != null) {
+				// hierarchy scopes require one more check:
+				if (!(this.scope instanceof HierarchyScope) || ((HierarchyScope)this.scope).enclosesFineGrained(type)) {
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jdt.internal.core.search.IRestrictedAccessTypeRequestor#acceptType(int, char[], char[], char[][],
-     * java.lang.String, org.eclipse.jdt.internal.compiler.env.AccessRestriction)
-     */
-    public void acceptType(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames, String path,
-                           AccessRestriction access) {
+					// Create the match
+					final JavaSearchTypeNameMatch match = new JavaSearchTypeNameMatch(type, modifiers);
 
-        // Get type
-        try {
-            IType type = null;
-            if (this.handleFactory != null) {
-                //todo openable
-                Openable openable =  null;//this.handleFactory.createOpenable(path, this.scope);
-                if (openable == null) return;
-                switch (openable.getElementType()) {
-                    case IJavaElement.COMPILATION_UNIT:
-                        ICompilationUnit cu = (ICompilationUnit)openable;
-                        if (enclosingTypeNames != null && enclosingTypeNames.length > 0) {
-                            type = cu.getType(new String(enclosingTypeNames[0]));
-                            for (int j = 1, l = enclosingTypeNames.length; j < l; j++) {
-                                type = type.getType(new String(enclosingTypeNames[j]));
-                            }
-                            type = type.getType(new String(simpleTypeName));
-                        } else {
-                            type = cu.getType(new String(simpleTypeName));
-                        }
-                        break;
-                    case IJavaElement.CLASS_FILE:
-                        type = ((IClassFile)openable).getType();
-                        break;
-                }
-            } else {
-                int separatorIndex = path.indexOf(IJavaSearchScope.JAR_FILE_ENTRY_SEPARATOR);
-                type = separatorIndex == -1
-                       ? createTypeFromPath(path, new String(simpleTypeName), enclosingTypeNames)
-                       : createTypeFromJar(path, separatorIndex);
-            }
+					// Update match accessibility
+					if (access != null) {
+						switch (access.getProblemId()) {
+							case IProblem.ForbiddenReference:
+								match.setAccessibility(IAccessRule.K_NON_ACCESSIBLE);
+								break;
+							case IProblem.DiscouragedReference:
+								match.setAccessibility(IAccessRule.K_DISCOURAGED);
+								break;
+						}
+					}
 
-            // Accept match if the type has been found
-            if (type != null) {
-                // hierarchy scopes require one more check:
-                if (!(this.scope instanceof org.eclipse.jdt.internal.core.search.HierarchyScope) ||
-                    ((HierarchyScope)this.scope).enclosesFineGrained(type)) {
+					// Accept match
+					this.requestor.acceptTypeNameMatch(match);
+				}
+			}
+		} catch (JavaModelException e) {
+			// skip
+		}
+	}
 
-                    // Create the match
-                    final JavaSearchTypeNameMatch match = new JavaSearchTypeNameMatch(type, modifiers);
-
-                    // Update match accessibility
-                    if (access != null) {
-                        switch (access.getProblemId()) {
-                            case IProblem.ForbiddenReference:
-                                match.setAccessibility(IAccessRule.K_NON_ACCESSIBLE);
-                                break;
-                            case IProblem.DiscouragedReference:
-                                match.setAccessibility(IAccessRule.K_DISCOURAGED);
-                                break;
-                        }
-                    }
-
-                    // Accept match
-                    this.requestor.acceptTypeNameMatch(match);
-                }
-            }
-        } catch (JavaModelException e) {
-            // skip
-        }
-    }
-
-    private IType createTypeFromJar(String resourcePath, int separatorIndex) throws JavaModelException {
-        // path to a class file inside a jar
-        // Optimization: cache package fragment root handle and package handles
-        if (this.lastPkgFragmentRootPath == null
-            || this.lastPkgFragmentRootPath.length() > resourcePath.length()
-            || !resourcePath.startsWith(this.lastPkgFragmentRootPath)) {
-            String jarPath= resourcePath.substring(0, separatorIndex);
-		IPackageFragmentRoot root= ((AbstractJavaSearchScope)this.scope).packageFragmentRoot(resourcePath, separatorIndex, jarPath);
-		if (root == null) return null;
-		this.lastPkgFragmentRootPath= jarPath;
+	private IType createTypeFromJar(String resourcePath, int separatorIndex) throws JavaModelException {
+		// path to a class file inside a jar
+		// Optimization: cache package fragment root handle and package handles
+		if (this.lastPkgFragmentRootPath == null
+			|| this.lastPkgFragmentRootPath.length() > resourcePath.length()
+			|| !resourcePath.startsWith(this.lastPkgFragmentRootPath)) {
+			String jarPath = resourcePath.substring(0, separatorIndex);
+			IPackageFragmentRoot root = ((AbstractJavaSearchScope)this.scope).packageFragmentRoot(resourcePath, separatorIndex, jarPath);
+			if (root == null) return null;
+			this.lastPkgFragmentRootPath= jarPath;
 		this.lastPkgFragmentRoot= root;
 		this.packageHandles= new HashtableOfArrayToObject(5);
 	}

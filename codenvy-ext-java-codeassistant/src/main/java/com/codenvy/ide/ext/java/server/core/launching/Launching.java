@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -598,5 +599,61 @@ public class Launching {
         } catch (URISyntaxException e) {
            return null;
         }
+    }
+
+    /**
+     * Compares two URL for equality, but do not connect to do DNS resolution
+     *
+     * @param url1
+     *         a given URL
+     * @param url2
+     *         another given URL to compare to url1
+     * @return <code>true</code> if the URLs are equal, <code>false</code> otherwise
+     * @since 3.5
+     */
+    public static boolean sameURL(URL url1, URL url2) {
+        if (url1 == url2) {
+            return true;
+        }
+        if (url1 == null ^ url2 == null) {
+            return false;
+        }
+        // check if URL are file: URL as we may have two URL pointing to the same doc location
+        // but with different representation - (i.e. file:/C;/ and file:C:/)
+        final boolean isFile1 = "file".equalsIgnoreCase(url1.getProtocol());//$NON-NLS-1$
+        final boolean isFile2 = "file".equalsIgnoreCase(url2.getProtocol());//$NON-NLS-1$
+        if (isFile1 && isFile2) {
+            File file1 = new File(url1.getFile());
+            File file2 = new File(url2.getFile());
+            return file1.equals(file2);
+        }
+        // URL1 XOR URL2 is a file, return false. (They either both need to be files, or neither)
+        if (isFile1 ^ isFile2) {
+            return false;
+        }
+        return getExternalForm(url1).equals(getExternalForm(url2));
+    }
+
+
+    /**
+     * Gets the external form of this URL. In particular, it trims any white space,
+     * removes a trailing slash and creates a lower case string.
+     *
+     * @param url
+     *         the URL to get the {@link String} value of
+     * @return the lower-case {@link String} form of the given URL
+     */
+    private static String getExternalForm(URL url) {
+        String externalForm = url.toExternalForm();
+        if (externalForm == null) {
+            return ""; //$NON-NLS-1$
+        }
+        externalForm = externalForm.trim();
+        if (externalForm.endsWith("/")) { //$NON-NLS-1$
+            // Remove the trailing slash
+            externalForm = externalForm.substring(0, externalForm.length() - 1);
+        }
+        return externalForm.toLowerCase();
+
     }
 }

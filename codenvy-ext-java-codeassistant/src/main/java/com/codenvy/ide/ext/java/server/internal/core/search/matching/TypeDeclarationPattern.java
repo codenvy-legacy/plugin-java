@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -229,7 +229,7 @@ public char[][] getIndexCategories() {
 }
 public boolean matchesDecodedKey(SearchPattern decodedPattern) {
 	TypeDeclarationPattern
-            pattern = (TypeDeclarationPattern) decodedPattern;
+			pattern = (TypeDeclarationPattern)decodedPattern;
 
 	// check type suffix
 	if (this.typeSuffix != pattern.typeSuffix && this.typeSuffix != TYPE_SUFFIX) {
@@ -299,7 +299,7 @@ public EntryResult[] queryIn(Index index) throws IOException {
 			}
 			// must decode to check enclosingTypeNames due to the encoding of local types
 			key = CharOperation.concat(
-                    this.simpleName == null ? ONE_STAR : this.simpleName, SEPARATOR, this.pkg, SEPARATOR, ONE_STAR);
+					this.simpleName == null ? ONE_STAR : this.simpleName, SEPARATOR, this.pkg, SEPARATOR, ONE_STAR);
 			break;
 		case R_REGEXP_MATCH :
 			// TODO (frederic) implement regular expression match

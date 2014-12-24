@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.matching;
 
@@ -16,6 +16,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.util.HashtableOfLong;
 import org.eclipse.jdt.internal.compiler.util.SimpleLookupTable;
 import org.eclipse.jdt.internal.compiler.util.SimpleSet;
+import org.eclipse.jdt.internal.core.search.matching.PatternLocator;
 import org.eclipse.jdt.internal.core.util.Util;
 
 import java.util.ArrayList;
@@ -23,62 +24,64 @@ import java.util.ArrayList;
 /**
  * A set of matches and possible matches, which need to be resolved.
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class MatchingNodeSet {
 
-    /**
-     * Map of matching ast nodes that don't need to be resolved to their accuracy level.
-     * Each node is removed as it is reported.
-     */
-    SimpleLookupTable matchingNodes = new SimpleLookupTable(3); // node -> accuracy
-    private HashtableOfLong matchingNodesKeys = new HashtableOfLong(3); // sourceRange -> node
-    static  Integer         EXACT_MATCH       = new Integer(SearchMatch.A_ACCURATE);
-    static  Integer         POTENTIAL_MATCH   = new Integer(SearchMatch.A_INACCURATE);
-    static  Integer         ERASURE_MATCH     = new Integer(SearchPattern.R_ERASURE_MATCH);
+	/**
+	 * Map of matching ast nodes that don't need to be resolved to their accuracy level.
+	 * Each node is removed as it is reported.
+	 */
+	SimpleLookupTable matchingNodes = new SimpleLookupTable(3); // node -> accuracy
+	private HashtableOfLong matchingNodesKeys = new HashtableOfLong(3); // sourceRange -> node
+	static  Integer         EXACT_MATCH       = new Integer(SearchMatch.A_ACCURATE);
+	static  Integer         POTENTIAL_MATCH   = new Integer(SearchMatch.A_INACCURATE);
+	static  Integer         ERASURE_MATCH     = new Integer(SearchPattern.R_ERASURE_MATCH);
 
-    /**
-     * Tell whether locators need to resolve or not for current matching node set.
-     */
-    public boolean mustResolve;
+	/**
+	 * Tell whether locators need to resolve or not for current matching node set.
+	 */
+	public boolean mustResolve;
 
-    /**
-     * Set of possible matching ast nodes. They need to be resolved
-     * to determine if they really match the search pattern.
-     */
-    SimpleSet possibleMatchingNodesSet = new SimpleSet(7);
-    private HashtableOfLong possibleMatchingNodesKeys = new HashtableOfLong(7);
+	/**
+	 * Set of possible matching ast nodes. They need to be resolved
+	 * to determine if they really match the search pattern.
+	 */
+	SimpleSet possibleMatchingNodesSet = new SimpleSet(7);
+	private HashtableOfLong possibleMatchingNodesKeys = new HashtableOfLong(7);
 
 
-    public MatchingNodeSet(boolean mustResolvePattern) {
-        super();
-        this.mustResolve = mustResolvePattern;
-    }
+	public MatchingNodeSet(boolean mustResolvePattern) {
+		super();
+		this.mustResolve = mustResolvePattern;
+	}
 
-    public int addMatch(ASTNode node, int matchLevel) {
-        int maskedLevel = matchLevel & PatternLocator.MATCH_LEVEL_MASK;
-        switch (maskedLevel) {
-            case PatternLocator.INACCURATE_MATCH:
-                if (matchLevel != maskedLevel) {
-                    addTrustedMatch(node, new Integer(SearchMatch.A_INACCURATE + (matchLevel &
-                                                                                  org.eclipse.jdt.internal.core.search.matching
-                                                                                          .PatternLocator.FLAVORS_MASK)));
-                } else {
-                    addTrustedMatch(node, POTENTIAL_MATCH);
-                }
-                break;
-            case PatternLocator.POSSIBLE_MATCH:
-                addPossibleMatch(node);
-                break;
-            case PatternLocator.ERASURE_MATCH:
-                if (matchLevel != maskedLevel) {
-                    addTrustedMatch(node, new Integer(SearchPattern.R_ERASURE_MATCH + (matchLevel &
-                                                                                       PatternLocator.FLAVORS_MASK)));
-                } else {
-                    addTrustedMatch(node, ERASURE_MATCH);
-                }
-                break;
-            case PatternLocator.ACCURATE_MATCH:
-                if (matchLevel != maskedLevel) {
-				addTrustedMatch(node, new Integer(SearchMatch.A_ACCURATE+(matchLevel & PatternLocator.FLAVORS_MASK)));
+	public int addMatch(ASTNode node, int matchLevel) {
+		int maskedLevel = matchLevel & org.eclipse.jdt.internal.core.search.matching.PatternLocator.MATCH_LEVEL_MASK;
+		switch (maskedLevel) {
+			case org.eclipse.jdt.internal.core.search.matching.PatternLocator.INACCURATE_MATCH:
+				if (matchLevel != maskedLevel) {
+					addTrustedMatch(node, new Integer(SearchMatch.A_INACCURATE + (matchLevel &
+																				  org.eclipse.jdt.internal.core.search.matching
+																						  .PatternLocator.FLAVORS_MASK)));
+				} else {
+					addTrustedMatch(node, POTENTIAL_MATCH);
+				}
+				break;
+			case org.eclipse.jdt.internal.core.search.matching.PatternLocator.POSSIBLE_MATCH:
+				addPossibleMatch(node);
+				break;
+			case org.eclipse.jdt.internal.core.search.matching.PatternLocator.ERASURE_MATCH:
+				if (matchLevel != maskedLevel) {
+					addTrustedMatch(node, new Integer(SearchPattern.R_ERASURE_MATCH + (matchLevel &
+																					   org.eclipse.jdt.internal.core.search.matching
+																							   .PatternLocator.FLAVORS_MASK)));
+				} else {
+					addTrustedMatch(node, ERASURE_MATCH);
+				}
+				break;
+			case org.eclipse.jdt.internal.core.search.matching.PatternLocator.ACCURATE_MATCH:
+				if (matchLevel != maskedLevel) {
+					addTrustedMatch(node, new Integer(SearchMatch.A_ACCURATE + (matchLevel & PatternLocator.FLAVORS_MASK)));
 			} else {
 				addTrustedMatch(node, EXACT_MATCH);
 			}

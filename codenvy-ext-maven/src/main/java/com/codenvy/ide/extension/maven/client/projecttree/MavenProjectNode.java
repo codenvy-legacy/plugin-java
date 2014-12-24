@@ -18,8 +18,9 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.JavaProjectNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
@@ -27,6 +28,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Node that represents Maven project.
@@ -39,6 +41,10 @@ public class MavenProjectNode extends JavaProjectNode {
                             TreeSettings settings, EventBus eventBus, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        List<String> strings = data.getAttributes().get(MavenAttributes.PACKAGING);
+        if(strings != null && !strings.isEmpty()){
+            shouldAddExternalLibrariesNode = !strings.get(0).equals("pom");
+        }
     }
 
     /** {@inheritDoc} */
@@ -52,7 +58,6 @@ public class MavenProjectNode extends JavaProjectNode {
                     public void onSuccess(Array<ItemReference> children) {
                         final boolean isShowHiddenItems = settings.isShowHiddenItems();
                         Array<TreeNode<?>> newChildren = Collections.createArray();
-                        setChildren(newChildren);
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {
                                 AbstractTreeNode node = createChildNode(item, modules);
@@ -61,6 +66,7 @@ public class MavenProjectNode extends JavaProjectNode {
                                 }
                             }
                         }
+                        setChildren(newChildren);
                         callback.onSuccess(MavenProjectNode.this);
                     }
 

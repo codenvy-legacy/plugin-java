@@ -22,6 +22,9 @@ import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.shared.Jar;
+import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
@@ -34,12 +37,15 @@ import com.google.web.bindery.event.shared.EventBus;
 public class JavaTreeStructure extends GenericTreeStructure {
 
     protected final IconRegistry iconRegistry;
+    protected final JavaNavigationService service;
 
     protected JavaTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, EditorAgent editorAgent,
                                 AppContext appContext, ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
-                                DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                                DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                JavaNavigationService service) {
         super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, dtoUnmarshallerFactory);
         this.iconRegistry = iconRegistry;
+        this.service = service;
     }
 
     /** {@inheritDoc} */
@@ -66,5 +72,25 @@ public class JavaTreeStructure extends GenericTreeStructure {
 
     public SourceFileNode newSourceFileNode(AbstractTreeNode parent, ItemReference data) {
         return new SourceFileNode(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    }
+
+    public ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent){
+        return new ExternalLibrariesNode(parent, new Object(), eventBus, this, iconRegistry, service, dtoUnmarshallerFactory);
+    }
+
+    public JarNode newJarNode(ExternalLibrariesNode parent, Jar jar){
+        return new JarNode(parent, jar, eventBus, this, service, dtoUnmarshallerFactory, iconRegistry);
+    }
+
+    public JarContainerNode newJarContainerNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
+        return new JarContainerNode(parent, entry, eventBus, libId, service, dtoUnmarshallerFactory, this, iconRegistry);
+    }
+
+    public TreeNode<?> newJarFileNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
+        return new JarFileNode(parent,entry, eventBus, libId, service, dtoUnmarshallerFactory, iconRegistry);
+    }
+
+    public TreeNode<?> newJarClassNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
+        return new JarClassNode(parent, entry, eventBus, libId, service, dtoUnmarshallerFactory, iconRegistry);
     }
 }

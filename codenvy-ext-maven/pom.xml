@@ -26,6 +26,11 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.codenvy.commons</groupId>
+            <artifactId>codenvy-commons-lang</artifactId>
+            <version>${codenvy.commons.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.codenvy.ide</groupId>
             <artifactId>codenvy-ext-builder</artifactId>
             <version>${codenvy.ide.version}</version>

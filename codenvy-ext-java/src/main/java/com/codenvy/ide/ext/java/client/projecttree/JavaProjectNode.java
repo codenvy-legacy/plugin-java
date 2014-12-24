@@ -15,6 +15,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
+import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -25,8 +26,26 @@ import com.google.web.bindery.event.shared.EventBus;
  * @author Vladyslav Zhukovskii
  */
 public class JavaProjectNode extends ProjectNode {
+
+    private ExternalLibrariesNode librariesNode;
+
+    protected boolean shouldAddExternalLibrariesNode = true;
+
     public JavaProjectNode(TreeNode<?> parent, ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings,
                            EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    }
+
+    @Override
+    public void setChildren(Array<TreeNode<?>> children) {
+        if (shouldAddExternalLibrariesNode) {
+            librariesNode = ((JavaTreeStructure)treeStructure).newExternalLibrariesNode(this);
+            children.add(librariesNode);
+        }
+        super.setChildren(children);
+    }
+
+    public ExternalLibrariesNode getLibrariesNode() {
+        return librariesNode;
     }
 }

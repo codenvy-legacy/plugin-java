@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search.indexing;
 
@@ -16,6 +16,7 @@ import com.codenvy.ide.ext.java.server.core.search.SearchDocument;
 import com.codenvy.ide.ext.java.server.core.search.SearchEngine;
 import com.codenvy.ide.ext.java.server.core.search.SearchParticipant;
 import com.codenvy.ide.ext.java.server.internal.core.ClasspathEntry;
+import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.BasicSearchEngine;
 import com.codenvy.ide.ext.java.server.internal.core.search.PatternSearchJob;
@@ -35,7 +36,6 @@ import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.util.SimpleLookupTable;
 import org.eclipse.jdt.internal.compiler.util.SimpleSet;
-import org.eclipse.jdt.internal.core.JavaModel;
 import org.eclipse.jdt.internal.core.index.DiskIndex;
 import org.eclipse.jdt.internal.core.index.FileIndexLocation;
 import org.eclipse.jdt.internal.core.index.Index;
@@ -91,9 +91,11 @@ public class IndexManager extends JobManager implements IIndexConstants {
     private SimpleLookupTable participantsContainers = null;
     private boolean           participantUpdated     = false;
     private String indexLocation;
+    private JavaProject javaProject;
 
-    public IndexManager(String indexLocation) {
+    public IndexManager(String indexLocation, JavaProject javaProject) {
         this.indexLocation = indexLocation;
+        this.javaProject = javaProject;
         indexNamesMapFile = new File(getSavedIndexesDirectory(), "indexNamesMap.txt");
         savedIndexNamesFile = new File(getSavedIndexesDirectory(), "savedIndexNames.txt");
         participantIndexNamesFile = new File(getSavedIndexesDirectory(), "participantsIndexNames.txt");
@@ -123,7 +125,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
      */
     public void addBinary(IFile resource, IPath containerPath) {
 //        if (JavaCore.getPlugin() == null) return;
-        SearchParticipant participant = SearchEngine.getDefaultSearchParticipant(this);
+        SearchParticipant participant = SearchEngine.getDefaultSearchParticipant(this, javaProject);
         SearchDocument document = participant.getDocument(resource.getFullPath().toString());
         IndexLocation indexLocation = computeIndexLocation(containerPath);
         scheduleDocumentIndexing(document, containerPath, indexLocation, participant);
@@ -135,7 +137,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
      */
     public void addSource(java.nio.file.Path resource, IPath containerPath, SourceElementParser parser) {
 //        if (JavaCore.getPlugin() == null) return;
-        SearchParticipant participant = SearchEngine.getDefaultSearchParticipant(this);
+        SearchParticipant participant = SearchEngine.getDefaultSearchParticipant(this, javaProject);
         SearchDocument document = participant.getDocument(resource.toAbsolutePath().toString());
         document.setParser(parser);
         IndexLocation indexLocation = computeIndexLocation(containerPath);
@@ -148,7 +150,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
     public void cleanUpIndexes() {
         SimpleSet knownPaths = new SimpleSet();
         IJavaSearchScope scope = BasicSearchEngine.createWorkspaceScope();
-        PatternSearchJob job = new PatternSearchJob(null, SearchEngine.getDefaultSearchParticipant(this), scope, null, this);
+        PatternSearchJob job = new PatternSearchJob(null, SearchEngine.getDefaultSearchParticipant(this, javaProject), scope, null, this);
         Index[] selectedIndexes = job.getIndexes(null);
         for (int i = 0, l = selectedIndexes.length; i < l; i++) {
             IndexLocation IndexLocation = selectedIndexes[i].getIndexLocation();
@@ -616,7 +618,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
 //		request = new AddJarFileToIndex((IFile) target, indexFile, this, forceIndexUpdate);
 //	} else
 //        if (target instanceof File) {
-            request = new AddJarFileToIndex(path, indexFile, this, forceIndexUpdate);
+        request = new AddJarFileToIndex(path, indexFile, this, forceIndexUpdate, javaProject);
 //	} else if (target instanceof IContainer) {
 //		request = new IndexBinaryFolder((IContainer) target, this);
 //        } else {
@@ -708,7 +710,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
     }
 
     private void rebuildIndex(IndexLocation indexLocation, IPath containerPath) {
-        Object target = JavaModel.getTarget(containerPath, true);
+        Object target = JavaModelManager.getTarget(containerPath, true);
         if (target == null) return;
 
         if (VERBOSE)
@@ -1053,6 +1055,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
                 if (savedSignature.equals(new String(names[0]))) {
                     for (int i = 1, l = names.length - 1; i < l; i += 2) {
                         IndexLocation indexPath = IndexLocation.createIndexLocation(new URL(new String(names[i])));
+                        if (indexPath == null) continue;
                         this.indexLocations.put(new Path(new String(names[i + 1])), indexPath);
                         this.indexStates.put(indexPath, REUSE_STATE);
                     }

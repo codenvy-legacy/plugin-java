@@ -30,6 +30,9 @@ public class RoutingTypes {
     public static final int FORMAT_RESULT              = 12;
     public static final int PREFERENCE_FORMAT_SETTINGS = 13;
     public static final int DEPENDENCIES_UPDATED       = 14;
+    public static final int COMPUTE_JAVADOC_HANDE      = 15;
+    public static final int JAVADOC_HANDLE_COMPUTED    = 16;
+    public static final int FILE_CLOSED                = 17;
 
 
 }

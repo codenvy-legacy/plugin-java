@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.server;
 
 import com.codenvy.api.builder.BuildStatus;
 import com.codenvy.api.builder.BuilderException;
+import com.codenvy.api.builder.dto.BuildOptions;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.core.rest.HttpJsonHelper;
 import com.codenvy.api.core.rest.shared.dto.Link;
@@ -162,7 +163,7 @@ public class RestNameEnvironment {
     }
 
     private JavaProject getJavaProject(String projectPath) {
-        return javaProjectService.getOrCreateJavaProject(wsId, projectPath, request.getSession().getId());
+        return javaProjectService.getOrCreateJavaProject(wsId, projectPath);
     }
 
     @GET
@@ -266,7 +267,7 @@ public class RestNameEnvironment {
 
         String url = apiUrl + "/builder/" + wsId + "/dependencies";
         projectWatcher.projectOpened(request.getSession().getId(), wsId, projectPath);
-        return getDependencies(url, projectPath, "copy");
+        return getDependencies(url, projectPath, "copy", null);
     }
 
     /** Get list of all package names in project */
@@ -286,20 +287,36 @@ public class RestNameEnvironment {
 
             File projectDepDir = new File(temp, wsId + projectPath);
             projectDepDir.mkdirs();
-            projectDepDir.deleteOnExit();
 
             Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
             if (downloadLink != null) {
-                File zip = doDownload(downloadLink.getHref(), projectPath);
+                File zip = doDownload(downloadLink.getHref(), projectPath, "dependencies.zip");
                 ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
             }
+
+            BuildOptions buildOptions = DtoFactory.getInstance().createDto(BuildOptions.class);
+            buildOptions.getOptions().put("-Dclassifier", "sources");
+            String url = apiUrl + "/builder/" + wsId + "/dependencies";
+            BuildTaskDescriptor dependencies = getDependencies(url, projectPath, "copy", buildOptions);
+            BuildTaskDescriptor buildTaskDescriptor = waitTaskFinish(dependencies);
+            if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
+                buildFailed(finishedBuildStatus);
+            }
+            File projectSourcesJars = new File(projectDepDir,"sources");
+            projectSourcesJars.mkdirs();
+            downloadLink = findLink("download result", buildTaskDescriptor.getLinks());
+            if (downloadLink != null) {
+                File zip = doDownload(downloadLink.getHref(), projectPath, "sources.zip");
+                ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectSourcesJars);
+            }
+
         } catch (Throwable debug) {
             LOG.error("RestNameEnvironment", debug);
             throw new WebApplicationException(debug);
         }
     }
 
-    private File doDownload(String downloadURL, String projectPath) throws IOException {
+    private File doDownload(String downloadURL, String projectPath, String zipName) throws IOException {
         HttpURLConnection http = null;
         HttpStream stream = null;
         try {
@@ -313,7 +330,7 @@ public class RestNameEnvironment {
             // Connection closed automatically when input stream closed.
             // If IOException or BuilderException occurs then connection closed immediately.
             stream = new HttpStream(http);
-            java.nio.file.Path path = Paths.get(temp, wsId + projectPath + "/dependencies.zip");
+            java.nio.file.Path path = Paths.get(temp, wsId + projectPath + "/" + zipName);
             Files.copy(stream, path);
             return path.toFile();
         } catch (MalformedURLException e) {
@@ -375,13 +392,12 @@ public class RestNameEnvironment {
 
 
     @Nonnull
-    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType)
+    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType, @Nullable
+                                                BuildOptions options)
             throws Exception {
         Pair<String, String> projectParam = Pair.of("project", projectName);
         Pair<String, String> typeParam = Pair.of("type", analyzeType);
-        BuildTaskDescriptor buildStatus = HttpJsonHelper.request(BuildTaskDescriptor.class, url, "POST", null, projectParam, typeParam);
-        //buildStatus = waitTaskFinish(buildStatus);
-        return buildStatus;
+        return HttpJsonHelper.request(BuildTaskDescriptor.class, url, "POST", options, projectParam, typeParam);
     }
 
 

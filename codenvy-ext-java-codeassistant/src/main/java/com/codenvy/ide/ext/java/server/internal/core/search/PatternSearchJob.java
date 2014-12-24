@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2004, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *    IBM Corporation - initial API and implementation
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core.search;
 
@@ -31,67 +31,67 @@ import java.io.IOException;
 
 public class PatternSearchJob implements IJob {
 
-    protected SearchPattern       pattern;
-    protected IJavaSearchScope    scope;
-    protected SearchParticipant   participant;
-    protected IndexQueryRequestor requestor;
-    private IndexManager indexManager;
-    protected boolean areIndexesReady;
-    protected long executionTime = 0;
+	protected SearchPattern       pattern;
+	protected IJavaSearchScope    scope;
+	protected SearchParticipant   participant;
+	protected IndexQueryRequestor requestor;
+	protected boolean             areIndexesReady;
+	protected long executionTime = 0;
+	private IndexManager indexManager;
 
-    public PatternSearchJob(SearchPattern pattern, SearchParticipant participant, IJavaSearchScope scope, IndexQueryRequestor requestor,
-                            IndexManager indexManager) {
-        this.pattern = pattern;
-        this.participant = participant;
-        this.scope = scope;
-        this.requestor = requestor;
-        this.indexManager = indexManager;
-    }
+	public PatternSearchJob(SearchPattern pattern, SearchParticipant participant, IJavaSearchScope scope, IndexQueryRequestor requestor,
+							IndexManager indexManager) {
+		this.pattern = pattern;
+		this.participant = participant;
+		this.scope = scope;
+		this.requestor = requestor;
+		this.indexManager = indexManager;
+	}
 
-    public boolean belongsTo(String jobFamily) {
-        return true;
-    }
+	public boolean belongsTo(String jobFamily) {
+		return true;
+	}
 
-    public void cancel() {
-        // search job is cancelled through progress
-    }
+	public void cancel() {
+		// search job is cancelled through progress
+	}
 
-    public void ensureReadyToRun() {
-        if (!this.areIndexesReady)
-            getIndexes(null/*progress*/); // may trigger some index recreation
-    }
+	public void ensureReadyToRun() {
+		if (!this.areIndexesReady)
+			getIndexes(null/*progress*/); // may trigger some index recreation
+	}
 
-    public boolean execute(IProgressMonitor progressMonitor) {
-        if (progressMonitor != null && progressMonitor.isCanceled()) throw new OperationCanceledException();
+	public boolean execute(IProgressMonitor progressMonitor) {
+		if (progressMonitor != null && progressMonitor.isCanceled()) throw new OperationCanceledException();
 
-        boolean isComplete = COMPLETE;
-        this.executionTime = 0;
-        Index[] indexes = getIndexes(progressMonitor);
-        try {
-            int max = indexes.length;
-            if (progressMonitor != null)
-                progressMonitor.beginTask("", max); //$NON-NLS-1$
-            for (int i = 0; i < max; i++) {
-                isComplete &= search(indexes[i], progressMonitor);
-                if (progressMonitor != null) {
-                    if (progressMonitor.isCanceled()) throw new OperationCanceledException();
-                    progressMonitor.worked(1);
-                }
-            }
-            if (JobManager.VERBOSE)
-                Util.verbose("-> execution time: " + this.executionTime + "ms - " + this);//$NON-NLS-1$//$NON-NLS-2$
-            return isComplete;
-        } finally {
-            if (progressMonitor != null)
-                progressMonitor.done();
-        }
-    }
+		boolean isComplete = COMPLETE;
+		this.executionTime = 0;
+		Index[] indexes = getIndexes(progressMonitor);
+		try {
+			int max = indexes.length;
+			if (progressMonitor != null)
+				progressMonitor.beginTask("", max); //$NON-NLS-1$
+			for (int i = 0; i < max; i++) {
+				isComplete &= search(indexes[i], progressMonitor);
+				if (progressMonitor != null) {
+					if (progressMonitor.isCanceled()) throw new OperationCanceledException();
+					progressMonitor.worked(1);
+				}
+			}
+			if (JobManager.VERBOSE)
+				Util.verbose("-> execution time: " + this.executionTime + "ms - " + this);//$NON-NLS-1$//$NON-NLS-2$
+			return isComplete;
+		} finally {
+			if (progressMonitor != null)
+				progressMonitor.done();
+		}
+	}
 
-    public Index[] getIndexes(IProgressMonitor progressMonitor) {
-        // acquire the in-memory indexes on the fly
-        IndexLocation[] indexLocations;
-        int length;
-        if (this.participant instanceof JavaSearchParticipant) {
+	public Index[] getIndexes(IProgressMonitor progressMonitor) {
+		// acquire the in-memory indexes on the fly
+		IndexLocation[] indexLocations;
+		int length;
+		if (this.participant instanceof JavaSearchParticipant) {
 		indexLocations = ((JavaSearchParticipant)this.participant).selectIndexURLs(this.pattern, this.scope);
 		length = indexLocations.length;
 	} else {
