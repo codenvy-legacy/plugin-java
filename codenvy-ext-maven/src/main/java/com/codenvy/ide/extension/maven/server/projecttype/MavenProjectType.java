@@ -44,12 +44,12 @@ public class MavenProjectType extends ProjectType2 {
         addVariableDefinition(MavenAttributes.GROUP_ID, "", true, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.ARTIFACT_ID, "", true, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.VERSION, "", true, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PARENT_VERSION, "", true, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PARENT_ARTIFACT_ID, "", true, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PARENT_GROUP_ID, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PARENT_VERSION, "", false, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PARENT_ARTIFACT_ID, "", false, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PARENT_GROUP_ID, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.PACKAGING, "", true, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", true, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", false, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", false, mavenValueProviderFactory);
 
         addParent(javaProjectType);
         setDefaultBuilder("maven");

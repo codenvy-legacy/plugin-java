@@ -81,12 +81,6 @@ public class SimpleProjectGeneratorTest {
         attributeValues.put(MavenAttributes.VERSION, new AttributeValue("1.0-SNAPSHOT"));
         attributeValues.put(MavenAttributes.SOURCE_FOLDER, new AttributeValue("src/main/java"));
         attributeValues.put(MavenAttributes.TEST_SOURCE_FOLDER, new AttributeValue("src/test/java"));
-//        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
-//        NewProject newProjectDescriptor = DtoFactory.getInstance().createDto(NewProject.class)
-//                                                    .withType("my_project_type")
-//                                                    .withDescription("new project")
-//                                                    .withAttributes(attributeValues)
-//                                                    .withGeneratorDescription(generatorDescription);
 
         FolderEntry folder = pm.getProject(workspace, "my_project").getBaseFolder();
 

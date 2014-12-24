@@ -18,16 +18,23 @@ import com.codenvy.api.project.server.*;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.Attribute2;
+import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
+import com.codenvy.api.project.shared.Builders;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
+import com.codenvy.ide.extension.maven.server.projecttype.generators.MavenProjectGenerator;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
+import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +51,7 @@ public class MavenProjectTypeTest {
     private static final String workspace = "my_ws";
 
     private ProjectManager        pm;
+
 
     @Before
     public void setUp() throws Exception {
@@ -72,7 +80,10 @@ public class MavenProjectTypeTest {
         ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(projTypes);
 
         //ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
-        ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
+        Set<ProjectHandler> handlers = new HashSet<>();
+        handlers.add(new MavenProjectGenerator(null, vfsRegistry));
+
+        ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(handlers);
 
         pm = new DefaultProjectManager(vfsRegistry, eventService,
                 ptRegistry, handlerRegistry);
@@ -94,21 +105,42 @@ public class MavenProjectTypeTest {
     @Test
     public void testMavenProject() throws Exception {
 
-        // TODO
 
-//        Project project = pm.createProject(workspace, "myProject", new ProjectConfig("my config", "maven"), null);
-//
-//        ProjectConfig config = project.getConfig();
-//
-//        System.out.println(">>>>>" + config.getBuilders()+" "+config.getRunners()+" "+config.getAttributes());
-//
-//
-//
-//        for(String name:config.getAttributes().keySet())
-//            System.out.println(">>a>>> " + config.getAttributes().get(name));
-//
+        Map<String, AttributeValue> attributes = new HashMap<>();
+        attributes.put(MavenAttributes.ARTIFACT_ID, new AttributeValue("myartifact"));
+        attributes.put(MavenAttributes.GROUP_ID, new AttributeValue("mygroup"));
+        attributes.put(MavenAttributes.VERSION, new AttributeValue("1.0"));
+        attributes.put(MavenAttributes.PACKAGING, new AttributeValue("jar"));
+        //attributes.put(MavenAttributes., new AttributeValue("jar"));
+
+        Project project = pm.createProject(workspace, "myProject",
+                new ProjectConfig("my config", "maven", attributes, null, null, null),
+                null);
+
+        ProjectConfig config = project.getConfig();
+
+        Assert.assertEquals(config.getBuilders().getDefault(), "maven");
+
+//        System.out.println(" >>>" + config.getAttributes().get(MavenAttributes.ARTIFACT_ID).getString() + " "+
+//                        attributes.get(MavenAttributes.ARTIFACT_ID).getString());
+
+        Assert.assertEquals(config.getAttributes().get(MavenAttributes.ARTIFACT_ID).getString(), "myartifact");
+        Assert.assertEquals(config.getAttributes().get(MavenAttributes.VERSION).getString(), "1.0");
+        Assert.assertEquals(config.getAttributes().get("language").getString(), "java");
 
 
+        for(VirtualFileEntry file:project.getBaseFolder().getChildren()) {
+
+            if(file.getName().equals("pom.xml")) {
+
+                Model pom = Model.readFrom(file.getVirtualFile().getContent().getStream());
+
+                Assert.assertEquals(pom.getArtifactId(), "myartifact");
+                Assert.assertEquals(pom.getVersion(), "1.0");
+
+            }
+
+        }
 
     }
 

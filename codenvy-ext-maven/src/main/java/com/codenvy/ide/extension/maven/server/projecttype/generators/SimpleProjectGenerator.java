@@ -54,9 +54,14 @@ public class SimpleProjectGenerator {
         AttributeValue artifactId = attributes.get(ARTIFACT_ID);
         AttributeValue groupId = attributes.get(GROUP_ID);
         AttributeValue version = attributes.get(VERSION);
-        if (artifactId == null || groupId == null || version == null) {
-            throw new ServerException("Missed some required attribute (groupId, artifactId or version)");
-        }
+        if (artifactId == null)
+            throw new ConflictException("Missed required attribute artifactId");
+
+        if (groupId == null)
+            throw new ConflictException("Missed required attribute groupId");
+
+        if (version == null)
+            throw new ConflictException("Missed required attribute version");
 
         Model model = Model.createModel();
         model.setModelVersion("4.0.0");
