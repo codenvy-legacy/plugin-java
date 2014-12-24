@@ -15,6 +15,8 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.handlers.ProjectHandler;
+import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.Attribute2;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
@@ -69,10 +71,11 @@ public class MavenProjectTypeTest {
 
         ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(projTypes);
 
-        ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+        //ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+        ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
 
         pm = new DefaultProjectManager(vfsRegistry, eventService,
-                ptRegistry, generatorRegistry);
+                ptRegistry, handlerRegistry);
 
     }
 

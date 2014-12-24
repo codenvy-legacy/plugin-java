@@ -56,7 +56,7 @@ public class ArchetypeProjectGeneratorTest {
 
     @Test
     public void testGetProjectTypeId() throws Exception {
-        Assert.assertEquals(MAVEN_ID, generator.getProjectTypeId());
+        Assert.assertEquals(MAVEN_ID, generator.getProjectType());
     }
 
     @Test(expected = ServerException.class)
@@ -81,6 +81,6 @@ public class ArchetypeProjectGeneratorTest {
 //                                                    .withAttributes(attributeValues)
 //                                                    .withGeneratorDescription(generatorDescription);
 
-        generator.generateProject(null, attributeValues, options);
+        generator.onCreateProject(null, attributeValues, options);
     }
 }

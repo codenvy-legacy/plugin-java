@@ -14,23 +14,18 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.ide.maven.tools.Build;
 import com.codenvy.ide.maven.tools.Model;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;

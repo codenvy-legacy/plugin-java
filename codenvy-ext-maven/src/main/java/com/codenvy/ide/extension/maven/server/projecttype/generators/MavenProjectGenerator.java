@@ -14,7 +14,7 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectGenerator;
+import com.codenvy.api.project.server.handlers.CreateProjectHandler;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
@@ -28,7 +28,7 @@ import java.util.Map;
  * @author gazarenkov
  */
 @Singleton
-public class MavenProjectGenerator implements ProjectGenerator {
+public class MavenProjectGenerator implements CreateProjectHandler {
 
     private final String[] slaveBuilderURLs;
     private final VirtualFileSystemRegistry vfsRegistry;
@@ -43,12 +43,12 @@ public class MavenProjectGenerator implements ProjectGenerator {
     }
 
     @Override
-    public String getProjectTypeId() {
+    public String getProjectType() {
         return MavenAttributes.MAVEN_ID;
     }
 
     @Override
-    public void generateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes,
+    public void onCreateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes,
                                 Map<String, String> options) throws ForbiddenException, ConflictException, ServerException {
 
         if(options != null && options.get("type").equals(MavenAttributes.ARCHETYPE_GENERATOR_ID))

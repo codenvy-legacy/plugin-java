@@ -15,6 +15,8 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.handlers.ProjectHandler;
+import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
@@ -64,7 +66,7 @@ public class SimpleProjectGeneratorTest {
 
     @Test
     public void testGetProjectTypeId() throws Exception {
-        Assert.assertEquals(MavenAttributes.MAVEN_ID, generator.getProjectTypeId());
+        Assert.assertEquals(MavenAttributes.MAVEN_ID, generator.getProjectType());
     }
 
     @Test
@@ -88,7 +90,7 @@ public class SimpleProjectGeneratorTest {
 
         FolderEntry folder = pm.getProject(workspace, "my_project").getBaseFolder();
 
-        generator.generateProject(folder, attributeValues, null);
+        generator.onCreateProject(folder, attributeValues, null);
 
         VirtualFileEntry pomFile = pm.getProject(workspace, "my_project").getBaseFolder().getChild("pom.xml");
         Assert.assertTrue(pomFile.isFile());
@@ -128,9 +130,10 @@ public class SimpleProjectGeneratorTest {
                 }, vfsRegistry);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
 
-        ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+        //ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+        ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
 
-        pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry, generatorRegistry);
+        pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry, handlerRegistry);
         pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()), null);
     }
 }

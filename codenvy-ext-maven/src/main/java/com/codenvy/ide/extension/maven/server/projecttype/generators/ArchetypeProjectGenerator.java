@@ -21,9 +21,7 @@ import com.codenvy.api.core.util.FileCleaner;
 import com.codenvy.api.core.util.HttpDownloadPlugin;
 import com.codenvy.api.core.util.ValueHolder;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystem;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.commons.lang.NamedThreadFactory;
@@ -35,12 +33,10 @@ import com.google.inject.name.Named;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -50,10 +46,8 @@ import java.util.concurrent.Executors;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.FAILED;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.IN_PROGRESS;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.SUCCESSFUL;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
