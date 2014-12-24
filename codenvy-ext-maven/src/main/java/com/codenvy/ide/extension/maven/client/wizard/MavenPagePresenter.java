@@ -124,9 +124,11 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
             attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
 
             if (view.isGenerateFromArchetypeSelected()) {
-                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(ARCHETYPE_GENERATOR_ID));
+                HashMap<String, String> options = new HashMap<>();
+                options.put("type", MavenAttributes.ARCHETYPE_GENERATOR_ID);
+                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withOptions(options));
             } else {
-                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
+                wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class));
             }
 
             BuildersDescriptor builders = project.getBuilders();
@@ -217,7 +219,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
         if (isGenerateFromArchetype) {
             wizardContext.putData(GENERATOR, getGeneratorDescription(view.getArchetype()));
         } else {
-            wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID));
+            wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class));
         }
     }
 
@@ -228,12 +230,13 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
         HashMap<String, String> options = new HashMap<>();
+        options.put("type", MavenAttributes.ARCHETYPE_GENERATOR_ID);
         options.put("archetypeGroupId", archetype.getGroupId());
         options.put("archetypeArtifactId", archetype.getArtifactId());
         options.put("archetypeVersion", archetype.getVersion());
         if (archetype.getRepository() != null) {
             options.put("archetypeRepository", archetype.getRepository());
         }
-        return dtoFactory.createDto(GeneratorDescription.class).withName(ARCHETYPE_GENERATOR_ID).withOptions(options);
+        return dtoFactory.createDto(GeneratorDescription.class).withOptions(options);
     }
 }

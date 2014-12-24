@@ -73,12 +73,6 @@ public class FileWatcher {
             }
         };
         editor.addPropertyListener(propertyListener);
-        editor.addCloseHandler(new EditorPartPresenter.EditorPartCloseHandler() {
-            @Override
-            public void onClose(EditorPartPresenter editor) {
-                worker.fileClosed(editor.getEditorInput().getFile().getPath());
-            }
-        });
     }
 
     private String getFQN(VirtualFile file) {

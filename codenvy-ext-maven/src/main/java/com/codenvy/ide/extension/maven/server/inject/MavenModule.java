@@ -10,15 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.inject;
 
-import com.codenvy.api.project.server.ProjectGenerator;
 import com.codenvy.api.project.server.ValueProviderFactory;
+import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.ide.extension.maven.server.MavenMultimoduleAutoBuilder;
 import com.codenvy.ide.extension.maven.server.MavenPomService;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectType;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenValueProviderFactory;
-import com.codenvy.ide.extension.maven.server.projecttype.generators.ArchetypeProjectGenerator;
-import com.codenvy.ide.extension.maven.server.projecttype.generators.SimpleProjectGenerator;
+import com.codenvy.ide.extension.maven.server.projecttype.generators.MavenProjectGenerator;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -37,8 +36,8 @@ public class MavenModule extends AbstractModule {
         Multibinder<ProjectType2> projectTypeMultibinder = Multibinder.newSetBinder(binder(), ProjectType2.class);
         projectTypeMultibinder.addBinding().to(MavenProjectType.class);
 
-        Multibinder<ProjectGenerator> projectGeneratorMultibinder = Multibinder.newSetBinder(binder(), ProjectGenerator.class);
-        projectGeneratorMultibinder.addBinding().to(SimpleProjectGenerator.class);
-        projectGeneratorMultibinder.addBinding().to(ArchetypeProjectGenerator.class);
+        Multibinder<ProjectHandler> projectGeneratorMultibinder = Multibinder.newSetBinder(binder(), ProjectHandler.class);
+        projectGeneratorMultibinder.addBinding().to(MavenProjectGenerator.class);
+//        projectGeneratorMultibinder.addBinding().to(ArchetypeProjectGenerator.class);
     }
 }

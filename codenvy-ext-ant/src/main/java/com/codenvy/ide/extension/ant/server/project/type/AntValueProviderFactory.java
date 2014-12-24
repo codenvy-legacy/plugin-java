@@ -85,14 +85,14 @@ public class AntValueProviderFactory implements ValueProviderFactory {
         public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
                 org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(project));
-                return Collections.unmodifiableList(getValues(antProject));
+                return Collections.unmodifiableList(getValues(attributeName));
             } catch (Exception  e) {
                 throw readException(e);
             }
         }
 
         @Override
-        public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
+        public void setValues(String attributeName, List<String> value) throws ValueStorageException {
 
         }
 
