@@ -33,8 +33,6 @@ import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
 import com.codenvy.ide.runtime.AssertionFailedException;
 import com.codenvy.ide.util.UUID;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.webworker.client.messages.MessageFilter;
 
 import java.util.ArrayList;
@@ -98,18 +96,7 @@ public class WorkerCodeAssist {
                                                new MessageFilter.MessageRecipient<ComputeCAProposalsMessage>() {
                                                    @Override
                                                    public void onMessageReceived(final ComputeCAProposalsMessage message) {
-                                                       GWT.runAsync(new RunAsyncCallback() {
-                                                           @Override
-                                                           public void onFailure(Throwable throwable) {
-                                                               throw new RuntimeException(throwable);
-                                                               //TODO log error
-                                                           }
-
-                                                           @Override
-                                                           public void onSuccess() {
-                                                               handleCAMessage(message);
-                                                           }
-                                                       });
+                                                       handleCAMessage(message);
                                                    }
                                                });
     }

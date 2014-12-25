@@ -66,8 +66,6 @@ import com.codenvy.ide.ext.java.messages.Problem;
 import com.codenvy.ide.ext.java.messages.RemoveFqnMessage;
 import com.codenvy.ide.ext.java.messages.RoutingTypes;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.webworker.client.MessageEvent;
 import com.google.gwt.webworker.client.MessageHandler;
 import com.google.gwt.webworker.client.messages.MessageFilter;
@@ -296,15 +294,6 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
 
     @Override
     public void onMessageReceived(final ParseMessage message) {
-        GWT.runAsync(new RunAsyncCallback() {
-            @Override
-            public void onFailure(Throwable throwable) {
-                throw new RuntimeException(throwable);
-                //TODO log error
-            }
-
-            @Override
-            public void onSuccess() {
                 nameEnvironment.setProjectPath(message.projectPath());
                 cuVar = new CUVariables(message.fileName(), message.packageName(), projectName);
 
@@ -334,9 +323,6 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 problemsMessage.setId(message.id());
                 worker.sendMessage(problemsMessage.serialize());
                 outlineModelUpdater.onCompilationUnitChanged(unit, message.filePath());
-            }
-        });
-
     }
 
     private MessagesImpls.ProblemImpl convertProblem(IProblem p) {
