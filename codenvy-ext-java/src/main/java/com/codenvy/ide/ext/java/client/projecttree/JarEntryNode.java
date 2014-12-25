@@ -27,6 +27,7 @@ public abstract class JarEntryNode extends AbstractTreeNode<JarEntry> {
 
     protected final JavaNavigationService  service;
     protected final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final   String                 displayName;
     protected       int                    libId;
 
     /**
@@ -45,6 +46,11 @@ public abstract class JarEntryNode extends AbstractTreeNode<JarEntry> {
         this.libId = libId;
         this.service = service;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        if (data.getName().endsWith(".class")) {
+            displayName = data.getName().substring(0, data.getName().lastIndexOf(".class"));
+        } else {
+            displayName = data.getName();
+        }
     }
 
     @Nonnull
@@ -56,6 +62,6 @@ public abstract class JarEntryNode extends AbstractTreeNode<JarEntry> {
     @Nonnull
     @Override
     public String getDisplayName() {
-        return data.getName();
+        return displayName;
     }
 }

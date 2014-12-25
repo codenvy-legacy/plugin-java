@@ -76,7 +76,7 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
     @Nonnull
     @Override
     public String getName() {
-        return getDisplayName();
+        return data.getName();
     }
 
     @Nullable
