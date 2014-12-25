@@ -25,6 +25,8 @@ import com.codenvy.ide.ext.java.client.action.NewPackageAction;
 import com.codenvy.ide.ext.java.client.action.OpenDeclarationAction;
 import com.codenvy.ide.ext.java.client.action.QuickDocumentationAction;
 import com.codenvy.ide.ext.java.shared.Constants;
+import com.codenvy.ide.util.browser.UserAgent;
+import com.codenvy.ide.util.input.KeyCodeMap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -83,9 +85,12 @@ public class JavaExtension {
         DefaultActionGroup codeGroup = (DefaultActionGroup)actionManager.getAction(GROUP_CODE);
         codeGroup.add(quickDocumentationAction, Constraints.LAST);
         codeGroup.add(openDeclarationAction, Constraints.LAST);
-
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('q').build(), "showQuickDoc");
-        keyBinding.getGlobal().addKey(new KeyBuilder().none().charCode(57358).build(), "openJavaDeclaration");
+        if(UserAgent.isMac()) {
+            keyBinding.getGlobal().addKey(new KeyBuilder().control().charCode('j').build(), "showQuickDoc");
+        } else {
+            keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('q').build(), "showQuickDoc");
+        }
+        keyBinding.getGlobal().addKey(new KeyBuilder().none().charCode(KeyCodeMap.F4).build(), "openJavaDeclaration");
     }
 
     @Inject
