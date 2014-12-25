@@ -13,13 +13,17 @@ package com.codenvy.ide.ext.java.client;
 import com.codenvy.api.builder.BuildStatus;
 import com.codenvy.api.builder.dto.BuildTaskDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
+import com.codenvy.ide.ext.java.client.projecttree.ExternalLibrariesNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.extension.builder.client.build.BuildController;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -31,6 +35,7 @@ import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.web.bindery.event.shared.EventBus;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -47,17 +52,20 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  */
 @Singleton
 public class DependenciesUpdater {
-    private NotificationManager      notificationManager;
-    private BuildContext             buildContext;
-    private AsyncRequestFactory      asyncRequestFactory;
-    private JavaParserWorker         parserWorker;
-    private EditorAgent              editorAgent;
-    private BuildController          buildController;
-    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    private NotificationManager    notificationManager;
+    private BuildContext           buildContext;
+    private AsyncRequestFactory    asyncRequestFactory;
+    private JavaParserWorker       parserWorker;
+    private EditorAgent            editorAgent;
+    private BuildController        buildController;
+    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private EventBus               eventBus;
+    private AppContext context;
     private JavaLocalizationConstant javaLocalizationConstant;
     private String                   workspaceId;
     private Queue<Pair<ProjectDescriptor, Boolean>> projects = new LinkedList<>();
     private boolean                                 updating = false;
+    private JavaTreeStructure javaTreeStructure;
 
     @Inject
     public DependenciesUpdater(JavaLocalizationConstant javaLocalizationConstant,
@@ -68,7 +76,9 @@ public class DependenciesUpdater {
                                EditorAgent editorAgent,
                                BuildController buildController,
                                @Named("workspaceId") String workspaceId,
-                               DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                               DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                               EventBus eventBus,
+                               AppContext context) {
         this.javaLocalizationConstant = javaLocalizationConstant;
         this.notificationManager = notificationManager;
         this.buildContext = buildContext;
@@ -78,6 +88,8 @@ public class DependenciesUpdater {
         this.buildController = buildController;
         this.workspaceId = workspaceId;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.eventBus = eventBus;
+        this.context = context;
     }
 
     public void updateDependencies(final ProjectDescriptor project, final boolean force) {
@@ -85,7 +97,10 @@ public class DependenciesUpdater {
             projects.add(new Pair<>(project, force));
             return;
         }
-
+        javaTreeStructure = null;
+        if (context.getCurrentProject().getCurrentTree() instanceof JavaTreeStructure) {
+            javaTreeStructure = (JavaTreeStructure)context.getCurrentProject().getCurrentTree();
+        }
         final Notification notification = new Notification(javaLocalizationConstant.updatingDependencies(), PROGRESS);
         notificationManager.showNotification(notification);
 
@@ -131,6 +146,13 @@ public class DependenciesUpdater {
                                                               }
                                                           }
                                                       });
+                                            if(javaTreeStructure != null){
+                                                ExternalLibrariesNode librariesNode =
+                                                        javaTreeStructure.getExternalLibrariesNode(project.getPath());
+                                                if(librariesNode != null){
+                                                    eventBus.fireEvent(new RefreshProjectTreeEvent(librariesNode));
+                                                }
+                                            }
                                            if (!projects.isEmpty()) {
                                                Pair<ProjectDescriptor, Boolean> pair = projects.poll();
                                                updateDependencies(pair.first, pair.second);

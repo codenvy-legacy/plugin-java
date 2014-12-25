@@ -32,6 +32,9 @@ import com.codenvy.ide.util.Pair;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Tree structure for Java project.
  *
@@ -41,6 +44,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
 
     protected final IconRegistry          iconRegistry;
     protected final JavaNavigationService service;
+    protected final Map<String, ExternalLibrariesNode> librariesNodeMap = new HashMap<>();
 
     protected JavaTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, EditorAgent editorAgent,
                                 AppContext appContext, ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
@@ -51,9 +55,9 @@ public class JavaTreeStructure extends GenericTreeStructure {
         this.service = service;
     }
 
-    public void getClassFileByPath( final int libId, String path, final AsyncCallback<TreeNode<?>> callback) {
+    public void getClassFileByPath(String projectPath, final int libId, String path, final AsyncCallback<TreeNode<?>> callback) {
         Unmarshallable<JarEntry> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(JarEntry.class);
-        service.getEntry(project.getPath(), libId, path, new AsyncRequestCallback<JarEntry>(unmarshaller) {
+        service.getEntry(projectPath, libId, path, new AsyncRequestCallback<JarEntry>(unmarshaller) {
             @Override
             protected void onSuccess(JarEntry result) {
                 callback.onSuccess(createNode(createProject(), result, libId));
@@ -65,8 +69,9 @@ public class JavaTreeStructure extends GenericTreeStructure {
             }
         });
     }
+
     public TreeNode<?> createNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
-        switch (entry.getType()){
+        switch (entry.getType()) {
             case FOLDER:
             case PACKAGE:
                 return newJarContainerNode(parent, entry, libId);
@@ -79,6 +84,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
         }
         return null;
     }
+
     /**
      * Find class in external libs.
      *
@@ -221,7 +227,11 @@ public class JavaTreeStructure extends GenericTreeStructure {
     }
 
     public ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent) {
-        return new ExternalLibrariesNode(parent, new Object(), eventBus, this, iconRegistry, service, dtoUnmarshallerFactory);
+
+        ExternalLibrariesNode librariesNode =
+                new ExternalLibrariesNode(parent, new Object(), eventBus, this, iconRegistry, service, dtoUnmarshallerFactory);
+        librariesNodeMap.put(parent.getData().getPath(), librariesNode);
+        return librariesNode;
     }
 
     public JarNode newJarNode(ExternalLibrariesNode parent, Jar jar) {
@@ -238,6 +248,10 @@ public class JavaTreeStructure extends GenericTreeStructure {
 
     public TreeNode<?> newJarClassNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
         return new JarClassNode(parent, entry, eventBus, libId, service, dtoUnmarshallerFactory, iconRegistry);
+    }
+
+    public ExternalLibrariesNode getExternalLibrariesNode(String projectPath) {
+        return librariesNodeMap.get(projectPath);
     }
 
 }

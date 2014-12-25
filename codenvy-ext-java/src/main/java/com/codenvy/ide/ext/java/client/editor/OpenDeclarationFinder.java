@@ -112,7 +112,7 @@ public class OpenDeclarationFinder {
         AbstractTreeStructure tree = context.getCurrentProject().getCurrentTree();
         if (descriptor.isBinary()) {
             if(tree instanceof JavaTreeStructure){
-                ((JavaTreeStructure)tree).getClassFileByPath(descriptor.getLibId(), descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
+                ((JavaTreeStructure)tree).getClassFileByPath(context.getCurrentProject().getProjectDescription().getPath(), descriptor.getLibId(), descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         Log.error(OpenDeclarationFinder.class, caught);
