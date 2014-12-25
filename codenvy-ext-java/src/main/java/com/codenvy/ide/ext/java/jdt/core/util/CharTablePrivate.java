@@ -8,27 +8,38 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+
 package com.codenvy.ide.ext.java.jdt.core.util;
 
 /**
- * Implements methods from Character class, thad GWT doesn't emulate.
  * @author Evgen Vidolob
  */
-public class CharUtil {
+public class CharTablePrivate extends CharTable{
 
-    public static int getNumericValue(int ch) {
-        return CharTable.of(ch).getNumericValue(ch);
+    static final CharTablePrivate INSTANCE = new CharTablePrivate();
+
+    @Override
+    int getProp(int ch) {
+        return 0;
     }
 
-    public static boolean isWhitespace(int cp) {
-       return CharTable.of(cp).isWhitespace(cp);
+    @Override
+    int getNumericValue(int ch) {
+        return -1;
     }
 
-    public static boolean isJavaIdentifierStart(int ch){
-        return CharTable.of(ch).isJavaIdentifierStart(ch);
+    @Override
+    boolean isWhitespace(int ch) {
+        return false;
     }
 
-    public static boolean isJavaIdentifierPart(int ch){
-        return CharTable.of(ch).isJavaIdentifierPart(ch);
+    @Override
+    boolean isJavaIdentifierStart(int ch) {
+        return false;
+    }
+
+    @Override
+    boolean isJavaIdentifierPart(int ch) {
+        return false;
     }
 }

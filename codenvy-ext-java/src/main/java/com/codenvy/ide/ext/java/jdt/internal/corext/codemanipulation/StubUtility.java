@@ -45,6 +45,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.SuperMethodInvocation;
 import com.codenvy.ide.ext.java.jdt.core.dom.Type;
 import com.codenvy.ide.ext.java.jdt.core.dom.TypeParameter;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ASTNodes;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.Bindings;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.Strings;
@@ -1301,8 +1302,8 @@ public class StubUtility {
             boolean needsUnderscore = false;
             for (int i = 0; i < string.length(); i++) {
                 char ch = string.charAt(i);
-                if (CharOperation.isJavaIdentifierPart(ch)) {
-                    if (res.length() == 0 && !CharOperation.isJavaIdentifierStart(ch) || needsUnderscore) {
+                if (CharUtil.isJavaIdentifierPart(ch)) {
+                    if (res.length() == 0 && !CharUtil.isJavaIdentifierStart(ch) || needsUnderscore) {
                         res.append('_');
                     }
                     res.append(ch);

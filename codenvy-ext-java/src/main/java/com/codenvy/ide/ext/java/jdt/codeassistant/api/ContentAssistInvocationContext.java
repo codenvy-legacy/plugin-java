@@ -10,10 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.codeassistant.api;
 
-import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
-import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
+import com.codenvy.ide.runtime.Assert;
 
 
 /**
@@ -136,7 +136,7 @@ public class ContentAssistInvocationContext {
             int end = getInvocationOffset();
             int start = end;
             while (--start >= 0) {
-                if (!CharOperation.isJavaIdentifierPart(document.getChar(start)))
+                if (!CharUtil.isJavaIdentifierPart(document.getChar(start)))
                     break;
             }
             start++;

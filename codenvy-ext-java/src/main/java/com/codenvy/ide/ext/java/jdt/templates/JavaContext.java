@@ -15,6 +15,7 @@ import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite.ImportRewriteContext;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ContextSensitiveImportRewriteContext;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
 import com.codenvy.ide.ext.java.jdt.templates.CompilationUnitCompletion.Variable;
@@ -221,7 +222,7 @@ public class JavaContext extends CompilationUnitContext {
             int start = getCompletionOffset();
             int end = getCompletionOffset() + getCompletionLength();
 
-            while (start != 0 && CharOperation.isJavaIdentifierPart(document.getChar(start - 1)))
+            while (start != 0 && CharUtil.isJavaIdentifierPart(document.getChar(start - 1)))
                 start--;
 
             while (start != end && CharOperation.isWhitespace(document.getChar(start)))

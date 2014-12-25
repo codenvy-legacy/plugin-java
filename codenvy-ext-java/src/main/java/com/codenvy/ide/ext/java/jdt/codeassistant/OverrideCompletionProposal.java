@@ -10,10 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.codeassistant;
 
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.TextUtilities;
+import com.codenvy.ide.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.ext.java.jdt.JavaPreferencesSettings;
 import com.codenvy.ide.ext.java.jdt.codeassistant.ui.StyledString;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
-import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.dom.AST;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTParser;
@@ -31,6 +35,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite.ImportRewriteContext;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.jdt.core.formatter.IndentManipulation;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ContextSensitiveImportRewriteContext;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
@@ -39,11 +44,6 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.Bindings;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.TextUtilities;
-import com.codenvy.ide.api.text.edits.MalformedTreeException;
 
 
 public class OverrideCompletionProposal extends JavaTypeCompletionProposal {
@@ -88,7 +88,7 @@ public class OverrideCompletionProposal extends JavaTypeCompletionProposal {
 
         // clear prefix to avoid compile errors
         int index = offset - 1;
-        while (index >= 0 && CharOperation.isJavaIdentifierPart(content[index])) {
+        while (index >= 0 && CharUtil.isJavaIdentifierPart(content[index])) {
             content[index] = ' ';
             index--;
         }
