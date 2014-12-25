@@ -42,8 +42,16 @@ public class JarNavigationTest extends BaseTest {
         String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
         IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
         List<JarEntry> rootContent = navigation.getPackageFragmentRootContent(project, root.hashCode());
-        assertThat(rootContent).isNotNull().isNotEmpty().onProperty("name").contains("META-INF", "java", "javax")
-                               .excludes("(default package)");
+        assertThat(rootContent).isNotNull().isNotEmpty().onProperty("name").contains("META-INF", "java", "javax");
+        assertThat(rootContent).onProperty("path").contains("/META-INF");
+    }
+
+    @Test
+    public void testDoNotIncludeDefaultEmptyPackage() throws Exception {
+        String javaHome = System.getProperty("java.home") + "/lib/ext/zipfs.jar";
+        IPackageFragmentRoot root = project.getPackageFragmentRoot(new File(javaHome));
+        List<JarEntry> rootContent = navigation.getPackageFragmentRootContent(project, root.hashCode());
+        assertThat(rootContent).isNotNull().isNotEmpty().onProperty("name").excludes("(default package)");
         assertThat(rootContent).onProperty("path").contains("/META-INF");
     }
 
