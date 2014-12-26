@@ -20,6 +20,7 @@ import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
+import com.codenvy.commons.xml.XMLTreeException;
 import com.codenvy.ide.maven.tools.Model;
 
 import javax.annotation.Nullable;
@@ -78,7 +79,7 @@ public abstract class AbstractMavenValueProviderFactory implements ValueProvider
                     return null;
                 }
                 return Arrays.asList(value);
-            } catch (ServerException | ForbiddenException | IOException e) {
+            } catch (ServerException | ForbiddenException | IOException | XMLTreeException e) {
                 throwReadException(e);
             }
             return null;
