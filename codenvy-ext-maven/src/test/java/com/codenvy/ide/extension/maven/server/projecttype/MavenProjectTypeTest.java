@@ -31,6 +31,7 @@ import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
+import com.codenvy.ide.extension.maven.server.projecttype.generators.GeneratorStrategy;
 import com.codenvy.ide.extension.maven.server.projecttype.generators.MavenProjectGenerator;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.MavenUtils;
@@ -81,7 +82,7 @@ public class MavenProjectTypeTest {
 
         //ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
         Set<ProjectHandler> handlers = new HashSet<>();
-        handlers.add(new MavenProjectGenerator(null, vfsRegistry));
+        handlers.add(new MavenProjectGenerator(Collections.<GeneratorStrategy>emptySet()));
 
         ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(handlers);
 

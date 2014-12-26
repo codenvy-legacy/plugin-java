@@ -14,19 +14,21 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
-import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.DefaultProjectManager;
+import com.codenvy.api.project.server.FileEntry;
+import com.codenvy.api.project.server.FolderEntry;
+import com.codenvy.api.project.server.ProjectConfig;
+import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
-import com.codenvy.api.project.shared.dto.GeneratorDescription;
-import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
-import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 
 import org.junit.Assert;
@@ -40,33 +42,25 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 
-
-
 /** @author Artem Zatsarynnyy */
-public class SimpleProjectGeneratorTest {
+public class SimpleGeneratorStrategyTest {
     private static final String workspace = "my_ws";
 
-    private ProjectManager         pm;
-    private MavenProjectGenerator generator;
+    private ProjectManager    pm;
+    private GeneratorStrategy simple;
 
     @Before
     public void setUp() throws Exception {
-        generator = new MavenProjectGenerator(null, null);
+        simple = new SimpleGeneratorStrategy();
     }
 
-//    @Test
-//    public void testGetId() throws Exception {
-//        Assert.assertEquals(MavenAttributes.SIMPLE_GENERATOR_ID, generator.getId());
-//    }
-
     @Test
-    public void testGetProjectTypeId() throws Exception {
-        Assert.assertEquals(MavenAttributes.MAVEN_ID, generator.getProjectType());
+    public void testGetId() throws Exception {
+        Assert.assertEquals(MavenAttributes.SIMPLE_GENERATION_STRATEGY, simple.getId());
     }
 
     @Test
@@ -84,7 +78,7 @@ public class SimpleProjectGeneratorTest {
 
         FolderEntry folder = pm.getProject(workspace, "my_project").getBaseFolder();
 
-        generator.onCreateProject(folder, attributeValues, null);
+        simple.generateProject(folder, attributeValues, null);
 
         VirtualFileEntry pomFile = pm.getProject(workspace, "my_project").getBaseFolder().getChild("pom.xml");
         Assert.assertTrue(pomFile.isFile());

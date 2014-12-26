@@ -17,8 +17,8 @@ public interface MavenAttributes {
     final String MAVEN_ID   = "maven";
     final String MAVEN_NAME = "Maven Project";
 
-    final String ARCHETYPE_GENERATOR_ID = "archetype";
-    final String SIMPLE_GENERATOR_ID    = "simple";
+    final String ARCHETYPE_GENERATION_STRATEGY = "archetype";
+    final String SIMPLE_GENERATION_STRATEGY    = "simple";
 
     final String GROUP_ID           = "maven.groupId";
     final String VERSION            = "maven.version";

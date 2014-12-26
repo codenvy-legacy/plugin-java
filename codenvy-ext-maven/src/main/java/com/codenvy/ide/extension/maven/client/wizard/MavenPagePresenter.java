@@ -38,8 +38,6 @@ import java.util.Map;
 
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizard.GENERATOR;
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 
 /**
  * @author Evgen Vidolob
@@ -125,7 +123,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
             if (view.isGenerateFromArchetypeSelected()) {
                 HashMap<String, String> options = new HashMap<>();
-                options.put("type", MavenAttributes.ARCHETYPE_GENERATOR_ID);
+                options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
                 wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class).withOptions(options));
             } else {
                 wizardContext.putData(GENERATOR, dtoFactory.createDto(GeneratorDescription.class));
@@ -230,7 +228,7 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
 
     private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
         HashMap<String, String> options = new HashMap<>();
-        options.put("type", MavenAttributes.ARCHETYPE_GENERATOR_ID);
+        options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
         options.put("archetypeGroupId", archetype.getGroupId());
         options.put("archetypeArtifactId", archetype.getArtifactId());
         options.put("archetypeVersion", archetype.getVersion());
