@@ -16,7 +16,6 @@ import com.codenvy.api.project.server.ProjectJson2;
 import com.codenvy.ide.ant.tools.AntUtils;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
-import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
 import com.codenvy.ide.ext.java.server.internal.core.util.JavaElementFinder;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
@@ -78,7 +77,7 @@ public class JavaProject extends Openable implements IJavaProject {
             return entry.getFileName().toString().endsWith("jar");
         }
     };
-    private JavaSearchNameEnvironment nameEnvironment;
+    private SearchableEnvironment nameEnvironment;
     private String                    projectPath;
     private String              tempDir;
     private String              wsId;
@@ -154,10 +153,14 @@ public class JavaProject extends Openable implements IJavaProject {
         indexManager.indexAll(this);
         indexManager.saveIndexes();
         manager.setIndexManager(indexManager);
-        nameEnvironment = new JavaSearchNameEnvironment(this, null);
+        try {
+            nameEnvironment = new SearchableEnvironment(this, (ICompilationUnit[])null);
+        } catch (JavaModelException e) {
+            LOG.error("Can't create SearchableEnvironment", e);
+        }
     }
 
-    public JavaSearchNameEnvironment getNameEnvironment() {
+    public SearchableEnvironment getNameEnvironment() {
         return nameEnvironment;
     }
 
