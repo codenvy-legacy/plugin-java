@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.server.core.launching;
 
 
 import com.codenvy.ide.ext.java.server.core.JavaCore;
+import com.codenvy.ide.ext.java.server.core.launching.environments.IExecutionEnvironment;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 
 import org.eclipse.core.runtime.IPath;
@@ -362,13 +363,13 @@ public class JREContainer implements IClasspathContainer {
 			overrideJavaDoc = true;
 		}
 		IAccessRule[][] rules = null;
-		if (environmentId != null) {
-//			// compute access rules for execution environment
-//			IExecutionEnvironment environment = JavaRuntime.getExecutionEnvironmentsManager().getEnvironment(environmentId);
-//			if (environment != null) {
-//				rules = environment.getAccessRules(vm, libs, project);
-//			}
+//		if (environmentId != null) {
+			// compute access rules for execution environment
+			IExecutionEnvironment environment = JavaRuntime.getEnvironment(environmentId);
+			if (environment != null) {
+				rules = environment.getAccessRules(vm, libs, project);
 			}
+//		}
 		RuleKey key = null;
 		if (vm != null && rules != null && environmentId != null) {
 			key = new RuleKey(vm, environmentId);

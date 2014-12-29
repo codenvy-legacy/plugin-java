@@ -279,6 +279,11 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
 
+        options.put(AssistOptions.OPTION_PerformForbiddenReferenceCheck, AssistOptions.ENABLED);
+        options.put(AssistOptions.OPTION_PerformVisibilityCheck, AssistOptions.ENABLED);
+        options.put(AssistOptions.OPTION_PerformDeprecationCheck, AssistOptions.ENABLED);
+        options.put(AssistOptions.OPTION_PerformDiscouragedReferenceCheck, AssistOptions.ENABLED);
+
     }
 
     /** {@inheritDoc} */
