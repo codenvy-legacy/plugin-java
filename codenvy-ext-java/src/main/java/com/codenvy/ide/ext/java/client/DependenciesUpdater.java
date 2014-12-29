@@ -149,7 +149,7 @@ public class DependenciesUpdater {
                                             if(javaTreeStructure != null){
                                                 ExternalLibrariesNode librariesNode =
                                                         javaTreeStructure.getExternalLibrariesNode(project.getPath());
-                                                if(librariesNode != null){
+                                                if(librariesNode != null && librariesNode.isOpened()){
                                                     eventBus.fireEvent(new RefreshProjectTreeEvent(librariesNode));
                                                 }
                                             }
