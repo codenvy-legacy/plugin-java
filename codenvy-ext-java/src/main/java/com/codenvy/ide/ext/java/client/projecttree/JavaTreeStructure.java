@@ -12,15 +12,12 @@ package com.codenvy.ide.ext.java.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
-import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
@@ -34,7 +31,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +44,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
     protected final IconRegistry          iconRegistry;
     protected final JavaNavigationService service;
     protected final Map<String, ExternalLibrariesNode> librariesNodeMap = new HashMap<>();
-    private final   JavaTreeSettings      settings;
+    private final JavaTreeSettings settings;
 
     protected JavaTreeStructure(JavaNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
                                 ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
@@ -99,7 +95,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
      * @param callback
      */
     public void getFindClassFileByPath(final int libId, final String path, final AsyncCallback<TreeNode<?>> callback) {
-        getRoots(new AsyncCallback<Array<TreeNode<?>>>() {
+        getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
             @Override
             public void onFailure(Throwable caught) {
                 callback.onFailure(caught);
@@ -206,7 +202,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
     public void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback) {
         CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject != null) {
-            ProjectNode projectRoot = getNodeFactory().newJavaProjectNode(null, currentProject.getRootProject(), this);
+            AbstractTreeNode projectRoot = createProject();
             callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
         } else {
             callback.onFailure(new IllegalStateException("No opened project"));
@@ -222,6 +218,10 @@ public class JavaTreeStructure extends GenericTreeStructure {
     @Override
     public JavaNodeFactory getNodeFactory() {
         return (JavaNodeFactory)nodeFactory;
+    }
+
+    private AbstractTreeNode createProject() {
+        return getNodeFactory().newJavaProjectNode(null, appContext.getCurrentProject().getRootProject(), this);
     }
 
     public JavaFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {

@@ -28,9 +28,8 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class JavaProjectNode extends ProjectNode {
 
-    private ExternalLibrariesNode librariesNode;
-
     protected boolean shouldAddExternalLibrariesNode = true;
+    private ExternalLibrariesNode librariesNode;
 
     @AssistedInject
     public JavaProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data, @Assisted JavaTreeStructure treeStructure,

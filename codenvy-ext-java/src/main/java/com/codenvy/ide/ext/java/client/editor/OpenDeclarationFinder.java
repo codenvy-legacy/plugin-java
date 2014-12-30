@@ -14,8 +14,8 @@ package com.codenvy.ide.ext.java.client.editor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
-import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
 import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.api.projecttree.TreeStructure;
 import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.StringMap;
@@ -109,7 +109,7 @@ public class OpenDeclarationFinder {
         }
 
 
-        AbstractTreeStructure tree = context.getCurrentProject().getCurrentTree();
+        TreeStructure tree = context.getCurrentProject().getCurrentTree();
         if (descriptor.isBinary()) {
             if(tree instanceof JavaTreeStructure){
                 ((JavaTreeStructure)tree).getClassFileByPath(context.getCurrentProject().getProjectDescription().getPath(), descriptor.getLibId(), descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
