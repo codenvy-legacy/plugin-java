@@ -13,11 +13,12 @@ package com.codenvy.ide.ext.java;
 
 import com.codenvy.ide.ext.java.server.JavaNavigation;
 import com.codenvy.ide.ext.java.server.SourcesFromBytecodeGenerator;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -30,31 +31,34 @@ public class FindDeclarationTest extends BaseTest {
 
     @Test
     public void testFindClassIsNotNullOrEmpty() throws Exception {
-        String declaration = navigation.findDeclaration(project, "Ljava/lang/String;");
-        assertThat(declaration).isNotNull().isNotEmpty();
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Ljava/lang/String;");
+        assertThat(declaration).isNotNull();
     }
 
     @Test
-    public void testFindClassShouldReturnSource() throws Exception {
-        String declaration = navigation.findDeclaration(project, "Ljava/lang/String;");
-        assertThat(declaration).isNotNull().isNotEmpty();
-        JsonObject object = new JsonParser().parse(declaration).getAsJsonObject();
-        JsonElement source = object.get("source");
-        assertThat(source).isNotNull();
-        assertThat(source.getAsString()).contains("public final class String")
-                                        .contains("implements java.io.Serializable, Comparable<String>, CharSequence {");
+    public void testFindClassShouldReturnBinaryPath() throws Exception {
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Ljava/lang/String;");
+        assertThat(declaration).isNotNull();
+        assertThat(declaration.getOffset()).isNotNull();
+        assertThat(declaration.getLength()).isNotNull();
+        assertThat(declaration.isBinary()).isTrue();
+        assertThat(declaration.getPath()).isEqualTo("java.lang.String");
     }
 
     @Test
-    public void testFindClassShouldReturnNameRange() throws Exception {
-        String declaration = navigation.findDeclaration(project, "Ljava/lang/String;");
-        assertThat(declaration).isNotNull().isNotEmpty();
-        JsonObject object = new JsonParser().parse(declaration).getAsJsonObject();
-        JsonElement name = object.get("nameRange");
-        assertThat(name).isNotNull();
-        JsonObject nameRange = name.getAsJsonObject();
-        assertThat(nameRange.get("offset")).isNotNull();
-        assertThat(nameRange.get("length")).isNotNull();
+    public void testFindClassShouldReturnSourcePath() throws Exception {
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Lcom/codenvy/test/MyClass;");
+        assertThat(declaration).isNotNull();
+        assertThat(declaration.isBinary()).isFalse();
+        assertThat(declaration.getPath()).isEqualTo("/test/src/main/java/com/codenvy/test/MyClass.java");
+    }
 
+    @Test
+    public void testFindClassShouldReturnSourcePathInMavenModule() throws Exception {
+        JavaProject project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/multimoduleProject/test", getClass().getResource("/temp").getPath(), "ws", options);
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Lcom/codenvy/test/MyClass;");
+        assertThat(declaration).isNotNull();
+        assertThat(declaration.isBinary()).isFalse();
+        assertThat(declaration.getPath()).isEqualTo("/multimoduleProject/test/src/main/java/com/codenvy/test/MyClass.java");
     }
 }

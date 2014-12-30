@@ -211,8 +211,8 @@ public class HTMLPrinter {
 //		}
 //	}
 //
-	private static void appendStyleSheet(StringBuffer buffer, String styleSheetURL) {
-		if (styleSheetURL == null)
+	private static void appendStyleSheet(StringBuffer buffer, String styleSheet) {
+		if (styleSheet == null)
 			return;
 
 		// workaround for https://bugs.eclipse.org/318243
@@ -223,12 +223,9 @@ public class HTMLPrinter {
 //		appendColor(bg, BG_COLOR_RGB);
 //		styleSheet= styleSheet.replaceAll("InfoBackground", bg.toString()); //$NON-NLS-1$
 
-		buffer.append("<head>");
-        buffer.append("<link REL=\"stylesheet\" HREF= \""); //$NON-NLS-1$
-		buffer.append(styleSheetURL);
-        buffer.append("\" TYPE=\"text/css\">"); //$NON-NLS-1$
-
-		buffer.append("</head>"); //$NON-NLS-1$
+		buffer.append("<head><style CHARSET=\"UTF-8\" TYPE=\"text/css\">"); //$NON-NLS-1$
+		buffer.append(styleSheet);
+		buffer.append("</style></head>"); //$NON-NLS-1$
 	}
 //
 //	private static void appendStyleSheetURL(StringBuffer buffer, URL styleSheetURL) {

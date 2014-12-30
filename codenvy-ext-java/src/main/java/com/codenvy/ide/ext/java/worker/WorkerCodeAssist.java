@@ -33,8 +33,6 @@ import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
 import com.codenvy.ide.runtime.AssertionFailedException;
 import com.codenvy.ide.util.UUID;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.webworker.client.messages.MessageFilter;
 
 import java.util.ArrayList;
@@ -57,24 +55,32 @@ public class WorkerCodeAssist {
 
         @Override
         public int compare(JavaCompletionProposal o1, JavaCompletionProposal o2) {
+            int r1 = o1.getRelevance();
+            int r2 = o2.getRelevance();
+            int relevanceDif = r2 - r1;
+            if (relevanceDif != 0) {
+                return relevanceDif;
+            }
 
-            if (o1.getRelevance() > o2.getRelevance())
-                return -1;
-            else if (o1.getRelevance() < o2.getRelevance())
-                return 1;
-            else
-                return 0;
+            return getSortKey(o1).compareToIgnoreCase(getSortKey(o2));
+        }
+
+        private String getSortKey(JavaCompletionProposal p) {
+            if (p instanceof AbstractJavaCompletionProposal)
+                return ((AbstractJavaCompletionProposal) p).getSortString();
+            return p.getDisplayString();
         }
     };
+
     private JavaParserWorker                   worker;
     private INameEnvironment                   nameEnvironment;
     private TemplateCompletionProposalComputer templateCompletionProposalComputer;
     private String                             projectPath;
     private String                             docContext;
-    private WorkerCuCache cuCache;
-    private String          vfsId;
-    private String          documentContent;
-    private WorkerDocument  document;
+    private WorkerCuCache                      cuCache;
+    private String                             vfsId;
+    private String                             documentContent;
+    private WorkerDocument                     document;
 
     public WorkerCodeAssist(JavaParserWorker worker, MessageFilter messageFilter, WorkerProposalApplier workerProposalApplier,
                             INameEnvironment nameEnvironment,
@@ -90,18 +96,7 @@ public class WorkerCodeAssist {
                                                new MessageFilter.MessageRecipient<ComputeCAProposalsMessage>() {
                                                    @Override
                                                    public void onMessageReceived(final ComputeCAProposalsMessage message) {
-                                                       GWT.runAsync(new RunAsyncCallback() {
-                                                           @Override
-                                                           public void onFailure(Throwable throwable) {
-                                                               throw new RuntimeException(throwable);
-                                                               //TODO log error
-                                                           }
-
-                                                           @Override
-                                                           public void onSuccess() {
-                                                               handleCAMessage(message);
-                                                           }
-                                                       });
+                                                       handleCAMessage(message);
                                                    }
                                                });
     }
@@ -182,7 +177,7 @@ public class WorkerCodeAssist {
 
             JavaCompletionProposal[] javaCompletionProposals = collector.getJavaCompletionProposals();
             List<JavaCompletionProposal> types =
-                    new ArrayList<JavaCompletionProposal>(Arrays.asList(javaCompletionProposals));
+                    new ArrayList<>(Arrays.asList(javaCompletionProposals));
             if (types.size() > 0 && collector.getInvocationContext().computeIdentifierPrefix().length() == 0) {
                 IType expectedType = collector.getInvocationContext().getExpectedType();
                 if (expectedType != null) {
@@ -190,7 +185,7 @@ public class WorkerCodeAssist {
 
                     // compute minmimum relevance and already proposed list
                     int relevance = Integer.MAX_VALUE;
-                    Set<String> proposed = new HashSet<String>();
+                    Set<String> proposed = new HashSet<>();
                     for (Iterator<JavaCompletionProposal> it = types.iterator(); it.hasNext(); ) {
                         AbstractJavaCompletionProposal p = (AbstractJavaCompletionProposal)it.next();
                         IJavaElement element = p.getJavaElement();

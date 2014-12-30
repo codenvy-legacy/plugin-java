@@ -15,7 +15,7 @@ import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
-import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 
 public class JavaWordFinder {
 
@@ -34,7 +34,7 @@ public class JavaWordFinder {
 
             while (pos >= 0) {
                 c = document.getChar(pos);
-                if (!CharOperation.isJavaIdentifierPart(c)) {
+                if (!CharUtil.isJavaIdentifierPart(c)) {
                     // Check for surrogates
                     if (isSurrogate(c)) {
                   /*
@@ -57,7 +57,7 @@ public class JavaWordFinder {
 
             while (pos < length) {
                 c = document.getChar(pos);
-                if (!CharOperation.isJavaIdentifierPart(c)) {
+                if (!CharUtil.isJavaIdentifierPart(c)) {
                     if (isSurrogate(c)) {
                   /*
                    * XXX: Here we should create the code point and test whether

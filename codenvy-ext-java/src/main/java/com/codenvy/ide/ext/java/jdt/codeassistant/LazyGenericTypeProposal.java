@@ -10,20 +10,20 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.codeassistant;
 
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.api.text.RegionImpl;
 import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.collections.JsonObject;
 import com.codenvy.ide.collections.js.JsoArray;
 import com.codenvy.ide.ext.java.jdt.core.CompletionProposal;
 import com.codenvy.ide.ext.java.jdt.core.Signature;
-import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryType;
 import com.codenvy.ide.ext.java.worker.WorkerTypeInfoStorage;
 import com.codenvy.ide.ext.java.worker.env.BinaryType;
 import com.codenvy.ide.ext.java.worker.env.json.BinaryTypeJso;
-import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.RegionImpl;
 
 
 /**
@@ -698,7 +698,7 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
             String line = document.get(region.getOffset(), region.getLength());
 
             int index = offset - region.getOffset();
-            while (index != line.length() && CharOperation.isJavaIdentifierPart(line.charAt(index))) {
+            while (index != line.length() && CharUtil.isJavaIdentifierPart(line.charAt(index))) {
                 ++index;
             }
 

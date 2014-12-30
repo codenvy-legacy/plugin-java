@@ -183,8 +183,9 @@
                         <exclude>**/*.txt</exclude>
                         <exclude>**/*.jpg</exclude>
                         <exclude>**/*.rsc</exclude>
+                        <exclude>**/*.json</exclude>
                         <exclude>**/readableNames</exclude>
-                        <exclude>**/project</exclude>
+                        <exclude>**/projects/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/javadoc/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/dom/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/corext/util/**</exclude>

@@ -12,7 +12,6 @@
 package com.codenvy.ide.ext.java.server;
 
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
-import com.google.inject.name.Named;
 
 import org.eclipse.jdt.core.JavaModelException;
 
@@ -22,6 +21,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * @author Evgen Vidolob
@@ -36,34 +38,28 @@ public class JavadocService {
     @Inject
     private JavaProjectService service;
 
-    @Inject
-    @Named("javadoc.prefix.url")
-    private String urlRefix;
-
-    @Inject
-    @Named("javadoc.css.url")
-    private String cssUrl;
-
     @Path("find")
     @GET
     @Produces("text/html")
-    public String findJavadoc(@QueryParam("fqn") String fqn, @QueryParam("projectpath") String projectPath) throws JavaModelException {
+    public String findJavadoc(@QueryParam("fqn") String fqn, @QueryParam("projectpath") String projectPath, @Context UriInfo uriInfo) throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
-        String urlPart = getUrlPart(projectPath);
-        return new JavadocFinder(urlPart, cssUrl).findJavadoc(project, fqn);
+        String urlPart = getUrlPart(projectPath, uriInfo.getBaseUriBuilder());
+
+
+        return new JavadocFinder(urlPart).findJavadoc(project, fqn);
     }
 
     @Path("get")
     @Produces("text/html")
     @GET
-    public String get(@QueryParam("handle") String handle, @QueryParam("projectpath") String projectPath) {
+    public String get(@QueryParam("handle") String handle, @QueryParam("projectpath") String projectPath, @Context UriInfo uriInfo) {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
-        String urlPart = getUrlPart(projectPath);
-        return new JavadocFinder(urlPart, cssUrl).findJavadoc4Handle(project, handle);
+        String urlPart = getUrlPart(projectPath, uriInfo.getBaseUriBuilder());
+        return new JavadocFinder(urlPart).findJavadoc4Handle(project, handle);
     }
 
-    private String getUrlPart(String projectPath) {
-        return urlRefix + wsId + "/get"+ "?projectpath=" + projectPath + "&handle=";
+    private String getUrlPart(String projectPath, UriBuilder uriBuilder) {
+        return uriBuilder.clone().path(JavadocService.class).path(JavadocService.class, "get").build(wsId).toString() + "?projectpath=" + projectPath + "&handle=";
     }
 
 }

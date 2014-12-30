@@ -14,6 +14,7 @@ package com.codenvy.ide.ext.java.client.navigation;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 
 /**
@@ -27,7 +28,7 @@ public interface JavaNavigationService {
      * @param keyBinding binding key
      * @param callback
      */
-    void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<String> callback);
+    void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<OpenDeclarationDescriptor> callback);
 
 
     /**
@@ -40,6 +41,8 @@ public interface JavaNavigationService {
     void getLibraryChildren(String projectPath, int libId, AsyncRequestCallback<Array<JarEntry>> callback);
 
     void getChildren(String projectPath, int libId, String path, AsyncRequestCallback<Array<JarEntry>> callback);
+
+    void getEntry(String projectPath, int libId, String path, AsyncRequestCallback<JarEntry> callback);
 
     void getContent(String projectPath, int libId, String path, AsyncRequestCallback<String> callback);
 

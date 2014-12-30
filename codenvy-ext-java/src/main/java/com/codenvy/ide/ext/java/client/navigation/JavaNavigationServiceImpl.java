@@ -14,8 +14,10 @@ package com.codenvy.ide.ext.java.client.navigation;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
+import com.google.gwt.http.client.URL;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -40,9 +42,9 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<String> callback) {
+    public void findDeclaration(String projectPath, String keyBinding, AsyncRequestCallback<OpenDeclarationDescriptor> callback) {
         String url =
-                restContext + "/navigation/" + workspaceId + "/find-declaration?projectpath=" + projectPath + "&bindingkey=" + keyBinding;
+                restContext + "/navigation/" + workspaceId + "/find-declaration?projectpath=" + projectPath + "&bindingkey=" + URL.encodeQueryString(keyBinding);
         requestFactory.createGetRequest(url).send(callback);
     }
 
@@ -63,6 +65,13 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     public void getChildren(String projectPath, int libId, String path, AsyncRequestCallback<Array<JarEntry>> callback) {
         String url =
                 restContext + "/navigation/" + workspaceId + "/children?projectpath=" + projectPath + "&root=" + libId + "&path=" + path;
+        requestFactory.createGetRequest(url).send(callback);
+    }
+
+    @Override
+    public void getEntry(String projectPath, int libId, String path, AsyncRequestCallback<JarEntry> callback) {
+        String url =
+                restContext + "/navigation/" + workspaceId + "/entry?projectpath=" + projectPath + "&root=" + libId + "&path=" + path;
         requestFactory.createGetRequest(url).send(callback);
     }
 

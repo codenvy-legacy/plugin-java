@@ -36,6 +36,8 @@ import org.eclipse.jdt.internal.compiler.env.ISourceType;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.core.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *	This class provides a <code>SearchableBuilderEnvironment</code> for code assist which
@@ -43,7 +45,7 @@ import org.eclipse.jdt.internal.core.util.Util;
  */
 public class SearchableEnvironment
 	implements INameEnvironment, IJavaSearchConstants {
-
+	private static final Logger LOG = LoggerFactory.getLogger(SearchableEnvironment.class);
 	public    NameLookup                              nameLookup;
 	protected ICompilationUnit                        unitToSkip;
 	protected org.eclipse.jdt.core.ICompilationUnit[] workingCopies;
@@ -689,7 +691,7 @@ public class SearchableEnvironment
 				pkgName[i] = new String(parentPackageName[i]);
 			pkgName[length] = new String(subPackageName);
 		}
-		return 
+		return
 			(this.owner != null && this.owner.isPackage(pkgName))
 			|| this.nameLookup.isPackage(pkgName);
 	}
@@ -715,5 +717,13 @@ public class SearchableEnvironment
 
 	public void cleanup() {
 		// nothing to do
+	}
+
+	public void reset() {
+		try {
+			nameLookup = project.newNameLookup(workingCopies);
+		} catch (JavaModelException e) {
+			LOG.error("Can't create new SearchableEnvironment.", e);
+		}
 	}
 }

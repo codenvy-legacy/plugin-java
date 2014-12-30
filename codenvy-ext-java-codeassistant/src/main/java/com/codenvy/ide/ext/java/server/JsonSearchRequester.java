@@ -17,6 +17,7 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.codeassist.ISearchRequestor;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 
@@ -32,6 +33,12 @@ public class JsonSearchRequester implements ISearchRequestor {
     public void acceptConstructor(int modifiers, char[] simpleTypeName, int parameterCount, char[] signature, char[][] parameterTypes,
                                   char[][] parameterNames, int typeModifiers, char[] packageName, int extraFlags, String path,
                                   AccessRestriction access) {
+        if(access != null){
+            switch (access.getProblemId()){
+                case IProblem.ForbiddenReference:
+                    return;
+            }
+        }
         JsonObject constructor = new JsonObject();
         constructor.addProperty("modifiers", modifiers);
         constructor.addProperty("simpleTypeName", new String(simpleTypeName));
@@ -52,6 +59,12 @@ public class JsonSearchRequester implements ISearchRequestor {
     @Override
     public void acceptType(char[] packageName, char[] typeName, char[][] enclosingTypeNames, int modifiers,
                            AccessRestriction accessRestriction) {
+        if(accessRestriction != null){
+            switch (accessRestriction.getProblemId()){
+                case IProblem.ForbiddenReference:
+                    return;
+            }
+        }
         JsonObject type = new JsonObject();
         type.addProperty("packageName", new String(packageName));
         type.addProperty("typeName", new String(typeName));

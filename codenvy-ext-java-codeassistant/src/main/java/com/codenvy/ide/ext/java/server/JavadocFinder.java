@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.ext.java.server;
 
+import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.ide.ext.java.server.dom.ASTNodes;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.javadoc.HTMLPrinter;
@@ -44,7 +45,11 @@ import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperConstructorInvocation;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URISyntaxException;
@@ -55,23 +60,23 @@ import java.net.URL;
  */
 @Singleton
 public class JavadocFinder {
-    private static final long LABEL_FLAGS          = JavaElementLabels.ALL_FULLY_QUALIFIED
-                                                     | JavaElementLabels.M_PRE_RETURNTYPE | JavaElementLabels.M_PARAMETER_ANNOTATIONS |
-                                                     JavaElementLabels.M_PARAMETER_TYPES | JavaElementLabels.M_PARAMETER_NAMES |
-                                                     JavaElementLabels.M_EXCEPTIONS
-                                                     | JavaElementLabels.F_PRE_TYPE_SIGNATURE | JavaElementLabels.M_PRE_TYPE_PARAMETERS |
-                                                     JavaElementLabels.T_TYPE_PARAMETERS
-                                                     | JavaElementLabels.USE_RESOLVED;
-    private static final long LOCAL_VARIABLE_FLAGS =
+    private static final Logger LOG                  = LoggerFactory.getLogger(JavadocFinder.class);
+    private static final long   LABEL_FLAGS          = JavaElementLabels.ALL_FULLY_QUALIFIED
+                                                       | JavaElementLabels.M_PRE_RETURNTYPE | JavaElementLabels.M_PARAMETER_ANNOTATIONS |
+                                                       JavaElementLabels.M_PARAMETER_TYPES | JavaElementLabels.M_PARAMETER_NAMES |
+                                                       JavaElementLabels.M_EXCEPTIONS
+                                                       | JavaElementLabels.F_PRE_TYPE_SIGNATURE | JavaElementLabels.M_PRE_TYPE_PARAMETERS |
+                                                       JavaElementLabels.T_TYPE_PARAMETERS
+                                                       | JavaElementLabels.USE_RESOLVED;
+    private static final long   LOCAL_VARIABLE_FLAGS =
             LABEL_FLAGS & ~JavaElementLabels.F_FULLY_QUALIFIED | JavaElementLabels.F_POST_QUALIFIED;
-    private static final long TYPE_PARAMETER_FLAGS = LABEL_FLAGS | JavaElementLabels.TP_POST_QUALIFIED;
-    private static final long PACKAGE_FLAGS        = LABEL_FLAGS & ~JavaElementLabels.ALL_FULLY_QUALIFIED;
-    private String baseHref;
-    private String cssHref;
+    private static final long   TYPE_PARAMETER_FLAGS = LABEL_FLAGS | JavaElementLabels.TP_POST_QUALIFIED;
+    private static final long   PACKAGE_FLAGS        = LABEL_FLAGS & ~JavaElementLabels.ALL_FULLY_QUALIFIED;
+    private static String styleSheet;
+    private        String baseHref;
 
-    public JavadocFinder(String baseHref, String cssHref) {
+    public JavadocFinder(String baseHref) {
         this.baseHref = baseHref;
-        this.cssHref = cssHref;
     }
 
     private static long getHeaderFlags(IJavaElement element) {
@@ -197,7 +202,7 @@ public class JavadocFinder {
 
         if (buffer.length() > 0) {
             //todo use url for css
-            HTMLPrinter.insertPageProlog(buffer, 0, cssHref);
+            HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 //            if (base != null) {
 //                int endHeadIdx= buffer.indexOf("</head>"); //$NON-NLS-1$
 //                buffer.insert(endHeadIdx, "\n<base href='" + base + "'>\n"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -207,6 +212,17 @@ public class JavadocFinder {
         }
 
         return null;
+    }
+
+    private static  String getStyleSheet() {
+        if(styleSheet == null){
+            try(InputStream stream = JavadocFinder.class.getClassLoader().getResource("JavadocHoverStyleSheet.css").openStream()) {
+                styleSheet = IoUtil.readStream(stream);
+            } catch (IOException e) {
+                LOG.error("Can't read JavadocHoverStyleSheet.css", e);
+            }
+        }
+        return styleSheet;
     }
 
     private String getInfoText(IJavaElement element, ITypeRoot editorInputElement, boolean allowImage) {

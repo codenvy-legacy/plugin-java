@@ -71,13 +71,13 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
     @Nonnull
     @Override
     public String getPath() {
-        return getId();
+        return data.getPath();
     }
 
     @Nonnull
     @Override
     public String getName() {
-        return getDisplayName();
+        return data.getName();
     }
 
     @Nullable

@@ -68,7 +68,7 @@ public class JavadocUrlTest extends BaseTest {
 
     @Test
     public void methodHandleUri() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
-        JavadocFinder finder = new JavadocFinder("test", "testUrl");
+        JavadocFinder finder = new JavadocFinder("test");
         String javadoc = finder.findJavadoc(project, "Ljava/lang/String;.startsWith(Ljava.lang.String;I)");
         assertThat(javadoc).isNotNull().contains(
                 "Tests if the substring of this string beginning");
@@ -76,7 +76,7 @@ public class JavadocUrlTest extends BaseTest {
 
     @Test
     public void methodHandleUri2() throws JavaModelException, URISyntaxException, UnsupportedEncodingException {
-        JavadocFinder finder = new JavadocFinder("test", "testUrl");
+        JavadocFinder finder = new JavadocFinder("test");
         String javadoc = finder.findJavadoc(project, "Ljava/lang/String;.split(Ljava.lang.String;)");
         assertThat(javadoc).isNotNull().contains(
                 "Splits this string around matches");

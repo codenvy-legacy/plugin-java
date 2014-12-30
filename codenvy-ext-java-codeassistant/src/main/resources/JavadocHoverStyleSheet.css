@@ -110,17 +110,17 @@ dd {
 
 /* Styles and colors */
 a:link {
-    color: #04F;
+    color: #629755;
 }
 
 a:hover {
     /*color: #000080;*/
-    color: #05F;
+    color: #629755;
 }
 
 a:visited {
     text-decoration: underline;
-    color: #01F;
+    color: #629755;
 }
 
 a.header:link {
@@ -135,7 +135,7 @@ a.header:visited {
 
 a.header:hover {
     text-decoration: underline;
-    color: #000080;
+    color: #629755;
 }
 
 h4 {

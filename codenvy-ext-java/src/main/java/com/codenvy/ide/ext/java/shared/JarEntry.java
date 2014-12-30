@@ -33,8 +33,4 @@ public interface JarEntry {
     String getPath();
 
     void setPath(String path);
-
-    boolean isSource();
-
-    void setSource(boolean hasSources);
 }

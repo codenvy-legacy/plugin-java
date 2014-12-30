@@ -23,6 +23,7 @@ package com.codenvy.ide.ext.java.jdt.internal.codeassist.complete;
 
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.ClassFileConstants;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.Scanner;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.ScannerHelper;
@@ -813,7 +814,7 @@ public class CompletionScanner extends Scanner {
                             throw new InvalidInputException(INVALID_HIGH_SURROGATE);
                         } else {
                             // optimized case already checked
-                            isJavaIdStart = CharOperation.isJavaIdentifierStart(c);
+                            isJavaIdStart = CharUtil.isJavaIdentifierStart(c);
                         }
                         if (isJavaIdStart)
                             return scanIdentifierOrKeyword();

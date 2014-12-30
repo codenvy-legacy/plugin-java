@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
@@ -199,7 +200,7 @@ public final class JavaHeuristicScanner implements Symbols {
         }
 
         // else
-        if (CharOperation.isJavaIdentifierPart(fChar)) {
+        if (CharUtil.isJavaIdentifierPart(fChar)) {
             // assume an identifier or keyword
             int from = pos, to;
             pos = scanForward(pos + 1, bound, fNonIdent);
@@ -277,7 +278,7 @@ public final class JavaHeuristicScanner implements Symbols {
         }
 
         // else
-        if (CharOperation.isJavaIdentifierPart(fChar)) {
+        if (CharUtil.isJavaIdentifierPart(fChar)) {
             // assume an ident or keyword
             int from, to = pos + 1;
             pos = scanBackward(pos - 1, bound, fNonIdent);
@@ -939,7 +940,7 @@ public final class JavaHeuristicScanner implements Symbols {
          */
         @Override
         public boolean stop(char ch, int position, boolean forward) {
-            return !CharOperation.isJavaIdentifierPart(ch);
+            return !CharUtil.isJavaIdentifierPart(ch);
         }
     }
 

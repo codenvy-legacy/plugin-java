@@ -56,12 +56,12 @@ public abstract class Openable extends JavaElement implements IOpenable, IBuffer
      * @see IBufferChangedListener
      */
     public void bufferChanged(BufferChangedEvent event) {
-//        if (event.getBuffer().isClosed()) {
-//            JavaModelManager.getJavaModelManager().getElementsOutOfSynchWithBuffers().remove(this);
-//            getBufferManager().removeBuffer(event.getBuffer());
-//        } else {
-//            JavaModelManager.getJavaModelManager().getElementsOutOfSynchWithBuffers().add(this);
-//        }
+        if (event.getBuffer().isClosed()) {
+            manager.getElementsOutOfSynchWithBuffers().remove(this);
+            getBufferManager().removeBuffer(event.getBuffer());
+        } else {
+            manager.getElementsOutOfSynchWithBuffers().add(this);
+        }
     }
     /**
      * Builds this element's structure and properties in the given

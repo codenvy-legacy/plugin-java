@@ -11,10 +11,7 @@
 package com.codenvy.ide.jseditor.java.client.editor;
 
 import com.codenvy.ide.api.build.BuildContext;
-import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorWithErrors;
-import com.codenvy.ide.api.notification.Notification;
-import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.texteditor.outline.OutlineModel;
@@ -38,8 +35,6 @@ import com.google.inject.assistedinject.AssistedInject;
 
 import javax.validation.constraints.NotNull;
 
-import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
-
 public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWorker.WorkerCallback<IProblem> {
 
 
@@ -48,7 +43,6 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
 
     private final JavaParserWorker         worker;
     private final OutlineModel             outlineModel;
-    private final NotificationManager      notificationManager;
     private final JavaCodeAssistProcessor  codeAssistProcessor;
     private final JavaLocalizationConstant localizationConstant;
     private final AnnotationModel          annotationModel;
@@ -57,7 +51,6 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private EmbeddedDocument document;
     private boolean first = true;
     private boolean sourceFromClass;
-    private Notification notification;
 
     @AssistedInject
     public JavaReconcilerStrategy(@Assisted @NotNull final EmbeddedTextEditorPresenter<?> editor,
@@ -66,28 +59,15 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
                                   @Assisted final AnnotationModel annotationModel,
                                   final BuildContext buildContext,
                                   final JavaParserWorker worker,
-                                  final NotificationManager notificationManager,
                                   final JavaLocalizationConstant localizationConstant) {
         this.editor = editor;
         this.buildContext = buildContext;
         this.worker = worker;
         this.outlineModel = outlineModel;
-        this.notificationManager = notificationManager;
         this.codeAssistProcessor = codeAssistProcessor;
         this.localizationConstant = localizationConstant;
         this.annotationModel = annotationModel;
 
-        editor.addCloseHandler(new EditorPartPresenter.EditorPartCloseHandler() {
-            @Override
-            public void onClose(final EditorPartPresenter editor) {
-                if (notification != null && !notification.isFinished()) {
-                    notification.setStatus(FINISHED);
-                    notification.setType(Notification.Type.WARNING);
-                    notification.setMessage("Parsing file canceled");
-                    notification = null;
-                }
-            }
-        });
     }
 
     @Override
@@ -108,9 +88,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
             return;
         }
         if (first) {
-            notification = new Notification("Parsing file...", Notification.Status.PROGRESS);
             codeAssistProcessor.disableCodeAssistant();
-            notificationManager.showNotification(notification);
             first = false;
         }
 
@@ -136,11 +114,6 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     @Override
     public void onResult(final Array<IProblem> problems) {
         if (!first) {
-            if (notification != null) {
-                notification.setStatus(FINISHED);
-                notification.setMessage(localizationConstant.fileSuccessfullyParsed());
-                notification = null;
-            }
             codeAssistProcessor.enableCodeAssistant();
         }
 

@@ -11,18 +11,24 @@
 
 package com.codenvy.ide.ext.java.client.editor;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
+import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
+import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
+import com.codenvy.ide.jseditor.client.text.LinearRange;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.rest.StringUnmarshaller;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.util.loging.Log;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -32,15 +38,22 @@ import com.google.inject.Singleton;
 @Singleton
 public class OpenDeclarationFinder {
 
-    private final JavaParserWorker      worker;
-    private final EditorAgent           editorAgent;
-    private final JavaNavigationService service;
+    private final JavaParserWorker       worker;
+    private final EditorAgent            editorAgent;
+    private final JavaNavigationService  service;
+    private       DtoUnmarshallerFactory factory;
+    private       JavaNavigationService  navigationService;
+    private       AppContext             context;
 
     @Inject
-    public OpenDeclarationFinder(JavaParserWorker worker, EditorAgent editorAgent, JavaNavigationService service) {
+    public OpenDeclarationFinder(JavaParserWorker worker, EditorAgent editorAgent, JavaNavigationService service,
+                                 DtoUnmarshallerFactory factory, JavaNavigationService navigationService, AppContext context) {
         this.worker = worker;
         this.editorAgent = editorAgent;
         this.service = service;
+        this.factory = factory;
+        this.navigationService = navigationService;
+        this.context = context;
     }
 
     public void openDeclaration() {
@@ -50,7 +63,7 @@ public class OpenDeclarationFinder {
         }
 
         if (!(activeEditor instanceof EmbeddedTextEditorPresenter)) {
-            Log.error(getClass(), "Quick Document support only EmbeddedTextEditorPresenter as editor");
+            Log.error(getClass(), "Open Declaration support only EmbeddedTextEditorPresenter as editor");
             return;
         }
         EmbeddedTextEditorPresenter editor = ((EmbeddedTextEditorPresenter)activeEditor);
@@ -67,10 +80,14 @@ public class OpenDeclarationFinder {
     }
 
     private void sendRequest(String bindingKey, ProjectNode project) {
-        service.findDeclaration(project.getPath(), bindingKey, new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+        Unmarshallable<OpenDeclarationDescriptor> unmarshaller =
+                factory.newUnmarshaller(OpenDeclarationDescriptor.class);
+        service.findDeclaration(project.getPath(), bindingKey, new AsyncRequestCallback<OpenDeclarationDescriptor>(unmarshaller) {
             @Override
-            protected void onSuccess(String result) {
-                parseResult(result);
+            protected void onSuccess(OpenDeclarationDescriptor result) {
+                if (result != null) {
+                    handleDescriptor(result);
+                }
             }
 
             @Override
@@ -80,12 +97,65 @@ public class OpenDeclarationFinder {
         });
     }
 
-    private void parseResult(String result) {
-        Log.error(getClass(), result);
-        if(result == null){
-            return;
+    private void handleDescriptor(final OpenDeclarationDescriptor descriptor) {
+        StringMap<EditorPartPresenter> openedEditors = editorAgent.getOpenedEditors();
+        for (String s : openedEditors.getKeys().asIterable()) {
+            if (descriptor.getPath().equals(s)) {
+                EditorPartPresenter editorPartPresenter = openedEditors.get(s);
+                editorAgent.activateEditor(editorPartPresenter);
+                fileOpened(editorPartPresenter, descriptor);
+                return;
+            }
         }
-        JsonObject object = Json.parse(result);
 
+
+        AbstractTreeStructure tree = context.getCurrentProject().getCurrentTree();
+        if (descriptor.isBinary()) {
+            if(tree instanceof JavaTreeStructure){
+                ((JavaTreeStructure)tree).getClassFileByPath(context.getCurrentProject().getProjectDescription().getPath(), descriptor.getLibId(), descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Log.error(OpenDeclarationFinder.class, caught);
+                    }
+
+                    @Override
+                    public void onSuccess(TreeNode<?> result) {
+                        if (result instanceof VirtualFile) {
+                            openFile((VirtualFile)result, descriptor);
+                        }
+                    }
+                });
+            }
+        } else {
+            tree.getNodeByPath(descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    Log.error(OpenDeclarationFinder.class, caught);
+                }
+
+                @Override
+                public void onSuccess(TreeNode<?> result) {
+                    if (result instanceof VirtualFile) {
+                        openFile((VirtualFile)result, descriptor);
+                    }
+                }
+            });
+        }
+    }
+
+    private void openFile(VirtualFile result, final OpenDeclarationDescriptor descriptor) {
+        editorAgent.openEditor(result, new EditorAgent.OpenEditorCallback() {
+            @Override
+            public void onEditorOpened(EditorPartPresenter editor) {
+                fileOpened(editor, descriptor);
+            }
+        });
+    }
+
+    private void fileOpened(EditorPartPresenter editor, OpenDeclarationDescriptor descriptor) {
+        if (editor instanceof EmbeddedTextEditorPresenter) {
+            ((EmbeddedTextEditorPresenter)editor).getDocument().setSelectedRange(
+                    LinearRange.createWithStart(descriptor.getOffset()).andLength(descriptor.getLength()), true);
+        }
     }
 }
