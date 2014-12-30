@@ -11,18 +11,17 @@
 package com.codenvy.ide.extension.ant.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
-import com.codenvy.ide.api.projecttree.AbstractTreeStructure;
-import com.codenvy.ide.api.projecttree.TreeSettings;
+import com.codenvy.ide.api.projecttree.TreeStructure;
 import com.codenvy.ide.api.projecttree.TreeStructureProvider;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import javax.annotation.Nonnull;
 
 /**
  * Tree structure provider responsible for creating tree structure instances for project.
@@ -31,21 +30,21 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 @Singleton
 public class AntProjectTreeStructureProvider implements TreeStructureProvider {
+    private AntNodeFactory         nodeFactory;
     private EventBus               eventBus;
-    private EditorAgent            editorAgent;
     private AppContext             appContext;
     private IconRegistry           iconRegistry;
     private ProjectServiceClient   projectServiceClient;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private JavaNavigationService service;
+    private JavaNavigationService  service;
 
     /** Create instance of {@link AntProjectTreeStructureProvider}. */
     @Inject
-    public AntProjectTreeStructureProvider(EventBus eventBus, EditorAgent editorAgent, AppContext appContext, IconRegistry iconRegistry,
-                                           ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                           JavaNavigationService service) {
+    public AntProjectTreeStructureProvider(AntNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
+                                           IconRegistry iconRegistry, ProjectServiceClient projectServiceClient,
+                                           DtoUnmarshallerFactory dtoUnmarshallerFactory, JavaNavigationService service) {
+        this.nodeFactory = nodeFactory;
         this.eventBus = eventBus;
-        this.editorAgent = editorAgent;
         this.appContext = appContext;
         this.iconRegistry = iconRegistry;
         this.projectServiceClient = projectServiceClient;
@@ -53,10 +52,15 @@ public class AntProjectTreeStructureProvider implements TreeStructureProvider {
         this.service = service;
     }
 
-    /** {@inheritDoc} */
+    @Nonnull
     @Override
-    public AbstractTreeStructure newTreeStructure(ProjectDescriptor project) {
-        return new AntProjectTreeStructure(TreeSettings.DEFAULT, project, eventBus, editorAgent, appContext, projectServiceClient,
-                                           iconRegistry, dtoUnmarshallerFactory, service);
+    public String getId() {
+        return "ant";
+    }
+
+    @Override
+    public TreeStructure get() {
+        return new AntProjectTreeStructure(nodeFactory, eventBus, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory,
+                                           service);
     }
 }

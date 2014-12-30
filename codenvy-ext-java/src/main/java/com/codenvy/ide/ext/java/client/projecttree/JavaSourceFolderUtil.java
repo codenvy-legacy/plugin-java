@@ -13,8 +13,10 @@ package com.codenvy.ide.ext.java.client.projecttree;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,5 +45,32 @@ public class JavaSourceFolderUtil {
         }
 
         return false;
+    }
+
+    /**
+     * Returns source folders list of the project to which the specified node belongs.
+     * Every path in the returned list starts and ends with separator char /.
+     */
+    public static List<String> getSourceFolders(TreeNode<?> node) {
+        final ProjectNode project = node.getProject();
+        Map<String, List<String>> attributes = project.getData().getAttributes();
+        final String builderName = project.getData().getBuilders().getDefault();
+        List<String> mySourceFolders = new LinkedList<>();
+
+        List<String> sourceFolders = attributes.get(builderName + ".source.folder");
+        if (sourceFolders != null) {
+            for (String sourceFolder : sourceFolders) {
+                mySourceFolders.add(project.getPath() + '/' + sourceFolder + '/');
+            }
+        }
+
+        List<String> testSourceFolders = attributes.get(builderName + ".test.source.folder");
+        if (testSourceFolders != null) {
+            for (String testSourceFolder : testSourceFolders) {
+                mySourceFolders.add(project.getPath() + '/' + testSourceFolder + '/');
+            }
+        }
+
+        return mySourceFolders;
     }
 }

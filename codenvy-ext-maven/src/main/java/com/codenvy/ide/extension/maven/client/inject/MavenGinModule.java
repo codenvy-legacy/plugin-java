@@ -11,9 +11,14 @@
 package com.codenvy.ide.extension.maven.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
+import com.codenvy.ide.api.projecttree.TreeStructureProvider;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildView;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildViewImpl;
+import com.codenvy.ide.extension.maven.client.projecttree.MavenNodeFactory;
+import com.codenvy.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
 import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;
 
 /**
@@ -26,5 +31,8 @@ public class MavenGinModule extends AbstractGinModule {
     @Override
     protected void configure() {
         bind(MavenBuildView.class).to(MavenBuildViewImpl.class).in(Singleton.class);
+
+        install(new GinFactoryModuleBuilder().build(MavenNodeFactory.class));
+        GinMultibinder.newSetBinder(binder(), TreeStructureProvider.class).addBinding().to(MavenProjectTreeStructureProvider.class);
     }
 }

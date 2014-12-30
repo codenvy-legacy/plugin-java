@@ -24,7 +24,6 @@ import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
 import com.codenvy.ide.extension.ant.client.wizard.AntPagePresenter;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
@@ -56,8 +55,7 @@ public class AntExtension {
                         Provider<SelectRunnerPagePresenter> runnerPagePresenter,
                         NotificationManager notificationManager,
                         ProjectTypeWizardRegistry projectTypeWizardRegistry,
-                        TreeStructureProviderRegistry treeStructureProviderRegistry,
-                        AntProjectTreeStructureProvider antProjectTreeStructureProvider) {
+                        TreeStructureProviderRegistry treeStructureProviderRegistry) {
         ProjectWizard wizard = new ProjectWizard(notificationManager);
         wizard.addPage(antPagePresenterProvider);
         wizard.addPage(runnerPagePresenter);
@@ -110,6 +108,6 @@ public class AntExtension {
             }
         });
 
-        treeStructureProviderRegistry.registerProvider(AntAttributes.ANT_ID, antProjectTreeStructureProvider);
+        treeStructureProviderRegistry.associateProjectTypeToTreeProvider(AntAttributes.ANT_ID, "ant");
     }
 }

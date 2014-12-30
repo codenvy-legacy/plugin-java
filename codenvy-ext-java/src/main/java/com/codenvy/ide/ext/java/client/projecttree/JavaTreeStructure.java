@@ -12,14 +12,13 @@ package com.codenvy.ide.ext.java.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
+import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
@@ -29,6 +28,8 @@ import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nonnull;
+
 /**
  * Tree structure for Java project.
  *
@@ -36,61 +37,75 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class JavaTreeStructure extends GenericTreeStructure {
 
-    protected final IconRegistry iconRegistry;
+    protected final IconRegistry          iconRegistry;
     protected final JavaNavigationService service;
+    private final   JavaTreeSettings      settings;
 
-    protected JavaTreeStructure(TreeSettings settings, ProjectDescriptor project, EventBus eventBus, EditorAgent editorAgent,
-                                AppContext appContext, ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
-                                DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                JavaNavigationService service) {
-        super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, dtoUnmarshallerFactory);
+    protected JavaTreeStructure(JavaNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
+                                ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
+                                DtoUnmarshallerFactory dtoUnmarshallerFactory, JavaNavigationService service) {
+        super(nodeFactory, eventBus, appContext, projectServiceClient, dtoUnmarshallerFactory);
         this.iconRegistry = iconRegistry;
         this.service = service;
+        this.settings = new JavaTreeSettings();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void getRoots(AsyncCallback<Array<TreeNode<?>>> callback) {
-        AbstractTreeNode projectRoot =
-                new JavaProjectNode(null, project, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
+    public void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback) {
+        CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject != null) {
+            ProjectNode projectRoot = getNodeFactory().newJavaProjectNode(null, currentProject.getRootProject(), this);
+            callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
+        } else {
+            callback.onFailure(new IllegalStateException("No opened project"));
+        }
+    }
+
+    @Nonnull
+    @Override
+    public JavaTreeSettings getSettings() {
+        return settings;
+    }
+
+    @Override
+    public JavaNodeFactory getNodeFactory() {
+        return (JavaNodeFactory)nodeFactory;
     }
 
     public JavaFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {
-        return new JavaFolderNode(parent, data, this, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        return getNodeFactory().newJavaFolderNode(parent, data, this);
     }
 
     public SourceFolderNode newSourceFolderNode(AbstractTreeNode parent, ItemReference data) {
-        return new SourceFolderNode(parent, data, this, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory,
-                                    iconRegistry);
+        return getNodeFactory().newSourceFolderNode(parent, data, this);
     }
 
     public PackageNode newPackageNode(AbstractTreeNode parent, ItemReference data) {
-        return new PackageNode(parent, data, this, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory,
-                               iconRegistry);
+        return getNodeFactory().newPackageNode(parent, data, this);
     }
 
     public SourceFileNode newSourceFileNode(AbstractTreeNode parent, ItemReference data) {
-        return new SourceFileNode(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        return getNodeFactory().newSourceFileNode(parent, data);
     }
 
-    public ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent){
-        return new ExternalLibrariesNode(parent, new Object(), eventBus, this, iconRegistry, service, dtoUnmarshallerFactory);
+    public ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent) {
+        return getNodeFactory().newExternalLibrariesNode(parent, new Object(), this);
     }
 
-    public JarNode newJarNode(ExternalLibrariesNode parent, Jar jar){
-        return new JarNode(parent, jar, eventBus, this, service, dtoUnmarshallerFactory, iconRegistry);
+    public JarNode newJarNode(ExternalLibrariesNode parent, Jar jar) {
+        return getNodeFactory().newJarNode(parent, jar, this);
     }
 
-    public JarContainerNode newJarContainerNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
-        return new JarContainerNode(parent, entry, eventBus, libId, service, dtoUnmarshallerFactory, this, iconRegistry);
+    public JarContainerNode newJarContainerNode(AbstractTreeNode<?> parent, JarEntry data, int libId) {
+        return getNodeFactory().newJarContainerNode(parent, data, libId, this);
     }
 
-    public TreeNode<?> newJarFileNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
-        return new JarFileNode(parent,entry, eventBus, libId, service, dtoUnmarshallerFactory, iconRegistry);
+    public JarFileNode newJarFileNode(AbstractTreeNode<?> parent, JarEntry data, int libId) {
+        return getNodeFactory().newJarFileNode(parent, data, libId);
     }
 
-    public TreeNode<?> newJarClassNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
-        return new JarClassNode(parent, entry, eventBus, libId, service, dtoUnmarshallerFactory, iconRegistry);
+    public JarClassNode newJarClassNode(AbstractTreeNode<?> parent, JarEntry data, int libId) {
+        return getNodeFactory().newJarClassNode(parent, data, libId);
     }
 }

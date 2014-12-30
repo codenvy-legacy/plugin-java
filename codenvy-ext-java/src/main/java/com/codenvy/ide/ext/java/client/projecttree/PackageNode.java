@@ -14,25 +14,40 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
-import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
-import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
+
+import javax.annotation.Nonnull;
+
+import static com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil.getSourceFolders;
 
 /**
  * Node that represents a java package.
  *
  * @author Artem Zatsarynnyy
  */
-public class PackageNode extends FolderNode {
+public class PackageNode extends AbstractSourceContainerNode {
 
-    public PackageNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure, TreeSettings settings,
+    @AssistedInject
+    public PackageNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
                        EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
                        DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.package").getSVGImage());
+    }
+
+    @Nonnull
+    @Override
+    public String getDisplayName() {
+        if (((JavaTreeStructure)treeStructure).getSettings().isCompactEmptyPackages()) {
+            final String parentPath = ((StorableNode)getParent()).getPath();
+            return getPath().replaceFirst(parentPath + "/", "").replaceAll("/", ".");
+        }
+        return super.getDisplayName();
     }
 
     /**
@@ -41,27 +56,18 @@ public class PackageNode extends FolderNode {
      * @return the full-qualified name, or an empty string for the default package
      */
     public String getQualifiedName() {
-        // TODO: read source folders from project/module attributes
-        final String p = getProject().getPath() + "/src/main/java/";
-        return getPath().replaceFirst(p, "").replaceAll("/", ".");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractTreeNode<?> createChildNode(ItemReference item) {
-        if ("file".equals(item.getType()) && item.getName().endsWith(".java")) {
-            return ((JavaTreeStructure)treeStructure).newSourceFileNode(this, item);
-        } else if ("folder".equals(item.getType())) {
-            return ((JavaTreeStructure)treeStructure).newPackageNode(this, item);
-        } else {
-            return super.createChildNode(item);
+        for (String sourceFolder : getSourceFolders(this)) {
+            if (getPath().startsWith(sourceFolder)) {
+                return getPath().replaceFirst(sourceFolder, "").replace('/', '.');
+            }
         }
+        return "";
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean isRenamable() {
-        // Do not allow to rename Java package as simple folder.
+        // Do not allow to rename package as simple folder.
         // This type of node needs to implement rename refactoring.
         return false;
     }

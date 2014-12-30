@@ -21,6 +21,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -44,8 +46,10 @@ public class JarContainerNode extends JarEntryNode {
      * @param dtoUnmarshallerFactory
      * @param iconRegistry
      */
-    public JarContainerNode(TreeNode<?> parent, JarEntry data, EventBus eventBus, int libId,
-                            JavaNavigationService service, DtoUnmarshallerFactory dtoUnmarshallerFactory, JavaTreeStructure treeStructure,  IconRegistry iconRegistry) {
+    @AssistedInject
+    public JarContainerNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted int libId,
+                            @Assisted JavaTreeStructure treeStructure, EventBus eventBus, JavaNavigationService service,
+                            DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
         super(parent, data, eventBus, libId, service, dtoUnmarshallerFactory);
         this.treeStructure = treeStructure;
         if(data.getType() == JarEntry.JarEntryType.PACKAGE){

@@ -15,6 +15,8 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -25,8 +27,9 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public class SourceFileNode extends FileNode {
-    public SourceFileNode(TreeNode<?> parent, ItemReference data, EventBus eventBus, ProjectServiceClient projectServiceClient,
-                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    @AssistedInject
+    public SourceFileNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, EventBus eventBus,
+                          ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
