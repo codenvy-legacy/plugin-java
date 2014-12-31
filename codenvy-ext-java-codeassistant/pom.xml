@@ -72,6 +72,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.codenvy.vfs</groupId>
+            <artifactId>codenvy-vfs-impl</artifactId>
+            <version>${codenvy.vfs.impl.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.birt.runtime</groupId>
             <artifactId>org.eclipse.core.jobs</artifactId>
             <version>${org.eclipse.core.jobs.version}</version>
