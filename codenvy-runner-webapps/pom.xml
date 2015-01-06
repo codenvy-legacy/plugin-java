@@ -32,6 +32,11 @@
             <artifactId>codenvy-gwt-client-commons</artifactId>
             <version>${codenvy.platform-api-gwt-client.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jvnet.winp</groupId>
+            <artifactId>winp</artifactId>
+            <version>${org.jvnet.winp.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
