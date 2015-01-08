@@ -12,25 +12,34 @@ package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.JavaUtils;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
+import com.codenvy.ide.util.loging.Log;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
+
+import static com.codenvy.ide.api.event.FileEvent.FileOperation.OPEN;
+import static com.codenvy.ide.ext.java.client.JavaUtils.checkCompilationUnitName;
+import static com.codenvy.ide.ext.java.client.JavaUtils.checkPackageName;
+import static com.codenvy.ide.ext.java.client.JavaUtils.isValidCompilationUnitName;
+import static com.codenvy.ide.ext.java.client.JavaUtils.isValidPackageName;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
 
 /**
  * Presenter for creating Java source file.
@@ -40,31 +49,28 @@ import com.google.web.bindery.event.shared.EventBus;
 @Singleton
 public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionDelegate {
     private static final String DEFAULT_CONTENT = " {\n}\n";
-    private NewJavaSourceFileView  view;
-    private SelectionAgent         selectionAgent;
-    private ProjectServiceClient   projectServiceClient;
-    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private EventBus               eventBus;
-    private EditorAgent            editorAgent;
-    private DialogFactory          dialogFactory;
-    private Array<JavaSourceFileType> sourceFileTypes = Collections.createArray();
+    private final NewJavaSourceFileView     view;
+    private final SelectionAgent            selectionAgent;
+    private final ProjectServiceClient      projectServiceClient;
+    private final DtoUnmarshallerFactory    dtoUnmarshallerFactory;
+    private final EventBus                  eventBus;
+    private final DialogFactory             dialogFactory;
+    private final Array<JavaSourceFileType> sourceFileTypes;
+    private final AppContext                appContext;
 
     @Inject
     public NewJavaSourceFilePresenter(NewJavaSourceFileView view, SelectionAgent selectionAgent, ProjectServiceClient projectServiceClient,
-                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus, EditorAgent editorAgent,
-                                      DialogFactory dialogFactory) {
+                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus, DialogFactory dialogFactory,
+                                      AppContext appContext) {
+        this.appContext = appContext;
+        sourceFileTypes = Collections.createArray(CLASS, INTERFACE, ENUM);
         this.view = view;
         this.selectionAgent = selectionAgent;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.eventBus = eventBus;
-        this.editorAgent = editorAgent;
         this.dialogFactory = dialogFactory;
-
         this.view.setDelegate(this);
-        sourceFileTypes.add(JavaSourceFileType.CLASS);
-        sourceFileTypes.add(JavaSourceFileType.INTERFACE);
-        sourceFileTypes.add(JavaSourceFileType.ENUM);
     }
 
     public void showDialog() {
@@ -80,84 +86,158 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
     @Override
     public void onNameChanged() {
         try {
-            String fileNameWithExtension = view.getName();
-            if (fileNameWithExtension.lastIndexOf(".java") == -1) {
-                fileNameWithExtension += ".java";
+            final String fileNameWithExtension = getFileNameWithExtension(view.getName());
+            if (!fileNameWithExtension.trim().isEmpty()) {
+                checkCompilationUnitName(fileNameWithExtension);
             }
-            JavaUtils.checkCompilationUnitName(fileNameWithExtension);
+            final String packageName = getPackageFragment(view.getName());
+            if (!packageName.trim().isEmpty()) {
+                checkPackageName(packageName);
+            }
             view.hideErrorHint();
         } catch (IllegalStateException e) {
-            view.showErrorHint(e.getLocalizedMessage());
+            view.showErrorHint(e.getMessage());
         }
     }
 
     @Override
     public void onOkClicked() {
-        String fileNameWithoutExtension = view.getName();
-        if (fileNameWithoutExtension.lastIndexOf(".java") != -1) {
-            fileNameWithoutExtension = fileNameWithoutExtension.substring(0, fileNameWithoutExtension.lastIndexOf(".java"));
-        }
+        final String fileNameWithExtension = getFileNameWithExtension(view.getName());
+        final String fileNameWithoutExtension = fileNameWithExtension.substring(0, fileNameWithExtension.lastIndexOf(".java"));
+        final String packageFragment = getPackageFragment(view.getName());
 
-        if (JavaUtils.isValidCompilationUnitName(fileNameWithoutExtension + ".java")) {
+        if (!packageFragment.isEmpty() && !isValidPackageName(packageFragment)) {
+            return;
+        }
+        if (isValidCompilationUnitName(fileNameWithExtension)) {
             view.close();
             final FolderNode parent = (FolderNode)selectionAgent.getSelection().getFirstElement();
             switch (view.getSelectedType()) {
                 case CLASS:
-                    createClass(fileNameWithoutExtension, parent);
+                    createClass(fileNameWithoutExtension, parent, packageFragment);
                     break;
                 case INTERFACE:
-                    createInterface(fileNameWithoutExtension, parent);
+                    createInterface(fileNameWithoutExtension, parent, packageFragment);
                     break;
                 case ENUM:
-                    createEnum(fileNameWithoutExtension, parent);
+                    createEnum(fileNameWithoutExtension, parent, packageFragment);
                     break;
             }
         }
     }
 
-    private void createClass(String name, FolderNode parent) {
-        createSourceFile(name, parent, getPackageName(parent) + "public class " + name + DEFAULT_CONTENT);
+    private String getFileNameWithExtension(String name) {
+        if (name.endsWith(".java")) {
+            name = name.substring(0, name.lastIndexOf(".java"));
+        }
+        final int lastDotPos = name.lastIndexOf('.');
+        name = name.substring(lastDotPos + 1);
+        return name + ".java";
     }
 
-    private void createInterface(String name, FolderNode parent) {
-        createSourceFile(name, parent, getPackageName(parent) + "public interface " + name + DEFAULT_CONTENT);
+    private String getPackageFragment(String name) {
+        if (name.endsWith(".java")) {
+            name = name.substring(0, name.lastIndexOf(".java"));
+        }
+        final int lastDotPos = name.lastIndexOf('.');
+        if (lastDotPos >= 0) {
+            return name.substring(0, lastDotPos);
+        }
+        return "";
     }
 
-    private void createEnum(String name, FolderNode parent) {
-        createSourceFile(name, parent, getPackageName(parent) + "public enum " + name + DEFAULT_CONTENT);
+    private void createClass(String name, FolderNode parent, String packageFragment) {
+        createSourceFile(name, parent, packageFragment,
+                         getPackageQualifier(parent, packageFragment) + "public class " + name + DEFAULT_CONTENT);
     }
 
-    private void createSourceFile(String name, final FolderNode parent, String content) {
+    private void createInterface(String name, FolderNode parent, String packageFragment) {
+        createSourceFile(name, parent, packageFragment,
+                         getPackageQualifier(parent, packageFragment) + "public interface " + name + DEFAULT_CONTENT);
+    }
+
+    private void createEnum(String name, FolderNode parent, String packageFragment) {
+        createSourceFile(name, parent, packageFragment,
+                         getPackageQualifier(parent, packageFragment) + "public enum " + name + DEFAULT_CONTENT);
+    }
+
+    private String getPackageQualifier(FolderNode parent, String packageFragment) {
+        String packageFQN = "";
+        if (parent instanceof PackageNode) {
+            packageFQN = ((PackageNode)parent).getQualifiedName();
+        }
+        if (!packageFragment.isEmpty()) {
+            packageFQN = packageFQN.isEmpty() ? packageFragment : packageFQN + '.' + packageFragment;
+        }
+        if (!packageFQN.isEmpty()) {
+            return "package " + packageFQN + ";\n\n";
+        }
+        return "\n";
+    }
+
+    private void createSourceFile(final String nameWithoutExtension, final FolderNode parent, String packageFragment,
+                                  final String content) {
+        final String parentPath = parent.getPath() + (packageFragment.isEmpty() ? "" : '/' + packageFragment.replace('.', '/'));
+        ensureFolderExists(parentPath, new AsyncCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                createAndOpenFile(nameWithoutExtension, parentPath, content, parent);
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                dialogFactory.createMessageDialog("", caught.getMessage(), null).show();
+            }
+        });
+    }
+
+    private void ensureFolderExists(String path, final AsyncCallback<Void> callback) {
+        projectServiceClient.createFolder(path, new AsyncRequestCallback<ItemReference>() {
+            @Override
+            protected void onSuccess(ItemReference result) {
+                callback.onSuccess(null);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                if (exception.getMessage().contains("already exists")) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onFailure(exception);
+                }
+            }
+        });
+    }
+
+    private void createAndOpenFile(String name, String parentPath, String content, final FolderNode parent) {
         final Unmarshallable<ItemReference> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class);
-        projectServiceClient
-                .createFile(parent.getPath(), name + ".java", content, null, new AsyncRequestCallback<ItemReference>(unmarshaller) {
-                    @Override
-                    protected void onSuccess(ItemReference result) {
-                        eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
-                        FileNode file =
-                                new SourceFileNode(parent, result, eventBus, projectServiceClient, null);
-                        editorAgent.openEditor(file);
-                    }
+        projectServiceClient.createFile(parentPath, name + ".java", content, null, new AsyncRequestCallback<ItemReference>(unmarshaller) {
+            @Override
+            protected void onSuccess(ItemReference result) {
+                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(parent));
+                openFileByPath(result.getPath());
+            }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        dialogFactory.createMessageDialog("", exception.getMessage(), null).show();
-                    }
-                });
+            @Override
+            protected void onFailure(Throwable exception) {
+                dialogFactory.createMessageDialog("", exception.getMessage(), null).show();
+            }
+        });
     }
 
-    private String getPackageName(FolderNode parent) {
-        if (parent instanceof SourceFolderNode) {
-            return "\n";
-        }
+    private void openFileByPath(String path) {
+        appContext.getCurrentProject().getCurrentTree().getNodeByPath(path, new AsyncCallback<TreeNode<?>>() {
+            @Override
+            public void onSuccess(TreeNode<?> result) {
+                if (result != null) {
+                    eventBus.fireEvent(new FileEvent((VirtualFile)result, OPEN));
+                }
+            }
 
-        String packageName = parent.getName();
-        TreeNode<?> parentNode = parent.getParent();
-        while (parentNode instanceof PackageNode) {
-            packageName = ((PackageNode)parentNode).getName() + '.' + packageName;
-            parentNode = parentNode.getParent();
-        }
-
-        return "package " + packageName + ";\n\n";
+            @Override
+            public void onFailure(Throwable caught) {
+                Log.error(NewJavaSourceFilePresenter.class, caught);
+            }
+        });
     }
 }

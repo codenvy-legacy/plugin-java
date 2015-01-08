@@ -23,6 +23,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -45,9 +47,9 @@ public class JarNode extends AbstractTreeNode<Jar> {
      * @param eventBus
      * @param javaTreeStructure
      */
-    public JarNode(ExternalLibrariesNode parent, Jar data, EventBus eventBus, JavaTreeStructure javaTreeStructure,
-                   JavaNavigationService service,
-                   DtoUnmarshallerFactory factory, IconRegistry registry) {
+    @AssistedInject
+    public JarNode(@Assisted ExternalLibrariesNode parent, @Assisted Jar data, @Assisted JavaTreeStructure javaTreeStructure,
+                   EventBus eventBus, JavaNavigationService service, DtoUnmarshallerFactory factory, IconRegistry registry) {
         super(parent, data, eventBus);
         treeStructure = javaTreeStructure;
         this.service = service;

@@ -14,13 +14,15 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeStructure;
 import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.JavaUtils;
+import com.codenvy.ide.ext.java.client.projecttree.AbstractSourceContainerNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.newresource.AbstractNewResourceAction;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.Unmarshallable;
@@ -40,14 +42,12 @@ import javax.annotation.Nullable;
 @Singleton
 public class NewPackageAction extends AbstractNewResourceAction {
     private final InputValidator nameValidator = new NameValidator();
-    private JavaLocalizationConstant localizationConstant;
 
     @Inject
     public NewPackageAction(JavaResources javaResources, JavaLocalizationConstant localizationConstant) {
         super(localizationConstant.actionNewPackageTitle(),
               localizationConstant.actionNewPackageDescription(),
               javaResources.packageIcon());
-        this.localizationConstant = localizationConstant;
     }
 
     @Override
@@ -57,26 +57,29 @@ public class NewPackageAction extends AbstractNewResourceAction {
         dialogFactory.createInputDialog("New " + title, "Name:", new InputCallback() {
             @Override
             public void accepted(String value) {
-                try {
-                    JavaUtils.checkPackageName(value);
-                    final StorableNode parent = getParent();
-                    createPackage(parent, value, new AsyncCallback<ItemReference>() {
-                        @Override
-                        public void onSuccess(ItemReference result) {
-                            eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent((AbstractTreeNode<?>)parent));
-                        }
+                final StorableNode parent = getParent();
+                createPackage(parent, value, new AsyncCallback<ItemReference>() {
+                    @Override
+                    public void onSuccess(ItemReference result) {
+                        eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(getNodeToRefresh((AbstractSourceContainerNode)parent)));
+                    }
 
-                        @Override
-                        public void onFailure(Throwable caught) {
-                            dialogFactory.createMessageDialog("", caught.getMessage(), null).show();
-                        }
-                    });
-                } catch (IllegalStateException ex) {
-                    dialogFactory.createMessageDialog(localizationConstant.messagesNewPackageInvalidName(), ex.getMessage(), null).show();
-                }
-
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        dialogFactory.createMessageDialog("", caught.getMessage(), null).show();
+                    }
+                });
             }
         }, null).withValidator(nameValidator).show();
+    }
+
+    private AbstractTreeNode getNodeToRefresh(AbstractSourceContainerNode parent) {
+        final TreeStructure currentTree = appContext.getCurrentProject().getCurrentTree();
+        if (currentTree instanceof JavaTreeStructure && ((JavaTreeStructure)currentTree).getSettings().isCompactEmptyPackages()
+            && parent instanceof PackageNode && parent.getChildren().isEmpty()) {
+            return (AbstractTreeNode)parent.getParent();
+        }
+        return parent;
     }
 
     @Override
@@ -84,7 +87,7 @@ public class NewPackageAction extends AbstractNewResourceAction {
         boolean enabled = false;
         Selection<?> selection = selectionAgent.getSelection();
         if (selection != null) {
-            enabled = selection.getFirstElement() instanceof PackageNode || selection.getFirstElement() instanceof SourceFolderNode;
+            enabled = selection.getFirstElement() instanceof AbstractSourceContainerNode;
         }
         e.getPresentation().setEnabledAndVisible(enabled);
     }
