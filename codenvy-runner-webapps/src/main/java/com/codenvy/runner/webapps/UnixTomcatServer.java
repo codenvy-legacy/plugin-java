@@ -14,15 +14,11 @@ import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.core.util.StreamPump;
-import com.codenvy.api.core.util.SystemInfo;
 import com.codenvy.api.runner.RunnerException;
 import com.codenvy.api.runner.internal.ApplicationLogger;
 import com.codenvy.api.runner.internal.ApplicationLogsPublisher;
 import com.codenvy.api.runner.internal.ApplicationProcess;
 import com.codenvy.api.runner.internal.DeploymentSources;
-import com.codenvy.commons.lang.IoUtil;
-import com.codenvy.commons.lang.ZipUtils;
-import com.google.common.io.CharStreams;
 import com.google.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -30,147 +26,60 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@code ApplicationServer} implementation to deploy application to Apache Tomcat servlet container.
+ * {@code ApplicationServer} implementation to deploy application to Apache Tomcat servlet container for *nix like system.
  *
  * @author Artem Zatsarynnyy
+ * @author Roman Nikitenko
  */
 @Singleton
-public class TomcatServer implements ApplicationServer {
-    public static final  String TOMCAT_HOME_PARAMETER = "runner.tomcat.tomcat_home";
-    public static final  String MEM_SIZE_PARAMETER    = "runner.tomcat.memory";
-    private static final Logger LOG                   = LoggerFactory.getLogger(TomcatServer.class);
-    private static final String SERVER_XML            =
-            "<?xml version='1.0' encoding='utf-8'?>\n" +
-            "<Server port=\"-1\">\n" +
-            "  <Listener className=\"org.apache.catalina.core.AprLifecycleListener\" SSLEngine=\"on\" />\n" +
-            "  <Listener className=\"org.apache.catalina.core.JasperListener\" />\n" +
-            "  <Listener className=\"org.apache.catalina.core.JreMemoryLeakPreventionListener\" />\n" +
-            "  <Listener className=\"org.apache.catalina.mbeans.GlobalResourcesLifecycleListener\" />\n" +
-            "  <Listener className=\"org.apache.catalina.core.ThreadLocalLeakPreventionListener\" />\n" +
-            "  <Service name=\"Catalina\">\n" +
-            "    <Connector port=\"${PORT}\" protocol=\"HTTP/1.1\"\n" +
-            "               connectionTimeout=\"20000\" />\n" +
-            "    <Engine name=\"Catalina\" defaultHost=\"localhost\">\n" +
-            "      <Host name=\"localhost\"  appBase=\"webapps\"\n" +
-            "            unpackWARs=\"true\" autoDeploy=\"true\">\n" +
-            "      </Host>\n" +
-            "    </Engine>\n" +
-            "  </Service>\n" +
-            "</Server>\n";
-
-    private final int          memSize;
-    private final java.io.File tomcatHome;
-    private final EventService eventService;
+public class UnixTomcatServer extends BaseTomcatServer {
+    private static final Logger LOG = LoggerFactory.getLogger(UnixTomcatServer.class);
 
     @Inject
-    public TomcatServer(@Named(MEM_SIZE_PARAMETER) int memSize,
-                        @Named(TOMCAT_HOME_PARAMETER) java.io.File tomcatHome,
-                        EventService eventService) {
-        this.memSize = memSize;
-        this.tomcatHome = tomcatHome;
-        this.eventService = eventService;
+    public UnixTomcatServer(@Named(MEM_SIZE_PARAMETER) int memSize,
+                            @Named(TOMCAT_HOME_PARAMETER) File tomcatHome,
+                            EventService eventService) {
+        super(memSize, tomcatHome, eventService);
     }
 
     @Override
-    public final String getName() {
-        return "tomcat7";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Apache Tomcat 7.0 is an implementation of the Java Servlet and JavaServer Pages technologies.\n" +
-               "Home page: http://tomcat.apache.org/";
-    }
-
-    @Override
-    public ApplicationProcess deploy(java.io.File appDir,
+    public ApplicationProcess deploy(File appDir,
                                      DeploymentSources toDeploy,
                                      ApplicationServerRunnerConfiguration runnerConfiguration,
                                      ApplicationProcess.Callback callback) throws RunnerException {
-        final java.io.File myTomcatHome = getTomcatHome();
+        prepare(appDir, toDeploy, runnerConfiguration);
+        final File logsDir = new File(appDir, "logs");
+        final File startUpScriptFile;
         try {
-            final Path tomcatPath = Files.createDirectory(appDir.toPath().resolve("tomcat"));
-            IoUtil.copy(myTomcatHome, tomcatPath.toFile(), null);
-            final Path webappsPath = tomcatPath.resolve("webapps");
-            if (Files.exists(webappsPath)) {
-                IoUtil.deleteRecursive(webappsPath.toFile());
-            }
-            Files.createDirectory(webappsPath);
-            final Path rootPath = Files.createDirectory(webappsPath.resolve("ROOT"));
-            if (toDeploy.isZipArchive()) {
-                ZipUtils.unzip(toDeploy.getFile(), rootPath.toFile());
-            } else {
-                IoUtil.copy(toDeploy.getFile(), rootPath.toFile(), null);
-            }
-            generateServerXml(tomcatPath.toFile(), runnerConfiguration);
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        }
-
-        if (SystemInfo.isUnix()) {
-            return startUnix(appDir, runnerConfiguration, callback);
-        } else {
-            return startWindows(appDir, runnerConfiguration, callback);
-        }
-    }
-
-    protected void generateServerXml(java.io.File tomcatDir, ApplicationServerRunnerConfiguration runnerConfiguration) throws IOException {
-        final String cfg = SERVER_XML.replace("${PORT}", Integer.toString(runnerConfiguration.getHttpPort()));
-        final java.io.File serverXmlFile = new java.io.File(new java.io.File(tomcatDir, "conf"), "server.xml");
-        Files.write(serverXmlFile.toPath(), cfg.getBytes());
-    }
-
-    public java.io.File getTomcatHome() {
-        return tomcatHome;
-    }
-
-    public int getMemSize() {
-        return memSize;
-    }
-
-    @Override
-    public String toString() {
-        return "Tomcat Server";
-    }
-
-    // *nix
-
-    protected ApplicationProcess startUnix(final java.io.File appDir,
-                                           final ApplicationServerRunnerConfiguration runnerConfiguration,
-                                           ApplicationProcess.Callback callback) throws RunnerException {
-        final java.io.File logsDir = new java.io.File(appDir, "logs");
-        final java.io.File startUpScriptFile;
-        try {
-            startUpScriptFile = genStartUpScriptUnix(appDir, runnerConfiguration);
+            startUpScriptFile = generateStartUpScript(appDir, runnerConfiguration);
             Files.createDirectory(logsDir.toPath());
         } catch (IOException e) {
             throw new RunnerException(e);
         }
-        final List<java.io.File> logFiles = new ArrayList<>(1);
-        logFiles.add(new java.io.File(logsDir, "output.log"));
+        final List<File> logFiles = new ArrayList<>(1);
+        logFiles.add(new File(logsDir, "output.log"));
 
         return new TomcatProcess(appDir, startUpScriptFile, logFiles, runnerConfiguration, callback, eventService);
     }
 
-    private java.io.File genStartUpScriptUnix(java.io.File appDir, ApplicationServerRunnerConfiguration runnerConfiguration)
+    private File generateStartUpScript(File appDir, ApplicationServerRunnerConfiguration runnerConfiguration)
             throws IOException {
         final String startupScript = "#!/bin/sh\n" +
-                                     exportEnvVariablesUnix(runnerConfiguration) +
+                                     exportEnvVariables(runnerConfiguration) +
                                      "cd tomcat\n" +
                                      "chmod +x bin/*.sh\n" +
                                      catalinaUnix(runnerConfiguration) +
                                      "PID=$!\n" +
                                      "echo \"$PID\" > ../run.pid\n" +
                                      "wait $PID";
-        final java.io.File startUpScriptFile = new java.io.File(appDir, "startup.sh");
+        final File startUpScriptFile = new File(appDir, "startup.sh");
         Files.write(startUpScriptFile.toPath(), startupScript.getBytes());
         if (!startUpScriptFile.setExecutable(true, false)) {
             throw new IOException("Unable to update attributes of the startup script");
@@ -178,7 +87,7 @@ public class TomcatServer implements ApplicationServer {
         return startUpScriptFile;
     }
 
-    private String exportEnvVariablesUnix(ApplicationServerRunnerConfiguration runnerConfiguration) {
+    private String exportEnvVariables(ApplicationServerRunnerConfiguration runnerConfiguration) {
         int memory = runnerConfiguration.getMemory();
         if (memory <= 0) {
             memory = getMemSize();
@@ -206,31 +115,23 @@ public class TomcatServer implements ApplicationServer {
         return "./bin/catalina.sh run 2>&1 | tee ../logs/output.log &\n";
     }
 
-    // Windows
-
-    protected ApplicationProcess startWindows(java.io.File appDir,
-                                              ApplicationServerRunnerConfiguration runnerConfiguration,
-                                              ApplicationProcess.Callback callback) {
-        throw new UnsupportedOperationException();
-    }
-
     private static class TomcatProcess extends ApplicationProcess {
-        final int                httpPort;
-        final List<java.io.File> logFiles;
-        final int                debugPort;
-        final java.io.File       startUpScriptFile;
-        final java.io.File       workDir;
-        final Callback           callback;
-        final EventService       eventService;
-        final String             workspace;
-        final String             project;
-        final long               id;
+        final int          httpPort;
+        final List<File>   logFiles;
+        final int          debugPort;
+        final File         startUpScriptFile;
+        final File         workDir;
+        final Callback     callback;
+        final EventService eventService;
+        final String       workspace;
+        final String       project;
+        final long         id;
 
         ApplicationLogger logger;
         Process           process;
         StreamPump        output;
 
-        TomcatProcess(java.io.File appDir, java.io.File startUpScriptFile, List<java.io.File> logFiles,
+        TomcatProcess(File appDir, File startUpScriptFile, List<File> logFiles,
                       ApplicationServerRunnerConfiguration runnerConfiguration, Callback callback, EventService eventService) {
             this.httpPort = runnerConfiguration.getHttpPort();
             this.logFiles = logFiles;
@@ -315,40 +216,6 @@ public class TomcatServer implements ApplicationServer {
                 return ApplicationLogger.DUMMY;
             }
             return logger;
-        }
-
-        private static class TomcatLogger implements ApplicationLogger {
-
-            final List<java.io.File> logFiles;
-
-            TomcatLogger(List<java.io.File> logFiles) {
-                this.logFiles = logFiles;
-            }
-
-            @Override
-            public void getLogs(Appendable output) throws IOException {
-                for (java.io.File logFile : logFiles) {
-                    output.append(String.format("%n====> %1$s <====%n%n", logFile.getName()));
-                    try (FileReader r = new FileReader(logFile)) {
-                        CharStreams.copy(r, output);
-                    }
-                    output.append(System.lineSeparator());
-                }
-            }
-
-            @Override
-            public String getContentType() {
-                return "text/plain";
-            }
-
-            @Override
-            public void writeLine(String line) throws IOException {
-                // noop since logs already redirected to the file
-            }
-
-            @Override
-            public void close() throws IOException {
-            }
         }
     }
 }

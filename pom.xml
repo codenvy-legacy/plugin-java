@@ -72,4 +72,18 @@
             </plugins>
         </pluginManagement>
     </build>
+    <!-- skip tests on Windows -->
+    <profiles>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+    </profiles>
 </project>

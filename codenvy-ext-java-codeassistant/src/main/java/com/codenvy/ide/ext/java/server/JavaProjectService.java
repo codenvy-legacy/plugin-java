@@ -16,6 +16,7 @@ import com.codenvy.api.core.notification.EventSubscriber;
 import com.codenvy.api.vfs.server.observation.VirtualFileEvent;
 import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -45,13 +46,13 @@ public class JavaProjectService {
 
     private ConcurrentHashMap<String, JavaProject>                 cache       = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<String>> projectInWs = new ConcurrentHashMap<>();
-    private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
-    private String                            tempDir;
+    private LocalFSMountStrategy fsMountStrategy;
+    private String               tempDir;
     private Map<String, String> options = new HashMap<>();
 
     @Inject
     public JavaProjectService(EventService eventService,
-                              WorkspaceHashLocalFSMountStrategy fsMountStrategy,
+                              LocalFSMountStrategy fsMountStrategy,
                               @Named("project.temp") String temp) {
         eventService.subscribe(new VirtualFileEventSubscriber());
         this.fsMountStrategy = fsMountStrategy;
