@@ -14,6 +14,7 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
@@ -60,10 +61,12 @@ public class NewPackageAction extends AbstractNewResourceAction {
                 try {
                     JavaUtils.checkPackageName(value);
                     final StorableNode parent = getParent();
+                    final String[] path = value.split("\\.");
                     createPackage(parent, value, new AsyncCallback<ItemReference>() {
                         @Override
                         public void onSuccess(ItemReference result) {
-                            eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent((AbstractTreeNode<?>)parent));
+                            eventBus.fireEvent(
+                                    NodeChangedEvent.createNodeChildrenChangedEvent((AbstractTreeNode<?>)filterParent(path, parent, 0)));
                         }
 
                         @Override
@@ -87,6 +90,17 @@ public class NewPackageAction extends AbstractNewResourceAction {
             enabled = selection.getFirstElement() instanceof PackageNode || selection.getFirstElement() instanceof SourceFolderNode;
         }
         e.getPresentation().setEnabledAndVisible(enabled);
+    }
+
+    private TreeNode filterParent(String[] path, TreeNode parent, int index) {
+        for (Object item : parent.getChildren().asIterable()) {
+            TreeNode child = (TreeNode)item;
+            if (child.getId().equals(path[index])) {
+                index++;
+                parent = filterParent(path, child, index);
+            }
+        }
+        return parent;
     }
 
     private void createPackage(StorableNode parent, String name, final AsyncCallback<ItemReference> callback) {
