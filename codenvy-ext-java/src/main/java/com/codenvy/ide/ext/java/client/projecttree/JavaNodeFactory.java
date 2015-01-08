@@ -32,7 +32,7 @@ public interface JavaNodeFactory extends NodeFactory {
 
     PackageNode newPackageNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure);
 
-    SourceFileNode newSourceFileNode(TreeNode<?> parent, ItemReference data);
+    SourceFileNode newSourceFileNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure);
 
     ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent, Object o, JavaTreeStructure treeStructure);
 

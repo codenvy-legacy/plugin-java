@@ -31,7 +31,7 @@ public class SourceFileNodeTest extends BaseNodeTest {
     public void setUp() {
         super.setUp();
         when(fileItemReference.getName()).thenReturn(FILE_ITEM_NAME);
-        sourceFileNode = new SourceFileNode(null, fileItemReference, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        sourceFileNode = new SourceFileNode(null, fileItemReference, null, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     @Test

@@ -237,7 +237,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
     }
 
     public SourceFileNode newSourceFileNode(AbstractTreeNode parent, ItemReference data) {
-        return getNodeFactory().newSourceFileNode(parent, data);
+        return getNodeFactory().newSourceFileNode(parent, data, this);
     }
 
     public ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent) {
