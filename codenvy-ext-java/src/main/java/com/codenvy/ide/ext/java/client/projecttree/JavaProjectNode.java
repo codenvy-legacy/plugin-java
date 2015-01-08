@@ -34,12 +34,12 @@ public class JavaProjectNode extends ProjectNode {
     public JavaProjectNode(TreeNode<?> parent, ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings,
                            EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        librariesNode = treeStructure.newExternalLibrariesNode(this);
     }
 
     @Override
     public void setChildren(Array<TreeNode<?>> children) {
         if (shouldAddExternalLibrariesNode) {
-            librariesNode = ((JavaTreeStructure)treeStructure).newExternalLibrariesNode(this);
             children.add(librariesNode);
         }
         super.setChildren(children);

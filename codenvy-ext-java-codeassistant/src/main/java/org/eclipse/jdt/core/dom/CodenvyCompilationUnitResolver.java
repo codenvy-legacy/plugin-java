@@ -26,7 +26,6 @@ import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.core.CancelableNameEnvironment;
 import org.eclipse.jdt.internal.core.CancelableProblemFactory;
-import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.eclipse.jdt.internal.core.NameLookup;
 
 import java.util.HashMap;
@@ -88,7 +87,7 @@ public class CodenvyCompilationUnitResolver extends CompilationUnitResolver {
     public static CompilationUnitDeclaration resolve(
             org.eclipse.jdt.internal.compiler.env.ICompilationUnit sourceUnit,
             IJavaProject javaProject,
-            INameEnvironmentWithProgress environment,
+            INameEnvironment environment,
             Map options,
             int flags,
             IProgressMonitor monitor) throws JavaModelException {
@@ -153,7 +152,7 @@ public class CodenvyCompilationUnitResolver extends CompilationUnitResolver {
         } finally {
             if (environment != null) {
                 // don't hold a reference to this external object
-                environment.setMonitor(null);
+//                environment.setMonitor(null);
             }
             if (problemFactory != null) {
                 problemFactory.monitor = null; // don't hold a reference to this external object

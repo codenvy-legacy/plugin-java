@@ -301,7 +301,11 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     public void fileClosed(String path) {
         FileClosedMessage message = FileClosedMessage.make();
         message.setFilePath(path);
-        worker.postMessage(message.serialize());
+        if (worker != null) {
+            worker.postMessage(message.serialize());
+        } else {
+            Log.error(getClass(), "worker is null");
+        }
     }
 
     @Override

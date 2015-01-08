@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.jdt.templates;
 
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.templates.api.Template;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateBuffer;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContextType;
@@ -100,10 +101,10 @@ public class JavaDocContext extends CompilationUnitContext {
                 if ((start != 0) && (document.getChar(start - 1) == HTML_TAG_END))
                     start--;
 
-                while ((start != 0) && CharOperation.isJavaIdentifierPart(document.getChar(start - 1)))
+                while ((start != 0) && CharUtil.isJavaIdentifierPart(document.getChar(start - 1)))
                     start--;
 
-                if ((start != 0) && CharOperation.isJavaIdentifierStart(document.getChar(start - 1)))
+                if ((start != 0) && CharUtil.isJavaIdentifierStart(document.getChar(start - 1)))
                     start--;
 
                 // include html and javadoc tags
@@ -119,7 +120,7 @@ public class JavaDocContext extends CompilationUnitContext {
             int start = getCompletionOffset();
             int end = getCompletionOffset() + getCompletionLength();
 
-            while (start != 0 && CharOperation.isJavaIdentifierPart(document.getChar(start - 1)))
+            while (start != 0 && CharUtil.isJavaIdentifierPart(document.getChar(start - 1)))
                 start--;
 
             while (start != end && CharOperation.isWhitespace(document.getChar(start)))

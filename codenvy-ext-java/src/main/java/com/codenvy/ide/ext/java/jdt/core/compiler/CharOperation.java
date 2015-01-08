@@ -11,6 +11,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.core.compiler;
 
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.ScannerHelper;
 
 /**
@@ -569,7 +570,7 @@ public final class CharOperation {
                         if ((ScannerHelper.OBVIOUS_IDENT_CHAR_NATURES[nameChar] & ScannerHelper.C_UPPER_LETTER) != 0) {
                             return false;
                         }
-                    } else if (!isJavaIdentifierPart(nameChar) || Character.isUpperCase(nameChar)) {
+                    } else if (!CharUtil.isJavaIdentifierPart(nameChar) || Character.isUpperCase(nameChar)) {
                         return false;
                     }
                     iName++;
@@ -591,7 +592,7 @@ public final class CharOperation {
                 if ((ScannerHelper.OBVIOUS_IDENT_CHAR_NATURES[patternChar] & (ScannerHelper.C_UPPER_LETTER | ScannerHelper.C_DIGIT)) == 0) {
                     return false;
                 }
-            } else if (isJavaIdentifierPart(patternChar) && !Character.isUpperCase(patternChar)
+            } else if (CharUtil.isJavaIdentifierPart(patternChar) && !Character.isUpperCase(patternChar)
                        && !Character.isDigit(patternChar)) {
                 return false;
             }
@@ -624,7 +625,7 @@ public final class CharOperation {
                     }
                 }
                 // Same tests for non-obvious characters
-                else if (isJavaIdentifierPart(nameChar) && !Character.isUpperCase(nameChar)) {
+                else if (CharUtil.isJavaIdentifierPart(nameChar) && !Character.isUpperCase(nameChar)) {
                     iName++;
                 } else if (Character.isDigit(nameChar)) {
                     if (patternChar == nameChar)
@@ -640,18 +641,6 @@ public final class CharOperation {
             // Since pattern is also at an uppercase letter
         }
     }
-
-    public static native boolean isJavaIdentifierPart(char ch)/*-{
-        var str = String.fromCharCode(ch);
-        var pat = /[_$a-zA-Z0-9\xA0-\uFFFF]/;
-        return str.match(pat) != null;
-    }-*/;
-
-    public static native boolean isJavaIdentifierStart(char ch)/*-{
-        var str = String.fromCharCode(ch);
-        var pat = /[_$a-zA-Z\xA0-\uFFFF]/;
-        return str.match(pat) != null;
-    }-*/;
 
     /**
      * Returns the char arrays as an array of Strings

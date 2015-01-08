@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.client.core;
 
 import com.codenvy.ide.ext.java.client.BaseTest;
-import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class CharOperationTest extends BaseTest {
     public void testJavaIdentifierPart() {
         String s = "for";
         for (char c : s.toCharArray()) {
-            if (!CharOperation.isJavaIdentifierPart(c))
+            if (!CharUtil.isJavaIdentifierPart(c))
                 fail("Char '" + c + "' is valid Java identifier part");
         }
     }
@@ -37,7 +37,7 @@ public class CharOperationTest extends BaseTest {
     public void testJavaIdentifierPartUnicode() {
         String s = "змінна";
         for (char c : s.toCharArray()) {
-            if (!CharOperation.isJavaIdentifierPart(c))
+            if (!CharUtil.isJavaIdentifierPart(c))
                 fail("Char '" + c + "' is valid Java identifier part");
         }
     }
@@ -46,7 +46,7 @@ public class CharOperationTest extends BaseTest {
     public void testNotJavaIdentifierPart() {
         String s = "@#%*";
         for (char c : s.toCharArray()) {
-            if (CharOperation.isJavaIdentifierPart(c))
+            if (CharUtil.isJavaIdentifierPart(c))
                 fail("Char '" + c + "' not valid Java identifier part");
         }
     }
@@ -55,7 +55,7 @@ public class CharOperationTest extends BaseTest {
     public void testJavaIdentifierStart() {
         String s = "_$Ab";
         for (char c : s.toCharArray()) {
-            if (!CharOperation.isJavaIdentifierStart(c))
+            if (!CharUtil.isJavaIdentifierStart(c))
                 fail("Char '" + c + "' is valid Java identifier part");
         }
     }
@@ -64,7 +64,7 @@ public class CharOperationTest extends BaseTest {
     public void testNotJavaIdentifierStart() {
         String s = "123@#&";
         for (char c : s.toCharArray()) {
-            if (CharOperation.isJavaIdentifierStart(c))
+            if (CharUtil.isJavaIdentifierStart(c))
                 fail("Char '" + c + "' not valid Java identifier part");
         }
     }

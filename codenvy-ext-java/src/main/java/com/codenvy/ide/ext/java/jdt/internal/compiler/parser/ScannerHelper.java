@@ -11,7 +11,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.compiler.parser;
 
-import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
 import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.core.util.JSONUtil;
@@ -300,7 +299,7 @@ public class ScannerHelper {
         if (c < MAX_OBVIOUS) {
             return (ScannerHelper.OBVIOUS_IDENT_CHAR_NATURES[c] & ScannerHelper.C_IDENT_PART) != 0;
         }
-        return CharOperation.isJavaIdentifierPart(c);
+        return CharUtil.isJavaIdentifierPart(c);
     }
 
     public static boolean isJavaIdentifierPart(long complianceLevel, char c) {
@@ -355,7 +354,7 @@ public class ScannerHelper {
         if (c < MAX_OBVIOUS) {
             return (ScannerHelper.OBVIOUS_IDENT_CHAR_NATURES[c] & ScannerHelper.C_IDENT_START) != 0;
         }
-        return CharOperation.isJavaIdentifierStart(c);
+        return CharUtil.isJavaIdentifierStart(c);
     }
 
     public static boolean isJavaIdentifierStart(long complianceLevel, char c) {

@@ -24,6 +24,7 @@ import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
+import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.inject.name.Named;
 
 import org.eclipse.jdt.core.IJavaProject;
@@ -87,7 +88,7 @@ public class RestNameEnvironment {
     private static final Logger LOG = LoggerFactory.getLogger(RestNameEnvironment.class);
 
     @Inject
-    private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
+    private LocalFSMountStrategy fsMountStrategy;
 
     @Inject
     private JavaProjectService javaProjectService;
@@ -302,7 +303,7 @@ public class RestNameEnvironment {
             if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
                 buildFailed(finishedBuildStatus);
             }
-            File projectSourcesJars = new File(projectDepDir,"sources");
+            File projectSourcesJars = new File(projectDepDir, "sources");
             projectSourcesJars.mkdirs();
             downloadLink = findLink("download result", buildTaskDescriptor.getLinks());
             if (downloadLink != null) {
@@ -392,8 +393,8 @@ public class RestNameEnvironment {
 
 
     @Nonnull
-    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType, @Nullable
-                                                BuildOptions options)
+    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType,
+                                                @Nullable BuildOptions options)
             throws Exception {
         Pair<String, String> projectParam = Pair.of("project", projectName);
         Pair<String, String> typeParam = Pair.of("type", analyzeType);
