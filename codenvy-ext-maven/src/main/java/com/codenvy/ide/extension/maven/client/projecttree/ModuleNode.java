@@ -15,11 +15,12 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenEvent;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -29,16 +30,17 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class ModuleNode extends MavenProjectNode {
 
-    public ModuleNode(TreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure, TreeSettings settings,
+    @AssistedInject
+    public ModuleNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data, @Assisted MavenProjectTreeStructure treeStructure,
                       EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       IconRegistry iconRegistry) {
-        super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("maven.module").getSVGImage());
     }
 
     @Override
     protected void getChildren(String path, AsyncCallback<Array<ItemReference>> callback) {
-        if(!isOpened()) {
+        if (!isOpened()) {
             eventBus.fireEvent(new BeforeModuleOpenEvent(this));
         }
         super.getChildren(path, callback);

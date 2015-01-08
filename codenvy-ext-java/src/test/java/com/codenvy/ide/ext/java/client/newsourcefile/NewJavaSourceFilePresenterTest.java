@@ -12,8 +12,12 @@ package com.codenvy.ide.ext.java.client.newsourcefile;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
+import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.api.projecttree.TreeStructure;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
@@ -21,6 +25,7 @@ import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
 import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -42,6 +47,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +70,10 @@ public class NewJavaSourceFilePresenterTest {
     private SelectionAgent             selectionAgent;
     @Mock
     private ProjectServiceClient       projectServiceClient;
+    @Mock
+    private DtoUnmarshallerFactory     dtoUnmarshallerFactory;
+    @Mock
+    private AppContext                 appContext;
     @InjectMocks
     private NewJavaSourceFilePresenter presenter;
     @Mock
@@ -73,21 +83,42 @@ public class NewJavaSourceFilePresenterTest {
     @Mock
     private ItemReference              createdFile;
 
-    @Mock
-    private DtoUnmarshallerFactory factory;
-
-    @Mock
-    private EditorAgent editorAgent;
-
     @Before
     public void setUp() {
         when(srcFolder.getPath()).thenReturn(SRC_FOLDER_PATH);
         PackageNode comPackage = mock(PackageNode.class);
         when(codenvyPackage.getParent()).thenReturn((AbstractTreeNode)comPackage);
         when(codenvyPackage.getName()).thenReturn("codenvy");
+        when(codenvyPackage.getQualifiedName()).thenReturn("com.codenvy");
         when(codenvyPackage.getPath()).thenReturn(CODENVY_PACKAGE_PATH);
         when(comPackage.getParent()).thenReturn((AbstractTreeNode)srcFolder);
-        when(comPackage.getName()).thenReturn("com");
+
+        TreeStructure tree = mock(TreeStructure.class);
+        CurrentProject currentProject = mock(CurrentProject.class);
+        when(currentProject.getCurrentTree()).thenReturn(tree);
+        when(appContext.getCurrentProject()).thenReturn(currentProject);
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncCallback<TreeNode<?>> callback = (AsyncCallback<TreeNode<?>>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, mock(FileNode.class));
+                return callback;
+            }
+        }).when(tree).getNodeByPath(anyString(), (AsyncCallback<TreeNode<?>>)anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<ItemReference> callback = (AsyncRequestCallback<ItemReference>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, (Void)null);
+                return callback;
+            }
+        }).when(projectServiceClient).createFolder(anyString(), (AsyncRequestCallback<ItemReference>)anyObject());
 
         doAnswer(new Answer() {
             @Override
@@ -145,7 +176,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
     @Test
@@ -164,7 +195,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
     @Test
@@ -183,7 +214,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
     @Test
@@ -202,7 +233,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
     @Test
@@ -221,7 +252,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 
     @Test
@@ -240,6 +271,6 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
     }
 }
