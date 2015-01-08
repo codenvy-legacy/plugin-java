@@ -30,6 +30,7 @@ import javax.annotation.Nonnull;
  */
 @Singleton
 public class AntProjectTreeStructureProvider implements TreeStructureProvider {
+    public final static String ID = "ant";
     private AntNodeFactory         nodeFactory;
     private EventBus               eventBus;
     private AppContext             appContext;
@@ -55,7 +56,7 @@ public class AntProjectTreeStructureProvider implements TreeStructureProvider {
     @Nonnull
     @Override
     public String getId() {
-        return "ant";
+        return ID;
     }
 
     @Override

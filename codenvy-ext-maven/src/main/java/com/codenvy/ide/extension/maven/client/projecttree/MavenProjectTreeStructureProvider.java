@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 /** @author Artem Zatsarynnyy */
 @Singleton
 public class MavenProjectTreeStructureProvider implements TreeStructureProvider {
+    public final static String ID = "maven";
     private MavenNodeFactory       nodeFactory;
     private EventBus               eventBus;
     private AppContext             appContext;
@@ -50,7 +51,7 @@ public class MavenProjectTreeStructureProvider implements TreeStructureProvider 
     @Nonnull
     @Override
     public String getId() {
-        return "maven";
+        return ID;
     }
 
     @Override
