@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.worker.env;
 
 import com.codenvy.ide.collections.js.JsoArray;
+import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryAnnotation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryMethod;
 import com.codenvy.ide.ext.java.worker.env.json.AnnotationJso;
@@ -110,5 +111,17 @@ public class BinaryMethod implements IBinaryMethod {
     public char[][] getArgumentNames() {
         if (jso.getArgumentNames() == null) return null;
         return Util.arrayStringToCharArray(jso.getArgumentNames());
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof BinaryMethod)) {
+            return false;
+        }
+        BinaryMethod otherMethod = (BinaryMethod) o;
+        return CharOperation.equals(getSelector(), otherMethod.getSelector())
+               && CharOperation.equals(getMethodDescriptor(), otherMethod.getMethodDescriptor());
+    }
+    public int hashCode() {
+        return CharOperation.hashCode(getSelector()) + CharOperation.hashCode(getMethodDescriptor());
     }
 }
