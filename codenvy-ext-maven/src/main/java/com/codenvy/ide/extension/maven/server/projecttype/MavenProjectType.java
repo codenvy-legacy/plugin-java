@@ -26,9 +26,7 @@ public class MavenProjectType extends ProjectType2 {
     private static final Logger LOG = LoggerFactory.getLogger(MavenProjectType.class);
 
     @Inject
-    public MavenProjectType(/*ProjectTemplateRegistry templateRegistry,
-                            ProjectTemplateDescriptionLoader templateLoader,*/
-                            MavenValueProviderFactory mavenValueProviderFactory,
+    public MavenProjectType(MavenValueProviderFactory mavenValueProviderFactory,
                             JavaProjectType javaProjectType) {
 
         super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME);
@@ -45,4 +43,5 @@ public class MavenProjectType extends ProjectType2 {
         addParent(javaProjectType);
         setDefaultBuilder("maven");
     }
+
 }

@@ -9,17 +9,14 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.extension.maven.server.projecttype.generators;
+package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
-import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.vfs.server.VirtualFile;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrategy;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.HashSet;

@@ -13,6 +13,7 @@ package com.codenvy.ide.extension.maven.server.projecttype.generators;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.ArchetypeGenerationStrategy;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 
 import org.junit.Assert;

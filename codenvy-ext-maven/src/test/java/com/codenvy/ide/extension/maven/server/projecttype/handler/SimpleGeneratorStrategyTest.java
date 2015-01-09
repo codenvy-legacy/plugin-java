@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype.generators;
+package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
@@ -29,6 +29,8 @@ import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrategy;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.SimpleGeneratorStrategy;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 
 import org.junit.Assert;
@@ -122,6 +124,6 @@ public class SimpleGeneratorStrategyTest {
         ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
 
         pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry, handlerRegistry);
-        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()), null);
+        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()), null, "public");
     }
 }

@@ -12,6 +12,7 @@ package com.codenvy.ide.extension.ant.server.project.type;
 
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
+import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
@@ -46,8 +47,8 @@ public class AntValueProviderFactory implements ValueProviderFactory {
      *         if access to build file is forbidden
      * @throws ValueStorageException
      */
-    protected VirtualFile getBuildXml(Project project) throws ServerException, ForbiddenException, ValueStorageException {
-        VirtualFileEntry buildXml = project.getBaseFolder().getChild(BUILD_FILE);
+    protected VirtualFile getBuildXml(FolderEntry project) throws ServerException, ForbiddenException, ValueStorageException {
+        VirtualFileEntry buildXml = project.getChild(BUILD_FILE);
         if (buildXml == null) {
             throw new ValueStorageException(BUILD_FILE + " does not exist.");
         }
@@ -65,28 +66,29 @@ public class AntValueProviderFactory implements ValueProviderFactory {
     }
 
     @Override
-    public ValueProvider newInstance(Project project) {
-        return new AntValueProvider(project);
+    public ValueProvider newInstance(FolderEntry projectFolder) {
+        return new AntValueProvider(projectFolder);
     }
+
+
 
     /** Provide access to value of various information from {@link org.apache.tools.ant.Project}. */
     protected class AntValueProvider implements ValueProvider {
-
         /** IDE project. */
-        protected Project project;
+        private final FolderEntry projectFolder;
 
         /** Create instance of {@link AntValueProvider}. */
-        protected AntValueProvider(Project project) {
-            this.project = project;
+        protected AntValueProvider(FolderEntry projectFolder) {
+            this.projectFolder = projectFolder;
         }
 
         /** {@inheritDoc} */
         @Override
         public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
-                org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(project));
+                org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(projectFolder));
                 return Collections.unmodifiableList(getValues(attributeName));
-            } catch (Exception  e) {
+            } catch (Exception e) {
                 throw readException(e);
             }
         }
