@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype.generators;
+package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
@@ -20,13 +20,10 @@ import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
-import com.codenvy.api.project.shared.dto.GeneratorDescription;
-import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
-import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 
 import org.junit.Assert;
@@ -40,7 +37,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 

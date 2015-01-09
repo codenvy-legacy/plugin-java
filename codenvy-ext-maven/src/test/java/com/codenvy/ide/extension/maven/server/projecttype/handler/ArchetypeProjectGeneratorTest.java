@@ -8,14 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype.generators;
+package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.project.shared.dto.GeneratorDescription;
-import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
-import com.codenvy.dto.server.DtoFactory;
 
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import org.junit.Assert;
@@ -24,18 +21,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /** @author Artem Zatsarynnyy */
 @RunWith(MockitoJUnitRunner.class)
