@@ -15,7 +15,6 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.projecttree.JavaProjectNode;
@@ -25,6 +24,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nullable;
@@ -37,13 +38,15 @@ import java.util.List;
  */
 public class MavenProjectNode extends JavaProjectNode {
 
-    public MavenProjectNode(TreeNode<?> parent, ProjectDescriptor data, MavenProjectTreeStructure treeStructure,
-                            TreeSettings settings, EventBus eventBus, ProjectServiceClient projectServiceClient,
-                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        List<String> strings = data.getAttributes().get(MavenAttributes.PACKAGING);
-        if(strings != null && !strings.isEmpty()){
-            shouldAddExternalLibrariesNode = !strings.get(0).equals("pom");
+    @AssistedInject
+    public MavenProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data,
+                            @Assisted MavenProjectTreeStructure treeStructure, EventBus eventBus,
+                            ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+
+        List<String> packaging = data.getAttributes().get(MavenAttributes.PACKAGING);
+        if (packaging != null && !packaging.isEmpty()) {
+            shouldAddExternalLibrariesNode = !packaging.get(0).equals("pom");
         }
     }
 
@@ -56,7 +59,7 @@ public class MavenProjectNode extends JavaProjectNode {
                 getChildren(data.getPath(), new AsyncCallback<Array<ItemReference>>() {
                     @Override
                     public void onSuccess(Array<ItemReference> children) {
-                        final boolean isShowHiddenItems = settings.isShowHiddenItems();
+                        final boolean isShowHiddenItems = treeStructure.getSettings().isShowHiddenItems();
                         Array<TreeNode<?>> newChildren = Collections.createArray();
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {

@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.ext.java.client.action;
 
+import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.MimeType;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
@@ -31,11 +32,17 @@ public class OpenDeclarationAction extends ProjectAction {
     private EditorAgent editorAgent;
     private OpenDeclarationFinder declarationFinder;
 
+    private final AnalyticsEventLogger eventLogger;
+
     @Inject
-    public OpenDeclarationAction(JavaLocalizationConstant constant, EditorAgent editorAgent, OpenDeclarationFinder declarationFinder) {
+    public OpenDeclarationAction(JavaLocalizationConstant constant,
+                                 EditorAgent editorAgent,
+                                 OpenDeclarationFinder declarationFinder,
+                                 AnalyticsEventLogger eventLogger) {
         super(constant.actionOpenDeclarationTitle(), constant.actionOpenDeclarationDescription());
         this.editorAgent = editorAgent;
         this.declarationFinder = declarationFinder;
+        this.eventLogger = eventLogger;
     }
 
     @Override
@@ -53,6 +60,7 @@ public class OpenDeclarationAction extends ProjectAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        eventLogger.log(this);
         declarationFinder.openDeclaration();
     }
 }

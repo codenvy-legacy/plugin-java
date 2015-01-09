@@ -16,16 +16,16 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
-import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nullable;
@@ -37,10 +37,11 @@ import javax.annotation.Nullable;
  */
 public class MavenFolderNode extends JavaFolderNode {
 
-    public MavenFolderNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure, TreeSettings settings,
+    @AssistedInject
+    public MavenFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted MavenProjectTreeStructure treeStructure,
                            EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     /** Tests if the specified item is a project (module). */
@@ -57,7 +58,7 @@ public class MavenFolderNode extends JavaFolderNode {
                 getChildren(data.getPath(), new AsyncCallback<Array<ItemReference>>() {
                     @Override
                     public void onSuccess(Array<ItemReference> children) {
-                        final boolean isShowHiddenItems = settings.isShowHiddenItems();
+                        final boolean isShowHiddenItems = treeStructure.getSettings().isShowHiddenItems();
                         Array<TreeNode<?>> newChildren = Collections.createArray();
                         for (ItemReference item : children.asIterable()) {
                             if (isShowHiddenItems || !item.getName().startsWith(".")) {

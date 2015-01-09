@@ -11,9 +11,14 @@
 package com.codenvy.ide.extension.ant.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
+import com.codenvy.ide.api.projecttree.TreeStructureProvider;
+import com.codenvy.ide.extension.ant.client.projecttree.AntNodeFactory;
+import com.codenvy.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
 import com.codenvy.ide.extension.ant.client.wizard.AntPageView;
 import com.codenvy.ide.extension.ant.client.wizard.AntPageViewImpl;
 import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;
 
 /** @author Vladyslav Zhukovskii */
@@ -23,5 +28,8 @@ public class AntGinModule extends AbstractGinModule {
     @Override
     protected void configure() {
         bind(AntPageView.class).to(AntPageViewImpl.class).in(Singleton.class);
+
+        install(new GinFactoryModuleBuilder().build(AntNodeFactory.class));
+        GinMultibinder.newSetBinder(binder(), TreeStructureProvider.class).addBinding().to(AntProjectTreeStructureProvider.class);
     }
 }

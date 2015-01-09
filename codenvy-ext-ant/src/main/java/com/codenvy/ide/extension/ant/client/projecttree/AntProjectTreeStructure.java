@@ -12,13 +12,12 @@ package com.codenvy.ide.extension.ant.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
-import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
+import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
@@ -28,6 +27,8 @@ import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nonnull;
+
 /**
  * Tree structure for Ant project.
  *
@@ -36,28 +37,32 @@ import com.google.web.bindery.event.shared.EventBus;
 public class AntProjectTreeStructure extends JavaTreeStructure {
 
     /** Create instance of {@link AntProjectTreeStructure}. */
-    protected AntProjectTreeStructure(TreeSettings settings,
-                                   ProjectDescriptor project,
-                                   EventBus eventBus, EditorAgent editorAgent,
-                                   AppContext appContext,
-                                   ProjectServiceClient projectServiceClient,
-                                   IconRegistry iconRegistry,
-                                   DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                   JavaNavigationService service) {
-        super(settings, project, eventBus, editorAgent, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory, service);
+    protected AntProjectTreeStructure(AntNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
+                                      ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
+                                      DtoUnmarshallerFactory dtoUnmarshallerFactory, JavaNavigationService service) {
+        super(nodeFactory, eventBus, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory, service);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void getRoots(AsyncCallback<Array<TreeNode<?>>> callback) {
-        AbstractTreeNode projectRoot =
-                new AntProjectNode(null, project, this, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
+    public void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback) {
+        CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject != null) {
+            ProjectNode projectRoot = getNodeFactory().newAntProjectNode(null, currentProject.getRootProject(), this);
+            callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
+        } else {
+            callback.onFailure(new IllegalStateException("No opened project"));
+        }
+    }
+
+    @Override
+    public AntNodeFactory getNodeFactory() {
+        return (AntNodeFactory)nodeFactory;
     }
 
     /** {@inheritDoc} */
     @Override
     public JavaFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {
-        return new AntFolderNode(parent, data, this, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        return getNodeFactory().newAntFolderNode(parent, data, this);
     }
 }
