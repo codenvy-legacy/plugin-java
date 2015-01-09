@@ -19,7 +19,7 @@ import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectType;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenValueProviderFactory;
 import com.codenvy.ide.extension.maven.server.projecttype.handler.ArchetypeGenerationStrategy;
 import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrategy;
-import com.codenvy.ide.extension.maven.server.projecttype.generators.MavenProjectGenerator;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.MavenProjectGenerator;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
