@@ -124,6 +124,6 @@ public class SimpleProjectGeneratorTest {
         ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
 
         pm = new DefaultProjectManager(vfsRegistry, eventService, projectTypeRegistry, handlerRegistry);
-        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()), null);
+        pm.createProject(workspace, "my_project", new ProjectConfig("", pt.getId()), null, null);
     }
 }

@@ -10,41 +10,27 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.core.ConflictException;
-import com.codenvy.api.core.ForbiddenException;
-import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.*;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
-import com.codenvy.api.project.server.type.Attribute2;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.project.server.type.ProjectType2;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.project.shared.Builders;
-import com.codenvy.api.project.shared.dto.GeneratorDescription;
-import com.codenvy.api.project.shared.dto.NewProject;
-import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
-import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
-import com.codenvy.ide.extension.maven.server.projecttype.generators.MavenProjectGenerator;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.MavenProjectGenerator;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.maven.tools.MavenUtils;
 import com.codenvy.ide.maven.tools.Model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.*;
 
 /** @author gazarenkov */
 public class MavenProjectTypeTest {
@@ -115,14 +101,11 @@ public class MavenProjectTypeTest {
 
         Project project = pm.createProject(workspace, "myProject",
                 new ProjectConfig("my config", "maven", attributes, null, new Builders("maven"), null),
-                null);
+                null, null);
 
         ProjectConfig config = project.getConfig();
 
         Assert.assertEquals(config.getBuilders().getDefault(), "maven");
-
-//        System.out.println(" >>>" + config.getAttributes().get(MavenAttributes.ARTIFACT_ID).getString() + " "+
-//                        attributes.get(MavenAttributes.ARTIFACT_ID).getString());
 
         Assert.assertEquals(config.getAttributes().get(MavenAttributes.ARTIFACT_ID).getString(), "myartifact");
         Assert.assertEquals(config.getAttributes().get(MavenAttributes.VERSION).getString(), "1.0");
@@ -135,7 +118,7 @@ public class MavenProjectTypeTest {
 
                 Model pom = Model.readFrom(file.getVirtualFile().getContent().getStream());
 
-//                Assert.assertEquals(pom.getArtifactId(), "myartifact");
+                Assert.assertEquals(pom.getArtifactId(), "myartifact");
                 Assert.assertEquals(pom.getVersion(), "1.0");
 
             }

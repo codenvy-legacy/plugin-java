@@ -29,12 +29,9 @@ import java.util.List;
 @Singleton
 public class MavenProjectType extends ProjectType2 {
     private static final Logger LOG = LoggerFactory.getLogger(MavenProjectType.class);
-    //private ProjectTemplateRegistry templateRegistry;
-    //private ProjectTemplateDescriptionLoader templateLoader;
 
     @Inject
-    public MavenProjectType(/*ProjectTemplateRegistry templateRegistry,
-                            ProjectTemplateDescriptionLoader templateLoader,*/
+    public MavenProjectType(
                             MavenValueProviderFactory mavenValueProviderFactory,
                             JavaProjectType javaProjectType) {
 
@@ -58,16 +55,5 @@ public class MavenProjectType extends ProjectType2 {
 
     }
 
-//    private void registerTemplates() {
-//        try {
-//            List<ProjectTemplateDescriptor> list = templateLoader.load(MavenAttributes.MAVEN_ID);
-//            for(ProjectTemplateDescriptor templateDescriptor : list) {
-//                templateRegistry.register(templateDescriptor);
-//            }
-//        } catch (IOException e) {
-//           LOG.info("MavenProjectType", "Templates not loaded for maven project type");
-//        }
-//
-//
-//    }
+
 }
