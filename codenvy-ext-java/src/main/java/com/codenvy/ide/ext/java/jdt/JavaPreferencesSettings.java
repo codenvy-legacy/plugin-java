@@ -29,8 +29,8 @@ public class JavaPreferencesSettings {
         res.importIgnoreLowercase =
                 true;//Boolean.valueOf(PreferenceConstants.getPreference(PreferenceConstants.ORGIMPORTS_IGNORELOWERCASE,
                 // project)).booleanValue();
-        res.tabWidth = 3;//CodeFormatterUtil.getTabWidth(project);
-        res.indentWidth = 3; //CodeFormatterUtil.getIndentWidth(project);
+        res.tabWidth = 4;//CodeFormatterUtil.getTabWidth(project);
+        res.indentWidth = 4; //CodeFormatterUtil.getIndentWidth(project);
         return res;
     }
 

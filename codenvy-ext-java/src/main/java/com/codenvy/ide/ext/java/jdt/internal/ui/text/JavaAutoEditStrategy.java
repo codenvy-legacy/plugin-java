@@ -27,6 +27,7 @@ import com.codenvy.ide.ext.java.jdt.core.compiler.IScanner;
 import com.codenvy.ide.ext.java.jdt.core.compiler.ITerminalSymbols;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.runtime.Assert;
@@ -164,10 +165,10 @@ public class JavaAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
             if (pos < 0)
                 return false;
 
-            if (pos != 0 && CharOperation.isJavaIdentifierPart(text.charAt(pos - 1)))
+            if (pos != 0 && CharUtil.isJavaIdentifierPart(text.charAt(pos - 1)))
                 return false;
 
-            if (pos + 3 < length && CharOperation.isJavaIdentifierPart(text.charAt(pos + 3)))
+            if (pos + 3 < length && CharUtil.isJavaIdentifierPart(text.charAt(pos + 3)))
                 return false;
 
             return true;

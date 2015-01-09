@@ -49,7 +49,6 @@ import java.util.Collection;
 public class WorkerCorrectionProcessor {
 
     private static QuickFixProcessor fixProcessor = new QuickFixProcessorImpl();
-    ;
 
     private static QuickAssistProcessor[] assistProcessors =
             new QuickAssistProcessor[]{new QuickAssistProcessorImpl(), new AdvancedQuickAssistProcessor()};
@@ -204,6 +203,10 @@ public class WorkerCorrectionProcessor {
         workerProposalApplier.setQuickProposalMap(proposalMap);
         caComputedMessage.setProposals(workerProposals);
         worker.sendMessage(caComputedMessage.serialize());
+    }
+
+    public static boolean hasCorrections(IProblemLocation annot) {
+        return fixProcessor.hasCorrections(annot.getProblemId());
     }
 
 }

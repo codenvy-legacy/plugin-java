@@ -68,7 +68,7 @@ public class JarContainerNode extends JarEntryNode {
             protected void onSuccess(Array<JarEntry> result) {
                 Array<TreeNode<?>> nodes = Collections.createArray();
                 for (JarEntry jarNode : result.asIterable()) {
-                    nodes.add(createNode(jarNode));
+                    nodes.add(treeStructure.createNode(JarContainerNode.this, jarNode, libId));
                 }
                 setChildren(nodes);
                 callback.onSuccess(JarContainerNode.this);
@@ -80,19 +80,6 @@ public class JarContainerNode extends JarEntryNode {
             }
         });
     }
-    private TreeNode<?> createNode(JarEntry entry) {
-        switch (entry.getType()){
-            case FOLDER:
-            case PACKAGE:
-                return treeStructure.newJarContainerNode(this, entry, libId);
 
-            case FILE:
-                return treeStructure.newJarFileNode(this, entry, libId);
-
-            case CLASS_FILE:
-                return treeStructure.newJarClassNode(this, entry, libId);
-        }
-        return null;
-    }
 
 }

@@ -33,6 +33,8 @@ import com.google.inject.name.Named;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,6 +48,7 @@ import java.util.concurrent.Executors;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.FAILED;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.IN_PROGRESS;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.SUCCESSFUL;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATION_STRATEGY;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
@@ -55,15 +58,17 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
  *
  * @author Artem Zatsarynnyy
  */
-public class ArchetypeProjectGenerator {
-    private static final long CHECK_GENERATION_STATUS_DELAY = 1000;
+@Singleton
+public class ArchetypeGenerationStrategy implements GeneratorStrategy {
+    private static final long   CHECK_GENERATION_STATUS_DELAY = 1000;
     private final String                    generatorServiceUrl;
     private final VirtualFileSystemRegistry vfsRegistry;
     private final DownloadPlugin downloadPlugin = new HttpDownloadPlugin();
     private ExecutorService executor;
 
-    public ArchetypeProjectGenerator(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
-                                     VirtualFileSystemRegistry vfsRegistry) {
+    @Inject
+    public ArchetypeGenerationStrategy(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
+                                       VirtualFileSystemRegistry vfsRegistry) {
         // As a temporary solution we're using first slave builder URL
         // in order to get archetype-generator service URL.
         this.generatorServiceUrl = getGeneratorServiceUrl(slaveBuilderURLs);
@@ -79,14 +84,9 @@ public class ArchetypeProjectGenerator {
     }
 
 
-//    public String getId() {
-//        return ARCHETYPE_GENERATOR_ID;
-//    }
-//
-//
-//    public String getProjectTypeId() {
-//        return MAVEN_ID;
-//    }
+    public String getId() {
+        return ARCHETYPE_GENERATION_STRATEGY;
+    }
 
     @PostConstruct
     void start() {
@@ -98,6 +98,7 @@ public class ArchetypeProjectGenerator {
         executor.shutdownNow();
     }
 
+    @Override
     public void generateProject(final FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options)
             throws ForbiddenException, ConflictException, ServerException {
         if (generatorServiceUrl == null) {
@@ -117,7 +118,7 @@ public class ArchetypeProjectGenerator {
         String archetypeVersion = null;
         String archetypeRepository = null;
         Map<String, String> archetypeProperties = new HashMap<>();
-
+        options.remove("type"); //TODO: remove prop 'type' now it use only for detecting generation strategy
         for (Map.Entry<String, String> entry : options.entrySet()) {
             switch (entry.getKey()) {
                 case "archetypeGroupId":

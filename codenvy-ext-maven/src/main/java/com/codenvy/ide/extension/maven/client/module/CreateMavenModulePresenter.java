@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
@@ -45,7 +44,6 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
@@ -113,7 +111,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         if (view.isGenerateFromArchetypeSelected()) {
             generatorDescription = getGeneratorDescription(view.getArchetype());
         } else {
-            generatorDescription = dtoFactory.createDto(GeneratorDescription.class);//.withName(SIMPLE_GENERATOR_ID);
+            generatorDescription = dtoFactory.createDto(GeneratorDescription.class);//.withName(SIMPLE_GENERATION_STRATEGY);
             if (!"pom".equals(view.getPackaging())) {
                 attributes.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
                 attributes.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
@@ -206,7 +204,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
         HashMap<String, String> options = new HashMap<>();
-        options.put("type", MavenAttributes.ARCHETYPE_GENERATOR_ID);
+        options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
         options.put("archetypeGroupId", archetype.getGroupId());
         options.put("archetypeArtifactId", archetype.getArtifactId());
         options.put("archetypeVersion", archetype.getVersion());

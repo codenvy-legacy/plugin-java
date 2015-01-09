@@ -286,12 +286,12 @@ public class ClasspathEntry implements IClasspathEntry {
                 classpathEntryName = manager.intern(getPath().segment(0));
             } else {
                 classpathEntryType = AccessRestriction.LIBRARY;
-                Object target = JavaModel.getWorkspaceTarget(path);
-                if (target == null) {
+//                Object target = JavaModel.getWorkspaceTarget(path);
+//                if (target == null) {
                     classpathEntryName = manager.intern(path.toOSString());
-                } else {
-                    classpathEntryName = manager.intern(path.makeRelative().toString());
-                }
+//                } else {
+//                    classpathEntryName = manager.intern(path.makeRelative().toString());
+//                }
             }
             this.accessRuleSet = new AccessRuleSet(rules, classpathEntryType, classpathEntryName);
         }

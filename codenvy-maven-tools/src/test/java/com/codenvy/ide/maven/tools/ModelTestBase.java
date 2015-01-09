@@ -20,6 +20,9 @@ import java.nio.file.Paths;
 
 import static org.testng.Assert.assertNotNull;
 
+/**
+ * @author Eugene Voevodin
+ */
 public abstract class ModelTestBase {
 
     protected File getTestPomFile() throws URISyntaxException {

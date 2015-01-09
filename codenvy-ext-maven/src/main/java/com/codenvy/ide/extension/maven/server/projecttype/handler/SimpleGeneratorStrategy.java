@@ -15,40 +15,28 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.type.AttributeValue;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrategy;
 import com.codenvy.ide.maven.tools.Build;
 import com.codenvy.ide.maven.tools.Model;
 
 import java.util.Map;
 
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.*;
 
 /**
  * Generates simple Maven project.
  *
  * @author Artem Zatsarynnyy
  */
-public class SimpleProjectGenerator {
+public class SimpleGeneratorStrategy implements GeneratorStrategy {
 
-//    @Override
-//    public String getId() {
-//        return SIMPLE_GENERATOR_ID;
-//    }
-//
-//    @Override
-//    public String getProjectTypeId() {
-//        return MAVEN_ID;
-//    }
+    @Override
+    public String getId() {
+        return SIMPLE_GENERATION_STRATEGY;
+    }
 
-//    @Override
-    public void generateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes)
+    @Override
+    public void generateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options)
             throws ForbiddenException, ConflictException, ServerException {
         //Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
         AttributeValue artifactId = attributes.get(ARTIFACT_ID);

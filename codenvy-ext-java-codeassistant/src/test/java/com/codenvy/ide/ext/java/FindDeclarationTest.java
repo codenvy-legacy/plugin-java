@@ -13,9 +13,12 @@ package com.codenvy.ide.ext.java;
 
 import com.codenvy.ide.ext.java.server.JavaNavigation;
 import com.codenvy.ide.ext.java.server.SourcesFromBytecodeGenerator;
+import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -48,5 +51,14 @@ public class FindDeclarationTest extends BaseTest {
         assertThat(declaration).isNotNull();
         assertThat(declaration.isBinary()).isFalse();
         assertThat(declaration.getPath()).isEqualTo("/test/src/main/java/com/codenvy/test/MyClass.java");
+    }
+
+    @Test
+    public void testFindClassShouldReturnSourcePathInMavenModule() throws Exception {
+        JavaProject project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/multimoduleProject/test", getClass().getResource("/temp").getPath(), "ws", options);
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Lcom/codenvy/test/MyClass;");
+        assertThat(declaration).isNotNull();
+        assertThat(declaration.isBinary()).isFalse();
+        assertThat(declaration.getPath()).isEqualTo("/multimoduleProject/test/src/main/java/com/codenvy/test/MyClass.java");
     }
 }

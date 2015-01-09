@@ -18,7 +18,6 @@ import com.codenvy.ide.ext.java.server.internal.core.PackageFragment;
 import com.codenvy.ide.ext.java.server.internal.core.PackageFragmentRoot;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -28,8 +27,6 @@ import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
-import org.eclipse.jdt.internal.compiler.env.AccessRule;
 import org.eclipse.jdt.internal.compiler.env.AccessRuleSet;
 import org.eclipse.jdt.internal.core.ExternalFoldersManager;
 import org.eclipse.jdt.internal.core.JavaModel;
@@ -520,19 +517,14 @@ public class JavaSearchScope extends AbstractJavaSearchScope {
 	 * 	Returns specific uninit access rule set when scope does not enclose the given path.
  */
 public AccessRuleSet getAccessRuleSet(String relativePath, String containerPath) {
-//	int index = indexOf(containerPath, relativePath);
-//	if (index == -1) {
-//		// this search scope does not enclose given path
-//		return NOT_ENCLOSED;
-//	}
-//	if (this.pathRestrictions == null)
-//		return null;
-//	return this.pathRestrictions[index];
-	return new AccessRuleSet(new AccessRule[0], AccessRestriction.LIBRARY, "gwt");
-//	}
-//	if (this.pathRestrictions == null)
-//		return null;
-//	return this.pathRestrictions[index];
+	int index = indexOf(containerPath, relativePath);
+	if (index == -1) {
+		// this search scope does not enclose given path
+		return NOT_ENCLOSED;
+	}
+	if (this.pathRestrictions == null)
+		return null;
+	return this.pathRestrictions[index];
 }
 
 	protected void initialize(int size) {

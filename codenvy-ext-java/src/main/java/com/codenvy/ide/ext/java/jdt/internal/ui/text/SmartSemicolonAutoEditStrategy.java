@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
+import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
@@ -338,7 +339,7 @@ public class SmartSemicolonAutoEditStrategy implements AutoEditStrategy {
                 return -1;
 
             ch = document.getChar(p);
-            if (CharOperation.isJavaIdentifierPart(ch) || ch == ']' || ch == '[')
+            if (CharUtil.isJavaIdentifierPart(ch) || ch == ']' || ch == '[')
                 return offset;
 
         } catch (BadLocationException e) {
@@ -705,10 +706,10 @@ public class SmartSemicolonAutoEditStrategy implements AutoEditStrategy {
             if (pos < 0)
                 return false;
 
-            if (pos != 0 && CharOperation.isJavaIdentifierPart(text.charAt(pos - 1)))
+            if (pos != 0 && CharUtil.isJavaIdentifierPart(text.charAt(pos - 1)))
                 return false;
 
-            if (pos + 3 < length && CharOperation.isJavaIdentifierPart(text.charAt(pos + 3)))
+            if (pos + 3 < length && CharUtil.isJavaIdentifierPart(text.charAt(pos + 3)))
                 return false;
 
             return true;
@@ -864,7 +865,7 @@ public class SmartSemicolonAutoEditStrategy implements AutoEditStrategy {
             if (!like.equals(document.get(position - length + 1, length)))
                 return false;
 
-            if (position >= length && CharOperation.isJavaIdentifierPart(like.charAt(0)) && CharOperation
+            if (position >= length && CharUtil.isJavaIdentifierPart(like.charAt(0)) && CharUtil
                     .isJavaIdentifierPart(document.getChar(position - length)))
                 return false;
 
@@ -961,7 +962,7 @@ public class SmartSemicolonAutoEditStrategy implements AutoEditStrategy {
             while (p >= 0) {
 
                 char ch = document.getChar(p);
-                if (CharOperation.isJavaIdentifierPart(ch)) {
+                if (CharUtil.isJavaIdentifierPart(ch)) {
                     p--;
                     continue;
                 }
@@ -1084,8 +1085,8 @@ public class SmartSemicolonAutoEditStrategy implements AutoEditStrategy {
         /* searching for (^|\s)for(\s|$) */
         int forPos = line.indexOf("for"); //$NON-NLS-1$
         if (forPos != -1) {
-            if ((forPos == 0 || !CharOperation.isJavaIdentifierPart(line.charAt(forPos - 1))) &&
-                (line.length() == forPos + 3 || !CharOperation
+            if ((forPos == 0 || !CharUtil.isJavaIdentifierPart(line.charAt(forPos - 1))) &&
+                (line.length() == forPos + 3 || !CharUtil
                         .isJavaIdentifierPart(line.charAt(forPos + 3))))
                 return true;
         }

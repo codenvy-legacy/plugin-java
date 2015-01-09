@@ -16,13 +16,16 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.handlers.CreateProjectHandler;
 import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.google.inject.name.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author gazarenkov
@@ -30,16 +33,18 @@ import java.util.Map;
 @Singleton
 public class MavenProjectGenerator implements CreateProjectHandler {
 
-    private final String[] slaveBuilderURLs;
-    private final VirtualFileSystemRegistry vfsRegistry;
+    private static final Logger LOG = LoggerFactory.getLogger(MavenProjectGenerator.class);
+
+    private final Map<String, GeneratorStrategy> strategies = new HashMap<>();;
 
     @Inject
-    public MavenProjectGenerator(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
-                                     VirtualFileSystemRegistry vfsRegistry) {
-        // As a temporary solution we're using first slave builder URL
-        // in order to get archetype-generator service URL.
-        this.slaveBuilderURLs = slaveBuilderURLs;
-        this.vfsRegistry = vfsRegistry;
+    public MavenProjectGenerator(Set<GeneratorStrategy> generatorStrategies) {
+        for (GeneratorStrategy generatorStrategy : generatorStrategies) {
+            strategies.put(generatorStrategy.getId(), generatorStrategy);
+        }
+        if (!strategies.containsKey(MavenAttributes.SIMPLE_GENERATION_STRATEGY)) { //must always be if not added in DI we add it here
+            strategies.put(MavenAttributes.SIMPLE_GENERATION_STRATEGY, new SimpleGeneratorStrategy());
+        }
     }
 
     @Override
@@ -50,11 +55,16 @@ public class MavenProjectGenerator implements CreateProjectHandler {
     @Override
     public void onCreateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes,
                                 Map<String, String> options) throws ForbiddenException, ConflictException, ServerException {
-
-        if(options != null && options.get("type").equals(MavenAttributes.ARCHETYPE_GENERATOR_ID))
-            new ArchetypeProjectGenerator(slaveBuilderURLs, vfsRegistry).generateProject(baseFolder, attributes, options);
-        else
-            new SimpleProjectGenerator().generateProject(baseFolder, attributes);
-
+        if (options == null || options.isEmpty() || !options.containsKey("type")) {
+            strategies.get(MavenAttributes.SIMPLE_GENERATION_STRATEGY).generateProject(baseFolder, attributes, options);
+        } else {
+            if (strategies.containsKey(options.get("type"))) {
+                strategies.get(options.get("type")).generateProject(baseFolder, attributes, options);
+            } else {
+                String errorMsg = String.format("Generation strategy %s don't found", options.get("type"));
+                LOG.warn("MavenProjectGenerator", errorMsg);
+                throw new ServerException(errorMsg);
+            }
+        }
     }
 }
