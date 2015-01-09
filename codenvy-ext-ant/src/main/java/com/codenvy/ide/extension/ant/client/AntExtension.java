@@ -56,8 +56,7 @@ public class AntExtension {
                         Provider<SelectRunnerPagePresenter> runnerPagePresenter,
                         NotificationManager notificationManager,
                         ProjectTypeWizardRegistry projectTypeWizardRegistry,
-                        TreeStructureProviderRegistry treeStructureProviderRegistry,
-                        AntProjectTreeStructureProvider antProjectTreeStructureProvider) {
+                        TreeStructureProviderRegistry treeStructureProviderRegistry) {
         ProjectWizard wizard = new ProjectWizard(notificationManager);
         wizard.addPage(antPagePresenterProvider);
         wizard.addPage(runnerPagePresenter);
@@ -110,6 +109,6 @@ public class AntExtension {
             }
         });
 
-        treeStructureProviderRegistry.registerProvider(AntAttributes.ANT_ID, antProjectTreeStructureProvider);
+        treeStructureProviderRegistry.associateProjectTypeToTreeProvider(AntAttributes.ANT_ID, AntProjectTreeStructureProvider.ID);
     }
 }

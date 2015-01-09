@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.runner.webapps;
 
+import com.codenvy.api.core.util.SystemInfo;
 import com.codenvy.api.runner.internal.Runner;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
@@ -23,6 +24,11 @@ public class DeployToApplicationServerRunnerModule extends AbstractModule {
         Multibinder<Runner> multiBinderRunners = Multibinder.newSetBinder(binder(), Runner.class);
         multiBinderRunners.addBinding().to(DeployToApplicationServerRunner.class);
         Multibinder<ApplicationServer> multiBinderServers = Multibinder.newSetBinder(binder(), ApplicationServer.class);
-        multiBinderServers.addBinding().to(TomcatServer.class);
+
+        if (SystemInfo.isUnix()) {
+            multiBinderServers.addBinding().to(UnixTomcatServer.class);
+        } else if (SystemInfo.isWindows()) {
+            multiBinderServers.addBinding().to(WindowsTomcatServer.class);
+        } else throw new UnsupportedOperationException();
     }
 }

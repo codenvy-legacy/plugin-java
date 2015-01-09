@@ -75,7 +75,6 @@ public class MavenExtension {
                           ProjectTypeWizardRegistry wizardRegistry,
                           NotificationManager notificationManager,
                           TreeStructureProviderRegistry treeStructureProviderRegistry,
-                          MavenProjectTreeStructureProvider mavenProjectTreeStructureProvider,
                           PreSelectedProjectTypeManager preSelectedProjectManager) {
 
         ProjectWizard wizard = new ProjectWizard(notificationManager);
@@ -83,7 +82,7 @@ public class MavenExtension {
         wizard.addPage(runnerPagePresenter);
         wizardRegistry.addWizard(MavenAttributes.MAVEN_ID, wizard);
 
-        treeStructureProviderRegistry.registerProvider(MavenAttributes.MAVEN_ID, mavenProjectTreeStructureProvider);
+        treeStructureProviderRegistry.associateProjectTypeToTreeProvider(MavenAttributes.MAVEN_ID, MavenProjectTreeStructureProvider.ID);
 
         preSelectedProjectManager.setProjectTypeIdToPreselect(MavenAttributes.MAVEN_ID, 100);
 

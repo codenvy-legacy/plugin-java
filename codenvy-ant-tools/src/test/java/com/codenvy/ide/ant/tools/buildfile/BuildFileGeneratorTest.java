@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 
 /** @author Vladyslav Zhukovskii */
 public class BuildFileGeneratorTest {
+
     @Test
     public void testGenerateBuildFile() throws Exception {
         String genBuildFile = new BuildFileGenerator("test").getBuildFileContent();
@@ -30,7 +31,7 @@ public class BuildFileGeneratorTest {
         StringBuilder sb = new StringBuilder();
         try (Scanner sc = new Scanner(ClassLoader.getSystemResourceAsStream("test-build.xml"))) {
             while (sc.hasNextLine()) {
-                sb.append(sc.nextLine()).append("\n");
+                sb.append(sc.nextLine()).append(System.getProperty("line.separator"));
             }
         }
 

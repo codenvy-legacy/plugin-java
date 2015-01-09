@@ -28,7 +28,8 @@ public class JavaWebApplicationValidator implements DeploymentSourcesValidator {
     public boolean isValid(DeploymentSources deployment) {
         if (deployment.isZipArchive()) {
             try (ZipFile zip = new ZipFile(deployment.getFile())) {
-                return zip.getEntry(WEB_XML) != null;
+                String path = WEB_XML.replace("\\", "/");
+                return zip.getEntry(path) != null;
             } catch (IOException e) {
                 return false;
             }

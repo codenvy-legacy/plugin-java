@@ -14,6 +14,7 @@ package com.codenvy.ide.ext.java.client.projecttree;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.api.projecttree.generic.Openable;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
@@ -22,6 +23,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -29,10 +32,11 @@ import javax.annotation.Nonnull;
 /**
  * @author Evgen Vidolob
  */
-public class ExternalLibrariesNode extends AbstractTreeNode<Object> {
-    private JavaTreeStructure treeStructure;
-    private JavaNavigationService service;
+public class ExternalLibrariesNode extends AbstractTreeNode<Object> implements Openable {
+    private JavaTreeStructure      treeStructure;
+    private JavaNavigationService  service;
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private boolean                opened;
 
     /**
      * Creates new node with the specified parent, associated data and display name.
@@ -43,8 +47,9 @@ public class ExternalLibrariesNode extends AbstractTreeNode<Object> {
      *         an object this node encapsulates
      * @param eventBus
      */
-    ExternalLibrariesNode(JavaProjectNode parent, Object data, EventBus eventBus, JavaTreeStructure treeStructure,
-                          IconRegistry iconRegistry, JavaNavigationService service,
+    @AssistedInject
+    ExternalLibrariesNode(@Assisted JavaProjectNode parent, @Assisted Object data, @Assisted  JavaTreeStructure treeStructure,
+                          EventBus eventBus, IconRegistry iconRegistry, JavaNavigationService service,
                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, eventBus);
         this.treeStructure = treeStructure;
@@ -92,4 +97,18 @@ public class ExternalLibrariesNode extends AbstractTreeNode<Object> {
     }
 
 
+    @Override
+    public void close() {
+        opened = false;
+    }
+
+    @Override
+    public boolean isOpened() {
+        return opened;
+    }
+
+    @Override
+    public void open() {
+        opened = true;
+    }
 }

@@ -14,43 +14,31 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
-import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
-import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
- * Node that represents a source folder (folder that contains Java source files and packages directly).
+ * Node that represents a source folder (folder that may contains Java source files and packages directly).
  *
  * @author Artem Zatsarynnyy
  */
-public class SourceFolderNode extends FolderNode {
+public class SourceFolderNode extends AbstractSourceContainerNode {
 
-    public SourceFolderNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure, TreeSettings settings,
+    @AssistedInject
+    public SourceFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
                             EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, treeStructure, settings, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractTreeNode<?> createChildNode(ItemReference item) {
-        if ("file".equals(item.getType()) && item.getName().endsWith(".java")) {
-            return ((JavaTreeStructure)treeStructure).newSourceFileNode(this, item);
-        } else if ("folder".equals(item.getType())) {
-            return ((JavaTreeStructure)treeStructure).newPackageNode(this, item);
-        } else {
-            return super.createChildNode(item);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public boolean isRenamable() {
-        // Do not allow to rename Maven source folder as simple folder.
+        // Do not allow to rename source folder as simple folder.
         return false;
     }
 }

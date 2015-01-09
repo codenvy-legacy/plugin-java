@@ -18,7 +18,6 @@ import static com.codenvy.commons.xml.XMLTreeLocation.after;
 import static com.codenvy.commons.xml.XMLTreeLocation.before;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheEnd;
-import static java.util.Objects.compare;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -30,6 +29,7 @@ import static java.util.Objects.requireNonNull;
  * <li>artifactId</li>
  * <li>groupId</li>
  * <li>version</li>
+ * <li>relativePath</li>
  * </ul>
  *
  * @author Eugene Voevodin
@@ -90,7 +90,9 @@ public class Parent {
     public Parent setArtifactId(String artifactId) {
         this.artifactId = artifactId;
         if (!isNew()) {
-            if (element.hasChild("artifactId")) {
+            if (artifactId == null) {
+                element.removeChild("artifactId");
+            } else if (element.hasChild("artifactId")) {
                 element.getSingleChild("artifactId").setText(artifactId);
             } else {
                 element.insertChild(createElement("artifactId", artifactId),
@@ -104,9 +106,11 @@ public class Parent {
      * Sets the group id of the parent project to inherit from
      */
     public Parent setGroupId(String groupId) {
-        this.groupId = requireNonNull(groupId);
+        this.groupId = groupId;
         if (!isNew()) {
-            if (element.hasChild("groupId")) {
+            if (groupId == null) {
+                element.removeChild("groupId");
+            } else if (element.hasChild("groupId")) {
                 element.getSingleChild("groupId").setText(groupId);
             } else {
                 element.insertChild(createElement("groupId", groupId), inTheBegin());
@@ -119,9 +123,11 @@ public class Parent {
      * Sets the version of the parent project to inherit
      */
     public Parent setVersion(String version) {
-        this.version = requireNonNull(version);
+        this.version = version;
         if (!isNew()) {
-            if (element.hasChild("version")) {
+            if (version == null) {
+                element.removeChild("version");
+            } else if (element.hasChild("version")) {
                 element.getSingleChild("version").setText(version);
             } else {
                 element.insertChild(createElement("version", version), before("relativePath").or(inTheEnd()));
@@ -130,6 +136,9 @@ public class Parent {
         return this;
     }
 
+    /**
+     * Sets parent relative path
+     */
     public Parent setRelativePath(String relativePath) {
         this.relativePath = relativePath;
         if (!isNew()) {
@@ -165,9 +174,15 @@ public class Parent {
 
     NewElement asXMLElement() {
         final NewElement newParent = createElement("parent");
-        newParent.appendChild(createElement("groupId", groupId));
-        newParent.appendChild(createElement("artifactId", artifactId));
-        newParent.appendChild(createElement("version", version));
+        if (groupId != null) {
+            newParent.appendChild(createElement("groupId", groupId));
+        }
+        if (artifactId != null) {
+            newParent.appendChild(createElement("artifactId", artifactId));
+        }
+        if (version != null) {
+            newParent.appendChild(createElement("version", version));
+        }
         if (relativePath != null) {
             newParent.appendChild(createElement("relativePath", relativePath));
         }

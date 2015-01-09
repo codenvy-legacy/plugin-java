@@ -16,6 +16,7 @@ import com.codenvy.api.core.notification.EventSubscriber;
 import com.codenvy.api.vfs.server.observation.VirtualFileEvent;
 import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -45,13 +46,13 @@ public class JavaProjectService {
 
     private ConcurrentHashMap<String, JavaProject>                 cache       = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<String>> projectInWs = new ConcurrentHashMap<>();
-    private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
-    private String                            tempDir;
+    private LocalFSMountStrategy fsMountStrategy;
+    private String               tempDir;
     private Map<String, String> options = new HashMap<>();
 
     @Inject
     public JavaProjectService(EventService eventService,
-                              WorkspaceHashLocalFSMountStrategy fsMountStrategy,
+                              LocalFSMountStrategy fsMountStrategy,
                               @Named("project.temp") String temp) {
         eventService.subscribe(new VirtualFileEventSubscriber());
         this.fsMountStrategy = fsMountStrategy;
@@ -68,7 +69,9 @@ public class JavaProjectService {
         options.put(JavaCore.COMPILER_TASK_TAGS, "TODO,FIXME,XXX");
         options.put(JavaCore.COMPILER_PB_UNUSED_PARAMETER_INCLUDE_DOC_COMMENT_REFERENCE, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
-        options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
+        options.put(JavaCore.COMPILER_ANNOTATION_NULL_ANALYSIS, JavaCore.ENABLED);
+        options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.ENABLED);
+        options.put(CompilerOptions.OPTION_GenerateClassFiles, JavaCore.ENABLED);
     }
 
     public JavaProject getOrCreateJavaProject(String wsId, String projectPath) {

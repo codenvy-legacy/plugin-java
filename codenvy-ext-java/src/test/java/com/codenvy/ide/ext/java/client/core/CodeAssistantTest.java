@@ -10,86 +10,109 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core;
 
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.ext.java.client.BaseTest;
 import com.codenvy.ide.ext.java.emul.FileSystem;
-import com.codenvy.ide.ext.java.jdt.compiler.batch.CompilationUnit;
+import com.codenvy.ide.ext.java.jdt.codeassistant.CompletionProposalCollector;
+import com.codenvy.ide.ext.java.jdt.codeassistant.FillArgumentNamesCompletionProposalCollector;
+import com.codenvy.ide.ext.java.jdt.codeassistant.api.JavaCompletionProposal;
 import com.codenvy.ide.ext.java.jdt.core.CompletionProposal;
-import com.codenvy.ide.ext.java.jdt.core.CompletionRequestor;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
-import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
+import com.codenvy.ide.ext.java.jdt.core.dom.AST;
+import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
+import com.codenvy.ide.ext.java.jdt.core.dom.ASTParser;
+import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.internal.codeassist.CompletionEngine;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.googlecode.gwt.test.GwtModule;
+import com.googlecode.gwt.test.GwtTestWithMockito;
+import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
+import org.fest.assertions.Assertions;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
- * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version ${Id}: Jan 16, 2012 3:35:16 PM evgen $
+ * @author Evgen Vidolob
  */
-public class CodeAssistantTest extends ParserBaseTest {
+@GwtModule("com.codenvy.ide.ext.java.Java")
+public class CodeAssistantTest extends GwtTestWithMockito {
 
-    private CARequestor requestor;
 
-    private CompletionEngine e;
+    private static FileSystem nameEnvironment =
+            new FileSystem(new String[]{System.getProperty("java.home") + "/lib/rt.jar"}, null, "UTF-8");
+
 
     @Before
-    public void init() {
-        requestor = new CARequestor();
-        e = new CompletionEngine(new FileSystem(new String[]{System.getProperty("java.home") + "/lib/rt.jar"}, null, "UTF-8"), requestor,
-                                 JavaCore.getOptions());
+    public void setUp() throws Exception {
+        new WorkerMessageHandler(null);
+        GwtReflectionUtils.setPrivateFieldValue(WorkerMessageHandler.get(), "nameEnvironment", nameEnvironment);
 
     }
 
     @Test
-    public void testCodeAssistantOnInnerInterface() {
-        e.complete(new CompilationUnit(javaFiles, "CreateJavaClassPresenter", "UTF-8"),
-                   getCompletionPosition(javaFiles, 452, 19), 0);
-        assertEquals(2, requestor.proposals.size());
+    public void testName() throws Exception {
+        StringBuilder builder = new StringBuilder();
+        builder.append("import org.omg.CORBA.portable.InputStream;\n");
+        builder.append("\n");
+        builder.append("public class Test {\n");
+        builder.append("  public Test(){\n");
+        builder.append("    InputStream s = new \n");
+        builder.append("  }\n");
+        builder.append("}");
+        JavaCompletionProposal[] completionProposals = computeCompletionProposals(builder.toString(), 105);
+        Document document = new WorkerDocument(builder.toString());
+        completionProposals[1].apply(document);
+        Assertions.assertThat(document.get()).doesNotContain("@Overrid@Overrid@Overrid@Overrid@Overrid@Overrid@Overrid@Overrid@Overrid@Overrid@Overr");
     }
 
-    @Test
-    public void testLocalVariables() {
-        e.complete(new CompilationUnit(javaFiles, "CreateJavaClassPresenter", "UTF-8"),
-                   getCompletionPosition(javaFiles, 481, 7), 0);
-        assertTrue(requestor.proposals.size() > 30);
-    }
+    public static JavaCompletionProposal[] computeCompletionProposals(String content, int offset) {
+        ASTParser parser = ASTParser.newParser(AST.JLS3);
+        parser.setKind(ASTParser.K_COMPILATION_UNIT);
+        parser.setUnitName("/P/org/test/CreateJavaClassPresenter.java");
+        parser.setSource(content);
+        parser.setNameEnvironment(nameEnvironment);
+        parser.setResolveBindings(true);
+        ASTNode ast = parser.createAST();
+        CompilationUnit unit = (CompilationUnit)ast;
+        Document document = new WorkerDocument(content);
+        CompletionProposalCollector collector =
+                new FillArgumentNamesCompletionProposalCollector(unit, document, offset, "projectPath", "docContext", "vfsId");
 
-    private static class CARequestor extends CompletionRequestor {
+        collector
+                .setAllowsRequiredProposals(
+                        CompletionProposal.CONSTRUCTOR_INVOCATION,
+                        CompletionProposal.TYPE_REF, true);
+        collector.setAllowsRequiredProposals(CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION,
+                                             CompletionProposal.TYPE_REF, true);
+        collector.setAllowsRequiredProposals(CompletionProposal.ANONYMOUS_CLASS_DECLARATION,
+                                             CompletionProposal.TYPE_REF,
+                                             true);
 
-        private List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-
-        /** @see com.codenvy.ide.ext.java.jdt.core.CompletionRequestor#accept(com.codenvy.ide.ext.java.jdt.core.CompletionProposal) */
-        @Override
-        public void accept(CompletionProposal proposal) {
-            proposals.add(proposal);
-        }
-
-        /** @see com.codenvy.ide.ext.java.jdt.core.CompletionRequestor#completionFailure(com.codenvy.ide.ext.java.jdt.core.compiler
-         * .IProblem) */
-        @Override
-        public void completionFailure(IProblem problem) {
-            System.out.println(problem.getMessage());
-            super.completionFailure(problem);
-        }
-    }
-
-    private int getCompletionPosition(char[] content, int row, int col) {
-        String s = new String(content);
-        String[] strings = s.split("\n");
-        if (strings.length < row)
-            fail("content length less than parameter 'row'");
-        int pos = 0;
-
-        for (int i = 0; i < row - 1; i++) {
-            pos += strings[i].length() + 1;
-        }
-        return pos + col - 1;
+        collector.setIgnored(CompletionProposal.ANNOTATION_ATTRIBUTE_REF, false);
+        collector.setIgnored(CompletionProposal.ANONYMOUS_CLASS_DECLARATION, false);
+        collector.setIgnored(CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION, false);
+        collector.setIgnored(CompletionProposal.FIELD_REF, false);
+        collector.setIgnored(CompletionProposal.FIELD_REF_WITH_CASTED_RECEIVER, false);
+        collector.setIgnored(CompletionProposal.KEYWORD, false);
+        collector.setIgnored(CompletionProposal.LABEL_REF, false);
+        collector.setIgnored(CompletionProposal.LOCAL_VARIABLE_REF, false);
+        collector.setIgnored(CompletionProposal.METHOD_DECLARATION, false);
+        collector.setIgnored(CompletionProposal.METHOD_NAME_REFERENCE, false);
+        collector.setIgnored(CompletionProposal.METHOD_REF, false);
+        collector.setIgnored(CompletionProposal.CONSTRUCTOR_INVOCATION, false);
+        collector.setIgnored(CompletionProposal.METHOD_REF_WITH_CASTED_RECEIVER, false);
+        collector.setIgnored(CompletionProposal.PACKAGE_REF, false);
+        collector.setIgnored(CompletionProposal.POTENTIAL_METHOD_DECLARATION, false);
+        collector.setIgnored(CompletionProposal.VARIABLE_DECLARATION, false);
+        collector.setIgnored(CompletionProposal.TYPE_REF, false);
+        CompletionEngine e = new CompletionEngine(nameEnvironment, collector, JavaCore.getOptions());
+        e.complete(new com.codenvy.ide.ext.java.jdt.compiler.batch.CompilationUnit(
+                content.toCharArray(),
+                "name", "UTF-8"), offset, 0);
+        return collector.getJavaCompletionProposals();
     }
 
 }

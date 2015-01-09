@@ -25,8 +25,12 @@ import java.util.Map;
  * @author Evgen Vidolob
  */
 public class BaseTest {
-    protected Map<String, String> options = new HashMap<>();
-    protected JavaProject         project;
+
+    protected static Map<String, String> options = new HashMap<>();
+    protected static JavaProject         project =
+            new JavaProject(new File(BaseTest.class.getResource("/projects").getFile()), "/test",BaseTest.class.getResource("/temp").getPath(),
+                            "ws", options);
+
 
 
     public BaseTest() {
@@ -43,8 +47,6 @@ public class BaseTest {
         options.put(JavaCore.COMPILER_PB_UNUSED_PARAMETER_INCLUDE_DOC_COMMENT_REFERENCE, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
-
-        project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/test", getClass().getResource("/temp").getPath(), "ws", options);
     }
 
     protected static String getHanldeForRtJarStart(){

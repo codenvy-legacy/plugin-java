@@ -23,6 +23,8 @@ import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
+import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
+import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.codenvy.ide.ext.java.server.internal.core.SearchableEnvironment;
 import com.codenvy.ide.ext.java.server.internal.core.SourceTypeElementInfo;
 import com.google.inject.name.Named;
@@ -30,15 +32,10 @@ import com.google.inject.name.Named;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.CodenvyCompilationUnitResolver;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
@@ -90,7 +87,7 @@ public class RestNameEnvironment {
     private static final Logger LOG = LoggerFactory.getLogger(RestNameEnvironment.class);
 
     @Inject
-    private WorkspaceHashLocalFSMountStrategy fsMountStrategy;
+    private LocalFSMountStrategy fsMountStrategy;
 
     @Inject
     private JavaProjectService javaProjectService;
@@ -524,27 +521,4 @@ public class RestNameEnvironment {
         }
     }
 
-    private static class BindingASTVisitor extends ASTVisitor {
-        ITypeBinding typeBinding;
-
-        public boolean visit(AnnotationTypeDeclaration annotationTypeDeclaration) {
-            typeBinding = annotationTypeDeclaration.resolveBinding();
-            return false;
-        }
-
-        public boolean visit(AnonymousClassDeclaration anonymousClassDeclaration) {
-            typeBinding = anonymousClassDeclaration.resolveBinding();
-            return false;
-        }
-
-        public boolean visit(TypeDeclaration typeDeclaration) {
-            typeBinding = typeDeclaration.resolveBinding();
-            return false;
-        }
-
-        public boolean visit(EnumDeclaration enumDeclaration) {
-            typeBinding = enumDeclaration.resolveBinding();
-            return false;
-        }
-    }
 }

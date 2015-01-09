@@ -13,10 +13,11 @@ package com.codenvy.ide.ext.java.client.projecttree;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.TreeSettings;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -27,19 +28,21 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class JavaProjectNode extends ProjectNode {
 
+    protected boolean shouldAddExternalLibrariesNode = true;
     private ExternalLibrariesNode librariesNode;
 
-    protected boolean shouldAddExternalLibrariesNode = true;
-
-    public JavaProjectNode(TreeNode<?> parent, ProjectDescriptor data, JavaTreeStructure treeStructure, TreeSettings settings,
+    @AssistedInject
+    public JavaProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data, @Assisted JavaTreeStructure treeStructure,
                            EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, treeStructure, settings, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         librariesNode = treeStructure.newExternalLibrariesNode(this);
     }
 
     @Override
     public void setChildren(Array<TreeNode<?>> children) {
-        if (shouldAddExternalLibrariesNode) {
+        final JavaTreeStructure javaTreeStructure = (JavaTreeStructure)treeStructure;
+        if (javaTreeStructure.getSettings().isShowExternalLibraries() && shouldAddExternalLibrariesNode) {
+            librariesNode = javaTreeStructure.newExternalLibrariesNode(this);
             children.add(librariesNode);
         }
         super.setChildren(children);
