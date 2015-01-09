@@ -23,10 +23,9 @@ import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
-import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
-import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.codenvy.ide.ext.java.server.internal.core.SearchableEnvironment;
 import com.codenvy.ide.ext.java.server.internal.core.SourceTypeElementInfo;
+import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.inject.name.Named;
 
 import org.eclipse.jdt.core.IJavaProject;

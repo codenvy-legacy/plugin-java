@@ -16,18 +16,21 @@ import com.codenvy.ide.ext.java.server.BinaryTypeConvector;
 import com.codenvy.ide.ext.java.server.BindingASTVisitor;
 import com.codenvy.ide.ext.java.server.JsonSearchRequester;
 import com.codenvy.ide.ext.java.server.TypeBindingConvector;
+import com.codenvy.ide.ext.java.server.internal.core.SourceTypeElementInfo;
 
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CodenvyCompilationUnitResolver;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
+import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
+import org.eclipse.jdt.internal.compiler.env.ISourceType;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.fest.assertions.Assertions;
 import org.junit.Test;
 
@@ -58,7 +61,7 @@ public class SearchableEnvironmentTest extends BaseTest{
 
     }
 
-    private String processAnswer(NameEnvironmentAnswer answer, IJavaProject project, INameEnvironmentWithProgress environment)
+    private String processAnswer(NameEnvironmentAnswer answer, IJavaProject project, INameEnvironment environment)
             throws JavaModelException {
         if (answer == null) return null;
         if (answer.isBinaryType()) {
@@ -66,25 +69,39 @@ public class SearchableEnvironmentTest extends BaseTest{
             return BinaryTypeConvector.toJsonBinaryType(binaryType);
         } else if (answer.isCompilationUnit()) {
             ICompilationUnit compilationUnit = answer.getCompilationUnit();
-            CompilationUnit result = getCompilationUnit(project, environment, compilationUnit);
-
-            BindingASTVisitor visitor = new BindingASTVisitor();
-            result.accept(visitor);
-            Map<TypeBinding, ?> bindings = (Map<TypeBinding, ?>)result.getProperty("compilerBindingsToASTBindings");
-            SourceTypeBinding binding = null;
-            for (Map.Entry<TypeBinding, ?> entry : bindings.entrySet()) {
-                if (entry.getValue().equals(visitor.getTypeBinding())) {
-                    binding = (SourceTypeBinding)entry.getKey();
-                    break;
-                }
+            return getSourceTypeInfo(project, environment, compilationUnit);
+        } else if (answer.isSourceType()) {
+            ISourceType[] sourceTypes = answer.getSourceTypes();
+            if (sourceTypes.length == 1) {
+                ISourceType sourceType = sourceTypes[0];
+                SourceTypeElementInfo elementInfo = (SourceTypeElementInfo)sourceType;
+                IType handle = elementInfo.getHandle();
+                org.eclipse.jdt.core.ICompilationUnit unit = handle.getCompilationUnit();
+                return getSourceTypeInfo(project, environment, (ICompilationUnit)unit);
             }
-            if (binding == null) return null;
-            return TypeBindingConvector.toJsonBinaryType(binding);
         }
         return null;
     }
 
-    private CompilationUnit getCompilationUnit(IJavaProject project, INameEnvironmentWithProgress environment,
+    private String getSourceTypeInfo(IJavaProject project, INameEnvironment environment, ICompilationUnit compilationUnit)
+            throws JavaModelException {
+        CompilationUnit result = getCompilationUnit(project, environment, compilationUnit);
+
+        BindingASTVisitor visitor = new BindingASTVisitor();
+        result.accept(visitor);
+        Map<TypeBinding, ?> bindings = (Map<TypeBinding, ?>)result.getProperty("compilerBindingsToASTBindings");
+        SourceTypeBinding binding = null;
+        for (Map.Entry<TypeBinding, ?> entry : bindings.entrySet()) {
+            if (entry.getValue().equals(visitor.getTypeBinding())) {
+                binding = (SourceTypeBinding)entry.getKey();
+                break;
+            }
+        }
+        if (binding == null) return null;
+        return TypeBindingConvector.toJsonBinaryType(binding);
+    }
+
+    private CompilationUnit getCompilationUnit(IJavaProject project, INameEnvironment environment,
                                                ICompilationUnit compilationUnit) throws JavaModelException {
         int flags = 0;
         flags |= org.eclipse.jdt.core.ICompilationUnit.ENABLE_STATEMENTS_RECOVERY;
