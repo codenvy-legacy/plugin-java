@@ -20,6 +20,7 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.ScannerHelper;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.TerminalTokens;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;
+import com.codenvy.ide.util.NameUtils;
 import com.codenvy.ide.util.RegExpUtils;
 
 /** @author Evgen Vidolob */
@@ -177,7 +178,7 @@ public class JavaConventions {
         if (name == null) {
             return new Status(IStatus.ERROR, JavaCore.PLUGIN_ID, -1, "Compilation unit name must not be null", null);
         }
-        if (!RegExpUtils.isLatinAndDigitsOnly(name)) { //TODO: not correct in Java world but fix problem described in IDEX-1841
+        if (!NameUtils.checkFileName(name)) { //TODO: not correct in Java world but fix problem described in IDEX-1841
             return new Status(IStatus.ERROR, JavaCore.PLUGIN_ID, -1, "Compilation unit name not valid (only latin and digits)", null);
         }
         String message = "Compilation unit name must end with .java, or one of the registered Java-like extensions";
