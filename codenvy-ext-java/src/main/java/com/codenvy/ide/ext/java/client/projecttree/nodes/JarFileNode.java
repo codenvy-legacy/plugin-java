@@ -9,13 +9,14 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -39,6 +40,8 @@ public class JarFileNode extends JarEntryNode implements VirtualFile {
      *         parent node
      * @param data
      *         an object this node encapsulates
+     * @param treeStructure
+     *         {@link com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure} which this node belongs
      * @param eventBus
      * @param libId
      * @param service
@@ -46,10 +49,10 @@ public class JarFileNode extends JarEntryNode implements VirtualFile {
      * @param iconRegistry
      */
     @AssistedInject
-    public JarFileNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted int libId,
-                       EventBus eventBus, JavaNavigationService service, DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                       IconRegistry iconRegistry) {
-        super(parent, data, eventBus, libId, service, dtoUnmarshallerFactory);
+    public JarFileNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted JavaTreeStructure treeStructure,
+                       @Assisted int libId, EventBus eventBus, JavaNavigationService service,
+                       DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
+        super(parent, data, treeStructure, eventBus, libId, service, dtoUnmarshallerFactory);
         String[] split = data.getName().split("\\.");
         String ext = split[split.length - 1];
         setDisplayIcon(iconRegistry.getIcon(getProject().getProjectTypeId() + "/" + ext + ".file.small.icon").getSVGImage());
@@ -73,13 +76,13 @@ public class JarFileNode extends JarEntryNode implements VirtualFile {
     @Nonnull
     @Override
     public String getPath() {
-        return data.getPath();
+        return getData().getPath();
     }
 
     @Nonnull
     @Override
     public String getName() {
-        return data.getName();
+        return getData().getName();
     }
 
     @Nullable
@@ -95,12 +98,12 @@ public class JarFileNode extends JarEntryNode implements VirtualFile {
 
     @Override
     public String getContentUrl() {
-        return service.getContentUrl(getProject().getPath(), libId, data.getPath());
+        return service.getContentUrl(getProject().getPath(), libId, getData().getPath());
     }
 
     @Override
     public void getContent(final AsyncCallback<String> callback) {
-        service.getContent(getProject().getPath(), libId, data.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+        service.getContent(getProject().getPath(), libId, getData().getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
             @Override
             protected void onSuccess(String result) {
                 callback.onSuccess(result);

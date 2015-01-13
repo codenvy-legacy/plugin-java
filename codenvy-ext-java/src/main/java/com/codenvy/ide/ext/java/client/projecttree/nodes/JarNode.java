@@ -9,7 +9,7 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
@@ -17,6 +17,7 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -34,8 +35,8 @@ import javax.annotation.Nonnull;
  */
 public class JarNode extends AbstractTreeNode<Jar> {
 
-    private JavaTreeStructure treeStructure;
-    private JavaNavigationService service;
+    private JavaTreeStructure      treeStructure;
+    private JavaNavigationService  service;
     private DtoUnmarshallerFactory factory;
 
     /**
@@ -44,13 +45,14 @@ public class JarNode extends AbstractTreeNode<Jar> {
      *         parent node
      * @param data
      *         an object this node encapsulates
-     * @param eventBus
      * @param javaTreeStructure
+     *         {@link JavaTreeStructure} which this node belongs
+     * @param eventBus
      */
     @AssistedInject
     public JarNode(@Assisted ExternalLibrariesNode parent, @Assisted Jar data, @Assisted JavaTreeStructure javaTreeStructure,
                    EventBus eventBus, JavaNavigationService service, DtoUnmarshallerFactory factory, IconRegistry registry) {
-        super(parent, data, eventBus);
+        super(parent, data, javaTreeStructure, eventBus);
         treeStructure = javaTreeStructure;
         this.service = service;
         this.factory = factory;
@@ -60,13 +62,13 @@ public class JarNode extends AbstractTreeNode<Jar> {
     @Nonnull
     @Override
     public String getId() {
-        return String.valueOf(data.getId());
+        return String.valueOf(getData().getId());
     }
 
     @Nonnull
     @Override
     public String getDisplayName() {
-        return data.getName();
+        return getData().getName();
     }
 
     @Override
@@ -77,9 +79,10 @@ public class JarNode extends AbstractTreeNode<Jar> {
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
         Unmarshallable<Array<JarEntry>> unmarshaller = factory.newArrayUnmarshaller(JarEntry.class);
-        service.getLibraryChildren(parent.getProject().getPath(), data.getId(), new AsyncRequestCallback<Array<JarEntry>>(unmarshaller) {
-            @Override
-            protected void onSuccess(Array<JarEntry> result) {
+        service.getLibraryChildren(getParent().getProject().getPath(), getData().getId(),
+                                   new AsyncRequestCallback<Array<JarEntry>>(unmarshaller) {
+                                       @Override
+                                       protected void onSuccess(Array<JarEntry> result) {
                 Array<TreeNode<?>> nodes = Collections.createArray();
                 for (JarEntry jarNode : result.asIterable()) {
                     nodes.add(createNode(jarNode));
@@ -99,13 +102,13 @@ public class JarNode extends AbstractTreeNode<Jar> {
         switch (entry.getType()){
             case FOLDER:
             case PACKAGE:
-            return treeStructure.newJarContainerNode(this, entry, data.getId());
+            return treeStructure.newJarContainerNode(this, entry, getData().getId());
 
             case FILE:
-                return treeStructure.newJarFileNode(this, entry, data.getId());
+                return treeStructure.newJarFileNode(this, entry, getData().getId());
 
             case CLASS_FILE:
-                return treeStructure.newJarClassNode(this, entry, data.getId());
+                return treeStructure.newJarClassNode(this, entry, getData().getId());
         }
         return null;
     }

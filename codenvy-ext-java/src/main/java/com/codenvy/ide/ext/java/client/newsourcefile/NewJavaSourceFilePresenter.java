@@ -21,7 +21,7 @@ import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;

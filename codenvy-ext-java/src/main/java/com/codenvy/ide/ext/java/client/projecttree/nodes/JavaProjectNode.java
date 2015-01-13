@@ -8,17 +8,20 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
+
+import javax.annotation.Nonnull;
 
 /**
  * Node that represents Java project.
@@ -38,11 +41,16 @@ public class JavaProjectNode extends ProjectNode {
         librariesNode = treeStructure.newExternalLibrariesNode(this);
     }
 
+    @Nonnull
+    @Override
+    public JavaTreeStructure getTreeStructure() {
+        return (JavaTreeStructure)super.getTreeStructure();
+    }
+
     @Override
     public void setChildren(Array<TreeNode<?>> children) {
-        final JavaTreeStructure javaTreeStructure = (JavaTreeStructure)treeStructure;
-        if (javaTreeStructure.getSettings().isShowExternalLibraries() && shouldAddExternalLibrariesNode) {
-            librariesNode = javaTreeStructure.newExternalLibrariesNode(this);
+        if (getTreeStructure().getSettings().isShowExternalLibraries() && shouldAddExternalLibrariesNode) {
+            librariesNode = getTreeStructure().newExternalLibrariesNode(this);
             children.add(librariesNode);
         }
         super.setChildren(children);

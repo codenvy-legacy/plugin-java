@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
 
@@ -31,7 +31,7 @@ public class SourceFileNodeTest extends BaseNodeTest {
     public void setUp() {
         super.setUp();
         when(fileItemReference.getName()).thenReturn(FILE_ITEM_NAME);
-        sourceFileNode = new SourceFileNode(null, fileItemReference, null, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        sourceFileNode = new SourceFileNode(null, fileItemReference, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     @Test

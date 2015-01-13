@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.projecttree.TreeNode;
@@ -24,6 +24,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /** @author Artem Zatsarynnyy */
@@ -34,18 +37,14 @@ public class PackageNodeTest extends BaseNodeTest {
     private static final String PARENT_PACKAGE_ITEM_NAME = "pack_1";
     private static final String PARENT_PACKAGE_ITEM_PATH = "/project/src/main/java/pack_1";
     @Mock
-    private SourceFolderNode  sourceFolderNode;
+    private SourceFolderNode sourceFolderNode;
     @Mock
-    private ItemReference     parentPackageItemReference;
+    private ItemReference    parentPackageItemReference;
     @Mock
-    private ItemReference     packageItemReference;
+    private ItemReference    packageItemReference;
     @Mock
-    private PackageNode       parentPackageNode;
-    @Mock
-    private JavaTreeStructure treeStructure;
-    @Mock
-    private JavaTreeSettings  javaTreeSettings;
-    private PackageNode       packageNode;
+    private PackageNode      parentPackageNode;
+    private PackageNode      packageNode;
 
     @Before
     public void setUp() {
@@ -57,12 +56,10 @@ public class PackageNodeTest extends BaseNodeTest {
         when(parentPackageItemReference.getName()).thenReturn(PARENT_PACKAGE_ITEM_NAME);
         when(packageItemReference.getPath()).thenReturn(PACKAGE_ITEM_PATH);
         when(packageItemReference.getName()).thenReturn(PACKAGE_ITEM_NAME);
-        parentPackageNode = new PackageNode(projectNode, parentPackageItemReference, null, eventBus, editorAgent,
-                                            projectServiceClient, dtoUnmarshallerFactory, iconRegistry);
+        parentPackageNode = new PackageNode(projectNode, parentPackageItemReference, treeStructure, eventBus, projectServiceClient,
+                                            dtoUnmarshallerFactory, iconRegistry);
 
-        when(treeStructure.getSettings()).thenReturn(javaTreeSettings);
-
-        packageNode = new PackageNode(parentPackageNode, packageItemReference, treeStructure, eventBus, editorAgent, projectServiceClient,
+        packageNode = new PackageNode(parentPackageNode, packageItemReference, treeStructure, eventBus, projectServiceClient,
                                       dtoUnmarshallerFactory, iconRegistry);
 
         final Array<TreeNode<?>> children = Collections.createArray();
@@ -99,5 +96,26 @@ public class PackageNodeTest extends BaseNodeTest {
     @Test
     public void testIsRenamable() throws Exception {
         assertFalse(packageNode.isRenamable());
+    }
+
+    @Test
+    public void shouldCreateChildSourceFileNode() {
+        ItemReference javaFile = mock(ItemReference.class);
+        when(javaFile.getName()).thenReturn("Test.java");
+        when(javaFile.getType()).thenReturn("file");
+
+        packageNode.createChildNode(javaFile);
+
+        verify(treeStructure).newSourceFileNode(eq(packageNode), eq(javaFile));
+    }
+
+    @Test
+    public void shouldCreateChildPackageNode() {
+        ItemReference javaFile = mock(ItemReference.class);
+        when(javaFile.getType()).thenReturn("folder");
+
+        packageNode.createChildNode(javaFile);
+
+        verify(treeStructure).newPackageNode(eq(packageNode), eq(javaFile));
     }
 }
