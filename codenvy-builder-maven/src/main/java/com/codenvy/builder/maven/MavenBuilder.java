@@ -85,7 +85,6 @@ public class MavenBuilder extends Builder {
                                                                                "</assembly>\n";
 
     private static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE = "jar-with-dependencies-assembly-descriptor.xml";
-    private static final String DEPENDENCIES_JSON_FILE                             = "dependencies.json";
 
     private static final FilenameFilter SOURCES_AND_DOCS_FILTER = new FilenameFilter() {
         @Override
@@ -182,12 +181,6 @@ public class MavenBuilder extends Builder {
                     sourcesManager.addListener(sourceListener);
                 }
                 break;
-            case LIST_DEPS:
-                if (!targets.isEmpty()) {
-                    LOG.warn("Targets {} ignored when list dependencies", targets);
-                }
-                commandLine.add("clean", "dependency:list");
-                break;
             case COPY_DEPS:
                 if (!targets.isEmpty()) {
                     LOG.warn("Targets {} ignored when copy dependencies", targets);
@@ -282,14 +275,6 @@ public class MavenBuilder extends Builder {
                     files = new java.io.File(workDir, "target").listFiles(SOURCES_AND_DOCS_FILTER);
                 }
                 break;
-            case LIST_DEPS:
-                files = workDir.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(java.io.File dir, String name) {
-                        return name.equals(DEPENDENCIES_JSON_FILE);
-                    }
-                });
-                break;
             case COPY_DEPS:
                 final java.io.File target = new java.io.File(workDir, "target");
                 final java.io.File dependencies = new java.io.File(target, "dependency");
@@ -314,9 +299,7 @@ public class MavenBuilder extends Builder {
 
     private boolean isMavenTaskSuccess(FutureBuildTask task) throws BuilderException {
         boolean mavenSuccess = false;
-        BufferedReader logReader = null;
-        try {
-            logReader = new BufferedReader(task.getBuildLogger().getReader());
+        try (BufferedReader logReader = new BufferedReader(task.getBuildLogger().getReader())) {
             String line;
             while ((line = logReader.readLine()) != null) {
                 line = MavenUtils.removeLoggerPrefix(line);
@@ -327,14 +310,8 @@ public class MavenBuilder extends Builder {
             }
         } catch (IOException e) {
             throw new BuilderException(e);
-        } finally {
-            if (logReader != null) {
-                try {
-                    logReader.close();
-                } catch (IOException ignored) {
-                }
-            }
         }
+
         return mavenSuccess;
     }
 
@@ -350,52 +327,5 @@ public class MavenBuilder extends Builder {
         final String reports = "target" + java.io.File.separatorChar + "surefire-reports";
         final java.io.File reportsDir = new java.io.File(dir, reports);
         return reportsDir.exists() ? reportsDir : null;
-    }
-
-    @Override
-    protected BuildLogger createBuildLogger(BuilderConfiguration configuration, java.io.File logFile) throws BuilderException {
-        final BuildLogger buildLogger = super.createBuildLogger(configuration, logFile);
-        if (configuration.getTaskType() == BuilderTaskType.LIST_DEPS) {
-            // collect dependencies in json file
-            return new DependencyBuildLogger(buildLogger, new java.io.File(configuration.getWorkDir(), DEPENDENCIES_JSON_FILE));
-        }
-        return buildLogger;
-    }
-
-    private static class DependencyBuildLogger extends DelegateBuildLogger {
-        final java.io.File jsonFile;
-
-        boolean             dependencyStarted;
-        List<MavenArtifact> dependencies;
-
-        DependencyBuildLogger(BuildLogger buildLogger, java.io.File jsonFile) {
-            super(buildLogger);
-            this.jsonFile = jsonFile;
-            this.dependencies = new LinkedList<>();
-        }
-
-        @Override
-        public void writeLine(String line) throws IOException {
-            if (line != null) {
-                final String trimmed = MavenUtils.removeLoggerPrefix(line);
-                if (dependencyStarted) {
-                    if (trimmed.isEmpty()) {
-                        dependencyStarted = false;
-                        try (Writer writer = Files.newBufferedWriter(jsonFile.toPath(), Charset.forName("UTF-8"))) {
-                            writer.write(JsonHelper.toJson(dependencies));
-                        }
-                    } else {
-                        final MavenArtifact artifact = MavenUtils.parseMavenArtifact(line);
-                        if (artifact != null) {
-                            dependencies.add(artifact);
-                        }
-                    }
-                } else if ("The following files have been resolved:".equals(trimmed)) {
-                    dependencyStarted = true;
-                }
-            }
-
-            super.writeLine(line);
-        }
     }
 }
