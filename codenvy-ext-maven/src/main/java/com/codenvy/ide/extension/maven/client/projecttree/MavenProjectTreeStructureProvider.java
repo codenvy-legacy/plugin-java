@@ -56,7 +56,7 @@ public class MavenProjectTreeStructureProvider implements TreeStructureProvider 
 
     @Override
     public TreeStructure get() {
-        return new MavenProjectTreeStructure(nodeFactory, eventBus, appContext, projectServiceClient, dtoUnmarshallerFactory,
-                                             iconRegistry, service);
+        return new MavenProjectTreeStructure(nodeFactory, eventBus, appContext, projectServiceClient, iconRegistry, dtoUnmarshallerFactory,
+                                             service);
     }
 }

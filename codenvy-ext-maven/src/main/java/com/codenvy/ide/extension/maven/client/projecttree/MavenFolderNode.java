@@ -13,13 +13,12 @@ package com.codenvy.ide.extension.maven.client.projecttree;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
@@ -28,6 +27,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -39,36 +39,26 @@ public class MavenFolderNode extends JavaFolderNode {
 
     @AssistedInject
     public MavenFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted MavenProjectTreeStructure treeStructure,
-                           EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+                           EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
-    /** Tests if the specified item is a project (module). */
-    protected static boolean isModule(ItemReference item) {
-        return "project".equals(item.getType());
+    @Nonnull
+    @Override
+    public MavenProjectTreeStructure getTreeStructure() {
+        return (MavenProjectTreeStructure)super.getTreeStructure();
     }
 
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
-        getModules(data, new AsyncCallback<Array<ProjectDescriptor>>() {
+        getModules(getData(), new AsyncCallback<Array<ProjectDescriptor>>() {
             @Override
             public void onSuccess(final Array<ProjectDescriptor> modules) {
-                getChildren(data.getPath(), new AsyncCallback<Array<ItemReference>>() {
+                getChildren(getData().getPath(), new AsyncCallback<Array<ItemReference>>() {
                     @Override
-                    public void onSuccess(Array<ItemReference> children) {
-                        final boolean isShowHiddenItems = treeStructure.getSettings().isShowHiddenItems();
-                        Array<TreeNode<?>> newChildren = Collections.createArray();
-                        for (ItemReference item : children.asIterable()) {
-                            if (isShowHiddenItems || !item.getName().startsWith(".")) {
-                                AbstractTreeNode node = createChildNode(item, modules);
-                                if (node != null) {
-                                    newChildren.add(node);
-                                }
-                            }
-                        }
-                        setChildren(newChildren);
+                    public void onSuccess(Array<ItemReference> childItems) {
+                        setChildren(getChildNodesForItems(childItems, modules));
                         callback.onSuccess(MavenFolderNode.this);
                     }
 
@@ -109,25 +99,50 @@ public class MavenFolderNode extends JavaFolderNode {
         });
     }
 
+    private Array<TreeNode<?>> getChildNodesForItems(Array<ItemReference> childItems, Array<ProjectDescriptor> modules) {
+        final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
+        Array<TreeNode<?>> oldChildren = Collections.createArray(getChildren().asIterable());
+        Array<TreeNode<?>> newChildren = Collections.createArray();
+        for (ItemReference item : childItems.asIterable()) {
+            if (!isShowHiddenItems && item.getName().startsWith(".")) {
+                continue;
+            }
+            AbstractTreeNode node = createChildNode(item, modules);
+            if (node != null) {
+                if (oldChildren.contains(node)) {
+                    final int i = oldChildren.indexOf(node);
+                    newChildren.add(oldChildren.get(i));
+                } else {
+                    newChildren.add(node);
+                }
+            }
+        }
+        return newChildren;
+    }
+
     /**
      * Creates node for the specified item. Method called for every child item in {@link #refreshChildren(AsyncCallback)} method.
      * <p/>
      * May be overridden in order to provide a way to create a node for the specified by.
      *
      * @param item
-     *         {@link com.codenvy.api.project.shared.dto.ItemReference} for which need to create node
+     *         {@link ItemReference} for which need to create node
      * @param modules
      *         modules list to identify specified item as project's module
-     * @return new node instance or <code>null</code> if the specified item is not supported
+     * @return new node instance or {@code null} if the specified item is not supported
      */
     @Nullable
     protected AbstractTreeNode<?> createChildNode(ItemReference item, Array<ProjectDescriptor> modules) {
         if ("project".equals(item.getType())) {
-            return ((MavenProjectTreeStructure)treeStructure).newModuleNode(this, getModule(item, modules));
+            ProjectDescriptor module = getModule(item, modules);
+            if (module != null) {
+                return getTreeStructure().newModuleNode(this, module);
+            }
+            return null;
         } else if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
-            return ((MavenProjectTreeStructure)treeStructure).newSourceFolderNode(MavenFolderNode.this, item);
+            return getTreeStructure().newSourceFolderNode(MavenFolderNode.this, item);
         } else if ("folder".equals(item.getType())) {
-            return ((MavenProjectTreeStructure)treeStructure).newJavaFolderNode(MavenFolderNode.this, item);
+            return getTreeStructure().newJavaFolderNode(MavenFolderNode.this, item);
         } else {
             return super.createChildNode(item);
         }

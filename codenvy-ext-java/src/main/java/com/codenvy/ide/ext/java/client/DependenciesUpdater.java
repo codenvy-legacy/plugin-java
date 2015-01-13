@@ -22,7 +22,7 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
-import com.codenvy.ide.ext.java.client.projecttree.ExternalLibrariesNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.ExternalLibrariesNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.extension.builder.client.build.BuildController;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;

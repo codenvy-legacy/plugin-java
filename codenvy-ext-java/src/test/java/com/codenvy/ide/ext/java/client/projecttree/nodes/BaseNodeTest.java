@@ -8,15 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeSettings;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -41,8 +42,6 @@ public abstract class BaseNodeTest {
     @Mock
     protected EventBus               eventBus;
     @Mock
-    protected EditorAgent            editorAgent;
-    @Mock
     protected ProjectServiceClient   projectServiceClient;
     @Mock
     protected DtoUnmarshallerFactory dtoUnmarshallerFactory;
@@ -52,6 +51,10 @@ public abstract class BaseNodeTest {
     protected ProjectDescriptor      projectDescriptor;
     @Mock
     protected ProjectNode            projectNode;
+    @Mock
+    protected JavaTreeStructure      treeStructure;
+    @Mock
+    protected JavaTreeSettings       javaTreeSettings;
 
     @Before
     public void setUp() {
@@ -69,5 +72,7 @@ public abstract class BaseNodeTest {
         Icon icon = mock(Icon.class);
         when(icon.getSVGImage()).thenReturn(null);
         when(iconRegistry.getIcon(anyString())).thenReturn(icon);
+
+        when(treeStructure.getSettings()).thenReturn(javaTreeSettings);
     }
 }
