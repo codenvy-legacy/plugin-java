@@ -10,6 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
+import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.NotFoundException;
+import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.*;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
@@ -131,6 +134,36 @@ public class MavenProjectTypeTest {
 
     }
 
+    @Test
+    public void testEstimation() throws Exception {
 
+
+        Map<String, AttributeValue> attributes = new HashMap<>();
+        attributes.put(MavenAttributes.ARTIFACT_ID, new AttributeValue("myartifact"));
+        attributes.put(MavenAttributes.GROUP_ID, new AttributeValue("mygroup"));
+        attributes.put(MavenAttributes.VERSION, new AttributeValue("1.0"));
+        attributes.put(MavenAttributes.PACKAGING, new AttributeValue("jar"));
+
+        pm.createProject(workspace, "testEstimate",
+                new ProjectConfig("my config", "maven", attributes, null, new Builders("maven"), null),
+                null, "public");
+
+        pm.createProject(workspace, "testEstimateBad",
+                new ProjectConfig("my config", "blank", null, null, null, null),
+                null, "public");
+
+        Map<String, AttributeValue> out = pm.estimateProject(workspace, "testEstimate", "maven");
+
+        Assert.assertEquals(out.get(MavenAttributes.ARTIFACT_ID).getString(), "myartifact");
+        Assert.assertEquals(out.get(MavenAttributes.VERSION).getString(), "1.0");
+
+
+        try {
+            pm.estimateProject(workspace, "testEstimateBad", "maven");
+            Assert.fail("ValueStorageException expected");
+        } catch (ValueStorageException e) {
+
+        }
+    }
 
 }
