@@ -34,7 +34,6 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public class MavenProjectTreeStructure extends JavaTreeStructure {
-    private MavenProjectNode projectNode;
 
     protected MavenProjectTreeStructure(MavenNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
                                         ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,

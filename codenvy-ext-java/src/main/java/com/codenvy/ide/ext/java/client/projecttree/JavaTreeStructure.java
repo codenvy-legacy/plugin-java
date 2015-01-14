@@ -38,6 +38,7 @@ import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
+import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -56,7 +57,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
     protected final JavaNavigationService navigationService;
     protected final Map<String, ExternalLibrariesNode> librariesNodeMap = new HashMap<>();
     private final JavaTreeSettings settings;
-    private       JavaProjectNode  projectNode;
+    protected       JavaProjectNode  projectNode;
 
     protected JavaTreeStructure(JavaNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
                                 ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
@@ -98,7 +99,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
         navigationService.getEntry(projectPath, libId, path, new AsyncRequestCallback<JarEntry>(unmarshaller) {
             @Override
             protected void onSuccess(JarEntry result) {
-                callback.onSuccess(createNodeForJarEntry(projectNode, result, libId));
+                callback.onSuccess(createNodeForJarEntry(newJavaProjectNode(appContext.getCurrentProject().getProjectDescription()), result, libId));
             }
 
             @Override
@@ -107,6 +108,7 @@ public class JavaTreeStructure extends GenericTreeStructure {
             }
         });
     }
+
 
     public JarEntryNode createNodeForJarEntry(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
         switch (entry.getType()) {
