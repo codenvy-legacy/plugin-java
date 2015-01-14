@@ -69,7 +69,9 @@ public class JavaProjectService {
         options.put(JavaCore.COMPILER_TASK_TAGS, "TODO,FIXME,XXX");
         options.put(JavaCore.COMPILER_PB_UNUSED_PARAMETER_INCLUDE_DOC_COMMENT_REFERENCE, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
-        options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
+        options.put(JavaCore.COMPILER_ANNOTATION_NULL_ANALYSIS, JavaCore.ENABLED);
+        options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.ENABLED);
+        options.put(CompilerOptions.OPTION_GenerateClassFiles, JavaCore.ENABLED);
     }
 
     public JavaProject getOrCreateJavaProject(String wsId, String projectPath) {

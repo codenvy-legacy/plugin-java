@@ -11,10 +11,13 @@
 package com.codenvy.ide.ext.java.worker.env;
 
 import com.codenvy.ide.collections.js.JsoArray;
+import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryAnnotation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryElementValuePair;
 import com.codenvy.ide.ext.java.worker.env.json.AnnotationJso;
 import com.codenvy.ide.ext.java.worker.env.json.ElementValuePairJso;
+
+import java.util.Arrays;
 
 /**
  * @author Evgen Vidolob
@@ -43,5 +46,32 @@ public class BinaryAnnotation implements IBinaryAnnotation {
             pairs[i] = new ElementValuePair(elementValuePairs.get(i));
         }
         return pairs;
+    }
+
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util.hashCode(this.getElementValuePairs());
+        result = prime * result + CharOperation.hashCode(this.getTypeName());
+        return result;
+    }
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        BinaryAnnotation other = (BinaryAnnotation) obj;
+        if (!Arrays.equals(this.getElementValuePairs(), other.getElementValuePairs())) {
+            return false;
+        }
+        if (!Arrays.equals(this.getTypeName(), other.getTypeName())) {
+            return false;
+        }
+        return true;
     }
 }

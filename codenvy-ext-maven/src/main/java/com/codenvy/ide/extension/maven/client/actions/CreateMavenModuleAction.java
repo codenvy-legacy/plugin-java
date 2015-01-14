@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.extension.maven.client.actions;
 
+import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.app.AppContext;
@@ -26,14 +27,18 @@ public class CreateMavenModuleAction extends ProjectAction {
 
     private CreateMavenModulePresenter presenter;
 
+    private final AnalyticsEventLogger eventLogger;
+
     @Inject
-    public CreateMavenModuleAction(MavenLocalizationConstant constant, CreateMavenModulePresenter presenter) {
+    public CreateMavenModuleAction(MavenLocalizationConstant constant, CreateMavenModulePresenter presenter, AnalyticsEventLogger eventLogger) {
         super(constant.actionCreateMavenModuleText(), constant.actionCreateMavenModuleDescription());
         this.presenter = presenter;
+        this.eventLogger = eventLogger;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        eventLogger.log(this);
         if (appContext.getCurrentProject() != null) {
             presenter.showDialog(appContext.getCurrentProject());
         }

@@ -18,8 +18,8 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.newsourcefile.NewJavaSourceFilePresenter;
-import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

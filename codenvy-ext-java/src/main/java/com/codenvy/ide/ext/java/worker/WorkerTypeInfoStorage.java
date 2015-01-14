@@ -51,14 +51,6 @@ public class WorkerTypeInfoStorage {
     public boolean containsKey(String key) {
         return storage.containsKey(key);
     }
-//
-//    public String getShortTypesInfo() {
-//        return storage.getItem(SHORT_TYPE_INFO);
-//    }
-//
-//    public void setShortTypesInfo(String info) {
-//        storage.setItem(SHORT_TYPE_INFO, info);
-//    }
 
     public List<IBinaryType> getTypesByNamePrefix(String prefix, boolean fqnPart) {
         List<IBinaryType> res = new ArrayList<IBinaryType>();
@@ -99,5 +91,9 @@ public class WorkerTypeInfoStorage {
         for (String key : fqnToRemove.asIterable()) {
             storage.remove(key);
         }
+    }
+
+    public void clear() {
+        storage.clear();
     }
 }

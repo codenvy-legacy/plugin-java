@@ -15,6 +15,9 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaNodeFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Factory that helps to create nodes for {@link AntProjectTreeStructure}.
  *
@@ -22,7 +25,35 @@ import com.codenvy.ide.ext.java.client.projecttree.JavaNodeFactory;
  * @see JavaNodeFactory
  */
 public interface AntNodeFactory extends JavaNodeFactory {
-    AntFolderNode newAntFolderNode(TreeNode<?> parent, ItemReference data, AntProjectTreeStructure treeStructure);
+    /**
+     * Creates a new {@link AntFolderNode} owned by the specified {@code treeStructure}
+     * with the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ItemReference}
+     * @param treeStructure
+     *         the {@link AntProjectTreeStructure} to create the node for
+     * @return a new {@link AntFolderNode}
+     */
+    AntFolderNode newAntFolderNode(@Nonnull TreeNode<?> parent,
+                                   @Nonnull ItemReference data,
+                                   @Nonnull AntProjectTreeStructure treeStructure);
 
-    AntProjectNode newAntProjectNode(TreeNode<?> parent, ProjectDescriptor data, AntProjectTreeStructure treeStructure);
+    /**
+     * Creates a new {@link AntProjectNode} owned by the specified {@code treeStructure}
+     * with the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ProjectDescriptor}
+     * @param treeStructure
+     *         the {@link AntProjectTreeStructure} to create the node for
+     * @return a new {@link AntProjectNode}
+     */
+    AntProjectNode newAntProjectNode(@Nullable TreeNode<?> parent,
+                                     @Nonnull ProjectDescriptor data,
+                                     @Nonnull AntProjectTreeStructure treeStructure);
 }

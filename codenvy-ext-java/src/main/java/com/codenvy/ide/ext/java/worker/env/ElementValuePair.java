@@ -10,8 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.worker.env;
 
+import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryElementValuePair;
 import com.codenvy.ide.ext.java.worker.env.json.ElementValuePairJso;
+
+import java.util.Arrays;
 
 /**
  * @author Evgen Vidolob
@@ -33,5 +36,36 @@ public class ElementValuePair implements IBinaryElementValuePair {
     @Override
     public Object getValue() {
         return Util.getDefaultValue(jso.getValue());
+    }
+
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + CharOperation.hashCode(this.getName());
+        result = prime * result + ((this.getValue() == null) ? 0 : this.getValue().hashCode());
+        return result;
+    }
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ElementValuePair other = (ElementValuePair) obj;
+        if (!Arrays.equals(this.getName(), other.getName())) {
+            return false;
+        }
+        if (this.getValue() == null) {
+            if (other.getValue() != null) {
+                return false;
+            }
+        } else if (!this.getValue().equals(other.getValue())) {
+            return false;
+        }
+        return true;
     }
 }

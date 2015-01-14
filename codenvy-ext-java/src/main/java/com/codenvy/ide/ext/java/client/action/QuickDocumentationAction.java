@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.ext.java.client.action;
 
+import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.MimeType;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
@@ -31,11 +32,17 @@ public class QuickDocumentationAction extends ProjectAction {
     private QuickDocumentation quickDocumentation;
     private EditorAgent        editorAgent;
 
+    private final AnalyticsEventLogger eventLogger;
+
     @Inject
-    public QuickDocumentationAction(JavaLocalizationConstant constant, QuickDocumentation quickDocumentation, EditorAgent editorAgent) {
+    public QuickDocumentationAction(JavaLocalizationConstant constant,
+                                    QuickDocumentation quickDocumentation,
+                                    EditorAgent editorAgent,
+                                    AnalyticsEventLogger eventLogger) {
         super(constant.actionQuickdocTitle(), constant.actionQuickdocDescription());
         this.quickDocumentation = quickDocumentation;
         this.editorAgent = editorAgent;
+        this.eventLogger = eventLogger;
     }
 
     @Override
@@ -53,6 +60,7 @@ public class QuickDocumentationAction extends ProjectAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        eventLogger.log(this);
         quickDocumentation.showDocumentation();
     }
 }

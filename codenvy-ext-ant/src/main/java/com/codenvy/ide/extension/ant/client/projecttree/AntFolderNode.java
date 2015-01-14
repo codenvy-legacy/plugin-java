@@ -12,16 +12,16 @@ package com.codenvy.ide.extension.ant.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.ext.java.client.projecttree.JavaFolderNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -34,9 +34,15 @@ public class AntFolderNode extends JavaFolderNode {
     /** Create instance of {@link AntFolderNode}. */
     @AssistedInject
     protected AntFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted AntProjectTreeStructure treeStructure,
-                            EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
+                            EventBus eventBus, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    }
+
+    @Nonnull
+    @Override
+    public AntProjectTreeStructure getTreeStructure() {
+        return (AntProjectTreeStructure)super.getTreeStructure();
     }
 
     /** {@inheritDoc} */
@@ -44,9 +50,9 @@ public class AntFolderNode extends JavaFolderNode {
     @Override
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
         if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
-            return ((AntProjectTreeStructure)treeStructure).newSourceFolderNode(this, item);
+            return getTreeStructure().newSourceFolderNode(this, item);
         } else if ("folder".equals(item.getType())) {
-            return ((AntProjectTreeStructure)treeStructure).newJavaFolderNode(this, item);
+            return getTreeStructure().newJavaFolderNode(this, item);
         } else {
             return super.createChildNode(item);
         }

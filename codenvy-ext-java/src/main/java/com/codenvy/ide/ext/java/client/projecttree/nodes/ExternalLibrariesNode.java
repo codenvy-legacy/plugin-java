@@ -9,7 +9,7 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
@@ -18,6 +18,7 @@ import com.codenvy.ide.api.projecttree.generic.Openable;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -48,10 +49,10 @@ public class ExternalLibrariesNode extends AbstractTreeNode<Object> implements O
      * @param eventBus
      */
     @AssistedInject
-    ExternalLibrariesNode(@Assisted JavaProjectNode parent, @Assisted Object data, @Assisted  JavaTreeStructure treeStructure,
+    ExternalLibrariesNode(@Assisted JavaProjectNode parent, @Assisted Object data, @Assisted JavaTreeStructure treeStructure,
                           EventBus eventBus, IconRegistry iconRegistry, JavaNavigationService service,
                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, eventBus);
+        super(parent, data, treeStructure, eventBus);
         this.treeStructure = treeStructure;
         this.service = service;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -78,7 +79,7 @@ public class ExternalLibrariesNode extends AbstractTreeNode<Object> implements O
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
         Unmarshallable<Array<Jar>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(Jar.class);
-        service.getExternalLibraries(parent.getProject().getPath(), new AsyncRequestCallback<Array<Jar>>(unmarshaller) {
+        service.getExternalLibraries(getParent().getProject().getPath(), new AsyncRequestCallback<Array<Jar>>(unmarshaller) {
             @Override
             protected void onSuccess(Array<Jar> result) {
                 Array<TreeNode<?>> array = Collections.createArray();

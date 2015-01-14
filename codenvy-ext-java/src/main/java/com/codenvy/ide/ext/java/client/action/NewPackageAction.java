@@ -12,7 +12,6 @@ package com.codenvy.ide.ext.java.client.action;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.action.ActionEvent;
-import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeStructure;
 import com.codenvy.ide.api.projecttree.generic.StorableNode;
@@ -20,9 +19,9 @@ import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.JavaUtils;
-import com.codenvy.ide.ext.java.client.projecttree.AbstractSourceContainerNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.AbstractSourceContainerNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
-import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode;
 import com.codenvy.ide.newresource.AbstractNewResourceAction;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.Unmarshallable;
@@ -33,6 +32,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.annotation.Nullable;
+
+import static com.codenvy.ide.api.event.NodeChangedEvent.createNodeChildrenChangedEvent;
 
 /**
  * Action to create new Java package.
@@ -61,7 +62,7 @@ public class NewPackageAction extends AbstractNewResourceAction {
                 createPackage(parent, value, new AsyncCallback<ItemReference>() {
                     @Override
                     public void onSuccess(ItemReference result) {
-                        eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(getNodeToRefresh((AbstractSourceContainerNode)parent)));
+                        eventBus.fireEvent(createNodeChildrenChangedEvent(getNodeToRefresh((AbstractSourceContainerNode)parent)));
                     }
 
                     @Override

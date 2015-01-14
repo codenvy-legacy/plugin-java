@@ -27,6 +27,7 @@ import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TagBits;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 /**
@@ -38,7 +39,13 @@ public class TypeBindingConvector {
 
     public static String toJsonBinaryType(SourceTypeBinding binding) {
         JsonObject object = new JsonObject();
-        object.add("annotations", toJsonAnnotations(binding.getAnnotations()));
+        if(!binding.isAnnotationType()) {
+            object.add("annotations", toJsonAnnotations(binding.getAnnotations()));
+        } else
+        {
+            object.add("annotations", JsonNull.INSTANCE);
+
+        }
         object.add("enclosingMethod", null);
         object.add("enclosingTypeName", binding.enclosingType() == null ? JsonNull.INSTANCE : new JsonPrimitive(
                 new String(binding.enclosingType().constantPoolName())));
@@ -56,7 +63,12 @@ public class TypeBindingConvector {
         object.add("superclassName",
                    binding.superclass() == null ? JsonNull.INSTANCE
                                                 : new JsonPrimitive(new String(binding.superclass().constantPoolName())));
-        object.add("tagBits", new JsonPrimitive(String.valueOf(binding.tagBits)));
+        long annotationTagBits = binding.getAnnotationTagBits();
+        //remove AreMethodsComplete bit tag from annotation type
+        if (binding.isAnnotationType() && (annotationTagBits & TagBits.AreMethodsComplete) != 0){
+            annotationTagBits &= ~TagBits.AreMethodsComplete;
+        }
+        object.add("tagBits", new JsonPrimitive(String.valueOf(annotationTagBits)));
         object.add("anonymous", new JsonPrimitive(binding.isAnonymousType()));
         object.add("local", new JsonPrimitive(binding.isLocalType()));
         object.add("member", new JsonPrimitive(binding.isMemberType()));
@@ -79,7 +91,7 @@ public class TypeBindingConvector {
 
     private static JsonElement toJsonMethod(MethodBinding method) {
         JsonObject object = new JsonObject();
-        object.addProperty("modifiers", method.modifiers);
+        object.addProperty("modifiers", method.getAccessFlags());
         object.addProperty("constructor", method.isConstructor());
         object.add("argumentNames", toJsonParametersName(method.sourceMethod()));
         object.add("annotations", toJsonAnnotations(method.getAnnotations()));
@@ -91,7 +103,7 @@ public class TypeBindingConvector {
                    method.signature() == null ? JsonNull.INSTANCE : new JsonPrimitive(new String(method.signature())));
         object.add("parameterAnnotations", toJsonParameterAnnotations(method));
         object.add("selector", method.selector == null ? JsonNull.INSTANCE : new JsonPrimitive(new String(method.selector)));
-        object.addProperty("tagBits", String.valueOf(method.tagBits));
+        object.addProperty("tagBits", String.valueOf(method.getAnnotationTagBits()));
         object.addProperty("clinit", false);
         return object;
     }
@@ -143,7 +155,7 @@ public class TypeBindingConvector {
     }
 
     private static JsonElement toJsonParametersName(AbstractMethodDeclaration parameters) {
-        if (parameters==null || parameters.arguments == null) return JsonNull.INSTANCE;
+        if (parameters == null || parameters.arguments == null || parameters.arguments.length == 0) return JsonNull.INSTANCE;
         JsonArray array = new JsonArray();
 
         for (Argument parameter : parameters.arguments) {
@@ -154,7 +166,7 @@ public class TypeBindingConvector {
     }
 
     private static JsonElement toJsonMemberTypes(ReferenceBinding[] memberTypes) {
-        if (memberTypes == null) return null;
+        if (memberTypes == null || memberTypes.length == 0) return null;
         JsonArray array = new JsonArray();
         for (ReferenceBinding type : memberTypes) {
             array.add(toJsonMemberType(type));
@@ -183,7 +195,7 @@ public class TypeBindingConvector {
     }
 
     private static JsonElement toJsonFields(FieldBinding[] fields) {
-        if(fields == null) return JsonNull.INSTANCE;
+        if(fields == null || fields.length == 0) return JsonNull.INSTANCE;
         JsonArray array = new JsonArray();
         for (FieldBinding field : fields) {
             array.add(toJsonField(field));
