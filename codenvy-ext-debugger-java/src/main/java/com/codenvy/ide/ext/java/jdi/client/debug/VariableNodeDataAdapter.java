@@ -107,4 +107,29 @@ public class VariableNodeDataAdapter implements NodeDataAdapter<Variable> {
         return Collections.createArray(data.getVariablePath().getPath());
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Variable getNodeByPath(Variable root, Array<String> relativeNodePath) {
+        Variable localRoot = root;
+        for (int i = 0; i < relativeNodePath.size(); i++) {
+            String path = relativeNodePath.get(i);
+            if (localRoot != null) {
+                Array<Variable> variables = Collections.createArray(localRoot.getVariables());
+                localRoot = null;
+                for (int j = 0; j < variables.size(); j++) {
+                    Variable variable = variables.get(i);
+                    if (variable.getName().equals(path)) {
+                        localRoot = variable;
+                        break;
+                    }
+                }
+
+                if (i == (relativeNodePath.size() - 1)) {
+                    return localRoot;
+                }
+            }
+        }
+        return null;
+    }
+
 }
