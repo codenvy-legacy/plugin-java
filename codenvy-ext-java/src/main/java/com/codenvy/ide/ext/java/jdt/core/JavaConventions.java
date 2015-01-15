@@ -63,6 +63,9 @@ public class JavaConventions {
         if (name == null) {
             return new Status(IStatus.ERROR, JavaCore.PLUGIN_ID, -1, Messages.INSTANCE.convention_package_nullName(), null);
         }
+        if (!NameUtils.checkFileName(name)) { //TODO: not correct in Java world but fix problem described in IDEX-1841
+            return new Status(IStatus.ERROR, JavaCore.PLUGIN_ID, -1, "Package name not valid (only latin and digits)", null);
+        }
         int length;
         if ((length = name.length()) == 0) {
             return new Status(IStatus.ERROR, JavaCore.PLUGIN_ID, -1, Messages.INSTANCE.convention_package_emptyName(),
