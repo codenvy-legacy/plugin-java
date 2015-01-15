@@ -85,9 +85,13 @@ public abstract class AbstractSourceContainerNode extends FolderNode {
     }
 
     private void getChildNodesForItems(final Array<ItemReference> childItems, final AsyncCallback<Array<TreeNode<?>>> callback) {
-        final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
         final Array<TreeNode<?>> oldChildren = Collections.createArray(getChildren().asIterable());
         final Array<TreeNode<?>> newChildren = Collections.createArray();
+        if (childItems.isEmpty()) {
+            callback.onSuccess(newChildren);
+            return;
+        }
+        final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
         final int[] asyncCounter = new int[1];
         for (final ItemReference item : childItems.asIterable()) {
             if (!isShowHiddenItems && item.getName().startsWith(".")) {
