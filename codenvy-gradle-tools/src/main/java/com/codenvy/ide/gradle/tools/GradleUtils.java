@@ -14,9 +14,13 @@ package com.codenvy.ide.gradle.tools;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
+import com.codenvy.api.vfs.server.VirtualFile;
+import com.codenvy.vfs.impl.fs.VirtualFileImpl;
 
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.model.GradleProject;
+import org.gradle.tooling.model.GradleTask;
 import org.gradle.tooling.model.idea.IdeaContentRoot;
 import org.gradle.tooling.model.idea.IdeaModule;
 import org.gradle.tooling.model.idea.IdeaProject;
@@ -166,6 +170,30 @@ public class GradleUtils {
         }
 
         return sourceDirs;
+    }
+
+    public static Map<String, String> getTasks(VirtualFile projectDir) {
+        return getTasks(((VirtualFileImpl)projectDir).getIoFile());
+
+    }
+
+    public static Map<String, String> getTasks(java.io.File projectDir) {
+        ProjectConnection connection = GradleConnector.newConnector()
+                                                      .forProjectDirectory(projectDir)
+                                                      .connect();
+
+        Map<String, String> tasks = new TreeMap<>();
+
+        try {
+            GradleProject project = connection.getModel(GradleProject.class);
+            for (GradleTask task : project.getTasks()) {
+                tasks.put(task.getName(), task.getDescription());
+            }
+        } finally {
+            connection.close();
+        }
+
+        return tasks;
     }
 
 }

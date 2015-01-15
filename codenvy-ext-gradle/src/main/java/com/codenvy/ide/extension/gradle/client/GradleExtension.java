@@ -18,10 +18,17 @@ import com.codenvy.ide.api.event.FileEventHandler;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.extension.Extension;
+import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
+import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
+import com.codenvy.ide.extension.gradle.client.action.ShowTaskListAction;
 import com.codenvy.ide.extension.gradle.client.action.UpdateDependencyAction;
+import com.codenvy.ide.extension.gradle.client.wizard.GradlePagePresenter;
 import com.codenvy.ide.extension.gradle.shared.GradleAttributes;
+import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -36,9 +43,20 @@ public class GradleExtension {
     private DependenciesUpdater dependenciesUpdater;
 
     @Inject
-    public GradleExtension(final EventBus eventBus,
-                           final DependenciesUpdater dependenciesUpdater) {
+    public GradleExtension(EventBus eventBus,
+                           DependenciesUpdater dependenciesUpdater,
+                           NotificationManager notificationManager,
+                           Provider<SelectRunnerPagePresenter> runnerPagePresenter,
+                           Provider<GradlePagePresenter> gradlePagePresenter,
+                           ProjectTypeWizardRegistry projectTypeWizardRegistry) {
         this.dependenciesUpdater = dependenciesUpdater;
+
+
+        ProjectWizard wizard = new ProjectWizard(notificationManager);
+        wizard.addPage(gradlePagePresenter);
+        wizard.addPage(runnerPagePresenter);
+
+        projectTypeWizardRegistry.addWizard(GradleAttributes.GRADLE_ID, wizard);
 
         eventBus.addHandler(ProjectActionEvent.TYPE, openProjectHandler);
         eventBus.addHandler(FileEvent.TYPE, saveBuildScriptHandler);
@@ -47,13 +65,16 @@ public class GradleExtension {
     /** Register main and context menu actions. */
     @Inject
     private void registerActions(ActionManager actionManager,
-                                 UpdateDependencyAction updateDependencyAction) {
+                                 UpdateDependencyAction updateDependencyAction,
+                                 ShowTaskListAction showTaskListAction) {
         // register actions
         actionManager.registerAction("updateGradleDependency", updateDependencyAction);
+        actionManager.registerAction("showGradleProjectTasks", showTaskListAction);
 
         // add actions into main menu
         DefaultActionGroup buildMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_BUILD);
         buildMenuActionGroup.add(updateDependencyAction);
+        buildMenuActionGroup.add(showTaskListAction);
 
         // add actions into context menu
         DefaultActionGroup buildContextMenuGroup = (DefaultActionGroup)actionManager.getAction(GROUP_BUILD_CONTEXT_MENU);

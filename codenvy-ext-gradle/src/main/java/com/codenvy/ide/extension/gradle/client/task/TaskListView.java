@@ -8,17 +8,20 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.gradle.shared;
+package com.codenvy.ide.extension.gradle.client.task;
+
+import com.codenvy.ide.api.mvp.View;
+import com.codenvy.ide.api.parts.base.BaseActionDelegate;
+import com.google.inject.ImplementedBy;
 
 /** @author Vladyslav Zhukovskii */
-public final class GradleAttributes {
-    /** Gradle builder ID. */
-    public static final String GRADLE_ID = "gradle";
+@ImplementedBy(TaskListViewImpl.class)
+public interface TaskListView extends View<TaskListView.ActionDelegate> {
+    public interface ActionDelegate extends BaseActionDelegate {
 
-    /** Display name for new project wizard. */
-    public static final String GRADLE_NAME = "Gradle Project";
+    }
 
+    void showPanel();
 
-    public static final String SOURCE_FOLDER = "gradle.source.folder";
-    public static final String TEST_SOURCE_FOLDER = "gradle.test.source.folder";
+    void hidePanel();
 }

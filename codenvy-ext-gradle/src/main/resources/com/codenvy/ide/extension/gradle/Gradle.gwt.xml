@@ -21,5 +21,6 @@
     <inherits name='com.codenvy.ide.Api'/>
     <inherits name="com.google.gwt.inject.Inject"/>
 
+    <source path="client"/>
     <source path="shared"/>
 </module>

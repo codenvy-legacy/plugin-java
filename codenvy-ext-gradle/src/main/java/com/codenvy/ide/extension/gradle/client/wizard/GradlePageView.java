@@ -8,17 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.gradle.shared;
+package com.codenvy.ide.extension.gradle.client.wizard;
+
+import com.codenvy.ide.api.mvp.View;
+import com.google.inject.ImplementedBy;
 
 /** @author Vladyslav Zhukovskii */
-public final class GradleAttributes {
-    /** Gradle builder ID. */
-    public static final String GRADLE_ID = "gradle";
-
-    /** Display name for new project wizard. */
-    public static final String GRADLE_NAME = "Gradle Project";
-
-
-    public static final String SOURCE_FOLDER = "gradle.source.folder";
-    public static final String TEST_SOURCE_FOLDER = "gradle.test.source.folder";
+@ImplementedBy(GradlePageViewImpl.class)
+public interface GradlePageView extends View<GradlePageView.ActionDelegate> {
+    public interface ActionDelegate {
+    }
 }
