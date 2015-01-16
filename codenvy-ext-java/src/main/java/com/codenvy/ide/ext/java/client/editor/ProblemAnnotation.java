@@ -100,7 +100,7 @@ public class ProblemAnnotation extends Annotation implements JavaAnnotation, Qui
 
         final Element selectedImageElement = getSelectedImageElement();
         if (selectedImageElement != null) {
-            fImageElement.setInnerHTML(selectedImageElement.getOuterHTML());
+            fImageElement.appendChild(selectedImageElement.cloneNode(true));
         }
     }
 
