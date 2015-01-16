@@ -131,4 +131,5 @@ public class VariableNodeDataAdapter implements NodeDataAdapter<Variable> {
         }
         return null;
     }
+
 }
