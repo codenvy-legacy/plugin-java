@@ -12,7 +12,6 @@ package com.codenvy.builder.ant;
 
 import com.codenvy.api.builder.BuilderException;
 import com.codenvy.api.builder.dto.BuilderEnvironment;
-import com.codenvy.api.builder.dto.Dependency;
 import com.codenvy.api.builder.internal.BuildListener;
 import com.codenvy.api.builder.internal.BuildResult;
 import com.codenvy.api.builder.internal.BuildTask;
@@ -20,7 +19,6 @@ import com.codenvy.api.builder.internal.Builder;
 import com.codenvy.api.builder.internal.BuilderConfiguration;
 import com.codenvy.api.builder.internal.BuilderTaskType;
 import com.codenvy.api.builder.internal.Constants;
-import com.codenvy.api.builder.internal.DependencyCollector;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.CustomPortService;
@@ -45,7 +43,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -69,7 +66,6 @@ import java.util.zip.ZipOutputStream;
 public class AntBuilder extends Builder {
     private static final Logger LOG = LoggerFactory.getLogger(AntBuilder.class);
 
-    private static final String DEPENDENCIES_JSON_FILE = "dependencies.json";
     private static final String DEPENDENCIES_ZIP_FILE  = "dependencies.zip";
     private static final String BUILD_LISTENER_CLASS;
     private static final String BUILD_LISTENER_CLASS_PORT;
@@ -160,12 +156,11 @@ public class AntBuilder extends Builder {
     protected CommandLine createCommandLine(BuilderConfiguration config) {
         final CommandLine commandLine = new CommandLine(AntUtils.getAntExecCommand());
         commandLine.add(config.getTargets());
-        switch (config.getTaskType()) {
-            case LIST_DEPS:
-            case COPY_DEPS:
-                commandLine.add("-keep-going"); // Not care about compilation errors, etc. We need classpath only.
-                break;
+
+        if (config.getTaskType() == BuilderTaskType.COPY_DEPS) {
+            commandLine.add("-keep-going"); // Not care about compilation errors, etc. We need classpath only.
         }
+
         commandLine.add("-listener", BUILD_LISTENER_CLASS, "-lib", BUILD_LISTENER_CLASS_PATH);
         commandLine.add(config.getOptions());
         return commandLine;
@@ -234,7 +229,7 @@ public class AntBuilder extends Builder {
                     result.getResults().add(withDependencies);
                 }
                 return result;
-            } else if (config.getTaskType() == BuilderTaskType.LIST_DEPS || config.getTaskType() == BuilderTaskType.COPY_DEPS) {
+            } else if (config.getTaskType() == BuilderTaskType.COPY_DEPS) {
                 // Status may be unsuccessful we are not care about it, we just need to get classpath.
                 final BuildResult result = new BuildResult(true);
                 final Set<java.io.File> classpath = new LinkedHashSet<>();
@@ -255,22 +250,12 @@ public class AntBuilder extends Builder {
                         }
                     }
                 }
-                if (config.getTaskType() == BuilderTaskType.LIST_DEPS) {
-                    try {
-                        final java.io.File file = new java.io.File(workDir, DEPENDENCIES_JSON_FILE);
-                        writeDependenciesJson(classpath, workDir, file);
-                        result.getResults().add(file);
-                    } catch (IOException e) {
-                        throw new BuilderException(e);
-                    }
-                } else {
-                    try {
-                        final java.io.File file = new java.io.File(workDir, DEPENDENCIES_ZIP_FILE);
-                        writeDependenciesZip(classpath, file);
-                        result.getResults().add(file);
-                    } catch (IOException e) {
-                        throw new BuilderException(e);
-                    }
+                try {
+                    final java.io.File file = new java.io.File(workDir, DEPENDENCIES_ZIP_FILE);
+                    writeDependenciesZip(classpath, file);
+                    result.getResults().add(file);
+                } catch (IOException e) {
+                    throw new BuilderException(e);
                 }
                 return result;
             }
@@ -340,27 +325,6 @@ public class AntBuilder extends Builder {
                 fOut.close();
             }
         }
-    }
-
-    private void writeDependenciesJson(Set<java.io.File> classpath, java.io.File workDir, java.io.File jsonFile) throws IOException {
-        final Path workDirPath = workDir.toPath();
-        final DependencyCollector collector = new DependencyCollector();
-        final UniqueNameChecker uniqueNameChecker = new UniqueNameChecker();
-        for (java.io.File file : classpath) {
-            final Path path = file.toPath();
-            if (path.startsWith(workDirPath)) {
-                // If library included in project show relative path to it.
-                collector.addDependency(
-                        DtoFactory.getInstance().createDto(Dependency.class).withFullName(workDirPath.relativize(path).toString()));
-            } else {
-                // otherwise show just name of library.
-                // Typically it may means that dependency is obtained with some dependency manager,
-                // e.g. with builder over builder-ant-task.
-                collector.addDependency(
-                        DtoFactory.getInstance().createDto(Dependency.class).withFullName(uniqueNameChecker.maybeAddIndex(file.getName())));
-            }
-        }
-        collector.writeJson(jsonFile);
     }
 
     private void writeDependenciesZip(Set<java.io.File> classpath, java.io.File zipFile) throws IOException {

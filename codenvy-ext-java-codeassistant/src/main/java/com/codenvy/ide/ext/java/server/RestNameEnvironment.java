@@ -263,7 +263,7 @@ public class RestNameEnvironment {
 
         String url = apiUrl + "/builder/" + wsId + "/dependencies";
         projectWatcher.projectOpened(request.getSession().getId(), wsId, projectPath);
-        return getDependencies(url, projectPath, "copy", null);
+        return getDependencies(url, projectPath, null);
     }
 
     /** Get list of all package names in project */
@@ -293,7 +293,7 @@ public class RestNameEnvironment {
             BuildOptions buildOptions = DtoFactory.getInstance().createDto(BuildOptions.class);
             buildOptions.getOptions().put("-Dclassifier", "sources");
             String url = apiUrl + "/builder/" + wsId + "/dependencies";
-            BuildTaskDescriptor dependencies = getDependencies(url, projectPath, "copy", buildOptions);
+            BuildTaskDescriptor dependencies = getDependencies(url, projectPath, buildOptions);
             BuildTaskDescriptor buildTaskDescriptor = waitTaskFinish(dependencies);
             if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
                 buildFailed(finishedBuildStatus);
@@ -388,12 +388,10 @@ public class RestNameEnvironment {
 
 
     @Nonnull
-    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType,
-                                                @Nullable BuildOptions options)
+    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nullable BuildOptions options)
             throws Exception {
         Pair<String, String> projectParam = Pair.of("project", projectName);
-        Pair<String, String> typeParam = Pair.of("type", analyzeType);
-        return HttpJsonHelper.request(BuildTaskDescriptor.class, url, "POST", options, projectParam, typeParam);
+        return HttpJsonHelper.request(BuildTaskDescriptor.class, url, "POST", options, projectParam);
     }
 
 

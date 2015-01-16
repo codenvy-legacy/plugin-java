@@ -18,6 +18,7 @@ import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
 import com.codenvy.ide.ext.java.server.internal.core.util.JavaElementFinder;
+import com.codenvy.ide.gradle.tools.GradleUtils;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
 import org.eclipse.core.resources.IProject;
@@ -186,6 +187,10 @@ public class JavaProject extends Openable implements IJavaProject {
                     for (String src : AntUtils.getSourceDirectories(build)) {
                         sources.add(new File(projectDir, src));
                     }
+                }
+            } else if ("gradle".equals(defBuilder.getDefault())) {
+                for (String src : GradleUtils.getSourceDirectories(projectDir)) {
+                    sources.add(new File(projectDir, src));
                 }
             }
         }
