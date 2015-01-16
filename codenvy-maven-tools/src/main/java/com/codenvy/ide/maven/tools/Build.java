@@ -11,9 +11,17 @@
 package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
+import com.codenvy.commons.xml.ElementMapper;
 import com.codenvy.commons.xml.NewElement;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static com.codenvy.commons.xml.NewElement.createElement;
+import static java.util.Collections.emptyList;
 
 /**
  * The {@literal <build>} element contains project build settings.
@@ -25,30 +33,38 @@ import static com.codenvy.commons.xml.NewElement.createElement;
  * <li>scriptSourceDirectory</li>
  * <li>outputDirectory</li>
  * <li>testOutputDirectory</li>
+ * <li>resources</li>
  * </ul>
  *
  * @author Eugene Voevodin
  */
 public class Build {
 
-    private String sourceDirectory;
-    private String testSourceDirectory;
-    private String scriptSourceDirectory;
-    private String outputDirectory;
-    private String testOutputDirectory;
+    private static final ElementMapper<Resource> RESOURCE_MAPPER = new ResourceMapper();
 
-    Element element;
+    private String         sourceDirectory;
+    private String         testSourceDirectory;
+    private String         scriptSourceDirectory;
+    private String         outputDirectory;
+    private String         testOutputDirectory;
+    private List<Resource> resources;
+    private List<Plugin>   plugins;
+
+    Element buildElement;
 
     public Build() {
     }
 
-    Build(Element element) {
-        this.element = element;
-        sourceDirectory = element.getChildText("sourceDirectory");
-        testSourceDirectory = element.getChildText("testSourceDirectory");
-        scriptSourceDirectory = element.getChildText("scriptSourceDirectory");
-        outputDirectory = element.getChildText("outputDirectory");
-        testOutputDirectory = element.getChildText("testOutputDirectory");
+    Build(Element buildElement) {
+        this.buildElement = buildElement;
+        sourceDirectory = buildElement.getChildText("sourceDirectory");
+        testSourceDirectory = buildElement.getChildText("testSourceDirectory");
+        scriptSourceDirectory = buildElement.getChildText("scriptSourceDirectory");
+        outputDirectory = buildElement.getChildText("outputDirectory");
+        testOutputDirectory = buildElement.getChildText("testOutputDirectory");
+        if (buildElement.hasSingleChild("resources")) {
+            resources = buildElement.getSingleChild("resources").getChildren(RESOURCE_MAPPER);
+        }
     }
 
     /**
@@ -107,11 +123,11 @@ public class Build {
         this.outputDirectory = outputDirectory;
         if (!isNew()) {
             if (outputDirectory == null) {
-                element.removeChild("outputDirectory");
-            } else if (element.hasChild("outputDirectory")) {
-                element.getSingleChild("outputDirectory").setText(outputDirectory);
+                buildElement.removeChild("outputDirectory");
+            } else if (buildElement.hasSingleChild("outputDirectory")) {
+                buildElement.getSingleChild("outputDirectory").setText(outputDirectory);
             } else {
-                element.appendChild(createElement("outputDirectory", outputDirectory));
+                buildElement.appendChild(createElement("outputDirectory", outputDirectory));
             }
         }
         return this;
@@ -124,11 +140,11 @@ public class Build {
         this.scriptSourceDirectory = scriptSourceDirectory;
         if (!isNew()) {
             if (scriptSourceDirectory == null) {
-                element.removeChild("scriptSourceDirectory");
-            } else if (element.hasChild("scriptSourceDirectory")) {
-                element.getSingleChild("scriptSourceDirectory").setText(scriptSourceDirectory);
+                buildElement.removeChild("scriptSourceDirectory");
+            } else if (buildElement.hasSingleChild("scriptSourceDirectory")) {
+                buildElement.getSingleChild("scriptSourceDirectory").setText(scriptSourceDirectory);
             } else {
-                element.appendChild(createElement("scriptSourceDirectory", scriptSourceDirectory));
+                buildElement.appendChild(createElement("scriptSourceDirectory", scriptSourceDirectory));
             }
         }
         return this;
@@ -141,11 +157,11 @@ public class Build {
         this.sourceDirectory = sourceDirectory;
         if (!isNew()) {
             if (sourceDirectory == null) {
-                element.removeChild("sourceDirectory");
-            } else if (element.hasChild("sourceDirectory")) {
-                element.getSingleChild("sourceDirectory").setText(sourceDirectory);
+                buildElement.removeChild("sourceDirectory");
+            } else if (buildElement.hasSingleChild("sourceDirectory")) {
+                buildElement.getSingleChild("sourceDirectory").setText(sourceDirectory);
             } else {
-                element.appendChild(createElement("sourceDirectory", sourceDirectory));
+                buildElement.appendChild(createElement("sourceDirectory", sourceDirectory));
             }
         }
         return this;
@@ -158,11 +174,11 @@ public class Build {
         this.testOutputDirectory = testOutputDirectory;
         if (!isNew()) {
             if (testOutputDirectory == null) {
-                element.removeChild("testOutputDirectory");
-            } else if (element.hasChild("testOutputDirectory")) {
-                element.getSingleChild("testOutputDirectory").setText(testOutputDirectory);
+                buildElement.removeChild("testOutputDirectory");
+            } else if (buildElement.hasSingleChild("testOutputDirectory")) {
+                buildElement.getSingleChild("testOutputDirectory").setText(testOutputDirectory);
             } else {
-                element.appendChild(createElement("testOutputDirectory", testOutputDirectory));
+                buildElement.appendChild(createElement("testOutputDirectory", testOutputDirectory));
             }
         }
         return this;
@@ -175,21 +191,63 @@ public class Build {
         this.testSourceDirectory = testSourceDirectory;
         if (!isNew()) {
             if (testSourceDirectory == null) {
-                element.removeChild("testSourceDirectory");
-            } else if (element.hasChild("testSourceDirectory")) {
-                element.getSingleChild("testSourceDirectory").setText(testSourceDirectory);
+                buildElement.removeChild("testSourceDirectory");
+            } else if (buildElement.hasSingleChild("testSourceDirectory")) {
+                buildElement.getSingleChild("testSourceDirectory").setText(testSourceDirectory);
             } else {
-                element.appendChild(createElement("testSourceDirectory", testSourceDirectory));
+                buildElement.appendChild(createElement("testSourceDirectory", testSourceDirectory));
             }
         }
         return this;
     }
 
-    void removeFromXML() {
-        if (!isNew()) {
-            element.remove();
-            element = null;
+    /**
+     * Returns list of resource elements which contains information
+     * about where associated with project files should be included
+     */
+    public List<Resource> getResources() {
+        if (resources == null) {
+            return emptyList();
         }
+        return new ArrayList<>(resources);
+    }
+
+    /**
+     * Sets build resources, each resource contains information about where
+     * associated with project files should be included.
+     */
+    public Build setResources(Collection<? extends Resource> resources) {
+        if (resources == null || resources.isEmpty()) {
+            removeResources();
+        } else {
+            setResources0(resources);
+        }
+        return this;
+    }
+
+    public List<Plugin> getPlugins() {
+        if (plugins == null) {
+            return emptyList();
+        }
+        return new ArrayList<>(plugins);
+    }
+
+    //mapping getId() -> Plugin
+    public Map<String, Plugin> getPluginsAsMap() {
+        final Map<String, Plugin> pluginsMap = new HashMap<>();
+        for (Plugin plugin : plugins()) {
+            pluginsMap.put(plugin.getId(), plugin);
+        }
+        return pluginsMap;
+    }
+
+    public Build setPlugins() {
+        //TODO
+        return this;
+    }
+
+    private List<Plugin> plugins() {
+        return plugins == null ? plugins = new ArrayList<>() : null;
     }
 
     NewElement asXMLElement() {
@@ -209,10 +267,58 @@ public class Build {
         if (testOutputDirectory != null) {
             buildEl.appendChild(createElement("testOutputDirectory", testOutputDirectory));
         }
+        if (resources != null && !resources.isEmpty()) {
+            buildEl.appendChild(newResourcesElement(resources));
+        }
         return buildEl;
     }
 
     private boolean isNew() {
-        return element == null;
+        return buildElement == null;
+    }
+
+    private NewElement newResourcesElement(List<Resource> resources) {
+        final NewElement resourcesElement = createElement("resources");
+        for (Resource resource : resources) {
+            resourcesElement.appendChild(resource.asXMLElement());
+        }
+        return resourcesElement;
+    }
+
+    private void setResources0(Collection<? extends Resource> resources) {
+        this.resources = new ArrayList<>(resources);
+
+        if (isNew()) return;
+        //if resources element exists we should replace it children
+        //with new set of resources, otherwise create element for it
+        if (buildElement.hasSingleChild("resources")) {
+            //remove "resources" element children
+            final Element resourcesElement = buildElement.getSingleChild("resources");
+            for (Element resource : resourcesElement.getChildren()) {
+                resource.remove();
+            }
+            //append each new resource to "resources" element
+            for (Resource resource : resources) {
+                resourcesElement.appendChild(resource.asXMLElement());
+                resource.resourceElement = resourcesElement.getLastChild();
+            }
+        } else {
+            buildElement.appendChild(newResourcesElement(this.resources));
+        }
+    }
+
+    private void removeResources() {
+        if (!isNew()) {
+            buildElement.removeChild("resources");
+        }
+        this.resources = null;
+    }
+
+    private static class ResourceMapper implements ElementMapper<Resource> {
+
+        @Override
+        public Resource map(Element element) {
+            return new Resource(element);
+        }
     }
 }

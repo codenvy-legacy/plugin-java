@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ import static java.util.Objects.requireNonNull;
  * Order of elements in model based on
  * <a href="http://maven.apache.org/developers/conventions/code.html"> official recommended order</a>.
  * It means that each newly added element will be added
- * to the right place of delegated xml file - if it is possible to do so.
+ * to the right place of delegated xml file - when it is possible to do so.
  *
  * @author Eugene Voeovodin
  */
@@ -72,7 +73,14 @@ public final class Model {
     }
 
     public static Model readFrom(File file) throws IOException {
-        return fetchModel(XMLTree.from(file));
+        if (file.isDirectory()) {
+            return readFrom(new File(file, "pom.xml"));
+        }
+        return fetchModel(XMLTree.from(file)).setPomFile(file);
+    }
+
+    public static Model readFrom(Path path) throws IOException {
+        return fetchModel(XMLTree.from(path)).setPomFile(path.toFile());
     }
 
     public static Model readFrom(VirtualFile file) throws ServerException, ForbiddenException, IOException {
@@ -103,7 +111,8 @@ public final class Model {
     private DependencyManagement dependencyManagement;
     private Map<String, String>  properties;
     private List<String>         modules;
-    private List<Dependency>     dependencies;
+    private Dependencies         dependencies;
+    private File                 pom;
 
     private final XMLTree tree;
     private final Element root;
@@ -206,10 +215,7 @@ public final class Model {
     }
 
     public List<Dependency> getDependencies() {
-        if (dependencies == null) {
-            return emptyList();
-        }
-        return new ArrayList<>(dependencies);
+        return dependencies().get();
     }
 
     /**
@@ -218,9 +224,9 @@ public final class Model {
      */
     public Dependencies dependencies() {
         if (dependencies == null) {
-            dependencies = new ArrayList<>();
+            dependencies = new Dependencies(root);
         }
-        return new Dependencies(root, dependencies);
+        return dependencies;
     }
 
     /**
@@ -266,11 +272,14 @@ public final class Model {
         requireNonNull(newModule);
         modules().add(newModule);
         //add module to xml tree
-        if (root.hasChild("modules")) {
+        if (root.hasSingleChild("modules")) {
             root.getSingleChild("modules")
                 .appendChild(createElement("module", newModule));
         } else {
-            root.appendChild(createElement("modules", createElement("module", newModule)));
+            root.insertChild(createElement("modules", createElement("module", newModule)),
+                             beforeAnyOf("dependencyManagement",
+                                         "dependencies",
+                                         "build").or(inTheEnd()));
         }
         return this;
     }
@@ -281,8 +290,8 @@ public final class Model {
      * going to be changed with new one.
      */
     public Model addProperty(String key, String value) {
-        requireNonNull(key);
-        requireNonNull(value);
+        requireNonNull(key, "Property key should not be null");
+        requireNonNull(value, "Property value should not be null");
         addPropertyToXML(key, value);
         properties().put(key, value);
         return this;
@@ -293,7 +302,7 @@ public final class Model {
      * If last property was removed properties will be removed as well
      */
     public Model removeProperty(String key) {
-        if (properties().remove(requireNonNull(key)) != null) {
+        if (properties().remove(requireNonNull(key, "Property key should not be null")) != null) {
             removePropertyFromXML(key);
         }
         return this;
@@ -304,7 +313,7 @@ public final class Model {
      * If last module has been removed removes modules element as well
      */
     public Model removeModule(String module) {
-        if (modules().remove(requireNonNull(module))) {
+        if (modules().remove(requireNonNull(module, "Required not null module"))) {
             removeModuleFromXML(module);
         }
         return this;
@@ -314,14 +323,21 @@ public final class Model {
      * Sets build settings for project
      */
     public Model setBuild(Build newBuild) {
+        //disable current build
         if (build != null) {
-            build.removeFromXML();
+            build.buildElement = null;
         }
+        //set up new build
         build = newBuild;
-        if (newBuild != null) {
-            root.appendChild(newBuild.asXMLElement());
-            //associate tree element with newly added build
-            build.element = root.getSingleChild("build");
+        if (build == null) {
+            root.removeChild("build");
+        } else if (root.hasSingleChild("build")) {
+            //replace build
+            build.buildElement = root.getSingleChild("build").replaceWith(build.asXMLElement());
+        } else {
+            //add build
+            root.appendChild(build.asXMLElement());
+            build.buildElement = root.getSingleChild("build");
         }
         return this;
     }
@@ -334,14 +350,21 @@ public final class Model {
      * The location is given as a group ID, artifact ID and version.
      */
     public Model setParent(Parent newParent) {
+        //disable current parent
         if (parent != null) {
-            parent.removeFromXML();
+            parent.parentElement = null;
         }
+        //set up new parent
         parent = newParent;
-        if (newParent != null) {
-            //add parent to xml tree
-            root.insertChild(newParent.asXMLElement(), after("modelVersion").or(inTheBegin()));
-            parent.element = root.getSingleChild("parent");
+        if (parent == null) {
+            root.removeChild("parent");
+        } else if (root.hasSingleChild("parent")) {
+            //replace parent
+            parent.parentElement = root.getSingleChild("parent").replaceWith(parent.asXMLElement());
+        } else {
+            //add parent
+            root.insertChild(parent.asXMLElement(), after("modelVersion").or(inTheBegin()));
+            parent.parentElement = root.getSingleChild("parent");
         }
         return this;
     }
@@ -359,16 +382,20 @@ public final class Model {
      * already specified.
      */
     public Model setDependencyManagement(DependencyManagement newDM) {
+        //disable current dependency management
         if (dependencyManagement != null) {
-            dependencyManagement.remove();
+            dependencyManagement.dmElement = null;
         }
+        //set up new dependency management
         dependencyManagement = newDM;
-        if (newDM != null) {
-            //insert new dependency management to tree
-            root.insertChild(newDM.asXMLElement(),
+        if (dependencyManagement == null) {
+            root.removeChild("dependencyManagement");
+        } else if (root.hasSingleChild("dependencyManagement")) {
+            dependencyManagement.dmElement = root.getSingleChild("dependencyManagement").replaceWith(newDM.asXMLElement());
+        } else {
+            root.insertChild(dependencyManagement.asXMLElement(),
                              beforeAnyOf("dependencies", "build").or(inTheEnd()));
-            //associate tree element with newly added dependency management
-            dependencyManagement.element = root.getSingleChild("dependencyManagement");
+            dependencyManagement.dmElement = root.getSingleChild("dependencyManagement");
         }
         return this;
     }
@@ -380,22 +407,33 @@ public final class Model {
      * If new modules list is an empty removes modules element from xml
      */
     public Model setModules(Collection<String> modules) {
-        requireNonNull(modules);
+        if (modules == null || modules.isEmpty()) {
+            root.removeChild("modules");
+            this.modules = null;
+            return this;
+        }
         this.modules = new ArrayList<>(modules);
-        //remove modules from tree if exist
-        root.removeChild("modules");
-        if (!modules.isEmpty()) {
-            //insert modules to xml tree
+        //if modules element exists we should replace it children
+        //with new set of modules, otherwise create element for it
+        if (root.hasSingleChild("modules")) {
+            final Element modulesElement = root.getSingleChild("modules");
+            //remove all modules
+            for (Element module : modulesElement.getChildren()) {
+                module.remove();
+            }
+            //append each new module to "modules" element
+            for (String module : modules) {
+                modulesElement.appendChild(createElement("module", module));
+            }
+        } else {
             final NewElement newModules = createElement("modules");
             for (String module : modules) {
                 newModules.appendChild(createElement("module", module));
             }
-            //insert new modules to tree
-            root.insertChild(newModules,
-                             beforeAnyOf("properties",
-                                         "dependencyManagement",
-                                         "dependencies",
-                                         "build").or(inTheEnd()));
+            root.insertChild(newModules, beforeAnyOf("properties",
+                                                     "dependencyManagement",
+                                                     "dependencies",
+                                                     "build").or(inTheEnd()));
         }
         return this;
     }
@@ -407,16 +445,28 @@ public final class Model {
      * If new modules list is an empty removes properties element from xml
      */
     public Model setProperties(Map<String, String> properties) {
-        this.properties = new HashMap<>(requireNonNull(properties));
-        //remove properties from tree if exist
-        root.removeChild("properties");
-        //set properties to xml tree
-        if (!properties.isEmpty()) {
+        if (properties == null || properties.isEmpty()) {
+            root.removeChild("properties");
+            this.properties = null;
+            return this;
+        }
+        this.properties = new HashMap<>(properties);
+        //if properties element exists we should replace it children
+        //with new set of properties, otherwise create element for it
+        if (root.hasSingleChild("properties")) {
+            final Element propertiesElement = root.getSingleChild("properties");
+            for (Element property : propertiesElement.getChildren()) {
+                property.remove();
+            }
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                propertiesElement.appendChild(createElement(property.getKey(), property.getValue()));
+            }
+        } else {
             final NewElement newProperties = createElement("properties");
             for (Map.Entry<String, String> property : properties.entrySet()) {
                 newProperties.appendChild(createElement(property.getKey(), property.getValue()));
             }
-            //insert new properties to tree
+            //insert new properties to xml
             root.insertChild(newProperties,
                              beforeAnyOf("dependencyManagement",
                                          "dependencies",
@@ -439,7 +489,7 @@ public final class Model {
         this.artifactId = artifactId;
         if (artifactId == null) {
             root.removeChild("artifactId");
-        } else if (!root.hasChild("artifactId")) {
+        } else if (!root.hasSingleChild("artifactId")) {
             root.insertChild(createElement("artifactId", artifactId),
                              afterAnyOf("groupId",
                                         "parent",
@@ -467,7 +517,7 @@ public final class Model {
         this.description = description;
         if (description == null) {
             root.removeChild("description");
-        } else if (!root.hasChild("description")) {
+        } else if (!root.hasSingleChild("description")) {
             root.insertChild(createElement("description", description),
                              afterAnyOf("name",
                                         "version",
@@ -491,7 +541,7 @@ public final class Model {
         this.groupId = groupId;
         if (groupId == null) {
             root.removeChild("groupId");
-        } else if (!root.hasChild("groupId")) {
+        } else if (!root.hasSingleChild("groupId")) {
             root.insertChild(createElement("groupId", groupId),
                              afterAnyOf("parent", "modelVersion").or(inTheBegin()));
         } else {
@@ -508,7 +558,7 @@ public final class Model {
         this.version = version;
         if (version == null) {
             root.removeChild("version");
-        } else if (!root.hasChild("version")) {
+        } else if (!root.hasSingleChild("version")) {
             root.insertChild(createElement("version", version),
                              afterAnyOf("artifactId",
                                         "groupId",
@@ -521,14 +571,14 @@ public final class Model {
     }
 
     /**
-     * Sets declares to which version of project descriptor this POM conforms.
+     * Declares to which version of project descriptor this POM conforms.
      * If new modelVersion is {@code null} removes modelVersion element from xml
      */
     public Model setModelVersion(String modelVersion) {
         this.modelVersion = modelVersion;
         if (modelVersion == null) {
             root.removeChild("modelVersion");
-        } else if (!root.hasChild("modelVersion")) {
+        } else if (!root.hasSingleChild("modelVersion")) {
             root.insertChild(createElement("modelVersion", modelVersion), inTheBegin());
         } else {
             tree.updateText("/project/modelVersion", modelVersion);
@@ -544,7 +594,7 @@ public final class Model {
         this.name = name;
         if (name == null) {
             root.removeChild("name");
-        } else if (!root.hasChild("name")) {
+        } else if (!root.hasSingleChild("name")) {
             root.insertChild(createElement("name", name),
                              afterAnyOf("packaging",
                                         "version",
@@ -575,7 +625,7 @@ public final class Model {
         this.packaging = packaging;
         if (packaging == null) {
             root.removeChild("packaging");
-        } else if (!root.hasChild("packaging")) {
+        } else if (!root.hasSingleChild("packaging")) {
             root.insertChild(createElement("packaging", packaging),
                              afterAnyOf("version",
                                         "artifactId",
@@ -585,6 +635,17 @@ public final class Model {
         } else {
             tree.updateText("/project/packaging", packaging);
         }
+        return this;
+    }
+
+    /**
+     * Directly sets pom file to model.
+     *
+     * @param pom
+     *         pom file
+     */
+    public Model setPomFile(File pom) {
+        this.pom = pom;
         return this;
     }
 
@@ -599,6 +660,28 @@ public final class Model {
                packaging +
                ':' +
                (version == null ? "[inherited]" : version);
+    }
+
+    /**
+     * Returns model pom file if model has been created
+     * with {@link #readFrom(Path)} or {@link #readFrom(File)} methods.
+     * <p/>
+     * This method doesn't guarantee to return actual model pom file
+     * because it may be set directly with {@link #setPomFile(File)}
+     *
+     * @return model pom file or {@code null} if it was not associated yet
+     */
+    public File getPomFile() {
+        return pom;
+    }
+
+    /**
+     * Returns pom file parent if model is associated with any pom file.
+     *
+     * @return pom file parent or {@code null} if model has not been associated with any pom file
+     */
+    public File getProjectDirectory() {
+        return pom == null ? null : pom.getParentFile();
     }
 
     /**
@@ -636,6 +719,16 @@ public final class Model {
         file.updateContent(new ByteArrayInputStream(tree.getBytes()), null);
     }
 
+    /**
+     * Updates associated with model pom file content
+     */
+    public void save() throws IOException {
+        if (pom == null) {
+            throw new IllegalStateException("Model is not associated with any pom file");
+        }
+        writeTo(pom);
+    }
+
     @Override
     public String toString() {
         return getId();
@@ -655,7 +748,10 @@ public final class Model {
                 .getSingleChild(key)
                 .setText(value);
         } else if (properties.isEmpty()) {
-            root.appendChild(createElement("properties", createElement(key, value)));
+            root.insertChild(createElement("properties", createElement(key, value)),
+                             beforeAnyOf("dependencyManagement",
+                                         "dependencies",
+                                         "build").or(inTheEnd()));
         } else {
             root.getSingleChild("properties").appendChild(createElement(key, value));
         }
@@ -677,8 +773,7 @@ public final class Model {
         if (properties.isEmpty()) {
             root.removeChild("properties");
         } else {
-            root.getSingleChild("properties")
-                .removeChild(key);
+            root.getSingleChild("properties").removeChild(key);
         }
     }
 
@@ -705,7 +800,8 @@ public final class Model {
             model.build = new Build(root.getSingleChild("build"));
         }
         if (root.hasChild("dependencies")) {
-            model.dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_MAPPER);
+            final List<Dependency> dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_MAPPER);
+            model.dependencies = new Dependencies(root, dependencies);
         }
         if (root.hasChild("modules")) {
             model.modules = tree.getElements("/project/modules/module", TO_MODULE_MAPPER);

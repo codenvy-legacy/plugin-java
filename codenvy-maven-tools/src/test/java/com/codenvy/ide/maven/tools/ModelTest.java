@@ -199,10 +199,10 @@ public class ModelTest extends ModelTestBase {
              .setName(null)
              .setDescription(null)
              .setDependencyManagement(null)
-             .setModules(Collections.<String>emptyList())
-             .setProperties(Collections.<String, String>emptyMap())
+             .setModules(null)
+             .setProperties(null)
              .dependencies()
-             .set(Collections.<Dependency>emptyList());
+             .set(null);
 
         model.writeTo(pom);
 

@@ -108,7 +108,7 @@ public class ModelDependenciesTest extends ModelTestBase {
                    "</project>");
         final Model model = Model.readFrom(pom);
 
-        model.dependencies().remove();
+        model.dependencies().remove(model.dependencies().first());
 
         model.writeTo(pom);
 
@@ -119,93 +119,6 @@ public class ModelDependenciesTest extends ModelTestBase {
                                 "    <artifactId>artifact-id</artifactId>\n" +
                                 "    <groupId>group-id</groupId>\n" +
                                 "    <version>x.x.x</version>\n" +
-                                "</project>");
-    }
-
-    @Test
-    public void shouldBeAbleToSelectDependenciesByCondition() throws Exception {
-        final File pom = getTestPomFile();
-        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                   "<project>\n" +
-                   "    <dependencies>\n" +
-                   "        <dependency>\n" +
-                   "            <groupId>group1</groupId>\n" +
-                   "            <artifactId>artifact1</artifactId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "            <scope>test</scope>\n" +
-                   "        </dependency>\n" +
-                   "        <dependency>\n" +
-                   "            <groupId>group1</groupId>\n" +
-                   "            <artifactId>artifact2</artifactId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "            <scope>test</scope>\n" +
-                   "        </dependency>\n" +
-                   "        <dependency>\n" +
-                   "            <groupId>group2</groupId>\n" +
-                   "            <artifactId>artifact1</artifactId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "            <scope>test</scope>\n" +
-                   "        </dependency>\n" +
-                   "        <dependency>\n" +
-                   "            <groupId>group1</groupId>\n" +
-                   "            <artifactId>artifact3</artifactId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "        </dependency>\n" +
-                   "    </dependencies>\n" +
-                   "</project>");
-        final Model model = Model.readFrom(pom);
-
-        final Dependencies dependencies = model.dependencies()
-                                               .byGroupId("group1")
-                                               .byScope("test");
-
-        assertEquals(dependencies.first().getArtifactId(), "artifact1");
-        assertEquals(dependencies.last().getArtifactId(), "artifact2");
-    }
-
-    @Test
-    public void shouldBeAbleToRemoveSelectedDependencies() throws Exception {
-        final File pom = getTestPomFile();
-        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                   "<project>\n" +
-                   "    <dependencies>\n" +
-                   "        <dependency>\n" +
-                   "            <artifactId>junit</artifactId>\n" +
-                   "            <groupId>org.junit</groupId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "            <scope>test</scope>\n" +
-                   "        </dependency>\n" +
-                   "        <dependency>\n" +
-                   "            <groupId>org.testng</groupId>\n" +
-                   "            <artifactId>testng</artifactId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "            <scope>test</scope>\n" +
-                   "        </dependency>\n" +
-                   "        <dependency>\n" +
-                   "            <groupId>test-group-id</groupId>\n" +
-                   "            <artifactId>test-artifact-id</artifactId>\n" +
-                   "            <version>x.x.x</version>\n" +
-                   "        </dependency>\n" +
-                   "    </dependencies>\n" +
-                   "</project>");
-        final Model model = Model.readFrom(pom);
-
-        model.dependencies()
-             .byScope("test")
-             .remove();
-
-        model.writeTo(pom);
-
-        assertEquals(model.getDependencies().size(), 1);
-        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                "<project>\n" +
-                                "    <dependencies>\n" +
-                                "        <dependency>\n" +
-                                "            <groupId>test-group-id</groupId>\n" +
-                                "            <artifactId>test-artifact-id</artifactId>\n" +
-                                "            <version>x.x.x</version>\n" +
-                                "        </dependency>\n" +
-                                "    </dependencies>\n" +
                                 "</project>");
     }
 

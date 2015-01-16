@@ -11,34 +11,44 @@
 package com.codenvy.ide.maven.tools;
 
 import com.codenvy.commons.xml.Element;
+import com.codenvy.commons.xml.NewElement;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Helps to manage dependencies.
+ * Describes set of dependencies
  *
  * @author Eugene Voevodin
  */
 public class Dependencies {
 
-    public interface DependencyFilter {
-        boolean accept(Dependency dependency);
+    private List<Dependency> dependencies;
+
+    Element dependenciesParent;
+
+    Dependencies(Element dependenciesParent) {
+        this(dependenciesParent, new ArrayList<Dependency>());
     }
 
-    Element element;
-
-    private LinkedList<Dependency> selected;
-    private List<Dependency>       dependencies;
-
-    Dependencies(Element element, List<Dependency> dependencies) {
+    Dependencies(Element dependenciesParent, List<Dependency> dependencies) {
+        this.dependenciesParent = dependenciesParent;
         this.dependencies = dependencies;
-        this.element = element;
+    }
+
+    /**
+     * Returns list of dependencies
+     */
+    public List<Dependency> get() {
+        return new ArrayList<>(dependencies());
+    }
+
+    private List<Dependency> dependencies() {
+        return dependencies == null ? dependencies = new ArrayList<>() : dependencies;
     }
 
     /**
@@ -50,7 +60,7 @@ public class Dependencies {
      *         new dependency which will be added to the end of dependencies list
      */
     public Dependencies add(Dependency dependency) {
-        dependencies.add(requireNonNull(dependency));
+        dependencies.add(requireNonNull(dependency, "Required not null dependency"));
         if (!isNew()) {
             addDependencyToXML(dependency);
         }
@@ -64,7 +74,7 @@ public class Dependencies {
      *         dependency which should be removed
      */
     public Dependencies remove(Dependency dependency) {
-        if (dependencies.remove(requireNonNull(dependency)) && !isNew()) {
+        if (dependencies().remove(requireNonNull(dependency, "Required not null dependency")) && !isNew()) {
             removeDependencyFromXML(dependency);
         }
         return this;
@@ -80,152 +90,82 @@ public class Dependencies {
      * See <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">the
      * dependency mechanism</a> for more information.
      */
-    public Dependencies set(Collection<Dependency> newDependencies) {
-        requireNonNull(newDependencies);
-        if (isNew()) {
-            dependencies.clear();
-            dependencies.addAll(newDependencies);
-            return this;
-        }
-        //removing all dependencies from xml tree
-        removeDependenciesFromXML();
-        if (!newDependencies.isEmpty()) {
-            //add and associate each new dependency with element in tree
-            dependencies.clear();
-            for (Dependency newDependency : newDependencies) {
-                add(newDependency);
-            }
+    public Dependencies set(Collection<? extends Dependency> newDependencies) {
+        if (newDependencies == null || newDependencies.isEmpty()) {
+            removeDependencies();
+        } else if (isNew()) {
+            dependencies = new ArrayList<>(newDependencies);
+        } else {
+            setDependencies(newDependencies);
         }
         return this;
     }
 
-    /**
-     * Filters dependencies by artifactId.
-     * <p/>
-     * This method doesn't affect existing dependencies!
-     */
-    public Dependencies byArtifactId(final String artifactId) {
-        return filter(new DependencyFilter() {
-            @Override
-            public boolean accept(Dependency dependency) {
-                return artifactId.equals(dependency.getArtifactId());
-            }
-        });
-    }
-
-    /**
-     * Filters dependencies by groupId.
-     * <p/>
-     * This method doesn't affect existing dependencies!
-     */
-    public Dependencies byGroupId(final String groupId) {
-        return filter(new DependencyFilter() {
-            @Override
-            public boolean accept(Dependency dependency) {
-                return groupId.equals(dependency.getGroupId());
-            }
-        });
-    }
-
-    /**
-     * Filters dependencies by scope.
-     * <p/>
-     * This method doesn't affect existing dependencies!
-     */
-    public Dependencies byScope(final String scope) {
-        return filter(new DependencyFilter() {
-            @Override
-            public boolean accept(Dependency dependency) {
-                return scope.equals(dependency.getScope());
-            }
-        });
-    }
-
-    /**
-     * Filters dependencies by classifier.
-     * <p/>
-     * This method doesn't affect existing dependencies!
-     */
-    public Dependencies byClassifier(final String classifier) {
-        return filter(new DependencyFilter() {
-            @Override
-            public boolean accept(Dependency dependency) {
-                return classifier.equals(dependency.getClassifier());
-            }
-        });
-    }
-
-    /**
-     * Filters dependencies by given filter.
-     * <p/>
-     * This method doesn't affect existing dependencies!
-     */
-    public Dependencies filter(DependencyFilter filter) {
-        for (Iterator<Dependency> depIt = selected().iterator(); depIt.hasNext(); ) {
-            if (!filter.accept(depIt.next())) {
-                depIt.remove();
-            }
+    private void removeDependencies() {
+        if (!isNew()) {
+            dependenciesParent.removeChild("dependencies");
         }
-        return this;
+        this.dependencies = null;
     }
 
     /**
      * Returns selected dependencies or {@code null} if nothing was selected
      */
     public Dependency first() {
-        return selected().isEmpty() ? null : selected.getFirst();
+        return dependencies().isEmpty() ? null : dependencies.get(0);
     }
 
     /**
      * Returns last selected dependency or {@code null} if nothing was selected
      */
     public Dependency last() {
-        return selected().isEmpty() ? null : selected.getLast();
+        return dependencies().isEmpty() ? null : dependencies.get(dependencies.size() - 1);
     }
 
-    /**
-     * Removes selected dependencies from source list of dependencies
-     */
-    public void remove() {
-        for (Dependency dependency : selected()) {
-            remove(dependency);
-        }
+    void remove() {
+        dependencies = null;
     }
 
-    private LinkedList<Dependency> selected() {
-        return selected == null ? selected = new LinkedList<>(dependencies) : selected;
-    }
-
-    private void removeDependenciesFromXML() {
-        if (dependencies == null) return;
-        //remove element references
+    NewElement asXMLElement() {
+        final NewElement newDependencies = createElement("dependencies");
         for (Dependency dependency : dependencies) {
-            dependency.element = null;
+            newDependencies.appendChild(dependency.asXMLElement());
         }
-        //remove dependencies element from tree
-        element.removeChild("dependencies");
+        return newDependencies;
     }
 
     private void addDependencyToXML(Dependency dependency) {
-        if (element.hasChild("dependencies")) {
-            element.getSingleChild("dependencies")
-                   .appendChild(dependency.asXMLElement());
+        if (dependenciesParent.hasSingleChild("dependencies")) {
+            dependenciesParent.getSingleChild("dependencies")
+                              .appendChild(dependency.asXMLElement());
         } else {
-            element.appendChild(createElement("dependencies", dependency.asXMLElement()));
+            dependenciesParent.appendChild(createElement("dependencies", dependency.asXMLElement()));
         }
-        dependency.element = element.getSingleChild("dependencies").getLastChild();
+        dependency.dependencyElement = dependenciesParent.getSingleChild("dependencies").getLastChild();
     }
 
     private void removeDependencyFromXML(Dependency dependency) {
         if (dependencies.isEmpty()) {
-            element.removeChild("dependencies");
-            dependency.element = null;
+            dependenciesParent.removeChild("dependencies");
+            dependency.dependencyElement = null;
         } else {
             dependency.remove();
         }
     }
 
+    private void setDependencies(Collection<? extends Dependency> newDependencies) {
+        //removing all dependencies from xml tree
+        for (Dependency dependency : dependencies) {
+            dependency.remove();
+        }
+        //add and associate each new dependency with element in tree
+        dependencies = new ArrayList<>(newDependencies.size());
+        for (Dependency newDependency : newDependencies) {
+            add(newDependency);
+        }
+    }
+
     private boolean isNew() {
-        return element == null;
+        return dependenciesParent == null;
     }
 }

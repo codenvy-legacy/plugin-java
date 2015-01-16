@@ -13,9 +13,16 @@ package com.codenvy.ide.maven.tools;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * @author Eugene Voevodin
@@ -145,6 +152,11 @@ public class ModelBuildTest extends ModelTestBase {
                    "        <outputDirectory>output/path</outputDirectory>\n" +
                    "        <testOutputDirectory>test/output/path</testOutputDirectory>\n" +
                    "        <scriptSourceDirectory>script/source/path</scriptSourceDirectory>\n" +
+                   "        <resources>\n" +
+                   "            <resource>\n" +
+                   "                 <directory>${basedir}/src/main/temp</directory>\n" +
+                   "            </resource>\n" +
+                   "         </resources>\n" +
                    "    </build>\n" +
                    "</project>");
         final Model model = Model.readFrom(pom);
@@ -154,7 +166,8 @@ public class ModelBuildTest extends ModelTestBase {
              .setSourceDirectory(null)
              .setScriptSourceDirectory(null)
              .setTestOutputDirectory(null)
-             .setTestSourceDirectory(null);
+             .setTestSourceDirectory(null)
+             .setResources(null);
 
         model.writeTo(pom);
 
@@ -164,5 +177,95 @@ public class ModelBuildTest extends ModelTestBase {
                                 "    <build>\n" +
                                 "    </build>\n" +
                                 "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToGetBuildResources() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <resources>\n" +
+                   "             <resource>\n" +
+                   "                 <targetPath>META-INF/temp</targetPath>\n" +
+                   "                 <filtering>true</filtering>\n" +
+                   "                 <directory>${basedir}/src/main/temp</directory>\n" +
+                   "                 <includes>\n" +
+                   "                     <include>configuration.xml</include>\n" +
+                   "                 </includes>\n" +
+                   "                 <excludes>\n" +
+                   "                     <exclude>**/*.properties</exclude>\n" +
+                   "                 </excludes>\n" +
+                   "            </resource>\n" +
+                   "         </resources>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final List<Resource> resources = model.getBuild().getResources();
+
+        assertEquals(resources.size(), 1);
+        final Resource resource = resources.get(0);
+        assertEquals(resource.getTargetPath(), "META-INF/temp");
+        assertTrue(resource.isFiltering());
+        assertEquals(resource.getDirectory(), "${basedir}/src/main/temp");
+        assertEquals(resource.getIncludes(), asList("configuration.xml"));
+        assertEquals(resource.getExcludes(), asList("**/*.properties"));
+    }
+
+    @Test
+    public void shouldBeAbleToAddResourcesToBuild() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <resources>\n" +
+                   "            <resource>\n" +
+                   "                 <directory>${basedir}/src/main/temp</directory>\n" +
+                   "            </resource>\n" +
+                   "         </resources>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final List<Resource> resources = new ArrayList<>(model.getBuild().getResources());
+
+        resources.add(new Resource().setDirectory("${basedir}/src/main/fake"));
+
+        model.getBuild()
+             .setResources(resources);
+        model.save();
+
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <resources>\n" +
+                                "            <resource>\n" +
+                                "                <directory>${basedir}/src/main/temp</directory>\n" +
+                                "            </resource>\n" +
+                                "            <resource>\n" +
+                                "                <directory>${basedir}/src/main/fake</directory>\n" +
+                                "            </resource>\n" +
+                                "         </resources>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        assertEquals(model.getBuild().getResources(), resources);
+    }
+
+    @Test
+    public void shouldBeAbleToUpdateResources() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <resources>\n" +
+                   "            <resource>\n" +
+                   "                 <directory>${basedir}/src/main/temp</directory>\n" +
+                   "            </resource>\n" +
+                   "         </resources>\n" +
+                   "    </build>\n" +
+                   "</project>");
+
+
     }
 }

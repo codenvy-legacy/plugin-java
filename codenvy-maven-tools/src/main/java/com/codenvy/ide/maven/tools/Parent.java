@@ -18,7 +18,6 @@ import static com.codenvy.commons.xml.XMLTreeLocation.after;
 import static com.codenvy.commons.xml.XMLTreeLocation.before;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheEnd;
-import static java.util.Objects.requireNonNull;
 
 /**
  * The {@literal <parent>} element contains information required to
@@ -41,19 +40,19 @@ public class Parent {
     private String version;
     private String relativePath;
 
-    Element element;
+    Element parentElement;
 
     public Parent() {
     }
 
     public Parent(String groupId, String artifactId, String version) {
-        this.groupId = requireNonNull(groupId);
-        this.artifactId = requireNonNull(artifactId);
-        this.version = requireNonNull(version);
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
     }
 
     Parent(Element element) {
-        this.element = element;
+        parentElement = element;
         groupId = element.getChildText("groupId");
         artifactId = element.getChildText("artifactId");
         version = element.getChildText("version");
@@ -91,12 +90,11 @@ public class Parent {
         this.artifactId = artifactId;
         if (!isNew()) {
             if (artifactId == null) {
-                element.removeChild("artifactId");
-            } else if (element.hasChild("artifactId")) {
-                element.getSingleChild("artifactId").setText(artifactId);
+                parentElement.removeChild("artifactId");
+            } else if (parentElement.hasSingleChild("artifactId")) {
+                parentElement.getSingleChild("artifactId").setText(artifactId);
             } else {
-                element.insertChild(createElement("artifactId", artifactId),
-                                    after("groupId").or(inTheBegin()));
+                parentElement.insertChild(createElement("artifactId", artifactId), after("groupId").or(inTheBegin()));
             }
         }
         return this;
@@ -109,11 +107,11 @@ public class Parent {
         this.groupId = groupId;
         if (!isNew()) {
             if (groupId == null) {
-                element.removeChild("groupId");
-            } else if (element.hasChild("groupId")) {
-                element.getSingleChild("groupId").setText(groupId);
+                parentElement.removeChild("groupId");
+            } else if (parentElement.hasSingleChild("groupId")) {
+                parentElement.getSingleChild("groupId").setText(groupId);
             } else {
-                element.insertChild(createElement("groupId", groupId), inTheBegin());
+                parentElement.insertChild(createElement("groupId", groupId), inTheBegin());
             }
         }
         return this;
@@ -126,11 +124,11 @@ public class Parent {
         this.version = version;
         if (!isNew()) {
             if (version == null) {
-                element.removeChild("version");
-            } else if (element.hasChild("version")) {
-                element.getSingleChild("version").setText(version);
+                parentElement.removeChild("version");
+            } else if (parentElement.hasSingleChild("version")) {
+                parentElement.getSingleChild("version").setText(version);
             } else {
-                element.insertChild(createElement("version", version), before("relativePath").or(inTheEnd()));
+                parentElement.insertChild(createElement("version", version), before("relativePath").or(inTheEnd()));
             }
         }
         return this;
@@ -143,11 +141,11 @@ public class Parent {
         this.relativePath = relativePath;
         if (!isNew()) {
             if (relativePath == null) {
-                element.removeChild("relativePath");
-            } else if (element.hasChild("relativePath")) {
-                element.getSingleChild("relativePath").setText(relativePath);
+                parentElement.removeChild("relativePath");
+            } else if (parentElement.hasSingleChild("relativePath")) {
+                parentElement.getSingleChild("relativePath").setText(relativePath);
             } else {
-                element.appendChild(createElement("relativePath", relativePath));
+                parentElement.appendChild(createElement("relativePath", relativePath));
             }
         }
         return this;
@@ -163,13 +161,6 @@ public class Parent {
     @Override
     public String toString() {
         return getId();
-    }
-
-    void removeFromXML() {
-        if (!isNew()) {
-            element.remove();
-            element = null;
-        }
     }
 
     NewElement asXMLElement() {
@@ -190,6 +181,6 @@ public class Parent {
     }
 
     private boolean isNew() {
-        return element == null;
+        return parentElement == null;
     }
 }
