@@ -13,13 +13,9 @@ package com.codenvy.ide.maven.tools;
 import com.codenvy.commons.xml.Element;
 import com.codenvy.commons.xml.NewElement;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
-import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Section for management of default dependency information for use in a group of POMs.
@@ -28,50 +24,38 @@ import static java.util.Objects.requireNonNull;
  */
 public class DependencyManagement {
 
-    private List<Dependency> dependencies;
+    private Dependencies dependencies;
 
-    Element element;
+    Element dmElement;
 
     public DependencyManagement() {
-        dependencies = new ArrayList<>();
     }
 
     DependencyManagement(Element element, List<Dependency> dependencies) {
-        this.element = element;
-        this.dependencies = dependencies;
+        this.dmElement = element;
+        this.dependencies = new Dependencies(element, dependencies);
     }
 
     public List<Dependency> getDependencies() {
-        if (dependencies == null) {
-            return emptyList();
-        }
-        return new ArrayList<>(dependencies);
+        return dependencies().get();
     }
 
     public Dependencies dependencies() {
         if (dependencies == null) {
-            dependencies = new ArrayList<>();
+            dependencies = new Dependencies(dmElement);
         }
-        return new Dependencies(element, dependencies);
+        return dependencies;
     }
 
+    //TODO
     void remove() {
-        if (element != null) {
-            element.remove();
-            //disable of using dependencies
-            for (Dependency dependency : dependencies) {
-                dependency.element = null;
-            }
-            element = null;
+        if (dmElement != null) {
+            dmElement.remove();
+            dependencies = null;
         }
     }
 
     NewElement asXMLElement() {
-        final NewElement newDM = createElement("dependencyManagement");
-        final NewElement newDependencies = createElement("dependencies");
-        for (Dependency dependency : dependencies) {
-            newDependencies.appendChild(dependency.asXMLElement());
-        }
-        return newDM.appendChild(newDependencies);
+        return createElement("dependencyManagement", dependencies.asXMLElement());
     }
 }

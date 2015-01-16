@@ -57,7 +57,7 @@ public class Dependency {
     private String          optional;
     private List<Exclusion> exclusions;
 
-    Element element;
+    Element dependencyElement;
 
     public Dependency(String groupId, String artifactId, String version) {
         this.groupId = groupId;
@@ -69,7 +69,7 @@ public class Dependency {
     }
 
     Dependency(Element element) {
-        this.element = element;
+        dependencyElement = element;
         artifactId = element.getChildText("artifactId");
         groupId = element.getChildText("groupId");
         version = element.getChildText("version");
@@ -77,10 +77,8 @@ public class Dependency {
         optional = element.getChildText("optional");
         scope = element.getChildText("scope");
         type = element.getChildText("type");
-        //if dependency has exclusions fetch it!
-        if (element.hasChild("exclusions")) {
-            exclusions = element.getSingleChild("exclusions")
-                                .getChildren(TO_EXCLUSION_MAPPER);
+        if (element.hasSingleChild("exclusions")) {
+            exclusions = element.getSingleChild("exclusions").getChildren(TO_EXCLUSION_MAPPER);
         }
     }
 
@@ -109,7 +107,7 @@ public class Dependency {
      */
     public List<Exclusion> getExclusions() {
         if (exclusions == null) {
-            emptyList();
+            return emptyList();
         }
         return new ArrayList<>(exclusions);
     }
@@ -184,17 +182,16 @@ public class Dependency {
      * Adds new exclusion to the list of dependency exclusions
      */
     public Dependency addExclusion(Exclusion exclusion) {
-        requireNonNull(exclusion);
+        requireNonNull(exclusion, "Required not null exclusion");
         exclusions().add(exclusion);
         //add exclusion to xml tree
         if (!isNew()) {
-            if (element.hasChild("exclusions")) {
-                element.getSingleChild("exclusions")
-                       .appendChild(exclusion.asXMLElement());
+            if (dependencyElement.hasSingleChild("exclusions")) {
+                dependencyElement.getSingleChild("exclusions").appendChild(exclusion.asXMLElement());
             } else {
-                element.appendChild(createElement("exclusions", exclusion.asXMLElement()));
+                dependencyElement.appendChild(createElement("exclusions", exclusion.asXMLElement()));
             }
-            exclusion.element = element.getSingleChild("exclusions").getLastChild();
+            exclusion.exclusionElement = dependencyElement.getSingleChild("exclusions").getLastChild();
         }
         return this;
     }
@@ -204,11 +201,12 @@ public class Dependency {
      * If last exclusion has been removed removes exclusions element as well.
      */
     public Dependency removeExclusion(Exclusion exclusion) {
-        requireNonNull(exclusion);
+        requireNonNull(exclusion, "Required not null exclusion");
         exclusions().remove(exclusion);
-        //remove dependency from xml tree
+        //remove dependency from xml
         if (!isNew() && exclusions.isEmpty()) {
-            element.removeChild("exclusions");
+            dependencyElement.removeChild("exclusions");
+            exclusion.exclusionElement = null;
         } else {
             exclusion.remove();
         }
@@ -219,28 +217,15 @@ public class Dependency {
      * Sets list of artifacts that should be excluded from this dependency's
      * artifact list when it comes to calculating transitive dependencies.
      */
-    public Dependency setExclusions(Collection<Exclusion> newExclusions) {
-        if (isNew()) {
-            exclusions = new ArrayList<>(newExclusions);
-            return this;
-        }
-        removeExclusions();
-        //use addExclusion to add and associate each new exclusion with tree element
-        exclusions = new ArrayList<>(newExclusions.size());
-        for (Exclusion exclusion : newExclusions) {
-            addExclusion(exclusion);
+    public Dependency setExclusions(Collection<? extends Exclusion> exclusions) {
+        if (exclusions == null || exclusions.isEmpty()) {
+            removeExclusions();
+        } else if (isNew()) {
+            this.exclusions = new ArrayList<>(exclusions);
+        } else {
+            setExclusions0(exclusions);
         }
         return this;
-    }
-
-    private void removeExclusions() {
-        if (exclusions == null) return;
-        //remove element references
-        for (Exclusion exclusion : exclusions) {
-            exclusion.element = null;
-        }
-        //remove exclusions element from tree
-        element.removeChild("exclusions");
     }
 
     /**
@@ -248,12 +233,14 @@ public class Dependency {
      * the project group, e.g. {@code maven-artifact}.
      */
     public Dependency setArtifactId(String artifactId) {
-        this.artifactId = requireNonNull(artifactId);
+        this.artifactId = artifactId;
         if (!isNew()) {
-            if (element.hasChild("artifactId")) {
-                element.getSingleChild("artifactId").setText(artifactId);
+            if (artifactId == null) {
+                dependencyElement.removeChild("artifactId");
+            } else if (dependencyElement.hasSingleChild("artifactId")) {
+                dependencyElement.getSingleChild("artifactId").setText(artifactId);
             } else {
-                element.insertChild(createElement("artifactId", artifactId), after("groupId").or(inTheBegin()));
+                dependencyElement.insertChild(createElement("artifactId", artifactId), after("groupId").or(inTheBegin()));
             }
         }
         return this;
@@ -263,12 +250,14 @@ public class Dependency {
      * Sets the classifier of the dependency.
      */
     public Dependency setClassifier(String classifier) {
-        this.classifier = requireNonNull(classifier);
+        this.classifier = classifier;
         if (!isNew()) {
-            if (element.hasChild("classifier")) {
-                element.getSingleChild("classifier").setText(classifier);
+            if (classifier == null) {
+                dependencyElement.removeChild("classifier");
+            } else if (dependencyElement.hasSingleChild("classifier")) {
+                dependencyElement.getSingleChild("classifier").setText(classifier);
             } else {
-                element.appendChild(createElement("classifier", classifier));
+                dependencyElement.appendChild(createElement("classifier", classifier));
             }
         }
         return this;
@@ -279,12 +268,14 @@ public class Dependency {
      * e.g. {@code org.apache.maven}.
      */
     public Dependency setGroupId(String groupId) {
-        this.groupId = requireNonNull(groupId);
+        this.groupId = groupId;
         if (!isNew()) {
-            if (element.hasChild("groupId")) {
-                element.getSingleChild("groupId").setText(groupId);
+            if (groupId == null) {
+                dependencyElement.removeChild("groupId");
+            } else if (dependencyElement.hasSingleChild("groupId")) {
+                dependencyElement.getSingleChild("groupId").setText(groupId);
             } else {
-                element.insertChild(createElement("groupId", groupId), inTheBegin());
+                dependencyElement.insertChild(createElement("groupId", groupId), inTheBegin());
             }
         }
         return this;
@@ -296,12 +287,14 @@ public class Dependency {
      * @see #setOptional(boolean)
      */
     public Dependency setOptional(String optional) {
-        this.optional = requireNonNull(optional);
+        this.optional = optional;
         if (!isNew()) {
-            if (element.hasChild("optional")) {
-                element.getSingleChild("optional").setText(optional);
+            if (optional == null) {
+                dependencyElement.removeChild("optional");
+            } else if (dependencyElement.hasSingleChild("optional")) {
+                dependencyElement.getSingleChild("optional").setText(optional);
             } else {
-                element.insertChild(createElement("optional", optional), inTheBegin());
+                dependencyElement.insertChild(createElement("optional", optional), inTheBegin());
             }
         }
         return this;
@@ -328,11 +321,11 @@ public class Dependency {
         this.scope = scope;
         if (!isNew()) {
             if (scope == null) {
-                element.removeChild("scope");
-            } else if (element.hasChild("scope")) {
-                element.getSingleChild("scope").setText(scope);
+                dependencyElement.removeChild("scope");
+            } else if (dependencyElement.hasSingleChild("scope")) {
+                dependencyElement.getSingleChild("scope").setText(scope);
             } else {
-                element.appendChild(createElement("scope", scope));
+                dependencyElement.appendChild(createElement("scope", scope));
             }
         }
         return this;
@@ -356,12 +349,14 @@ public class Dependency {
      * this is not a complete list.
      */
     public Dependency setType(String type) {
-        this.type = requireNonNull(type);
+        this.type = type;
         if (!isNew()) {
-            if (element.hasChild("type")) {
-                element.getSingleChild("type").setText(type);
+            if (type == null) {
+                dependencyElement.removeChild("type");
+            } else if (dependencyElement.hasSingleChild("type")) {
+                dependencyElement.getSingleChild("type").setText(type);
             } else {
-                element.appendChild(createElement("type", type));
+                dependencyElement.appendChild(createElement("type", type));
             }
         }
         return this;
@@ -373,13 +368,15 @@ public class Dependency {
      * specified as a range of versions.
      */
     public Dependency setVersion(String version) {
-        this.version = requireNonNull(version);
+        this.version = version;
         if (!isNew()) {
-            if (element.hasChild("version")) {
-                element.getSingleChild("version").setText(version);
+            if (version == null) {
+                dependencyElement.removeChild("version");
+            } else if (dependencyElement.hasChild("version")) {
+                dependencyElement.getSingleChild("version").setText(version);
             } else {
-                element.insertChild(createElement("version", version),
-                                    afterAnyOf("artifactId", "groupId").or(inTheBegin()));
+                dependencyElement.insertChild(createElement("version", version), afterAnyOf("artifactId",
+                                                                                            "groupId").or(inTheBegin()));
             }
         }
         return this;
@@ -415,27 +412,27 @@ public class Dependency {
 
     public void remove() {
         if (!isNew()) {
-            element.remove();
-            element = null;
+            dependencyElement.remove();
+            dependencyElement = null;
         }
     }
 
     NewElement asXMLElement() {
-        final NewElement dependencyEl = createElement("dependency");
-        dependencyEl.appendChild(createElement("groupId", groupId));
-        dependencyEl.appendChild(createElement("artifactId", artifactId));
-        dependencyEl.appendChild(createElement("version", version));
+        final NewElement newElement = createElement("dependency");
+        newElement.appendChild(createElement("groupId", groupId));
+        newElement.appendChild(createElement("artifactId", artifactId));
+        newElement.appendChild(createElement("version", version));
         if (scope != null && !scope.equals("compile")) {
-            dependencyEl.appendChild(createElement("scope", scope));
+            newElement.appendChild(createElement("scope", scope));
         }
         if (type != null && !type.equals("jar")) {
-            dependencyEl.appendChild(createElement("type", type));
+            newElement.appendChild(createElement("type", type));
         }
         if (classifier != null) {
-            dependencyEl.appendChild(createElement("classifier", classifier));
+            newElement.appendChild(createElement("classifier", classifier));
         }
         if (optional != null) {
-            dependencyEl.appendChild(createElement("optional", optional));
+            newElement.appendChild(createElement("optional", optional));
         }
         if (exclusions != null) {
             final NewElement exclusionsEl = createElement("exclusions");
@@ -444,7 +441,25 @@ public class Dependency {
             }
             exclusionsEl.appendChild(exclusionsEl);
         }
-        return dependencyEl;
+        return newElement;
+    }
+
+    private void setExclusions0(Collection<? extends Exclusion> exclusions) {
+        for (Exclusion exclusion : exclusions) {
+            exclusion.remove();
+        }
+        //use addExclusion to add and associate each new exclusion with element
+        exclusions = new ArrayList<>(exclusions.size());
+        for (Exclusion exclusion : exclusions) {
+            addExclusion(exclusion);
+        }
+    }
+
+    private void removeExclusions() {
+        if (!isNew()) {
+            dependencyElement.removeChild("exclusions");
+        }
+        this.exclusions = null;
     }
 
     private List<Exclusion> exclusions() {
@@ -452,7 +467,7 @@ public class Dependency {
     }
 
     private boolean isNew() {
-        return element == null;
+        return dependencyElement == null;
     }
 
     private static class ToExclusionMapper implements ElementMapper<Exclusion> {
