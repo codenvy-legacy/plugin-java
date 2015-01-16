@@ -8,13 +8,15 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -28,21 +30,27 @@ import javax.annotation.Nonnull;
  * @author Artem Zatsarynnyy
  */
 public class SourceFileNode extends FileNode {
-    protected final JavaTreeStructure treeStructure;
 
     @AssistedInject
     public SourceFileNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
                           EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        this.treeStructure = treeStructure;
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     @Nonnull
     @Override
     public String getDisplayName() {
-        final String name = data.getName();
-        // display name without '.java' extension
+        final String name = getData().getName();
+        if (getTreeStructure().getSettings().isShowExtensionForJavaFiles()) {
+            return name;
+        }
         return name.substring(0, name.length() - "java".length() - 1);
+    }
+
+    @Nonnull
+    @Override
+    public JavaTreeStructure getTreeStructure() {
+        return (JavaTreeStructure)super.getTreeStructure();
     }
 
     @Override
@@ -59,11 +67,9 @@ public class SourceFileNode extends FileNode {
             public void onDeleted() {
                 callback.onDeleted();
 
-                if (treeStructure.getSettings().isCompactEmptyPackages()) {
-                    // if parent contains one package only after deleting child node then parent may be compacted
-                    if (parent.getChildren().size() == 1 && parent.getChildren().get(0) instanceof PackageNode) {
-                        eventBus.fireEvent(new RefreshProjectTreeEvent(parent.getParent()));
-                    }
+                // if parent contains one package only after deleting this child node then parent should be compacted
+                if (isCompacted() && getParent() instanceof PackageNode && hasOneChildPackageOnly((PackageNode)getParent())) {
+                    eventBus.fireEvent(new RefreshProjectTreeEvent(getParent().getParent()));
                 }
             }
 
@@ -72,5 +78,14 @@ public class SourceFileNode extends FileNode {
                 callback.onFailure(exception);
             }
         });
+    }
+
+    private boolean isCompacted() {
+        return getTreeStructure().getSettings().isCompactEmptyPackages();
+    }
+
+    private boolean hasOneChildPackageOnly(PackageNode pack) {
+        Array<TreeNode<?>> children = pack.getChildren();
+        return children.size() == 1 && children.get(0) instanceof PackageNode;
     }
 }

@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.java.client.projecttree;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.icon.IconRegistry;
@@ -21,12 +22,23 @@ import com.codenvy.ide.api.projecttree.generic.GenericTreeStructure;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.ExternalLibrariesNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JarClassNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JarContainerNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JarEntryNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JarFileNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JarNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaProjectNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFileNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode;
 import com.codenvy.ide.ext.java.shared.Jar;
 import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
-import com.codenvy.ide.util.Pair;
+import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -42,171 +54,33 @@ import java.util.Map;
 public class JavaTreeStructure extends GenericTreeStructure {
 
     protected final IconRegistry          iconRegistry;
-    protected final JavaNavigationService service;
+    protected final JavaNavigationService navigationService;
     protected final Map<String, ExternalLibrariesNode> librariesNodeMap = new HashMap<>();
     private final JavaTreeSettings settings;
+    protected       JavaProjectNode  projectNode;
 
     protected JavaTreeStructure(JavaNodeFactory nodeFactory, EventBus eventBus, AppContext appContext,
                                 ProjectServiceClient projectServiceClient, IconRegistry iconRegistry,
-                                DtoUnmarshallerFactory dtoUnmarshallerFactory, JavaNavigationService service) {
+                                DtoUnmarshallerFactory dtoUnmarshallerFactory, JavaNavigationService javaNavigationService) {
         super(nodeFactory, eventBus, appContext, projectServiceClient, dtoUnmarshallerFactory);
         this.iconRegistry = iconRegistry;
-        this.service = service;
+        this.navigationService = javaNavigationService;
         this.settings = new JavaTreeSettings();
-    }
-
-    public void getClassFileByPath(String projectPath, final int libId, String path, final AsyncCallback<TreeNode<?>> callback) {
-        Unmarshallable<JarEntry> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(JarEntry.class);
-        service.getEntry(projectPath, libId, path, new AsyncRequestCallback<JarEntry>(unmarshaller) {
-            @Override
-            protected void onSuccess(JarEntry result) {
-                callback.onSuccess(createNode(createProject(), result, libId));
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
-    }
-
-    public TreeNode<?> createNode(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
-        switch (entry.getType()) {
-            case FOLDER:
-            case PACKAGE:
-                return newJarContainerNode(parent, entry, libId);
-
-            case FILE:
-                return newJarFileNode(parent, entry, libId);
-
-            case CLASS_FILE:
-                return newJarClassNode(parent, entry, libId);
-        }
-        return null;
-    }
-
-    /**
-     * Find class in external libs.
-     *
-     * @param libId
-     *         the lib id
-     * @param path
-     *         is FQN of the class like 'java.lang.String';
-     * @param callback
-     */
-    public void getFindClassFileByPath(final int libId, final String path, final AsyncCallback<TreeNode<?>> callback) {
-        getRootNodes(new AsyncCallback<Array<TreeNode<?>>>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
-            }
-
-            @Override
-            public void onSuccess(Array<TreeNode<?>> result) {
-                JavaProjectNode project = null;
-                for (TreeNode<?> node : result.asIterable()) {
-                    if (node instanceof JavaProjectNode) {
-                        project = (JavaProjectNode)node;
-                        break;
-                    }
-                }
-                if (project != null) {
-                    findLibInProject(project, libId, path, callback);
-                }
-            }
-        });
-    }
-
-    private void findLibInProject(JavaProjectNode project, final int libId, final String path, final AsyncCallback<TreeNode<?>> callback) {
-        project.getLibrariesNode().refreshChildren(new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
-            }
-
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                for (TreeNode<?> treeNode : result.getChildren().asIterable()) {
-                    if (treeNode instanceof JarNode) {
-                        if (((JarNode)treeNode).getData().getId() == libId) {
-                            String[] segments;
-                            String separator;
-                            if (path.startsWith("/")) {
-                                segments = path.substring(1).split("/");
-                                separator = "/";
-                            } else {
-                                segments = path.split("\\.");
-                                if (!segments[segments.length - 1].endsWith(".class")) {
-                                    segments[segments.length - 1] = segments[segments.length - 1] + ".class";
-                                }
-                                separator = ".";
-                            }
-                            refreshAndGetChildByName(treeNode, segments, 0, separator, callback);
-                            return;
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    private void refreshAndGetChildByName(TreeNode<?> node, final String[] path, final int index,
-                                          final String separator, final AsyncCallback<TreeNode<?>> callback) {
-        node.refreshChildren(new AsyncCallback<TreeNode<?>>() {
-            @Override
-            public void onSuccess(TreeNode<?> result) {
-                for (TreeNode<?> childNode : result.getChildren().asIterable()) {
-                    Pair<Boolean, Integer> pair = isPathSame(childNode.getId(), path, index, separator);
-                    if (pair.first) {
-                        if (index + 1 == path.length) {
-                            callback.onSuccess(childNode);
-                        } else {
-                            refreshAndGetChildByName(childNode, path, pair.second + 1, separator, callback);
-                        }
-                        return;
-                    }
-                }
-                callback.onSuccess(null);
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
-            }
-        });
-    }
-
-    private Pair<Boolean, Integer> isPathSame(String path, String[] segments, int index, String separator) {
-        if (path.equals(segments[index])) {
-            return new Pair<>(true, index);
-        }
-
-        if (!path.startsWith(segments[index])) {
-            return new Pair<>(false, index);
-        }
-        String collapsedPath = segments[index];
-        int i = index;
-        while (i < segments.length - 1) {
-            i++;
-            collapsedPath += separator + segments[i];
-            if (path.equals(collapsedPath)) {
-                return new Pair<>(true, i);
-            }
-        }
-
-        return new Pair<>(false, index);
     }
 
     /** {@inheritDoc} */
     @Override
     public void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback) {
-        CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null) {
-            AbstractTreeNode projectRoot = createProject();
-            callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
-        } else {
-            callback.onFailure(new IllegalStateException("No opened project"));
+        if (projectNode == null) {
+            final CurrentProject currentProject = appContext.getCurrentProject();
+            if (currentProject != null) {
+                projectNode = newJavaProjectNode(currentProject.getRootProject());
+            } else {
+                callback.onFailure(new IllegalStateException("No project is opened."));
+                return;
+            }
         }
+        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectNode));
     }
 
     @Nonnull
@@ -220,49 +94,198 @@ public class JavaTreeStructure extends GenericTreeStructure {
         return (JavaNodeFactory)nodeFactory;
     }
 
-    private AbstractTreeNode createProject() {
-        return getNodeFactory().newJavaProjectNode(null, appContext.getCurrentProject().getRootProject(), this);
+    public void getClassFileByPath(String projectPath, final int libId, String path, final AsyncCallback<TreeNode<?>> callback) {
+        Unmarshallable<JarEntry> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(JarEntry.class);
+        navigationService.getEntry(projectPath, libId, path, new AsyncRequestCallback<JarEntry>(unmarshaller) {
+            @Override
+            protected void onSuccess(JarEntry result) {
+                callback.onSuccess(createNodeForJarEntry(newJavaProjectNode(appContext.getCurrentProject().getProjectDescription()), result, libId));
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
     }
 
-    public JavaFolderNode newJavaFolderNode(AbstractTreeNode parent, ItemReference data) {
+
+    public JarEntryNode createNodeForJarEntry(AbstractTreeNode<?> parent, JarEntry entry, int libId) {
+        switch (entry.getType()) {
+            case FOLDER:
+            case PACKAGE:
+                return newJarContainerNode(parent, entry, libId);
+            case FILE:
+                return newJarFileNode(parent, entry, libId);
+            case CLASS_FILE:
+                return newJarClassNode(parent, entry, libId);
+        }
+        return null;
+    }
+
+    private JavaProjectNode newJavaProjectNode(@Nonnull ProjectDescriptor data) {
+        return getNodeFactory().newJavaProjectNode(null, data, this);
+    }
+
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode} owned by this tree
+     * with the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ItemReference}
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode}
+     * @throws IllegalStateException
+     *         when the specified {@link ItemReference} hasn't type folder
+     */
+    public JavaFolderNode newJavaFolderNode(@Nonnull AbstractTreeNode parent, @Nonnull ItemReference data) {
+        if (!"folder".equals(data.getType())) {
+            throw new IllegalArgumentException("The associated ItemReference type must be - folder.");
+        }
         return getNodeFactory().newJavaFolderNode(parent, data, this);
     }
 
-    public SourceFolderNode newSourceFolderNode(AbstractTreeNode parent, ItemReference data) {
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode} owned by this tree
+     * with the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ItemReference}
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode}
+     * @throws IllegalStateException
+     *         when the specified {@link ItemReference} hasn't type folder
+     */
+    public SourceFolderNode newSourceFolderNode(@Nonnull AbstractTreeNode parent, @Nonnull ItemReference data) {
+        if (!"folder".equals(data.getType())) {
+            throw new IllegalArgumentException("The associated ItemReference type must be - folder.");
+        }
         return getNodeFactory().newSourceFolderNode(parent, data, this);
     }
 
-    public PackageNode newPackageNode(AbstractTreeNode parent, ItemReference data) {
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode} owned by this tree
+     * with the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ItemReference}
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode}
+     * @throws IllegalStateException
+     *         when the specified {@link ItemReference} hasn't type folder
+     */
+    public PackageNode newPackageNode(@Nonnull AbstractTreeNode parent, @Nonnull ItemReference data) {
+        if (!"folder".equals(data.getType())) {
+            throw new IllegalArgumentException("The associated ItemReference type must be - folder.");
+        }
         return getNodeFactory().newPackageNode(parent, data, this);
     }
 
-    public SourceFileNode newSourceFileNode(AbstractTreeNode parent, ItemReference data) {
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFileNode} owned by this tree
+     * with the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link ItemReference}
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFileNode}
+     * @throws IllegalStateException
+     *         when the specified {@link ItemReference} hasn't type file
+     */
+    public SourceFileNode newSourceFileNode(@Nonnull AbstractTreeNode parent, @Nonnull ItemReference data) {
+        if (!"file".equals(data.getType())) {
+            throw new IllegalArgumentException("The associated ItemReference type must be - file.");
+        }
         return getNodeFactory().newSourceFileNode(parent, data, this);
     }
 
-    public ExternalLibrariesNode newExternalLibrariesNode(JavaProjectNode parent) {
+    /**
+     * Creates a new {@link ExternalLibrariesNode} owned by this tree with the specified {@code parent}.
+     *
+     * @param parent
+     *         the parent node
+     * @return a new {@link ExternalLibrariesNode}
+     */
+    public ExternalLibrariesNode newExternalLibrariesNode(@Nonnull JavaProjectNode parent) {
         ExternalLibrariesNode librariesNode = getNodeFactory().newExternalLibrariesNode(parent, new Object(), this);
         librariesNodeMap.put(parent.getData().getPath(), librariesNode);
         return librariesNode;
     }
 
-    public JarNode newJarNode(ExternalLibrariesNode parent, Jar jar) {
-        return getNodeFactory().newJarNode(parent, jar, this);
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarNode} owned by this tree with
+     * the specified {@code parent} and associated {@code data}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link Jar}
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarNode}
+     */
+    public JarNode newJarNode(@Nonnull ExternalLibrariesNode parent, @Nonnull Jar data) {
+        return getNodeFactory().newJarNode(parent, data, this);
     }
 
-    public JarContainerNode newJarContainerNode(AbstractTreeNode<?> parent, JarEntry data, int libId) {
-        return getNodeFactory().newJarContainerNode(parent, data, libId, this);
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarContainerNode} owned by this tree with the
+     * specified {@code parent}, associated {@code data} and {@code libId}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link JarEntry}
+     * @param libId
+     *         lib ID
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarContainerNode}
+     */
+    public JarContainerNode newJarContainerNode(@Nonnull AbstractTreeNode<?> parent, @Nonnull JarEntry data, int libId) {
+        return getNodeFactory().newJarContainerNode(parent, data, this, libId);
     }
 
-    public JarFileNode newJarFileNode(AbstractTreeNode<?> parent, JarEntry data, int libId) {
-        return getNodeFactory().newJarFileNode(parent, data, libId);
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarFileNode} owned by this tree with the
+     * specified {@code parent}, associated {@code data} and {@code libId}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link JarEntry}
+     * @param libId
+     *         lib ID
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarFileNode}
+     */
+    public JarFileNode newJarFileNode(@Nonnull AbstractTreeNode<?> parent, @Nonnull JarEntry data, int libId) {
+        return getNodeFactory().newJarFileNode(parent, data, this, libId);
     }
 
-    public JarClassNode newJarClassNode(AbstractTreeNode<?> parent, JarEntry data, int libId) {
-        return getNodeFactory().newJarClassNode(parent, data, libId);
+    /**
+     * Creates a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarClassNode} owned by this tree with the
+     * specified {@code parent}, associated {@code data} and {@code libId}.
+     *
+     * @param parent
+     *         the parent node
+     * @param data
+     *         the associated {@link JarEntry}
+     * @param libId
+     *         lib ID
+     * @return a new {@link com.codenvy.ide.ext.java.client.projecttree.nodes.JarClassNode}
+     */
+    public JarClassNode newJarClassNode(@Nonnull AbstractTreeNode<?> parent, @Nonnull JarEntry data, int libId) {
+        return getNodeFactory().newJarClassNode(parent, data, this, libId);
     }
 
-    public ExternalLibrariesNode getExternalLibrariesNode(String projectPath) {
+    /**
+     * Returns {@link ExternalLibrariesNode} of the project with the specified {@code projectPath}.
+     *
+     * @param projectPath
+     *         the path of the project for which need to get {@link ExternalLibrariesNode}
+     * @return an {@link ExternalLibrariesNode} of the project with the specified {@code projectPath}
+     */
+    public ExternalLibrariesNode getExternalLibrariesNode(@Nonnull String projectPath) {
         return librariesNodeMap.get(projectPath);
     }
 }

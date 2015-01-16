@@ -8,13 +8,13 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -29,9 +29,9 @@ public class SourceFolderNode extends AbstractSourceContainerNode {
 
     @AssistedInject
     public SourceFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
-                            EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
-                            DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+                            EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                            IconRegistry iconRegistry) {
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
     }
 

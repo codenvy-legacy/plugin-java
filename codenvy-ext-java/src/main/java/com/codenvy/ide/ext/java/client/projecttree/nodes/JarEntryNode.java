@@ -9,11 +9,12 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.web.bindery.event.shared.EventBus;
@@ -37,12 +38,14 @@ public abstract class JarEntryNode extends AbstractTreeNode<JarEntry> {
      *         parent node
      * @param data
      *         an object this node encapsulates
+     * @param javaTreeStructure
+     *         {@link com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure} which this node belongs
      * @param eventBus
      */
-    public JarEntryNode(TreeNode<?> parent, JarEntry data,
+    public JarEntryNode(TreeNode<?> parent, JarEntry data, JavaTreeStructure javaTreeStructure,
                         EventBus eventBus, int libId, JavaNavigationService service,
                         DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(parent, data, eventBus);
+        super(parent, data, javaTreeStructure, eventBus);
         this.libId = libId;
         this.service = service;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -56,7 +59,7 @@ public abstract class JarEntryNode extends AbstractTreeNode<JarEntry> {
     @Nonnull
     @Override
     public String getId() {
-        return data.getName();
+        return getData().getName();
     }
 
     @Nonnull

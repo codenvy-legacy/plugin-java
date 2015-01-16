@@ -9,13 +9,14 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -25,14 +26,13 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nonnull;
+
 /**
  * Represents jar package or non java resource
  * @author Evgen Vidolob
  */
 public class JarContainerNode extends JarEntryNode {
-
-
-    private JavaTreeStructure treeStructure;
 
     /**
      * Creates new node with the specified parent, associated data and display name.
@@ -40,18 +40,19 @@ public class JarContainerNode extends JarEntryNode {
      *         parent node
      * @param data
      *         an object this node encapsulates
-     * @param eventBus
+     * @param treeStructure
+     *         {@link com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure} which this node belongs
      * @param libId
+     * @param eventBus
      * @param service
      * @param dtoUnmarshallerFactory
      * @param iconRegistry
      */
     @AssistedInject
-    public JarContainerNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted int libId,
-                            @Assisted JavaTreeStructure treeStructure, EventBus eventBus, JavaNavigationService service,
+    public JarContainerNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted JavaTreeStructure treeStructure,
+                            @Assisted int libId, EventBus eventBus, JavaNavigationService service,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, eventBus, libId, service, dtoUnmarshallerFactory);
-        this.treeStructure = treeStructure;
+        super(parent, data, treeStructure, eventBus, libId, service, dtoUnmarshallerFactory);
         if(data.getType() == JarEntry.JarEntryType.PACKAGE){
             setDisplayIcon(iconRegistry.getIcon("java.package").getSVGImage());
         } else {
@@ -64,15 +65,21 @@ public class JarContainerNode extends JarEntryNode {
         return false;
     }
 
+    @Nonnull
+    @Override
+    public JavaTreeStructure getTreeStructure() {
+        return (JavaTreeStructure)super.getTreeStructure();
+    }
+
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
         Unmarshallable<Array<JarEntry>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(JarEntry.class);
-        service.getChildren(getProject().getPath(), libId, data.getPath(), new AsyncRequestCallback<Array<JarEntry>>(unmarshaller) {
+        service.getChildren(getProject().getPath(), libId, getData().getPath(), new AsyncRequestCallback<Array<JarEntry>>(unmarshaller) {
             @Override
             protected void onSuccess(Array<JarEntry> result) {
                 Array<TreeNode<?>> nodes = Collections.createArray();
                 for (JarEntry jarNode : result.asIterable()) {
-                    nodes.add(treeStructure.createNode(JarContainerNode.this, jarNode, libId));
+                    nodes.add(getTreeStructure().createNodeForJarEntry(JarContainerNode.this, jarNode, libId));
                 }
                 setChildren(nodes);
                 callback.onSuccess(JarContainerNode.this);

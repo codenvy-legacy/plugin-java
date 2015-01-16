@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.java.worker.env;
 
 import com.codenvy.ide.collections.js.JsoArray;
+import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryAnnotation;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryField;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.impl.Constant;
@@ -32,7 +33,7 @@ public class BinaryField implements IBinaryField {
     @Override
     public IBinaryAnnotation[] getAnnotations() {
         JsoArray<AnnotationJso> annotations = jso.getAnnotations();
-        if (annotations == null) return null;
+        if (annotations == null || annotations.isEmpty()) return null;
         IBinaryAnnotation[] binaryAnnotations = new IBinaryAnnotation[annotations.size()];
         for (int i = 0; i < annotations.size(); i++) {
             binaryAnnotations[i] = new BinaryAnnotation(annotations.get(i));
@@ -75,5 +76,15 @@ public class BinaryField implements IBinaryField {
     @Override
     public int getModifiers() {
         return jso.getModifiers();
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof BinaryField)) {
+            return false;
+        }
+        return CharOperation.equals(getName(), ((BinaryField)o).getName());
+    }
+    public int hashCode() {
+        return CharOperation.hashCode(getName());
     }
 }

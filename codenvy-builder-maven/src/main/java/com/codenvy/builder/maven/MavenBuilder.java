@@ -87,6 +87,13 @@ public class MavenBuilder extends Builder {
     private static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE = "jar-with-dependencies-assembly-descriptor.xml";
     private static final String DEPENDENCIES_JSON_FILE                             = "dependencies.json";
 
+    private static final FilenameFilter SOURCES_AND_DOCS_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(java.io.File dir, String name) {
+            return !(name.endsWith("-sources.jar") || name.endsWith("-javadoc.jar"));
+        }
+    };
+
     private final Map<String, String> mavenProperties;
 
     @Inject
@@ -205,30 +212,7 @@ public class MavenBuilder extends Builder {
             return new BuildResult(false, getBuildReport(task));
         }
 
-        boolean mavenSuccess = false;
-        BufferedReader logReader = null;
-        try {
-            logReader = new BufferedReader(task.getBuildLogger().getReader());
-            String line;
-            while ((line = logReader.readLine()) != null) {
-                line = MavenUtils.removeLoggerPrefix(line);
-                if ("BUILD SUCCESS".equals(line)) {
-                    mavenSuccess = true;
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } finally {
-            if (logReader != null) {
-                try {
-                    logReader.close();
-                } catch (IOException ignored) {
-                }
-            }
-        }
-
-        if (!mavenSuccess) {
+        if (!isMavenTaskSuccess(task)) {
             return new BuildResult(false, getBuildReport(task));
         }
 
@@ -270,7 +254,7 @@ public class MavenBuilder extends Builder {
                         final java.io.File[] a = new java.io.File(child.getProjectDirectory(), "target").listFiles(new FilenameFilter() {
                             @Override
                             public boolean accept(java.io.File dir, String name) {
-                                return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar") && name.endsWith(fileExt);
+                                return SOURCES_AND_DOCS_FILTER.accept(dir, name) && name.endsWith(fileExt);
                             }
                         });
                         if (a != null && a.length > 0) {
@@ -290,9 +274,12 @@ public class MavenBuilder extends Builder {
                     files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
                         @Override
                         public boolean accept(java.io.File dir, String name) {
-                            return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar") && name.endsWith(fileExt);
+                            return SOURCES_AND_DOCS_FILTER.accept(dir, name) && name.endsWith(fileExt);
                         }
                     });
+                }
+                if (files.length == 0) {
+                    files = new java.io.File(workDir, "target").listFiles(SOURCES_AND_DOCS_FILTER);
                 }
                 break;
             case LIST_DEPS:
@@ -323,6 +310,32 @@ public class MavenBuilder extends Builder {
         }
 
         return result;
+    }
+
+    private boolean isMavenTaskSuccess(FutureBuildTask task) throws BuilderException {
+        boolean mavenSuccess = false;
+        BufferedReader logReader = null;
+        try {
+            logReader = new BufferedReader(task.getBuildLogger().getReader());
+            String line;
+            while ((line = logReader.readLine()) != null) {
+                line = MavenUtils.removeLoggerPrefix(line);
+                if ("BUILD SUCCESS".equals(line)) {
+                    mavenSuccess = true;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new BuilderException(e);
+        } finally {
+            if (logReader != null) {
+                try {
+                    logReader.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+        return mavenSuccess;
     }
 
     /**
