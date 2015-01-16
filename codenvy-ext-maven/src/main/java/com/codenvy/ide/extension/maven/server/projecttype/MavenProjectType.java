@@ -29,7 +29,7 @@ public class MavenProjectType extends ProjectType2 {
     public MavenProjectType(MavenValueProviderFactory mavenValueProviderFactory,
                             JavaProjectType javaProjectType) {
 
-        super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME);
+        super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME, true, false);
         addVariableDefinition(MavenAttributes.GROUP_ID, "", true, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.ARTIFACT_ID, "", true, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.VERSION, "", true, mavenValueProviderFactory);
