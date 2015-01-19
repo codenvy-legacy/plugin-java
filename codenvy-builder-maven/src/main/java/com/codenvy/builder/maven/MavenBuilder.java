@@ -31,8 +31,8 @@ import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.maven.tools.MavenArtifact;
 import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Model;
 
-import org.apache.maven.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,7 +166,7 @@ public class MavenBuilder extends Builder {
                         public void afterDownload(SourceManagerEvent event) {
                             if (workDir.equals(event.getWorkDir())) {
                                 try {
-                                    final Model model = MavenUtils.getModel(workDir);
+                                    final Model model = Model.readFrom(workDir);
                                     final String packaging = model.getPackaging();
                                     if ((packaging == null || "jar".equals(packaging)) && !MavenUtils.isCodenvyExtensionProject(model)) {
                                         addJarWithDependenciesAssemblyDescriptor(workDir, commandLine);
@@ -224,7 +224,7 @@ public class MavenBuilder extends Builder {
             case DEFAULT:
                 final Model model;
                 try {
-                    model = MavenUtils.getModel(workDir);
+                    model = Model.readFrom(workDir);
                 } catch (IOException e) {
                     throw new BuilderException(e);
                 }
@@ -236,7 +236,7 @@ public class MavenBuilder extends Builder {
                     final List<Model> modules;
                     final List<java.io.File> results = new LinkedList<>();
                     try {
-                        modules = MavenUtils.getModules(model);
+                        modules = MavenUtils.getModules(workDir);
                     } catch (IOException e) {
                         throw new BuilderException(e);
                     }

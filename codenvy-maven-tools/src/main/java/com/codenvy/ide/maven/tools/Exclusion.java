@@ -15,10 +15,10 @@ import com.codenvy.commons.xml.NewElement;
 
 import static com.codenvy.commons.xml.NewElement.createElement;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
-import static java.util.Objects.requireNonNull;
 
 /**
- * The {@literal <exclusion>} element contains information required to exclude an artifact from the project
+ * The <i>../dependency/exclusions/exclusion</i> element contains
+ * information required to exclude an artifact from the project
  * <p/>
  * Supported next data:
  * <ul>
@@ -33,15 +33,15 @@ public class Exclusion {
     private String artifactId;
     private String groupId;
 
-    Element element;
+    Element exclusionElement;
 
     public Exclusion(String artifactId, String groupId) {
-        this.artifactId = requireNonNull(artifactId);
-        this.groupId = requireNonNull(groupId);
+        this.artifactId = artifactId;
+        this.groupId = groupId;
     }
 
     Exclusion(Element element) {
-        this.element = element;
+        exclusionElement = element;
         artifactId = element.getChildText("artifactId");
         groupId = element.getChildText("groupId");
     }
@@ -64,12 +64,14 @@ public class Exclusion {
      * Set the artifact ID of the project to exclude.
      */
     public Exclusion setArtifactId(String artifactId) {
-        this.artifactId = requireNonNull(artifactId);
+        this.artifactId = artifactId;
         if (!isNew()) {
-            if (element.hasChild("artifactId")) {
-                element.getSingleChild("artifactId").setText(artifactId);
+            if (artifactId == null) {
+                exclusionElement.removeChild("artifactId");
+            } else if (exclusionElement.hasSingleChild("artifactId")) {
+                exclusionElement.getSingleChild("artifactId").setText(artifactId);
             } else {
-                element.appendChild(createElement("artifactId", artifactId));
+                exclusionElement.appendChild(createElement("artifactId", artifactId));
             }
         }
         return this;
@@ -79,12 +81,14 @@ public class Exclusion {
      * Set the group ID of the project to exclude.
      */
     public Exclusion setGroupId(String groupId) {
-        this.groupId = requireNonNull(groupId);
+        this.groupId = groupId;
         if (!isNew()) {
-            if (element.hasChild("groupId")) {
-                element.getSingleChild("groupId").setText(groupId);
+            if (groupId == null) {
+                exclusionElement.removeChild("groupId");
+            } else if (exclusionElement.hasSingleChild("groupId")) {
+                exclusionElement.getSingleChild("groupId").setText(groupId);
             } else {
-                element.insertChild(createElement("groupId", groupId), inTheBegin());
+                exclusionElement.insertChild(createElement("groupId", groupId), inTheBegin());
             }
         }
         return this;
@@ -92,8 +96,8 @@ public class Exclusion {
 
     void remove() {
         if (!isNew()) {
-            element.remove();
-            element = null;
+            exclusionElement.remove();
+            exclusionElement = null;
         }
     }
 
@@ -105,6 +109,6 @@ public class Exclusion {
     }
 
     private boolean isNew() {
-        return element == null;
+        return exclusionElement == null;
     }
 }
