@@ -65,30 +65,89 @@ import static java.util.Objects.requireNonNull;
  * to the right place of delegated xml file - when it is possible to do so.
  *
  * @author Eugene Voeovodin
- *
- * TODO doc
  */
 public final class Model {
 
+    /**
+     * Reads model from input stream.
+     * <p/>
+     * Doesn't close the stream
+     *
+     * @param is
+     *         input stream to read from
+     * @return fetched model
+     * @throws IOException
+     *         if any i/o error occurs
+     * @throws com.codenvy.commons.xml.XMLTreeException
+     *         when input stream contains not valid xml content
+     * @throws NullPointerException
+     *         when given {@code is} is {@code null}
+     */
     public static Model readFrom(InputStream is) throws IOException {
-        return fetchModel(XMLTree.from(is));
+        return fetchModel(XMLTree.from(requireNonNull(is, "Required not null input stream")));
     }
 
+    /**
+     * Reads model from given file, or if given file is a directory
+     * reads model from the <i>pom.xml</i> which is under the given directory
+     * <p/>
+     * After reading from pom file model will be associated with it,
+     * so {@link #getPomFile()} and will return pom file and
+     * {@link #getProjectDirectory()} will return pom file parent directory.
+     *
+     * @param file
+     *         <i>pom.xml</i> to read model from or its parent directory
+     * @return fetched model
+     * @throws IOException
+     *         if any i/o error occurs
+     * @throws com.codenvy.commons.xml.XMLTreeException
+     *         when input stream contains not valid xml content
+     * @throws NullPointerException
+     *         when given {@code file} is {@code null}
+     */
     public static Model readFrom(File file) throws IOException {
+        requireNonNull(file, "Required not null file");
         if (file.isDirectory()) {
             return readFrom(new File(file, "pom.xml"));
         }
         return fetchModel(XMLTree.from(file)).setPomFile(file);
     }
 
+    /**
+     * Reads model from given path.
+     * The behaviour is same to {@link #readFrom(java.io.File)}
+     *
+     * @param path
+     *         to read from
+     * @return fetched model
+     * @throws NullPointerException
+     *         when given {@code path} is {@code null}
+     * @throws IOException
+     *         if any i/o error occurs
+     * @throws com.codenvy.commons.xml.XMLTreeException
+     *         when input stream contains not valid xml content
+     */
     public static Model readFrom(Path path) throws IOException {
-        return fetchModel(XMLTree.from(path)).setPomFile(path.toFile());
+        return readFrom(requireNonNull(path.toFile(), "Required not null model"));
     }
 
+    /**
+     * Reads model from given virtual file.
+     *
+     * @param file
+     *         virtual file to read model from
+     * @return fetched model
+     */
     public static Model readFrom(VirtualFile file) throws ServerException, ForbiddenException, IOException {
+        requireNonNull(file, "Required not null virtual file");
         return fetchModel(XMLTree.from(file.getContent().getStream()));
     }
 
+    /**
+     * Creates new pom xml model with root "project" element.
+     *
+     * @return created model
+     */
     public static Model createModel() {
         final XMLTree tree = XMLTree.create("project");
         tree.getRoot()
