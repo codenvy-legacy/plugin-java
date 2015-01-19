@@ -85,6 +85,13 @@ public class Parent {
 
     /**
      * Sets the artifact id of the parent project to inherit from
+     * <p/>
+     * If {@code artifactId} is {@code null} and this parent instance is associated with
+     * xml element then {@code artifactId} will be removed from model as well as from xml.
+     *
+     * @param artifactId
+     *         new parent artifact identifier
+     * @return this parent instance
      */
     public Parent setArtifactId(String artifactId) {
         this.artifactId = artifactId;
@@ -102,6 +109,13 @@ public class Parent {
 
     /**
      * Sets the group id of the parent project to inherit from
+     * <p/>
+     * If {@code groupId} is {@code null} and this parent instance is associated with
+     * xml element then {@code groupId} will be removed from model as well as from xml.
+     *
+     * @param groupId
+     *         new parent group identifier
+     * @return this parent instance
      */
     public Parent setGroupId(String groupId) {
         this.groupId = groupId;
@@ -119,6 +133,13 @@ public class Parent {
 
     /**
      * Sets the version of the parent project to inherit
+     * <p/>
+     * If {@code version} is {@code null} and this parent instance is associated with
+     * xml element then {@code version} will be removed from model as well as from xml
+     *
+     * @param version
+     *         new parent version
+     * @return this parent instance
      */
     public Parent setVersion(String version) {
         this.version = version;
@@ -136,6 +157,13 @@ public class Parent {
 
     /**
      * Sets parent relative path
+     * <p/>
+     * If {@code relativePath} is {@code null} and this parent instance is associated with
+     * xml element then {@code relativePath} will be removed from model as well as from xml
+     *
+     * @param relativePath
+     *         new parent relative path
+     * @return this parent instance
      */
     public Parent setRelativePath(String relativePath) {
         this.relativePath = relativePath;
