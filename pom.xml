@@ -30,6 +30,9 @@
         <module>codenvy-ant-tools</module>
         <module>codenvy-builder-maven</module>
         <module>codenvy-builder-ant</module>
+        <module>codenvy-builder-gradle</module>
+        <module>codenvy-gradle-tools</module>
+        <module>codenvy-ext-gradle</module>
         <module>codenvy-runner-webapps</module>
         <module>codenvy-generator-archetype</module>
         <module>codenvy-ext-maven</module>

@@ -14,10 +14,12 @@ import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
 import com.codenvy.ide.extension.maven.client.MavenResources;
 import com.codenvy.ide.extension.maven.client.build.MavenBuildPresenter;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -59,14 +61,9 @@ public class CustomBuildAction extends ProjectAction {
     /** {@inheritDoc} */
     @Override
     public void updateProjectAction(ActionEvent e) {
-        final String builder = appContext.getCurrentProject().getBuilder();
-        if ("maven".equals(builder)) {
-            e.getPresentation().setEnabledAndVisible(true);
-        } else {
-            e.getPresentation().setEnabledAndVisible(false);
-        }
-        if (buildContext.isBuilding()) {
-            e.getPresentation().setEnabled(false);
-        }
+        CurrentProject project = appContext.getCurrentProject();
+
+        e.getPresentation().setEnabledAndVisible(project != null && MavenAttributes.MAVEN_ID.equals(project.getBuilder()));
+        e.getPresentation().setEnabled(!buildContext.isBuilding());
     }
 }
