@@ -63,6 +63,9 @@ import static java.util.Objects.requireNonNull;
  * <a href="http://maven.apache.org/developers/conventions/code.html"> official recommended order</a>.
  * It means that each newly added element will be added
  * to the right place of delegated xml file - when it is possible to do so.
+ * <p/>
+ * This maven pom model implementation based on {@link XMLTree}
+ * and targeted to save pom.xml content formatting and elements positions.
  *
  * @author Eugene Voeovodin
  */
@@ -268,10 +271,20 @@ public final class Model {
         return version;
     }
 
+    /**
+     * Returns project build
+     */
     public Build getBuild() {
         return build;
     }
 
+    /**
+     * Returns list of dependencies or empty list if project doesn't have dependencies.
+     * <p/>
+     * <b>Note: update methods should not be used on returned list</b>
+     *
+     * @see #dependencies()
+     */
     public List<Dependency> getDependencies() {
         return dependencies().get();
     }
@@ -288,23 +301,22 @@ public final class Model {
     }
 
     /**
-     * Get default dependency information for projects that inherit
-     * from this one. The
-     * dependencies in this sect
-     * ion are not immediately
-     * resolved. Instead, when a POM derived
-     * from this one declares a dependency described by
-     * a matching groupId and artifactId, the
-     * version and other values from this section are
-     * used for that dependency if they were not
-     * already specified.
+     * Returns dependency management, which contains
+     * default dependency information for projects that inherit
+     * from this one. The dependencies in this section are not immediately
+     * resolved. Instead, when a POM derived from this one declares a dependency described by
+     * a matching groupId and artifactId, the version and other values from this section are
+     * used for that dependency if they were not already specified.
      */
     public DependencyManagement getDependencyManagement() {
         return dependencyManagement;
     }
 
     /**
-     * Returns project modules
+     * Returns project modules as list of module names, or empty list
+     * when project doesn't have modules.
+     * <p/>
+     * <b>Note: update methods should not be used on returned list</b>
      */
     public List<String> getModules() {
         if (modules == null) {
@@ -314,7 +326,10 @@ public final class Model {
     }
 
     /**
-     * Returns project properties
+     * Returns project properties or empty map when project
+     * doesn't have properties
+     * <p/>
+     * <b>Note: update methods should not be used on returned map</b>
      */
     public Map<String, String> getProperties() {
         if (properties == null) {
@@ -324,10 +339,17 @@ public final class Model {
     }
 
     /**
-     * Adds new module to the project
+     * Adds new module to the project.
+     * If project doesn't have modules it will be created as well.
+     *
+     * @param newModule
+     *         module name to be added
+     * @return this model instance
+     * @throws NullPointerException
+     *         when given module name is {@code null}
      */
     public Model addModule(String newModule) {
-        requireNonNull(newModule);
+        requireNonNull(newModule, "Required not null module");
         modules().add(newModule);
         //add module to xml tree
         if (root.hasSingleChild("modules")) {
@@ -346,29 +368,54 @@ public final class Model {
      * Adds new property to the project.
      * If property with given key already exists its value
      * going to be changed with new one.
+     *
+     * @param name
+     *         property name
+     * @param value
+     *         property value
+     * @return this model instance
+     * @throws NullPointerException
+     *         when given {@code name} or {@code value} is {@code null}
      */
-    public Model addProperty(String key, String value) {
-        requireNonNull(key, "Property key should not be null");
+    public Model addProperty(String name, String value) {
+        requireNonNull(name, "Property name should not be null");
         requireNonNull(value, "Property value should not be null");
-        addPropertyToXML(key, value);
-        properties().put(key, value);
+        addPropertyToXML(name, value);
+        properties().put(name, value);
         return this;
     }
 
     /**
-     * Removes property with given key from model.
-     * If last property was removed properties will be removed as well
+     * Removes property with given name from model.
+     * <p/>
+     * If last property was removed from model then properties will be removed from xml.
+     * If project doesn't have property with given name then nothing will be done.
+     *
+     * @param name
+     *         name of property which should be removed
+     * @return this model instance
+     * @throws NullPointerException
+     *         when {@code name} is {@code null}
      */
-    public Model removeProperty(String key) {
-        if (properties().remove(requireNonNull(key, "Property key should not be null")) != null) {
-            removePropertyFromXML(key);
+    public Model removeProperty(String name) {
+        if (properties().remove(requireNonNull(name, "Property name should not be null")) != null) {
+            removePropertyFromXML(name);
         }
         return this;
     }
 
     /**
      * Removes module from the model.
-     * If last module has been removed removes modules element as well
+     * <p/>
+     * If last module has been removed from model
+     * then modules element will be removed from xml as well.
+     * If project doesn't have module with given name then nothing will be done.
+     *
+     * @param module
+     *         module which should be removed
+     * @return this model instance
+     * @throws NullPointerException
+     *         when {@code module} is {@code null}
      */
     public Model removeModule(String module) {
         if (modules().remove(requireNonNull(module, "Required not null module"))) {
@@ -378,15 +425,16 @@ public final class Model {
     }
 
     /**
-     * Sets build settings for project
+     * Sets build settings for project.
+     * <p/>
+     * If {@code build} is {@code null} then it will be removed from model and xml as well.
+     *
+     * @param build
+     *         new build
+     * @return this model instance
      */
-    public Model setBuild(Build newBuild) {
-        //disable current build
-        if (build != null) {
-            build.buildElement = null;
-        }
-        //set up new build
-        build = newBuild;
+    public Model setBuild(Build build) {
+        this.build = build;
         if (build == null) {
             root.removeChild("build");
         } else if (root.hasSingleChild("build")) {
@@ -394,7 +442,7 @@ public final class Model {
             build.buildElement = root.getSingleChild("build").replaceWith(build.asXMLElement());
         } else {
             //add build
-            root.appendChild(build.asXMLElement());
+            root.appendChild(this.build.asXMLElement());
             build.buildElement = root.getSingleChild("build");
         }
         return this;
@@ -403,17 +451,16 @@ public final class Model {
     /**
      * Sets the location of the parent project, if one exists.
      * <p/>
-     * Values from the parent project will be
-     * the default for this project if they are left unspecified.
-     * The location is given as a group ID, artifact ID and version.
+     * Values from the parent project will be the default for this project
+     * if they are left unspecified. The location is given as a group ID, artifact ID and version.
+     * If {@code parent} is {@code null} then it will be removed from model and xml as well.
+     *
+     * @param parent
+     *         new project parent
+     * @return this model instance
      */
-    public Model setParent(Parent newParent) {
-        //disable current parent
-        if (parent != null) {
-            parent.parentElement = null;
-        }
-        //set up new parent
-        parent = newParent;
+    public Model setParent(Parent parent) {
+        this.parent = parent;
         if (parent == null) {
             root.removeChild("parent");
         } else if (root.hasSingleChild("parent")) {
@@ -421,7 +468,7 @@ public final class Model {
             parent.parentElement = root.getSingleChild("parent").replaceWith(parent.asXMLElement());
         } else {
             //add parent
-            root.insertChild(parent.asXMLElement(), after("modelVersion").or(inTheBegin()));
+            root.insertChild(this.parent.asXMLElement(), after("modelVersion").or(inTheBegin()));
             parent.parentElement = root.getSingleChild("parent");
         }
         return this;
@@ -430,39 +477,43 @@ public final class Model {
     /**
      * Sets default dependency information for projects that inherit from this one.
      * If new dependency management is {@code null} removes old dependency management
+     * from model and from xml as well
      * <p/>
-     * The dependencies in this section are not immediately
-     * resolved. Instead, when a POM derived
-     * from this one declares a dependency described by
-     * a matching groupId and artifactId, the
-     * version and other values from this section are
-     * used for that dependency if they were not
-     * already specified.
+     * The dependencies in this section are not immediately resolved.
+     * Instead, when a POM derived from this one declares a dependency described
+     * by a matching groupId and artifactId, the version and other values from this section are
+     * used for that dependency if they were not already specified.
+     * If {@code parent} is {@code null} then it will be removed from model and xml as well.
+     *
+     * @param dependencyManagement
+     *         new project dependency management
+     * @return this model instance
      */
-    public Model setDependencyManagement(DependencyManagement newDM) {
-        //disable current dependency management
-        if (dependencyManagement != null) {
-            dependencyManagement.dmElement = null;
-        }
-        //set up new dependency management
-        dependencyManagement = newDM;
+    public Model setDependencyManagement(DependencyManagement dependencyManagement) {
+        this.dependencyManagement = dependencyManagement;
         if (dependencyManagement == null) {
             root.removeChild("dependencyManagement");
         } else if (root.hasSingleChild("dependencyManagement")) {
-            dependencyManagement.dmElement = root.getSingleChild("dependencyManagement").replaceWith(newDM.asXMLElement());
+            dependencyManagement.dmElement = root.getSingleChild("dependencyManagement")
+                                                 .replaceWith(dependencyManagement.asXMLElement());
         } else {
-            root.insertChild(dependencyManagement.asXMLElement(), beforeAnyOf("dependencies",
-                                                                              "build").or(inTheEnd()));
+            root.insertChild(this.dependencyManagement.asXMLElement(), beforeAnyOf("dependencies",
+                                                                                   "build").or(inTheEnd()));
             dependencyManagement.dmElement = root.getSingleChild("dependencyManagement");
         }
         return this;
     }
 
     /**
-     * Sets the modules (sometimes called sub projects) to build as a
-     * part of this project. Each module listed is a relative path
-     * to the directory containing the module.
-     * If new modules list is an empty removes modules element from xml
+     * Sets the modules (sometimes called sub projects) to build as a part of this project.
+     * <p/>
+     * Each module listed is a relative path to the directory containing the module.
+     * If {@code modules} is {@code null} or <i>empty</i> then modules
+     * will be removed from model as well as from xml
+     *
+     * @param modules
+     *         new project modules
+     * @return this model instance
      */
     public Model setModules(Collection<String> modules) {
         if (modules == null || modules.isEmpty()) {
@@ -476,8 +527,14 @@ public final class Model {
     /**
      * Sets properties that can be used throughout the POM as a
      * substitution, and are used as filters in resources if enabled.
+     * <p/>
      * The format is {@code <name>value</name>}.
-     * If new modules list is an empty removes properties element from xml
+     * if {@code properties} is {@code null} or <i>empty</i> then properties
+     * will be removed from model as well as from xml.
+     *
+     * @param properties
+     *         new project properties
+     * @return this model instance
      */
     public Model setProperties(Map<String, String> properties) {
         if (properties == null || properties.isEmpty()) {
@@ -490,13 +547,15 @@ public final class Model {
 
     /**
      * Sets the identifier for this artifact that is unique within the group given by the group ID.
-     * If new artifactId is {@code null} removes existing artifact element from xml
      * <p/>
-     * An artifact is something that is
-     * either produced or used by a project.
-     * Examples of artifacts produced by Maven for a
-     * project include: JARs, source and binary
-     * distributions, and WARs.
+     * An artifact is something that is either produced or used by a project.
+     * Examples of artifacts produced by Maven for a project include:
+     * JARs, source and binary distributions, and WARs.
+     * If {@code artifactId} is {@code null} then it will be remove from model as well as from xml.
+     *
+     * @param artifactId
+     *         new project artifact identifier
+     * @return this model instance
      */
     public Model setArtifactId(String artifactId) {
         this.artifactId = artifactId;
@@ -514,17 +573,18 @@ public final class Model {
     }
 
     /**
-     * Sets a detailed description of the project., used by Maven
-     * whenever it needs to describe the project, such as on the web site.
-     * If new description is {@code null} removes description element from xml
+     * Sets a detailed description of the project.
      * <p/>
-     * While this element can be specified as
-     * CDATA to enable the use of HTML tags within the
-     * description, it is discouraged to allow
-     * plain text representation. If you need to modify
-     * the index page of the generated web
-     * site, you are able to specify your own instead
-     * of adjusting this text.
+     * While this element can be specified as CDATA to enable the use of HTML tags
+     * within the description, it is discouraged to allow plain text representation.
+     * If you need to modify the index page of the generated web site,
+     * you are able to specify your own instead of adjusting this text.
+     * <p/>
+     * If {@code description} is {@code null} then it will be remove from model as well as from xml
+     *
+     * @param description
+     *         new project description
+     * @return this model instance
      */
     public Model setDescription(String description) {
         this.description = description;
@@ -545,10 +605,15 @@ public final class Model {
     }
 
     /**
-     * Sets a universally unique identifier for a project. It is
-     * normal to use a fully-qualified package name to
-     * distinguish it from other projects with a similar name (eg. <i>org.apache.maven</i>).
-     * If new groupId is {@code null} removes groupId element from xml
+     * Sets a universally unique identifier for a project.
+     * <p/>
+     * It is normal to use a fully-qualified package name to distinguish it from other projects
+     * with a similar name (eg. <i>org.apache.maven</i>).
+     * If {@code groupId} is {@code null} then it will be removed from model as well as from xml.
+     *
+     * @param groupId
+     *         new project group identifier
+     * @return this model instance
      */
     public Model setGroupId(String groupId) {
         this.groupId = groupId;
@@ -565,7 +630,12 @@ public final class Model {
 
     /**
      * Sets the current version of the artifact produced by this project.
-     * If new version is {@code null} removes version element from xml
+     * <p/>
+     * If {@code version} is {@code null} then it will be remove from model as well as from xml.
+     *
+     * @param version
+     *         new project version
+     * @return this model instance
      */
     public Model setVersion(String version) {
         this.version = version;
@@ -585,7 +655,12 @@ public final class Model {
 
     /**
      * Declares to which version of project descriptor this POM conforms.
-     * If new modelVersion is {@code null} removes modelVersion element from xml
+     * <p/>
+     * If {@code modelVersion} is {@code null} it will be removed from model and from xml as well.
+     *
+     * @param modelVersion
+     *         new project model version
+     * @return this model instance
      */
     public Model setModelVersion(String modelVersion) {
         this.modelVersion = modelVersion;
@@ -601,7 +676,12 @@ public final class Model {
 
     /**
      * Sets the full name of the project.
-     * If new name is {@code null} removes name element from xml
+     * <p/>
+     * If {@code name} is {@code null} it will be removed from model as well as from xml.
+     *
+     * @param name
+     *         new project name
+     * @return this model instance
      */
     public Model setName(String name) {
         this.name = name;
@@ -623,7 +703,6 @@ public final class Model {
 
     /**
      * Set the type of artifact this project produces
-     * If new packaging is {@code null} removes packaging element from xml
      * <p/>
      * For example:
      * <code>jar</code>
@@ -633,6 +712,11 @@ public final class Model {
      * Plugins can create their own packaging, and
      * therefore their own packaging types,
      * so this list does not contain all possible types.
+     * If {@code packaging} is {@code null} it will be removed from model as well as from xml.
+     *
+     * @param packaging
+     *         new project packaging
+     * @return this model instance
      */
     public Model setPackaging(String packaging) {
         this.packaging = packaging;
@@ -652,10 +736,13 @@ public final class Model {
     }
 
     /**
-     * Directly sets pom file to model.
+     * Sets pom file to model.
+     * <p/>
+     * When pom file i set, model methods such as {@link #getProjectDirectory()},
+     * {@link #getPomFile()} or {@link #save()} may be used.
      *
      * @param pom
-     *         pom file
+     *         pom file which model should be associated with
      */
     public Model setPomFile(File pom) {
         this.pom = pom;
@@ -663,6 +750,8 @@ public final class Model {
     }
 
     /**
+     * Returns model identifier
+     *
      * @return the model id as <code>groupId:artifactId:packaging:version</code>
      */
     public String getId() {
