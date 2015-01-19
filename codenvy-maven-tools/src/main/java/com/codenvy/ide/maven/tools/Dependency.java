@@ -104,6 +104,8 @@ public class Dependency {
 
     /**
      * Returns dependency exclusions if dependency has it or empty set if doesn't
+     * <p/>
+     * <b>Note: update methods should not be used on returned list</b>
      */
     public List<Exclusion> getExclusions() {
         if (exclusions == null) {
@@ -113,8 +115,7 @@ public class Dependency {
     }
 
     /**
-     * Returns the project group that produced the dependency,
-     * e.g. {@code org.apache.maven}.
+     * Returns the project group that produced the dependency, e.g. {@code org.apache.maven}.
      */
     public String getGroupId() {
         return groupId;
@@ -179,7 +180,15 @@ public class Dependency {
     }
 
     /**
-     * Adds new exclusion to the list of dependency exclusions
+     * Adds new exclusion to the list of dependency exclusions.
+     * <p/>
+     * If dependency doesn't have exclusions then it will be added to xml.
+     *
+     * @param exclusion
+     *         new exclusion which will be added
+     * @return this dependency instance
+     * @throws NullPointerException
+     *         when {@code exclusion} is {@code null}
      */
     public Dependency addExclusion(Exclusion exclusion) {
         requireNonNull(exclusion, "Required not null exclusion");
@@ -198,7 +207,14 @@ public class Dependency {
 
     /**
      * Removes exclusion from the dependency exclusions.
+     * <p/>
      * If last exclusion has been removed removes exclusions element as well.
+     *
+     * @param exclusion
+     *         exclusion which should be removed
+     * @return this dependency instance
+     * @throws NullPointerException
+     *         when {@code exclusion} is {@code null}
      */
     public Dependency removeExclusion(Exclusion exclusion) {
         requireNonNull(exclusion, "Required not null exclusion");
@@ -216,6 +232,13 @@ public class Dependency {
     /**
      * Sets list of artifacts that should be excluded from this dependency's
      * artifact list when it comes to calculating transitive dependencies.
+     * <p/>
+     * If {@code exclusions} is {@code null} or <i>empty</i> and this dependency instance is associated with
+     * xml element then {@code exclusions} be removed from model as well as from xml.
+     *
+     * @param exclusions
+     *         new dependency exclusions
+     * @return this dependency instance
      */
     public Dependency setExclusions(Collection<? extends Exclusion> exclusions) {
         if (exclusions == null || exclusions.isEmpty()) {
@@ -229,8 +252,10 @@ public class Dependency {
     }
 
     /**
-     * Sets the unique id for an artifact produced by
-     * the project group, e.g. {@code maven-artifact}.
+     * Sets the unique id for an artifact produced by the project group, e.g. {@code maven-artifact}.
+     * <p/>
+     * If {@code artifactId} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code artifactId} will be removed from model as well as from xml.
      */
     public Dependency setArtifactId(String artifactId) {
         this.artifactId = artifactId;
@@ -248,6 +273,13 @@ public class Dependency {
 
     /**
      * Sets the classifier of the dependency.
+     * <p/>
+     * If {@code classifier} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code classifier} will be removed from model as well as from xml.
+     *
+     * @param classifier
+     *         new dependency classifier
+     * @return this dependency instance
      */
     public Dependency setClassifier(String classifier) {
         this.classifier = classifier;
@@ -264,8 +296,14 @@ public class Dependency {
     }
 
     /**
-     * Sets the project group that produced the dependency,
-     * e.g. {@code org.apache.maven}.
+     * Sets the project group that produced the dependency, e.g. <i>org.apache.maven</i>.
+     * <p/>
+     * If {@code groupId} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code groupId} will be removed from model as well as from xml.
+     *
+     * @param groupId
+     *         new dependency groupId
+     * @return this dependency instance
      */
     public Dependency setGroupId(String groupId) {
         this.groupId = groupId;
@@ -283,7 +321,13 @@ public class Dependency {
 
     /**
      * Sets indicates the dependency is optional for use of this library.
+     * <p/>
+     * If {@code optional} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code optional} will be removed from model as well as from xml.
      *
+     * @param optional
+     *         new dependency optional parameter
+     * @return this dependency instance
      * @see #setOptional(boolean)
      */
     public Dependency setOptional(String optional) {
@@ -309,13 +353,17 @@ public class Dependency {
      * <li>system</li>
      * <li>provided</li>
      * </ul>
-     * Used to calculate the various classpath used for
-     * compilation, testing, and so on.
-     * It also assists in determining which artifacts
-     * to include in a distribution of
-     * this project. For more information, see
-     * <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">the
-     * dependency mechanism</a>.
+     * Used to calculate the various classpath used for compilation, testing, and so on.
+     * It also assists in determining which artifacts to include in a distribution of this project.
+     * For more information, see
+     * <a href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">the dependency mechanism</a>.
+     * <p/>
+     * If {@code scope} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code scope} will be removed from model as well as from xml.
+     *
+     * @param scope
+     *         new dependency scope
+     * @return this dependency instance
      */
     public Dependency setScope(String scope) {
         this.scope = scope;
@@ -347,6 +395,13 @@ public class Dependency {
      * New types can be defined by plugins that set
      * {@code extensions} to {@code true}, so
      * this is not a complete list.
+     * <p/>
+     * If {@code type} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code type} will be removed from model as well as from xml.
+     *
+     * @param type
+     *         new dependency type
+     * @return this dependency instance
      */
     public Dependency setType(String type) {
         this.type = type;
@@ -363,9 +418,15 @@ public class Dependency {
     }
 
     /**
-     * Set the version of the dependency, e.g. <code>3.2.1</code>.
-     * In Maven 2, this can also be
-     * specified as a range of versions.
+     * Set the version of the dependency, e.g. <i>3.2.1</i>.
+     * In Maven 2, this can also be specified as a range of versions.
+     * <p/>
+     * If {@code version} is {@code null}  and this dependency instance is associated with
+     * xml element then {@code version} will be removed from model as well as from xml.
+     *
+     * @param version
+     *         new dependency version
+     * @return this dependency instance
      */
     public Dependency setVersion(String version) {
         this.version = version;
