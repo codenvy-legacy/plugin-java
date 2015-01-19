@@ -65,6 +65,8 @@ import static java.util.Objects.requireNonNull;
  * to the right place of delegated xml file - when it is possible to do so.
  *
  * @author Eugene Voeovodin
+ *
+ * TODO doc
  */
 public final class Model {
 
@@ -124,12 +126,9 @@ public final class Model {
 
     /**
      * Get the identifier for this artifact that is unique within
-     * the group given by the
-     * group ID. An artifact is something that is
-     * either produced or used by a project.
-     * Examples of artifacts produced by Maven for a
-     * project include: JARs, source and binary
-     * distributions, and WARs.
+     * the group given by the group ID. An artifact is something that is
+     * either produced or used by a project. Examples of artifacts produced by
+     * Maven for a project include: JARs, source and binary distributions, and WARs.
      */
     public String getArtifactId() {
         return artifactId;
@@ -393,8 +392,8 @@ public final class Model {
         } else if (root.hasSingleChild("dependencyManagement")) {
             dependencyManagement.dmElement = root.getSingleChild("dependencyManagement").replaceWith(newDM.asXMLElement());
         } else {
-            root.insertChild(dependencyManagement.asXMLElement(),
-                             beforeAnyOf("dependencies", "build").or(inTheEnd()));
+            root.insertChild(dependencyManagement.asXMLElement(), beforeAnyOf("dependencies",
+                                                                              "build").or(inTheEnd()));
             dependencyManagement.dmElement = root.getSingleChild("dependencyManagement");
         }
         return this;
@@ -408,32 +407,9 @@ public final class Model {
      */
     public Model setModules(Collection<String> modules) {
         if (modules == null || modules.isEmpty()) {
-            root.removeChild("modules");
-            this.modules = null;
-            return this;
-        }
-        this.modules = new ArrayList<>(modules);
-        //if modules element exists we should replace it children
-        //with new set of modules, otherwise create element for it
-        if (root.hasSingleChild("modules")) {
-            final Element modulesElement = root.getSingleChild("modules");
-            //remove all modules
-            for (Element module : modulesElement.getChildren()) {
-                module.remove();
-            }
-            //append each new module to "modules" element
-            for (String module : modules) {
-                modulesElement.appendChild(createElement("module", module));
-            }
+            removeModules();
         } else {
-            final NewElement newModules = createElement("modules");
-            for (String module : modules) {
-                newModules.appendChild(createElement("module", module));
-            }
-            root.insertChild(newModules, beforeAnyOf("properties",
-                                                     "dependencyManagement",
-                                                     "dependencies",
-                                                     "build").or(inTheEnd()));
+            setModules0(modules);
         }
         return this;
     }
@@ -446,31 +422,9 @@ public final class Model {
      */
     public Model setProperties(Map<String, String> properties) {
         if (properties == null || properties.isEmpty()) {
-            root.removeChild("properties");
-            this.properties = null;
-            return this;
-        }
-        this.properties = new HashMap<>(properties);
-        //if properties element exists we should replace it children
-        //with new set of properties, otherwise create element for it
-        if (root.hasSingleChild("properties")) {
-            final Element propertiesElement = root.getSingleChild("properties");
-            for (Element property : propertiesElement.getChildren()) {
-                property.remove();
-            }
-            for (Map.Entry<String, String> property : properties.entrySet()) {
-                propertiesElement.appendChild(createElement(property.getKey(), property.getValue()));
-            }
+            removeProperties();
         } else {
-            final NewElement newProperties = createElement("properties");
-            for (Map.Entry<String, String> property : properties.entrySet()) {
-                newProperties.appendChild(createElement(property.getKey(), property.getValue()));
-            }
-            //insert new properties to xml
-            root.insertChild(newProperties,
-                             beforeAnyOf("dependencyManagement",
-                                         "dependencies",
-                                         "build").or(inTheEnd()));
+            setProperties0(properties);
         }
         return this;
     }
@@ -757,6 +711,67 @@ public final class Model {
         }
     }
 
+    private void removeProperties() {
+        root.removeChild("properties");
+        this.properties = null;
+    }
+
+    private void setProperties0(Map<String, String> properties) {
+        this.properties = new HashMap<>(properties);
+        //if properties element exists we should replace it children
+        //with new set of properties, otherwise create element for it
+        if (root.hasSingleChild("properties")) {
+            final Element propertiesElement = root.getSingleChild("properties");
+            for (Element property : propertiesElement.getChildren()) {
+                property.remove();
+            }
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                propertiesElement.appendChild(createElement(property.getKey(), property.getValue()));
+            }
+        } else {
+            final NewElement newProperties = createElement("properties");
+            for (Map.Entry<String, String> property : properties.entrySet()) {
+                newProperties.appendChild(createElement(property.getKey(), property.getValue()));
+            }
+            //insert new properties to xml
+            root.insertChild(newProperties,
+                             beforeAnyOf("dependencyManagement",
+                                         "dependencies",
+                                         "build").or(inTheEnd()));
+        }
+    }
+
+    private void removeModules() {
+        root.removeChild("modules");
+        this.modules = null;
+    }
+
+    private void setModules0(Collection<String> modules) {
+        this.modules = new ArrayList<>(modules);
+        //if modules element exists we should replace it children
+        //with new set of modules, otherwise create element for it
+        if (root.hasSingleChild("modules")) {
+            final Element modulesElement = root.getSingleChild("modules");
+            //remove all modules
+            for (Element module : modulesElement.getChildren()) {
+                module.remove();
+            }
+            //append each new module to "modules" element
+            for (String module : modules) {
+                modulesElement.appendChild(createElement("module", module));
+            }
+        } else {
+            final NewElement newModules = createElement("modules");
+            for (String module : modules) {
+                newModules.appendChild(createElement("module", module));
+            }
+            root.insertChild(newModules, beforeAnyOf("properties",
+                                                     "dependencyManagement",
+                                                     "dependencies",
+                                                     "build").or(inTheEnd()));
+        }
+    }
+
     private void removeModuleFromXML(String module) {
         if (modules.isEmpty()) {
             root.removeChild("modules");
@@ -787,26 +802,26 @@ public final class Model {
         model.name = root.getChildText("name");
         model.description = root.getChildText("description");
         model.packaging = root.getChildText("packaging");
-        if (root.hasChild("parent")) {
+        if (root.hasSingleChild("parent")) {
             model.parent = new Parent(root.getSingleChild("parent"));
         }
-        if (root.hasChild("dependencyManagement")) {
+        if (root.hasSingleChild("dependencyManagement")) {
             final Element dm = tree.getSingleElement("/project/dependencyManagement");
             final List<Dependency> dependencies =
                     tree.getElements("/project/dependencyManagement/dependencies/dependency", TO_DEPENDENCY_MAPPER);
             model.dependencyManagement = new DependencyManagement(dm, dependencies);
         }
-        if (root.hasChild("build")) {
+        if (root.hasSingleChild("build")) {
             model.build = new Build(root.getSingleChild("build"));
         }
-        if (root.hasChild("dependencies")) {
+        if (root.hasSingleChild("dependencies")) {
             final List<Dependency> dependencies = tree.getElements("/project/dependencies/dependency", TO_DEPENDENCY_MAPPER);
             model.dependencies = new Dependencies(root, dependencies);
         }
-        if (root.hasChild("modules")) {
+        if (root.hasSingleChild("modules")) {
             model.modules = tree.getElements("/project/modules/module", TO_MODULE_MAPPER);
         }
-        if (root.hasChild("properties")) {
+        if (root.hasSingleChild("properties")) {
             model.properties = fetchProperties(root.getSingleChild("properties"));
         }
         return model;

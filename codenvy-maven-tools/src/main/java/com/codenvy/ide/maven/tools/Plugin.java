@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,18 @@ import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
-//TODO
+/**
+ * Describes <i>/project/build/plugins/plugin</i>.
+ * <p/>
+ * Supports next data:
+ * <ul>
+ * <li>artifactId</li>
+ * <li>groupId</li>
+ * <li>configuration</li>
+ * </ul>
+ *
+ * @author Eugene Voevodin
+ */
 public class Plugin {
 
     private String              artifactId;
@@ -35,14 +46,41 @@ public class Plugin {
         pluginElement = element;
     }
 
+    /**
+     * Returns plugin artifact identifier
+     */
     public String getArtifactId() {
         return artifactId;
     }
 
+    /**
+     * Returns plugin group identifier
+     */
     public String getGroupId() {
         return groupId;
     }
 
+    /**
+     * Returns plugin configuration.
+     * If plugin has nested configuration elements it will not be fetched.
+     * <p/>
+     * Consider following configuration:
+     * <pre>
+     * {@code
+     *
+     *     <configuration>
+     *         <item1>value1</item1>
+     *         <item2>value2</item2>
+     *         <properties>
+     *             <property1>property</property1>
+     *         </properties>
+     *     </configuration>
+     * }
+     * </pre>
+     * <p/>
+     * Resulting map will contain next data <i>item1="value1"</i>,
+     * <i>item2="value2"</i> and <i>properties=""</i>
+     */
     public Map<String, String> getConfiguration() {
         if (configuration == null) {
             return emptyMap();
@@ -50,6 +88,15 @@ public class Plugin {
         return new HashMap<>(configuration);
     }
 
+    /**
+     * Sets plugin artifact identifier
+     *
+     * @param artifactId
+     *         new artifact identifier, if new artifact id is {@code null} and current plugin element
+     *         related with xml element then <i>artifactId</i> element will be removed from
+     *         xml as well as from plugin model
+     * @return this plugin instance
+     */
     public Plugin setArtifactId(String artifactId) {
         this.artifactId = artifactId;
         if (!isNew()) {
@@ -64,6 +111,15 @@ public class Plugin {
         return this;
     }
 
+    /**
+     * Sets plugin group identifier
+     *
+     * @param groupId
+     *         new group identifier, if new group id is {@code null} and current plugin element
+     *         related with xml element then <i>groupId</i> element will be removed from
+     *         xml as well as from plugin model
+     * @return this plugin instance
+     */
     public Plugin setGroupId(String groupId) {
         this.groupId = groupId;
         if (!isNew()) {
@@ -78,6 +134,15 @@ public class Plugin {
         return this;
     }
 
+    /**
+     * Sets new configuration with new configuration
+     *
+     * @param configuration
+     *         new plugin configuration, if new configuration is {@code null} or <i>empty</i>
+     *         and plugin element related with xml element then <i>configuration</i> element
+     *         will be removed from xml as well as from plugin model
+     * @return this plugin instance
+     */
     public Plugin setConfiguration(Map<String, String> configuration) {
         if (configuration == null || configuration.isEmpty()) {
             removeConfiguration();
@@ -87,38 +152,20 @@ public class Plugin {
         return this;
     }
 
-    private void setConfiguration0(Map<String, String> configuration) {
-        this.configuration = new HashMap<>(configuration);
-
-        if (isNew()) return;
-
-        if (pluginElement.hasSingleChild("configuration")) {
-            final Element confElement = pluginElement.getSingleChild("configuration");
-            //remove all configuration properties from element
-            for (Element property : confElement.getChildren()) {
-                property.remove();
-            }
-            //append each new property to "configuration" element
-            for (Map.Entry<String, String> property : configuration.entrySet()) {
-                confElement.appendChild(createElement(property.getKey(), property.getValue()));
-            }
-        } else {
-            final NewElement newConfiguration = createElement("configuration");
-            for (Map.Entry<String, String> entry : configuration.entrySet()) {
-                newConfiguration.appendChild(createElement(entry.getKey(), entry.getValue()));
-            }
-            //insert new configuration to xml
-            pluginElement.appendChild(newConfiguration);
-        }
-    }
-
-    private void removeConfiguration() {
-        if (!isNew()) {
-            pluginElement.removeChild("properties");
-        }
-        configuration = null;
-    }
-
+    /**
+     * Sets configuration property value as {@literal <name>value</name>}.
+     * <p/>
+     * If element doesn't have configuration element it will be created as well.
+     * <b>Note: it should not be used with nested configuration elements</b>
+     *
+     * @param name
+     *         property name to set
+     * @param value
+     *         property value to set
+     * @return this plugin instance
+     * @throws NullPointerException
+     *         when {@code name} or {@code value} is {@code null}
+     */
     public Plugin setConfigProperty(String name, String value) {
         requireNonNull(name, "Configuration property name should not be null");
         requireNonNull(value, "Configuration property value should not be null");
@@ -129,6 +176,17 @@ public class Plugin {
         return this;
     }
 
+    /**
+     * Removes configuration property.
+     * If configuration has nested element with removal {@code name}
+     * it will be removed with all related children.
+     *
+     * @param name
+     *         configuration property which indicated element that should be removed
+     * @return this plugin instance
+     * @throws NullPointerException
+     *         when {@code name} is null
+     */
     public Plugin removeConfigProperty(String name) {
         requireNonNull(name, "Configuration property name should ne null");
         if (configuration().remove(name) != null && !isNew()) {
@@ -168,6 +226,38 @@ public class Plugin {
 
     private Map<String, String> configuration() {
         return configuration == null ? configuration = new HashMap<>() : configuration;
+    }
+
+    private void setConfiguration0(Map<String, String> configuration) {
+        this.configuration = new HashMap<>(configuration);
+
+        if (isNew()) return;
+
+        if (pluginElement.hasSingleChild("configuration")) {
+            final Element confElement = pluginElement.getSingleChild("configuration");
+            //remove all configuration properties from element
+            for (Element property : confElement.getChildren()) {
+                property.remove();
+            }
+            //append each new property to "configuration" element
+            for (Map.Entry<String, String> property : configuration.entrySet()) {
+                confElement.appendChild(createElement(property.getKey(), property.getValue()));
+            }
+        } else {
+            final NewElement newConfiguration = createElement("configuration");
+            for (Map.Entry<String, String> entry : configuration.entrySet()) {
+                newConfiguration.appendChild(createElement(entry.getKey(), entry.getValue()));
+            }
+            //insert new configuration to xml
+            pluginElement.appendChild(newConfiguration);
+        }
+    }
+
+    private void removeConfiguration() {
+        if (!isNew()) {
+            pluginElement.removeChild("properties");
+        }
+        configuration = null;
     }
 
     private boolean isNew() {
