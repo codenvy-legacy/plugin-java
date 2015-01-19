@@ -42,8 +42,20 @@ public class Plugin {
 
     Element pluginElement;
 
+    public Plugin() {
+    }
+
     Plugin(Element element) {
         pluginElement = element;
+        if (element.hasSingleChild("artifactId")) {
+            artifactId = element.getChildText("artifactId");
+        }
+        if (element.hasSingleChild("groupId")) {
+            groupId = element.getChildText("groupId");
+        }
+        if (element.hasSingleChild("configuration")) {
+            configuration = fetchConfiguration(element.getSingleChild("configuration"));
+        }
     }
 
     /**
@@ -79,7 +91,7 @@ public class Plugin {
      * </pre>
      * <p/>
      * Resulting map will contain next data <i>item1="value1"</i>,
-     * <i>item2="value2"</i> and <i>properties=""</i>
+     * <i>item2="value2"</i> and <i>properties=null</i>
      *
      * @return plugin configuration or {@link java.util.Collections#emptyMap()}
      * when plugin doesn't have configuration
@@ -198,6 +210,18 @@ public class Plugin {
         return this;
     }
 
+    /**
+     * Returns plugin identifier as <i>groupId:artifactId</i>
+     */
+    public String getId() {
+        return groupId + ':' + artifactId;
+    }
+
+    @Override
+    public String toString() {
+        return getId();
+    }
+
     private void removeConfigPropertyFromXML(String name) {
         if (configuration.isEmpty()) {
             pluginElement.removeChild("configuration");
@@ -216,15 +240,6 @@ public class Plugin {
         } else {
             pluginElement.getSingleChild("configuration").appendChild(createElement(name, value));
         }
-    }
-
-    public String getId() {
-        return groupId + ':' + artifactId;
-    }
-
-    @Override
-    public String toString() {
-        return getId();
     }
 
     private Map<String, String> configuration() {
@@ -261,6 +276,34 @@ public class Plugin {
             pluginElement.removeChild("properties");
         }
         configuration = null;
+    }
+
+    private Map<String, String> fetchConfiguration(Element element) {
+        final Map<String, String> configuration = new HashMap<>();
+        for (Element configProperty : element.getChildren()) {
+            if (!configProperty.hasChildren()) {
+                configuration.put(configProperty.getName(), configProperty.getText());
+            }
+        }
+        return configuration;
+    }
+
+    NewElement asXMLElement() {
+        final NewElement xmlPlugin = createElement("plugin");
+        if (groupId != null) {
+            xmlPlugin.appendChild(createElement("groupId", groupId));
+        }
+        if (artifactId != null) {
+            xmlPlugin.appendChild(createElement("artifactId", artifactId));
+        }
+        if (configuration != null && !configuration.isEmpty()) {
+            final NewElement configElement = createElement("configuration");
+            for (Map.Entry<String, String> configProperty : configuration.entrySet()) {
+                configElement.appendChild(createElement(configProperty.getKey(), configProperty.getValue()));
+            }
+            xmlPlugin.appendChild(configElement);
+        }
+        return xmlPlugin;
     }
 
     private boolean isNew() {

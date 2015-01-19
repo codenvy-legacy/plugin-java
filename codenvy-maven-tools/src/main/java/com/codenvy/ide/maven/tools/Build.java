@@ -41,6 +41,7 @@ import static java.util.Collections.emptyList;
 public class Build {
 
     private static final ElementMapper<Resource> RESOURCE_MAPPER = new ResourceMapper();
+    private static final ElementMapper<Plugin>   PLUGIN_MAPPER   = new PluginMapper();
 
     private String         sourceDirectory;
     private String         testSourceDirectory;
@@ -64,6 +65,9 @@ public class Build {
         testOutputDirectory = buildElement.getChildText("testOutputDirectory");
         if (buildElement.hasSingleChild("resources")) {
             resources = buildElement.getSingleChild("resources").getChildren(RESOURCE_MAPPER);
+        }
+        if (buildElement.hasSingleChild("plugins")) {
+            plugins = buildElement.getSingleChild("plugins").getChildren(PLUGIN_MAPPER);
         }
     }
 
@@ -225,6 +229,12 @@ public class Build {
         return this;
     }
 
+    /**
+     * Returns build plugins
+     *
+     * @return build plugins or {@link java.util.Collections#emptyMap()} when
+     * build doesn't have plugins
+     */
     public List<Plugin> getPlugins() {
         if (plugins == null) {
             return emptyList();
@@ -232,7 +242,12 @@ public class Build {
         return new ArrayList<>(plugins);
     }
 
-    //mapping getId() -> Plugin
+    /**
+     * Returns build plugins mapped as {@code plugin.getId() -> plugin}
+     *
+     * @return mapped plugins or empty map if build doesn't have plugins
+     * @see Plugin#getId()
+     */
     public Map<String, Plugin> getPluginsAsMap() {
         final Map<String, Plugin> pluginsMap = new HashMap<>();
         for (Plugin plugin : plugins()) {
@@ -241,40 +256,92 @@ public class Build {
         return pluginsMap;
     }
 
-    public Build setPlugins() {
-        //TODO
+    /**
+     * Sets build plugins.
+     *
+     * @param plugins
+     *         new build plugins, if {@code plugins} parameter is {@code null}
+     *         and build associated with xml element then plugins will be removed
+     *         from xml as well as from model
+     * @return this build instance
+     */
+    public Build setPlugins(Collection<? extends Plugin> plugins) {
+        if (plugins == null || plugins.isEmpty()) {
+            removePlugins();
+        } else {
+            setPlugins0(plugins);
+        }
         return this;
     }
 
+    private void removePlugins() {
+        if (!isNew()) {
+            buildElement.removeChild("plugins");
+        }
+        plugins = null;
+    }
+
+    private void setPlugins0(Collection<? extends Plugin> plugins) {
+        this.plugins = new ArrayList<>(plugins);
+
+        if (isNew()) return;
+        //if plugins element exists we should replace it children
+        //with new set of plugins, otherwise create element for it
+        if (buildElement.hasSingleChild("plugins")) {
+            //remove "plugins" element children
+            final Element pluginsElement = buildElement.getSingleChild("plugins");
+            for (Element plugin : pluginsElement.getChildren()) {
+                plugin.remove();
+            }
+            //append each new plugin to "plugins" element
+            for (Plugin plugin : plugins) {
+                pluginsElement.appendChild(plugin.asXMLElement());
+            }
+        } else {
+            buildElement.appendChild(newPluginsElement(plugins));
+        }
+    }
+
     private List<Plugin> plugins() {
-        return plugins == null ? plugins = new ArrayList<>() : null;
+        return plugins == null ? plugins = new ArrayList<>() : plugins;
     }
 
     NewElement asXMLElement() {
-        final NewElement buildEl = createElement("build");
+        final NewElement xmlBuildElement = createElement("build");
         if (sourceDirectory != null) {
-            buildEl.appendChild(createElement("sourceDirectory", sourceDirectory));
+            xmlBuildElement.appendChild(createElement("sourceDirectory", sourceDirectory));
         }
         if (testSourceDirectory != null) {
-            buildEl.appendChild(createElement("testSourceDirectory", testSourceDirectory));
+            xmlBuildElement.appendChild(createElement("testSourceDirectory", testSourceDirectory));
         }
         if (scriptSourceDirectory != null) {
-            buildEl.appendChild(createElement("scriptSourceDirectory", scriptSourceDirectory));
+            xmlBuildElement.appendChild(createElement("scriptSourceDirectory", scriptSourceDirectory));
         }
         if (outputDirectory != null) {
-            buildEl.appendChild(createElement("outputDirectory", outputDirectory));
+            xmlBuildElement.appendChild(createElement("outputDirectory", outputDirectory));
         }
         if (testOutputDirectory != null) {
-            buildEl.appendChild(createElement("testOutputDirectory", testOutputDirectory));
+            xmlBuildElement.appendChild(createElement("testOutputDirectory", testOutputDirectory));
         }
         if (resources != null && !resources.isEmpty()) {
-            buildEl.appendChild(newResourcesElement(resources));
+            xmlBuildElement.appendChild(newResourcesElement(resources));
         }
-        return buildEl;
+        if (plugins != null && !plugins.isEmpty()) {
+            xmlBuildElement.appendChild(newPluginsElement(plugins));
+        }
+        return xmlBuildElement;
     }
 
     private boolean isNew() {
         return buildElement == null;
+    }
+
+    private NewElement newPluginsElement(Collection<? extends Plugin> plugins) {
+        final NewElement xmlPlugins = createElement("plugins");
+        for (Plugin plugin : plugins) {
+            xmlPlugins.appendChild(plugin.asXMLElement());
+        }
+        return xmlPlugins;
     }
 
     private NewElement newResourcesElement(List<Resource> resources) {
@@ -319,6 +386,14 @@ public class Build {
         @Override
         public Resource map(Element element) {
             return new Resource(element);
+        }
+    }
+
+    private static class PluginMapper implements ElementMapper<Plugin> {
+
+        @Override
+        public Plugin map(Element element) {
+            return new Plugin(element);
         }
     }
 }
