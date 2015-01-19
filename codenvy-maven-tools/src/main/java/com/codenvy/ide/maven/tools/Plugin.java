@@ -80,6 +80,9 @@ public class Plugin {
      * <p/>
      * Resulting map will contain next data <i>item1="value1"</i>,
      * <i>item2="value2"</i> and <i>properties=""</i>
+     *
+     * @return plugin configuration or {@link java.util.Collections#emptyMap()}
+     * when plugin doesn't have configuration
      */
     public Map<String, String> getConfiguration() {
         if (configuration == null) {
