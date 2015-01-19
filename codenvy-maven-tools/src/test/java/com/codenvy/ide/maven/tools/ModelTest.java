@@ -20,10 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -475,6 +477,16 @@ public class ModelTest {
                    "                 <directory>${basedir}/src/main/temp</directory>\n" +
                    "            </resource>\n" +
                    "         </resources>\n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "                <configuration>\n" +
+                   "                    <item1>value1</item1>\n" +
+                   "                    <item2>value2</item2>\n" +
+                   "                </configuration>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
                    "    </build>\n" +
                    "</project>");
         final Model model = Model.readFrom(pom);
@@ -485,7 +497,8 @@ public class ModelTest {
              .setScriptSourceDirectory(null)
              .setTestOutputDirectory(null)
              .setTestSourceDirectory(null)
-             .setResources(null);
+             .setResources(null)
+             .setPlugins(null);
 
         model.writeTo(pom);
 
@@ -571,7 +584,7 @@ public class ModelTest {
     }
 
     @Test
-    public void shouldBeAbleToUpdateResources() throws Exception {
+    public void shouldBeAbleToSetResources() throws Exception {
         final File pom = getTestPomFile();
         write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                    "<project>\n" +
@@ -583,10 +596,28 @@ public class ModelTest {
                    "         </resources>\n" +
                    "    </build>\n" +
                    "</project>");
+        final Model model = Model.readFrom(pom);
 
+        model.getBuild()
+             .setResources(asList(new Resource().setDirectory("directory1"),
+                                  new Resource().setDirectory("directory2")));
+        model.save();
 
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <resources>\n" +
+                                "            <resource>\n" +
+                                "                <directory>directory1</directory>\n" +
+                                "            </resource>\n" +
+                                "            <resource>\n" +
+                                "                <directory>directory2</directory>\n" +
+                                "            </resource>\n" +
+                                "         </resources>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        assertEquals(model.getBuild().getResources().size(), 2);
     }
-
 
     @Test
     public void shouldCreateDependenciesParentElementWhenAddingFirstDependency() throws Exception {
@@ -914,6 +945,261 @@ public class ModelTest {
                                 "    <artifactId>artifact-id</artifactId>\n" +
                                 "    <groupId>group-id</groupId>\n" +
                                 "    <version>x.x.x</version>\n" +
+                                "</project>");
+    }
+
+    @Test
+    public void shouldBeAbleToGetPluginsFromBuild() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "                <configuration>\n" +
+                   "                    <item1>value1</item1>\n" +
+                   "                    <item2>value2</item2>\n" +
+                   "                </configuration>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final Build build = model.getBuild();
+
+        assertEquals(build.getPlugins().size(), 1);
+        assertTrue(build.getPluginsAsMap().containsKey("groupId:artifactId"));
+        final Plugin plugin = build.getPluginsAsMap().get("groupId:artifactId");
+        assertEquals(plugin.getArtifactId(), "artifactId");
+        assertEquals(plugin.getGroupId(), "groupId");
+        assertEquals(plugin.getConfiguration().get("item1"), "value1");
+        assertEquals(plugin.getConfiguration().get("item2"), "value2");
+        assertNull(plugin.getConfiguration().get("properties"));
+    }
+
+    @Test
+    public void shouldBeAbleToSetPluginConfiguration() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "                <configuration>\n" +
+                   "                    <item1>value1</item1>\n" +
+                   "                    <item2>value2</item2>\n" +
+                   "                </configuration>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final Plugin plugin = model.getBuild()
+                                   .getPlugins()
+                                   .get(0);
+        plugin.setConfiguration(singletonMap("newItem", "value"));
+        model.save();
+
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <plugins>\n" +
+                                "            <plugin>\n" +
+                                "                <artifactId>artifactId</artifactId>\n" +
+                                "                <groupId>groupId</groupId>\n" +
+                                "                <configuration>\n" +
+                                "                    <newItem>value</newItem>\n" +
+                                "                </configuration>\n" +
+                                "            </plugin>\n" +
+                                "        </plugins>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        assertEquals(plugin.getConfiguration(), singletonMap("newItem", "value"));
+    }
+
+    @Test
+    public void shouldBeAbleToChangePluginConfigurationProperty() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "                <configuration>\n" +
+                   "                    <item1>value1</item1>\n" +
+                   "                    <item2>value2</item2>\n" +
+                   "                </configuration>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final Plugin plugin = model.getBuild()
+                                   .getPlugins()
+                                   .get(0);
+        plugin.setConfigProperty("item1", "other-value");
+        model.save();
+
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <plugins>\n" +
+                                "            <plugin>\n" +
+                                "                <artifactId>artifactId</artifactId>\n" +
+                                "                <groupId>groupId</groupId>\n" +
+                                "                <configuration>\n" +
+                                "                    <item1>other-value</item1>\n" +
+                                "                    <item2>value2</item2>\n" +
+                                "                </configuration>\n" +
+                                "            </plugin>\n" +
+                                "        </plugins>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        final Map<String, String> expectedConfig = new HashMap<>();
+        expectedConfig.put("item1", "other-value");
+        expectedConfig.put("item2", "value2");
+        assertEquals(plugin.getConfiguration(), expectedConfig);
+    }
+
+    @Test
+    public void configurationShouldBeRemovedWhenLastPluginConfigurationPropertyWasRemoved() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "                <configuration>\n" +
+                   "                    <item1>value1</item1>\n" +
+                   "                </configuration>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.getBuild()
+             .getPlugins()
+             .get(0)
+             .removeConfigProperty("item1");
+        model.save();
+
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <plugins>\n" +
+                                "            <plugin>\n" +
+                                "                <artifactId>artifactId</artifactId>\n" +
+                                "                <groupId>groupId</groupId>\n" +
+                                "            </plugin>\n" +
+                                "        </plugins>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        assertTrue(model.getBuild()
+                        .getPlugins()
+                        .get(0)
+                        .getConfiguration()
+                        .isEmpty());
+    }
+
+    @Test
+    public void shouldAddConfigurationWhenFirstConfigurationPropertyAdded() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final Plugin plugin = model.getBuild()
+                                   .getPlugins()
+                                   .get(0);
+        plugin.setConfigProperty("item1", "value1");
+        model.save();
+
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <plugins>\n" +
+                                "            <plugin>\n" +
+                                "                <artifactId>artifactId</artifactId>\n" +
+                                "                <groupId>groupId</groupId>\n" +
+                                "                <configuration>\n" +
+                                "                    <item1>value1</item1>\n" +
+                                "                </configuration>\n" +
+                                "            </plugin>\n" +
+                                "        </plugins>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        assertEquals(plugin.getConfiguration(), singletonMap("item1", "value1"));
+    }
+
+    @Test
+    public void shouldBeAbleToSetBuildPlugins() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <!-- BUILD PLUGINS --> \n" +
+                   "        <plugins>\n" +
+                   "            <plugin>\n" +
+                   "                <artifactId>artifactId</artifactId>\n" +
+                   "                <groupId>groupId</groupId>\n" +
+                   "            </plugin>\n" +
+                   "        </plugins>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        model.getBuild()
+             .setPlugins(asList(new Plugin().setArtifactId("plugin1-artifactId")
+                                            .setGroupId("plugin1-groupId")
+                                            .setConfigProperty("p1-config-property", "value"),
+                                new Plugin().setArtifactId("plugin2-artifactId")
+                                            .setGroupId("plugin2-groupId")
+                                            .setConfigProperty("p2-config-property", "value")));
+        model.save();
+
+        assertEquals(model.getBuild().getPlugins().size(), 2);
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <!-- BUILD PLUGINS --> \n" +
+                                "        <plugins>\n" +
+                                "            <plugin>\n" +
+                                "                <groupId>plugin1-groupId</groupId>\n" +
+                                "                <artifactId>plugin1-artifactId</artifactId>\n" +
+                                "                <configuration>\n" +
+                                "                    <p1-config-property>value</p1-config-property>\n" +
+                                "                </configuration>\n" +
+                                "            </plugin>\n" +
+                                "            <plugin>\n" +
+                                "                <groupId>plugin2-groupId</groupId>\n" +
+                                "                <artifactId>plugin2-artifactId</artifactId>\n" +
+                                "                <configuration>\n" +
+                                "                    <p2-config-property>value</p2-config-property>\n" +
+                                "                </configuration>\n" +
+                                "            </plugin>\n" +
+                                "        </plugins>\n" +
+                                "    </build>\n" +
                                 "</project>");
     }
 
