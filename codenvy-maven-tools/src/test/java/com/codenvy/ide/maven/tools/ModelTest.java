@@ -348,7 +348,6 @@ public class ModelTest {
                                 "</project>");
     }
 
-
     @Test
     public void shouldBeAbleToSetBuildToModelWhichDoesNotHaveIt() throws Exception {
         final File pom = getTestPomFile();
@@ -419,6 +418,8 @@ public class ModelTest {
                    "    <build>\n" +
                    "        <sourceDirectory>src/main/java</sourceDirectory>\n" +
                    "        <testSourceDirectory>src/main/test</testSourceDirectory>\n" +
+                   "        <scriptSourceDirectory>src/main/scripts</scriptSourceDirectory>\n" +
+                   "        <testOutputDirectory>src/main/testOutput</testOutputDirectory>\n" +
                    "    </build>\n" +
                    "</project>");
         final Model model = Model.readFrom(pom);
@@ -434,9 +435,16 @@ public class ModelTest {
                                 "    <build>\n" +
                                 "        <sourceDirectory>src/main/groovy</sourceDirectory>\n" +
                                 "        <testSourceDirectory>src/main/test</testSourceDirectory>\n" +
+                                "        <scriptSourceDirectory>src/main/scripts</scriptSourceDirectory>\n" +
+                                "        <testOutputDirectory>src/main/testOutput</testOutputDirectory>\n" +
                                 "        <outputDirectory>output/path</outputDirectory>\n" +
                                 "    </build>\n" +
                                 "</project>");
+        assertEquals(model.getBuild().getSourceDirectory(), "src/main/groovy");
+        assertEquals(model.getBuild().getTestSourceDirectory(), "src/main/test");
+        assertEquals(model.getBuild().getOutputDirectory(), "output/path");
+        assertEquals(model.getBuild().getTestOutputDirectory(), "src/main/testOutput");
+        assertEquals(model.getBuild().getScriptSourceDirectory(), "src/main/scripts");
     }
 
     @Test
