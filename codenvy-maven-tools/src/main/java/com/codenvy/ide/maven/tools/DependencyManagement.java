@@ -36,10 +36,21 @@ public class DependencyManagement {
         this.dependencies = new Dependencies(element, dependencies);
     }
 
+    /**
+     * Returns list of dependencies or empty list if project doesn't have dependencies.
+     * <p/>
+     * <b>Note: update methods should not be used on returned list</b>
+     *
+     * @see #dependencies()
+     */
     public List<Dependency> getDependencies() {
         return dependencies().get();
     }
 
+    /**
+     * Returns returns {@link Dependencies} instance which
+     * helps to manage project dependencies
+     */
     public Dependencies dependencies() {
         if (dependencies == null) {
             dependencies = new Dependencies(dmElement);
@@ -47,11 +58,9 @@ public class DependencyManagement {
         return dependencies;
     }
 
-    //TODO
     void remove() {
         if (dmElement != null) {
             dmElement.remove();
-            dependencies = null;
         }
     }
 
