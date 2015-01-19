@@ -139,6 +139,13 @@ public class Build {
 
     /**
      * Sets the path to directory containing the script sources of the project
+     * <p/>
+     * If {@code scriptSourceDirectory} is {@code null} and this build instance is associated with
+     * xml element then {@code scriptSourceDirectory} will be removed from model as well as from xml.
+     *
+     * @param scriptSourceDirectory
+     *         new build script source directory
+     * @return this build instance
      */
     public Build setScriptSourceDirectory(String scriptSourceDirectory) {
         this.scriptSourceDirectory = scriptSourceDirectory;
@@ -156,6 +163,12 @@ public class Build {
 
     /**
      * Sets the path to directory containing the source of the project.
+     * <p/>
+     * If {@code sourceDirectory} is {@code null} and this build instance is associated with
+     * xml element then {@code sourceDirectory} will be removed from model as well as from xml.
+     *
+     * @param sourceDirectory
+     *         new build source directory
      */
     public Build setSourceDirectory(String sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
@@ -173,6 +186,13 @@ public class Build {
 
     /**
      * Sets the path to directory where compiled test classes are placed.
+     * <p/>
+     * If {@code testOutputDirectory} is {@code null} and this build instance is associated with
+     * xml element then {@code testOutputDirectory} will be removed from model as well as from xml.
+     *
+     * @param testOutputDirectory
+     *         new build test output directory
+     * @return this build instance
      */
     public Build setTestOutputDirectory(String testOutputDirectory) {
         this.testOutputDirectory = testOutputDirectory;
@@ -190,6 +210,13 @@ public class Build {
 
     /**
      * Sets the path to directory containing the unit test source of the project.
+     * <p/>
+     * If {@code testSourceDirectory} is {@code null} and this build instance is associated with
+     * xml element then {@code testSourceDirectory} will be removed from model as well as from xml.
+     *
+     * @param testSourceDirectory
+     *         new build test source directory
+     * @return this build instance
      */
     public Build setTestSourceDirectory(String testSourceDirectory) {
         this.testSourceDirectory = testSourceDirectory;
@@ -208,6 +235,8 @@ public class Build {
     /**
      * Returns list of resource elements which contains information
      * about where associated with project files should be included
+     * <p/>
+     * <b>Note: update methods should not be used on returned list</b>
      */
     public List<Resource> getResources() {
         if (resources == null) {
@@ -219,6 +248,13 @@ public class Build {
     /**
      * Sets build resources, each resource contains information about where
      * associated with project files should be included.
+     * <p/>
+     * If {@code resources} is {@code null} or <i>empty</i> and this build instance is associated with
+     * xml element then {@code resources} will be removed from model as well as from xml.
+     *
+     * @param resources
+     *         new build resources
+     * @return this build instance
      */
     public Build setResources(Collection<? extends Resource> resources) {
         if (resources == null || resources.isEmpty()) {
@@ -230,10 +266,11 @@ public class Build {
     }
 
     /**
-     * Returns build plugins
+     * Returns build plugins.
+     * <p/>
+     * <b>Note: update methods should not be used on returned list</b>
      *
-     * @return build plugins or {@link java.util.Collections#emptyMap()} when
-     * build doesn't have plugins
+     * @return build plugins or empty map when build doesn't have plugins
      */
     public List<Plugin> getPlugins() {
         if (plugins == null) {
