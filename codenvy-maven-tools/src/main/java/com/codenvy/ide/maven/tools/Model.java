@@ -823,6 +823,9 @@ public final class Model {
 
     /**
      * Updates associated with model pom file content
+     *
+     * @throws IllegalStateException
+     *         when there is no pom file associated with model
      */
     public void save() throws IOException {
         if (pom == null) {

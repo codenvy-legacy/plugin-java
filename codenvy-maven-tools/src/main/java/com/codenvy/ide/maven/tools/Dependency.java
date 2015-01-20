@@ -22,7 +22,9 @@ import java.util.List;
 import static com.codenvy.commons.xml.NewElement.createElement;
 import static com.codenvy.commons.xml.XMLTreeLocation.after;
 import static com.codenvy.commons.xml.XMLTreeLocation.afterAnyOf;
+import static com.codenvy.commons.xml.XMLTreeLocation.before;
 import static com.codenvy.commons.xml.XMLTreeLocation.inTheBegin;
+import static com.codenvy.commons.xml.XMLTreeLocation.inTheEnd;
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
@@ -289,7 +291,7 @@ public class Dependency {
             } else if (dependencyElement.hasSingleChild("classifier")) {
                 dependencyElement.getSingleChild("classifier").setText(classifier);
             } else {
-                dependencyElement.appendChild(createElement("classifier", classifier));
+                dependencyElement.insertChild(createElement("classifier", classifier), before("exclusions").or(inTheEnd()));
             }
         }
         return this;
@@ -459,13 +461,6 @@ public class Dependency {
         return setOptional(String.valueOf(optional));
     }
 
-    /**
-     * @return the management key as {@code groupId:artifactId:type}
-     */
-    public String getManagementKey() {
-        return groupId + ":" + artifactId + ":" + type + (classifier != null ? ":" + classifier : "");
-    }
-
     @Override
     public String toString() {
         return "Dependency {groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", type=" + type + "}";
@@ -506,11 +501,11 @@ public class Dependency {
     }
 
     private void setExclusions0(Collection<? extends Exclusion> exclusions) {
-        for (Exclusion exclusion : exclusions) {
+        for (Exclusion exclusion : exclusions()) {
             exclusion.remove();
         }
         //use addExclusion to add and associate each new exclusion with element
-        exclusions = new ArrayList<>(exclusions.size());
+        this.exclusions = new ArrayList<>(exclusions.size());
         for (Exclusion exclusion : exclusions) {
             addExclusion(exclusion);
         }

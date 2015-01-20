@@ -813,7 +813,11 @@ public class ModelTest {
              .first()
              .setVersion("new-version")
              .setScope(null)
-             .addExclusion(new Exclusion("artifact-id", "group-id"));
+             .setOptional(true)
+             .setType("type")
+             .setClassifier("classifier")
+             .setExclusions(asList(new Exclusion("artifact1", "group1")))
+             .addExclusion(new Exclusion("artifact2", "group2"));
 
         model.writeTo(pom);
 
@@ -822,19 +826,28 @@ public class ModelTest {
         assertEquals(junit.getArtifactId(), "junit");
         assertEquals(junit.getVersion(), "new-version");
         assertEquals(junit.getScope(), "compile");
-        assertEquals(junit.getType(), "jar");
-        assertFalse(junit.isOptional());
+        assertEquals(junit.getType(), "type");
+        assertEquals(junit.getClassifier(), "classifier");
+        assertEquals(junit.getExclusions().size(), 2);
+        assertTrue(junit.isOptional());
         assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                 "<project>\n" +
                                 "    <dependencies>\n" +
                                 "        <dependency>\n" +
+                                "            <optional>true</optional>\n" +
                                 "            <groupId>org.junit</groupId>\n" +
                                 "            <artifactId>junit</artifactId>\n" +
                                 "            <version>new-version</version>\n" +
+                                "            <type>type</type>\n" +
+                                "            <classifier>classifier</classifier>\n" +
                                 "            <exclusions>\n" +
                                 "                <exclusion>\n" +
-                                "                    <groupId>group-id</groupId>\n" +
-                                "                    <artifactId>artifact-id</artifactId>\n" +
+                                "                    <groupId>group1</groupId>\n" +
+                                "                    <artifactId>artifact1</artifactId>\n" +
+                                "                </exclusion>\n" +
+                                "                <exclusion>\n" +
+                                "                    <groupId>group2</groupId>\n" +
+                                "                    <artifactId>artifact2</artifactId>\n" +
                                 "                </exclusion>\n" +
                                 "            </exclusions>\n" +
                                 "        </dependency>\n" +
