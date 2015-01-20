@@ -109,8 +109,8 @@ public class Resource {
         if (!isNew()) {
             if (directory == null) {
                 resourceElement.removeChild("directory");
-            } else if (resourceElement.hasChild("directory")) {
-                resourceElement.getSingleChild("directory").setText(targetPath);
+            } else if (resourceElement.hasSingleChild("directory")) {
+                resourceElement.getSingleChild("directory").setText(directory);
             } else {
                 resourceElement.insertChild(createElement("directory", directory), afterAnyOf("targetPath",
                                                                                               "filtering").or(inTheBegin()));
