@@ -37,11 +37,6 @@
         </dependency>
         <dependency>
             <groupId>com.codenvy.ide</groupId>
-            <artifactId>codenvy-ide-core</artifactId>
-            <version>${codenvy.ide.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.ide</groupId>
             <artifactId>codenvy-ide-jseditor</artifactId>
             <version>${codenvy.ide.version}</version>
         </dependency>
@@ -101,6 +96,12 @@
             <artifactId>gwt-user</artifactId>
             <version>${com.google.gwt.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>codenvy-ext-java-test-document</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

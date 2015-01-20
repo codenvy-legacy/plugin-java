@@ -10,6 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.quickfix;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.emul.FileSystem;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
@@ -19,18 +29,8 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
+import com.codenvy.java.testdoc.client.text.DocumentImpl;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 public class AdvancedQuickAssistTest extends QuickFixTest {
 

@@ -10,6 +10,15 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.ext.java.jdt.core.dom.AST;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.AbstractTypeDeclaration;
@@ -56,16 +65,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.WhileStatement;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.api.text.edits.TextEdit;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
+import com.codenvy.java.testdoc.client.text.DocumentImpl;
 
 public class ASTRewritingStatementsTest extends ASTRewritingTest {
 

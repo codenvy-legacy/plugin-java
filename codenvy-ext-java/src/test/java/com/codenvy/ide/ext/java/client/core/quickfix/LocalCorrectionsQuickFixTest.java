@@ -10,6 +10,17 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.quickfix;
 
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mock;
+
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.emul.FileSystem;
 import com.codenvy.ide.ext.java.jdt.CUVariables;
@@ -21,19 +32,8 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.text.DocumentImpl;
+import com.codenvy.java.testdoc.client.text.DocumentImpl;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import static org.mockito.Mockito.when;
 
 public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     boolean BUG_25417 = true;
