@@ -23,7 +23,7 @@ import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
@@ -94,8 +94,8 @@ public class SimpleGeneratorStrategyTest {
         final String vfsUser = "dev";
         final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
 
-        Set<ProjectType2> pts = new HashSet<>();
-        final ProjectType2 pt = new ProjectType2("mytype", "mytype type") {
+        Set<ProjectType> pts = new HashSet<>();
+        final ProjectType pt = new ProjectType("mytype", "mytype type") {
             {
                 //addParent(parent);
                 //addConstantDefinition("child_const", "Constant", "const_value");

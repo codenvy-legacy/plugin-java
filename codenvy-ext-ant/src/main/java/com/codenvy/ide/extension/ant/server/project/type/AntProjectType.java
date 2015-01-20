@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.server.project.type;
 
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.inject.Inject;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /** @author Vladyslav Zhukovskii */
 @Singleton
-public class AntProjectType extends ProjectType2 {
+public class AntProjectType extends ProjectType {
     private static final Logger LOG = LoggerFactory.getLogger(AntProjectType.class);
 
     /** Create instance of {@link AntProjectType}. */

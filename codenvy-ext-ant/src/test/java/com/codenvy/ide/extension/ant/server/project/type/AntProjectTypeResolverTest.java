@@ -10,33 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.server.project.type;
 
-import com.codenvy.api.core.notification.EventService;
-import com.codenvy.api.project.server.DefaultProjectManager;
-import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectConfig;
-import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectTypeResolver;
-import com.codenvy.api.project.server.type.ProjectType2;
-import com.codenvy.api.project.server.type.ProjectTypeRegistry;
-import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
-import com.codenvy.api.vfs.server.VirtualFileSystemUser;
-import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
-import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.multibindings.Multibinder;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 /** @author Vladyslav Zhukovskii */
 public class AntProjectTypeResolverTest {
 //    private static final String workspace = "my_ws";
@@ -60,8 +33,8 @@ public class AntProjectTypeResolverTest {
 //    public void setUp() throws Exception {
 //        final String vfsUser = "dev";
 //        final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
-//        Set<ProjectType2> pts = new HashSet<>();
-//        final ProjectType2 pt = new ProjectType2("ant", "ant") {
+//        Set<ProjectType> pts = new HashSet<>();
+//        final ProjectType pt = new ProjectType("ant", "ant") {
 //            {
 //                setDefaultBuilder("ant");
 //            }

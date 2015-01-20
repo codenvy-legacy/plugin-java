@@ -12,7 +12,7 @@ package com.codenvy.ide.extension.maven.server.inject;
 
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.extension.maven.server.MavenMultimoduleAutoBuilder;
 import com.codenvy.ide.extension.maven.server.MavenPomService;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectType;
@@ -35,7 +35,7 @@ public class MavenModule extends AbstractModule {
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
         multiBinder.addBinding().to(MavenValueProviderFactory.class);
 
-        Multibinder<ProjectType2> projectTypeMultibinder = Multibinder.newSetBinder(binder(), ProjectType2.class);
+        Multibinder<ProjectType> projectTypeMultibinder = Multibinder.newSetBinder(binder(), ProjectType.class);
         projectTypeMultibinder.addBinding().to(MavenProjectType.class);
 
         Multibinder<ProjectHandler> projectGeneratorMultibinder = Multibinder.newSetBinder(binder(), ProjectHandler.class);

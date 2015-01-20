@@ -19,7 +19,7 @@ import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.VirtualFileEntry;
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.api.project.shared.Builders;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.Model;
@@ -38,7 +38,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
     @Inject
     private ProjectManager projectManager;
 
-    private ProjectConfig createProjectDescriptor(ProjectType2 projectType) {
+    private ProjectConfig createProjectDescriptor(ProjectType projectType) {
         Builders builders = new Builders();
         builders.setDefault("maven");
         return new ProjectConfig("Maven", projectType.getId(), null, null, builders, null);
@@ -48,7 +48,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
     public boolean resolve(FolderEntry folderEntry) throws ServerException {
         try {
             if (!folderEntry.isProjectFolder()) {
-                ProjectType2 projectType = projectManager.getProjectTypeRegistry().getProjectType(MavenAttributes.MAVEN_ID);
+                ProjectType projectType = projectManager.getProjectTypeRegistry().getProjectType(MavenAttributes.MAVEN_ID);
                 if (projectType == null)
                     throw new ServerException(String.format("Project type '%s' not registered. ", MavenAttributes.MAVEN_ID));
                 if (folderEntry.getChild("pom.xml") == null) {
@@ -65,7 +65,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
         }
     }
 
-    private void createProjectsOnModules(Model model, Project parentProject, String ws, ProjectType2 projectType)
+    private void createProjectsOnModules(Model model, Project parentProject, String ws, ProjectType projectType)
             throws ServerException, ForbiddenException, ConflictException, IOException {
         List<String> modules = model.getModules();
         for (String module : modules) {
@@ -94,7 +94,7 @@ public class MavenProjectTypeResolver implements ProjectTypeResolver {
         return parentFolder;
     }
 
-    private void fillMavenProject(ProjectType2 projectType, Project project)
+    private void fillMavenProject(ProjectType projectType, Project project)
             throws IOException, ForbiddenException, ServerException, ConflictException {
         VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
         if (pom != null) {

@@ -17,7 +17,7 @@ import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
@@ -92,8 +92,8 @@ public class MavenProjectTypeResolverTest {
     @Before
     public void setUp() throws Exception {
 
-        Set<ProjectType2> pts = new HashSet<>();
-        final ProjectType2 pt = new ProjectType2("maven", "Maven type") {
+        Set<ProjectType> pts = new HashSet<>();
+        final ProjectType pt = new ProjectType("maven", "Maven type") {
             {
                 //addParent(parent);
                 //addConstantDefinition("child_const", "Constant", "const_value");

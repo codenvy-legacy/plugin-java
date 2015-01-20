@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.google.inject.Inject;
@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 
 /** @author Evgen Vidolob */
 @Singleton
-public class MavenProjectType extends ProjectType2 {
+public class MavenProjectType extends ProjectType {
     private static final Logger LOG = LoggerFactory.getLogger(MavenProjectType.class);
 
     @Inject

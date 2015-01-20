@@ -20,7 +20,7 @@ import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.AttributeValue;
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.project.shared.Builders;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
@@ -71,7 +71,7 @@ public class MavenProjectTypeTest {
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
 
 
-        Set<ProjectType2> projTypes = new HashSet<>();
+        Set<ProjectType> projTypes = new HashSet<>();
         projTypes.add(new JavaProjectType());
         projTypes.add(new MavenProjectType(new MavenValueProviderFactory(),
                                            new JavaProjectType()));
@@ -92,7 +92,7 @@ public class MavenProjectTypeTest {
     @Test
     public void testGetProjectType() throws Exception {
 
-        ProjectType2 pt = pm.getProjectTypeRegistry().getProjectType("maven");
+        ProjectType pt = pm.getProjectTypeRegistry().getProjectType("maven");
 
         Assert.assertNotNull(pt);
         Assert.assertEquals(pt.getDefaultBuilder(), "maven");

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.projecttype;
 
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import javax.inject.Singleton;
  * @author gazarenkov
  */
 @Singleton
-public class JavaProjectType extends ProjectType2 {
+public class JavaProjectType extends ProjectType {
     private static final Logger LOG = LoggerFactory.getLogger(JavaProjectType.class);
 
     @Inject

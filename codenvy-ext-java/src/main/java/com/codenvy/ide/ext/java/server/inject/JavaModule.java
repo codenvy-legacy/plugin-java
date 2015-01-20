@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.inject;
 
-import com.codenvy.api.project.server.type.ProjectType2;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.ext.java.server.projecttype.JavaProjectType;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
@@ -23,7 +23,7 @@ import com.google.inject.multibindings.Multibinder;
 public class JavaModule extends AbstractModule {
     @Override
     protected void configure() {
-        Multibinder<ProjectType2> projectTypeMultibinder = Multibinder.newSetBinder(binder(), ProjectType2.class);
+        Multibinder<ProjectType> projectTypeMultibinder = Multibinder.newSetBinder(binder(), ProjectType.class);
         projectTypeMultibinder.addBinding().to(JavaProjectType.class);
     }
 }
