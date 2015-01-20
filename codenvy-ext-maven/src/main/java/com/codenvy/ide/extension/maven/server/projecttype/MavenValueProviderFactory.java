@@ -73,13 +73,6 @@ public class MavenValueProviderFactory implements ValueProviderFactory {
         }
 
         @Override
-        public void init() throws ValueStorageException {
-
-            // TODO initialize pom.xml
-
-        }
-
-        @Override
         public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
                 String value = "";

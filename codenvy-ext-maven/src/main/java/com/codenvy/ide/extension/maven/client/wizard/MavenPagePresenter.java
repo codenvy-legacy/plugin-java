@@ -153,6 +153,9 @@ public class MavenPagePresenter extends AbstractWizardPage implements MavenPageV
                     view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
                     scheduleTextChanges();
                 } else {
+                    // TODO use estimateProject() instead
+                    // TODO do it in generic Wizard
+
                     pomReaderClient.readPomAttributes(projectUpdate.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                         @Override
                         protected void onSuccess(String result) {

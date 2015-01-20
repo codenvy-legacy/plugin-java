@@ -122,6 +122,8 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         newProject.setGeneratorDescription(generatorDescription);
 
         view.showButtonLoader(true);
+
+        // TODO as a handler of addModule
         projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject,
                                     new AsyncRequestCallback<ProjectDescriptor>() {
                                         @Override

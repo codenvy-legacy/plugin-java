@@ -61,7 +61,7 @@ public class MavenProjectGenerator implements CreateProjectHandler {
             if (strategies.containsKey(options.get("type"))) {
                 strategies.get(options.get("type")).generateProject(baseFolder, attributes, options);
             } else {
-                String errorMsg = String.format("Generation strategy %s don't found", options.get("type"));
+                String errorMsg = String.format("Generation strategy %s not found", options.get("type"));
                 LOG.warn("MavenProjectGenerator", errorMsg);
                 throw new ServerException(errorMsg);
             }
