@@ -33,6 +33,7 @@
         <module>codenvy-runner-webapps</module>
         <module>codenvy-generator-archetype</module>
         <module>codenvy-ext-maven</module>
+        <module>codenvy-ext-java-test-document</module>
         <module>codenvy-ext-java</module>
         <module>codenvy-ext-java-codeassistant</module>
         <module>codenvy-ext-debugger-java</module>

@@ -10,14 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
-import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.SourceModifierImpl;
+import org.junit.Test;
+
 import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
 import com.codenvy.ide.api.text.edits.MultiTextEdit;
 import com.codenvy.ide.api.text.edits.ReplaceEdit;
 import com.codenvy.ide.api.text.edits.SourceModifier;
-
-import org.junit.Test;
+import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.SourceModifierImpl;
+import com.codenvy.java.testdoc.client.text.DocumentImpl;
 
 /**
  *

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2012-2015 Codenvy, S.A.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    Contributors:
+      Codenvy, S.A. - initial API and implementation
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>codenvy-plugin-java-parent</artifactId>
+        <groupId>com.codenvy.plugin-java</groupId>
+        <version>1.7.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>codenvy-ext-java-test-document</artifactId>
+    <packaging>jar</packaging>
+    <name>Codenvy :: Legacy Test Document</name>
+    <dependencies>
+        <dependency>
+            <groupId>com.codenvy.ide</groupId>
+            <artifactId>codenvy-ide-api</artifactId>
+            <version>${codenvy.ide.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.ide</groupId>
+            <artifactId>codenvy-ide-core</artifactId>
+            <version>${codenvy.ide.version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/store/anchor/Anchor.java</exclude>
+                        <exclude>**/store/anchor/AnchorDeferredDispatcher.java</exclude>
+                        <exclude>**/store/anchor/AnchorList.java</exclude>
+                        <exclude>**/store/anchor/AnchorManager.java</exclude>
+                        <exclude>**/store/anchor/AnchorType.java</exclude>
+                        <exclude>**/store/anchor/AnchorUtils.java</exclude>
+                        <exclude>**/store/anchor/InsertionPlacementStrategy.java</exclude>
+                        <exclude>**/store/anchor/LineAnchorList.java</exclude>
+                        <exclude>**/store/anchor/ReadOnlyAnchor.java</exclude>
+                        <exclude>**/store/util/LineUtils.java</exclude>
+                        <exclude>**/store/util/PositionUtils.java</exclude>
+                        <exclude>**/store/DocumentModel.java</exclude>
+                        <exclude>**/store/DocumentMutatorImpl.java</exclude>
+                        <exclude>**/store/Line.java</exclude>
+                        <exclude>**/store/LineFinder.java</exclude>
+                        <exclude>**/store/LineInfo.java</exclude>
+                        <exclude>**/store/LineNumberAndColumn.java</exclude>
+                        <exclude>**/store/Position.java</exclude>
+                        <exclude>**/store/PositionOutOfBoundsException.java</exclude>
+                        <exclude>**/store/TaggableLine.java</exclude>
+                        <exclude>**/store/TextChange.java</exclude>
+                        <exclude>**/store/TextStoreMutator.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

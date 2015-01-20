@@ -10,6 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.edits.MalformedTreeException;
+import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.ext.java.client.BaseTest;
 import com.codenvy.ide.ext.java.client.core.quickfix.StringAsserts;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
@@ -20,17 +30,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.api.text.edits.MalformedTreeException;
-import com.codenvy.ide.api.text.edits.TextEdit;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
+import com.codenvy.java.testdoc.client.text.DocumentImpl;
 
 public class ImportRewriteTest extends BaseTest {
 
