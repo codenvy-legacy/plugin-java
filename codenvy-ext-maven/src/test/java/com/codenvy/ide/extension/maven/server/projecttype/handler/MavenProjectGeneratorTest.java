@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 
 package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
-import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrategy;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 
 import org.junit.Assert;
@@ -26,7 +25,6 @@ import java.util.Set;
 public class MavenProjectGeneratorTest {
 
     private MavenProjectGenerator mavenProjectGenerator;
-
 
 
     @Before

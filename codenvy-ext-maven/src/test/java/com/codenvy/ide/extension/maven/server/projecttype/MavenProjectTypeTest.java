@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,11 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype;
 
-import com.codenvy.api.core.ForbiddenException;
-import com.codenvy.api.core.NotFoundException;
-import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.notification.EventService;
-import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.DefaultProjectManager;
+import com.codenvy.api.project.server.Project;
+import com.codenvy.api.project.server.ProjectConfig;
+import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.ValueStorageException;
+import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.AttributeValue;
@@ -30,17 +32,24 @@ import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrat
 import com.codenvy.ide.extension.maven.server.projecttype.handler.MavenProjectGenerator;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.Model;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** @author gazarenkov */
 public class MavenProjectTypeTest {
     private static final String workspace = "my_ws";
 
-    private ProjectManager        pm;
+    private ProjectManager pm;
 
 
     @Before
@@ -63,9 +72,9 @@ public class MavenProjectTypeTest {
 
 
         Set<ProjectType2> projTypes = new HashSet<>();
-        projTypes.add(new JavaProjectType ());
+        projTypes.add(new JavaProjectType());
         projTypes.add(new MavenProjectType(new MavenValueProviderFactory(),
-                new JavaProjectType ()));
+                                           new JavaProjectType()));
 
         ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(projTypes);
 
@@ -76,7 +85,7 @@ public class MavenProjectTypeTest {
         ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(handlers);
 
         pm = new DefaultProjectManager(vfsRegistry, eventService,
-                ptRegistry, handlerRegistry);
+                                       ptRegistry, handlerRegistry);
 
     }
 
@@ -104,8 +113,8 @@ public class MavenProjectTypeTest {
         //attributes.put(MavenAttributes., new AttributeValue("jar"));
 
         Project project = pm.createProject(workspace, "myProject",
-                new ProjectConfig("my config", "maven", attributes, null, new Builders("maven"), null),
-                null, "public");
+                                           new ProjectConfig("my config", "maven", attributes, null, new Builders("maven"), null),
+                                           null, "public");
 
         ProjectConfig config = project.getConfig();
 
@@ -119,9 +128,9 @@ public class MavenProjectTypeTest {
         Assert.assertEquals(config.getAttributes().get("language").getString(), "java");
 
 
-        for(VirtualFileEntry file:project.getBaseFolder().getChildren()) {
+        for (VirtualFileEntry file : project.getBaseFolder().getChildren()) {
 
-            if(file.getName().equals("pom.xml")) {
+            if (file.getName().equals("pom.xml")) {
 
                 Model pom = Model.readFrom(file.getVirtualFile().getContent().getStream());
 
@@ -145,12 +154,12 @@ public class MavenProjectTypeTest {
         attributes.put(MavenAttributes.PACKAGING, new AttributeValue("jar"));
 
         pm.createProject(workspace, "testEstimate",
-                new ProjectConfig("my config", "maven", attributes, null, new Builders("maven"), null),
-                null, "public");
+                         new ProjectConfig("my config", "maven", attributes, null, new Builders("maven"), null),
+                         null, "public");
 
         pm.createProject(workspace, "testEstimateBad",
-                new ProjectConfig("my config", "blank", null, null, null, null),
-                null, "public");
+                         new ProjectConfig("my config", "blank", null, null, null, null),
+                         null, "public");
 
         Map<String, AttributeValue> out = pm.estimateProject(workspace, "testEstimate", "maven");
 

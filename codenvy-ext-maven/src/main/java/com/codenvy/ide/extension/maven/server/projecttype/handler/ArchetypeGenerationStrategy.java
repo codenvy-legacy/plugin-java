@@ -60,7 +60,7 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
  */
 @Singleton
 public class ArchetypeGenerationStrategy implements GeneratorStrategy {
-    private static final long   CHECK_GENERATION_STATUS_DELAY = 1000;
+    private static final long CHECK_GENERATION_STATUS_DELAY = 1000;
     private final String                    generatorServiceUrl;
     private final VirtualFileSystemRegistry vfsRegistry;
     private final DownloadPlugin downloadPlugin = new HttpDownloadPlugin();
@@ -202,7 +202,8 @@ public class ArchetypeGenerationStrategy implements GeneratorStrategy {
                             return generateTask;
                         }
                     }
-                } catch (IOException | ServerException | NotFoundException | UnauthorizedException | ForbiddenException | ConflictException e) {
+                } catch (IOException | ServerException | NotFoundException | UnauthorizedException | ForbiddenException |
+                        ConflictException e) {
                     throw new ServerException(e);
                 }
             }
