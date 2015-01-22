@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.client.wizard;
+package com.codenvy.ide.extension.ant.client.wizard;
 
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar;
 import com.codenvy.ide.api.wizard.WizardPage;
@@ -19,26 +19,26 @@ import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
 
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
 
 /**
- * Provides information for registering Maven project type into project wizard.
+ * Provides information for registering Ant project type into project wizard.
  *
  * @author Artem Zatsarynnyy
  */
-public class MavenProjectWizardRegistrar implements ProjectWizardRegistrar {
+public class AntProjectWizardRegistrar implements ProjectWizardRegistrar {
     public static final String CATEGORY = "JAVA";
     private final Array<Provider<? extends WizardPage>> wizardPages;
 
     @Inject
-    public MavenProjectWizardRegistrar(Provider<MavenPagePresenter> mavenPagePresenter) {
+    public AntProjectWizardRegistrar(Provider<AntPagePresenter> antPagePresenter) {
         wizardPages = Collections.createArray();
-        wizardPages.add(mavenPagePresenter);
+        wizardPages.add(antPagePresenter);
     }
 
     @Nonnull
     public String getProjectTypeId() {
-        return MAVEN_ID;
+        return ANT_ID;
     }
 
     @Nonnull

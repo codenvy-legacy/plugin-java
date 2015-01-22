@@ -12,10 +12,9 @@ package com.codenvy.ide.extension.ant.client.wizard;
 
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
+import com.codenvy.ide.wizard.project.my_wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;

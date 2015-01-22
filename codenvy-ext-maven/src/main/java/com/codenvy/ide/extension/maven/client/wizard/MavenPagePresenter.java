@@ -13,7 +13,7 @@ package com.codenvy.ide.extension.maven.client.wizard;
 import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
+import com.codenvy.ide.wizard.project.my_wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.api.wizard.Wizard;
 import com.codenvy.ide.collections.Jso;
@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.codenvy.ide.api.projecttype.wizard.ProjectWizard.GENERATOR;
+import static com.codenvy.ide.wizard.project.my_wizard.ProjectWizard.GENERATOR;
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
 
 /**
