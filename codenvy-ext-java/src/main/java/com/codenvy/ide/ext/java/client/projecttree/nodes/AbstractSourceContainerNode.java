@@ -91,12 +91,8 @@ public abstract class AbstractSourceContainerNode extends FolderNode {
             callback.onSuccess(newChildren);
             return;
         }
-        final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
         final int[] asyncCounter = new int[1];
         for (final ItemReference item : childItems.asIterable()) {
-            if (!isShowHiddenItems && item.getName().startsWith(".")) {
-                continue;
-            }
             getCompactedPackageItemReference(item, new AsyncCallback<ItemReference>() {
                 @Override
                 public void onSuccess(ItemReference fileItemOrCompactedPackageItem) {

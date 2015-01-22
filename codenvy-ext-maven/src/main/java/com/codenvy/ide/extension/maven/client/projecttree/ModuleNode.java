@@ -31,8 +31,12 @@ import com.google.web.bindery.event.shared.EventBus;
 public class ModuleNode extends MavenProjectNode {
 
     @AssistedInject
-    public ModuleNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data, @Assisted MavenProjectTreeStructure treeStructure,
-                      EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
+    public ModuleNode(@Assisted TreeNode<?> parent,
+                      @Assisted ProjectDescriptor data,
+                      @Assisted MavenProjectTreeStructure treeStructure,
+                      EventBus eventBus,
+                      ProjectServiceClient projectServiceClient,
+                      DtoUnmarshallerFactory dtoUnmarshallerFactory,
                       IconRegistry iconRegistry) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("maven.module").getSVGImage());
