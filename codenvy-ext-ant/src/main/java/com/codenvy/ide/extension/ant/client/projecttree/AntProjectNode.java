@@ -34,8 +34,11 @@ public class AntProjectNode extends JavaProjectNode {
 
     /** Create instance of {@link AntProjectNode}. */
     @AssistedInject
-    protected AntProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data,
-                             @Assisted AntProjectTreeStructure treeStructure, EventBus eventBus, ProjectServiceClient projectServiceClient,
+    protected AntProjectNode(@Assisted TreeNode<?> parent,
+                             @Assisted ProjectDescriptor data,
+                             @Assisted AntProjectTreeStructure treeStructure,
+                             EventBus eventBus,
+                             ProjectServiceClient projectServiceClient,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }

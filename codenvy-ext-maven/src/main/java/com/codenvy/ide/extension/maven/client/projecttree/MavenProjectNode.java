@@ -40,9 +40,12 @@ import java.util.List;
 public class MavenProjectNode extends JavaProjectNode {
 
     @AssistedInject
-    public MavenProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data,
-                            @Assisted MavenProjectTreeStructure treeStructure, EventBus eventBus,
-                            ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    public MavenProjectNode(@Assisted TreeNode<?> parent,
+                            @Assisted ProjectDescriptor data,
+                            @Assisted MavenProjectTreeStructure treeStructure,
+                            EventBus eventBus,
+                            ProjectServiceClient projectServiceClient,
+                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
 
         List<String> packaging = data.getAttributes().get(MavenAttributes.PACKAGING);
@@ -108,13 +111,9 @@ public class MavenProjectNode extends JavaProjectNode {
     }
 
     private Array<TreeNode<?>> getChildNodesForItems(Array<ItemReference> childItems, Array<ProjectDescriptor> modules) {
-        final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
         Array<TreeNode<?>> oldChildren = Collections.createArray(getChildren().asIterable());
         Array<TreeNode<?>> newChildren = Collections.createArray();
         for (ItemReference item : childItems.asIterable()) {
-            if (!isShowHiddenItems && item.getName().startsWith(".")) {
-                continue;
-            }
             AbstractTreeNode node = createChildNode(item, modules);
             if (node != null) {
                 if (oldChildren.contains(node)) {

@@ -35,8 +35,12 @@ public class JavaProjectNode extends ProjectNode {
     private ExternalLibrariesNode librariesNode;
 
     @AssistedInject
-    public JavaProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data, @Assisted JavaTreeStructure treeStructure,
-                           EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    public JavaProjectNode(@Assisted TreeNode<?> parent,
+                           @Assisted ProjectDescriptor data,
+                           @Assisted JavaTreeStructure treeStructure,
+                           EventBus eventBus,
+                           ProjectServiceClient projectServiceClient,
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         librariesNode = treeStructure.newExternalLibrariesNode(this);
     }
