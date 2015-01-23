@@ -95,7 +95,7 @@ public class SimpleGeneratorStrategyTest {
         final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
 
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType pt = new ProjectType("mytype", "mytype type") {
+        final ProjectType pt = new ProjectType("mytype", "mytype type", true, false) {
             {
                 //addParent(parent);
                 //addConstantDefinition("child_const", "Constant", "const_value");

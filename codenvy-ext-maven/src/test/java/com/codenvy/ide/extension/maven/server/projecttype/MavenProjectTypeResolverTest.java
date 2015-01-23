@@ -93,7 +93,7 @@ public class MavenProjectTypeResolverTest {
     public void setUp() throws Exception {
 
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType pt = new ProjectType("maven", "Maven type") {
+        final ProjectType pt = new ProjectType("maven", "Maven type", true, false) {
             {
                 //addParent(parent);
                 //addConstantDefinition("child_const", "Constant", "const_value");
