@@ -17,7 +17,7 @@ import com.codenvy.ide.text.CopyOnWriteTextStore;
 import com.codenvy.ide.text.GapTextStore;
 
 /**
- * Default document implementation. Uses a {@link com.codenvy.ide.text.store.DocumentTextStore} as text store.
+ * Default document implementation. Uses a {@link CopyOnWriteTextStore} as text store.
  * <p>
  * The used line tracker considers the following strings as line delimiters: "\n", "\r", "\r\n". In case of a text replacement
  * across line delimiter boundaries and with different line delimiters, the line tracker might have to be repaired. Use
