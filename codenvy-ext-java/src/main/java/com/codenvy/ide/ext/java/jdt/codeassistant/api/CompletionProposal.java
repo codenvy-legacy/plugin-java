@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.jdt.codeassistant.api;
 
 import com.codenvy.ide.ext.java.jdt.Images;
-import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 
 
@@ -41,7 +41,7 @@ public interface CompletionProposal {
      * <p/>
      * A document change can trigger other document changes, which have to be taken into account when calculating the new
      * selection. Typically, this would be done by installing a document listener or by using a document position during
-     * {@link #apply(com.codenvy.ide.text.Document)}.
+     * {@link #apply(com.codenvy.ide.legacy.client.api.text.text.Document)}.
      *
      * @param document
      *         the document into which the proposed completion has been inserted
@@ -74,7 +74,7 @@ public interface CompletionProposal {
 
     /**
      * Applies the proposed completion to the given document. The insertion has been triggered by entering the given character at
-     * the given offset. This method assumes that {@link #isValidFor(com.codenvy.ide.text.Document, int)} returns <code>true</code> if called for
+     * the given offset. This method assumes that {@link #isValidFor(com.codenvy.ide.legacy.client.api.text.text.Document, int)} returns <code>true</code> if called for
      * <code>offset</code>.
      *
      * @param document

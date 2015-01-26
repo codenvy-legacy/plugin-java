@@ -20,11 +20,11 @@ import com.codenvy.ide.ext.java.jdt.templates.api.TemplateBuffer;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContext;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateException;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateVariable;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.DocumentEvent;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.BadPositionCategoryException;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.DocumentEvent;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
 

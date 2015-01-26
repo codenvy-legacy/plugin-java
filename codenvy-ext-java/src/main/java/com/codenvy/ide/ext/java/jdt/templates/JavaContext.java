@@ -27,11 +27,11 @@ import com.codenvy.ide.ext.java.jdt.templates.api.TemplateTranslator;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateVariable;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateVariableType;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Position;
 
 import java.util.Arrays;

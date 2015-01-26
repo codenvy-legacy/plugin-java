@@ -21,7 +21,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.emul.FileSystem;
 import com.codenvy.ide.ext.java.jdt.CUVariables;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
@@ -32,6 +31,7 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.java.testdoc.client.text.DocumentImpl;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 

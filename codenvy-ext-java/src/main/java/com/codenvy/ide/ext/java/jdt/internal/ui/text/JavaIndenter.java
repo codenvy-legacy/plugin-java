@@ -11,11 +11,11 @@
 package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.util.StringUtils;
 import com.codenvy.ide.util.loging.Log;

@@ -80,8 +80,8 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.ReplaceCo
 import com.codenvy.ide.ext.java.jdt.internal.ui.BindingLabelProvider;
 import com.codenvy.ide.ext.java.jdt.internal.ui.JavaElementLabels;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.Document;
 
 import java.util.ArrayList;
 import java.util.Collection;

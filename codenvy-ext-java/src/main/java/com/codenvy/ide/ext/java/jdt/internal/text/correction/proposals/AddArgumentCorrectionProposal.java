@@ -26,7 +26,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ASTResolving;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ASTNodeFactory;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ScopeAnalyzer;
-import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.Document;
 
 import java.util.List;
 

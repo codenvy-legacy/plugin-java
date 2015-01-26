@@ -42,13 +42,13 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.TextUtilities;
 import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.TextUtilities;
 
 import java.util.ArrayList;
 import java.util.List;

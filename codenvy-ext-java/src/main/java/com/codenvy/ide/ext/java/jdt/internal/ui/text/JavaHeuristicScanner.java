@@ -13,12 +13,12 @@ package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.TextUtilities;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
-import com.codenvy.ide.api.text.TextUtilities;
 import com.codenvy.ide.api.text.TypedRegion;
 import com.codenvy.ide.api.text.TypedRegionImpl;
 

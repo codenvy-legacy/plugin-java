@@ -11,7 +11,6 @@
 package com.codenvy.ide.ext.java.jdt.codeassistant;
 
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
 import com.codenvy.ide.collections.Jso;
@@ -24,6 +23,7 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryType;
 import com.codenvy.ide.ext.java.worker.WorkerTypeInfoStorage;
 import com.codenvy.ide.ext.java.worker.env.BinaryType;
 import com.codenvy.ide.ext.java.worker.env.json.BinaryTypeJso;
+import com.codenvy.ide.legacy.client.api.text.Document;
 
 
 /**

@@ -12,10 +12,10 @@ package com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals;
 
 
 import com.codenvy.ide.ext.java.jdt.Images;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
 import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.Document;
 
 
 public class ReplaceCorrectionProposal extends CUCorrectionProposal {

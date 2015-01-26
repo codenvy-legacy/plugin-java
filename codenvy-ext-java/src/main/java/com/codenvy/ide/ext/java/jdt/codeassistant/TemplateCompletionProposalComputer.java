@@ -17,9 +17,9 @@ import com.codenvy.ide.ext.java.jdt.templates.JavaContextType;
 import com.codenvy.ide.ext.java.jdt.templates.JavaDocContextType;
 import com.codenvy.ide.ext.java.jdt.templates.TemplateEngine;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContextType;
+import com.codenvy.ide.legacy.client.api.text.TextUtilities;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.TextUtilities;
 
 
 /** Computer computing template proposals for Java and Javadoc context type. */

@@ -20,9 +20,9 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ContextSens
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.ModelUtil;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 
 
 /** If passed compilation unit is not null, the replacement string will be seen as a qualified type name. */

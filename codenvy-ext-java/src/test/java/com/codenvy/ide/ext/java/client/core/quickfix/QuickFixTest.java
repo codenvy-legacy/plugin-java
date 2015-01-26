@@ -23,10 +23,10 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrect
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
 import com.codenvy.ide.ext.java.worker.WorkerCorrectionProcessor;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.googlecode.gwt.test.GwtModule;
 import com.googlecode.gwt.test.GwtTestWithMockito;
 

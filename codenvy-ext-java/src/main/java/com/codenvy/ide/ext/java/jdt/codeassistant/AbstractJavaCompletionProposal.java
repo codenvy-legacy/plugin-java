@@ -18,13 +18,13 @@ import com.codenvy.ide.ext.java.jdt.core.IJavaElement;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
+import com.codenvy.ide.legacy.client.api.text.DefaultPositionUpdater;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.PositionUpdater;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.BadPositionCategoryException;
-import com.codenvy.ide.api.text.DefaultPositionUpdater;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Position;
-import com.codenvy.ide.api.text.PositionUpdater;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
 

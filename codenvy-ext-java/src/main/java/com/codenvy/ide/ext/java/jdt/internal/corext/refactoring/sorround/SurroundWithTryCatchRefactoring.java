@@ -49,13 +49,13 @@ import com.codenvy.ide.ext.java.jdt.refactoring.Refactoring;
 import com.codenvy.ide.ext.java.jdt.refactoring.RefactoringStatus;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextFileChange;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
 import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.OperationCanceledException;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 
 import java.util.ArrayList;
 import java.util.Iterator;
