@@ -11,9 +11,9 @@
 package com.codenvy.java.testdoc.client.text;
 
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.text.AbstractDocument;
-import com.codenvy.ide.text.ConfigurableLineTracker;
-import com.codenvy.ide.text.GapTextStore;
+import com.codenvy.ide.legacy.client.core.text.AbstractDocument;
+import com.codenvy.ide.legacy.client.core.text.ConfigurableLineTracker;
+import com.codenvy.ide.legacy.client.core.text.GapTextStore;
 import com.codenvy.java.testdoc.client.text.store.DocumentTextStore;
 
 /**

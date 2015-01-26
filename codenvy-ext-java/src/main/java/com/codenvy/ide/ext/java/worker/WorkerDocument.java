@@ -11,10 +11,10 @@
 package com.codenvy.ide.ext.java.worker;
 
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.text.AbstractDocument;
-import com.codenvy.ide.text.ConfigurableLineTracker;
-import com.codenvy.ide.text.CopyOnWriteTextStore;
-import com.codenvy.ide.text.GapTextStore;
+import com.codenvy.ide.legacy.client.core.text.AbstractDocument;
+import com.codenvy.ide.legacy.client.core.text.ConfigurableLineTracker;
+import com.codenvy.ide.legacy.client.core.text.CopyOnWriteTextStore;
+import com.codenvy.ide.legacy.client.core.text.GapTextStore;
 
 /**
  * Default document implementation. Uses a {@link CopyOnWriteTextStore} as text store.
@@ -34,7 +34,7 @@ import com.codenvy.ide.text.GapTextStore;
  * document structures to efficiently handle updates.
  * </p>
  * <p>
- * See {@link com.codenvy.ide.text.GapTextStore} and <code>TreeLineTracker</code> for algorithmic behavior of the used document structures.
+ * See {@link com.codenvy.ide.legacy.client.core.text.GapTextStore} and <code>TreeLineTracker</code> for algorithmic behavior of the used document structures.
  * </p>
  */
 public class WorkerDocument extends AbstractDocument {
