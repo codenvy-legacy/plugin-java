@@ -23,9 +23,9 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.Scanner;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.TerminalTokens;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util;
 import com.codenvy.ide.ext.java.jdt.internal.core.util.CodeSnippetParsingUtil;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
-import com.codenvy.ide.api.text.edits.TextEdit;
 
 import java.util.HashMap;
 import java.util.Map;

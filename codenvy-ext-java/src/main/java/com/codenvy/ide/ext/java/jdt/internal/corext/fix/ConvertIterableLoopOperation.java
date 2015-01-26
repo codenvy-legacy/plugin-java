@@ -43,10 +43,10 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ModifierRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.structure.ImportRemover;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.util.TightSourceRangeComputer;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 import java.util.ArrayList;
 import java.util.Iterator;

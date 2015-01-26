@@ -115,10 +115,10 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.MissingAn
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.NewVariableCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.ReplaceCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
+import com.codenvy.ide.legacy.client.api.text.edits.InsertEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.edits.InsertEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 
 import java.util.ArrayList;
 import java.util.Collection;

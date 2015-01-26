@@ -14,7 +14,6 @@ import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.TextUtilities;
-import com.codenvy.ide.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.ext.java.jdt.JavaPreferencesSettings;
 import com.codenvy.ide.ext.java.jdt.codeassistant.ui.StyledString;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
@@ -42,6 +41,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility2;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.Bindings;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 

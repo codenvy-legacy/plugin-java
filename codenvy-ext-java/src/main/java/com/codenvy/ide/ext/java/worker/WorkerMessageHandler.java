@@ -10,17 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.worker;
 
-import com.codenvy.ide.api.text.edits.CopySourceEdit;
-import com.codenvy.ide.api.text.edits.CopyTargetEdit;
-import com.codenvy.ide.api.text.edits.CopyingRangeMarker;
-import com.codenvy.ide.api.text.edits.DeleteEdit;
-import com.codenvy.ide.api.text.edits.InsertEdit;
-import com.codenvy.ide.api.text.edits.MoveSourceEdit;
-import com.codenvy.ide.api.text.edits.MoveTargetEdit;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.RangeMarker;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.collections.js.JsoArray;
@@ -66,6 +55,17 @@ import com.codenvy.ide.ext.java.messages.Problem;
 import com.codenvy.ide.ext.java.messages.RemoveFqnMessage;
 import com.codenvy.ide.ext.java.messages.RoutingTypes;
 import com.codenvy.ide.ext.java.messages.impl.MessagesImpls;
+import com.codenvy.ide.legacy.client.api.text.edits.CopySourceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.CopyTargetEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.CopyingRangeMarker;
+import com.codenvy.ide.legacy.client.api.text.edits.DeleteEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.InsertEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MoveSourceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MoveTargetEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.RangeMarker;
+import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.google.gwt.webworker.client.MessageEvent;
 import com.google.gwt.webworker.client.MessageHandler;
 import com.google.gwt.webworker.client.messages.MessageFilter;

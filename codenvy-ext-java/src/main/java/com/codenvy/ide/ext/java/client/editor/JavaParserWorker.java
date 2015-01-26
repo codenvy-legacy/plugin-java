@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
-import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.js.JsoArray;
 import com.codenvy.ide.collections.js.JsoStringMap;
@@ -19,6 +18,7 @@ import com.codenvy.ide.ext.java.messages.ProblemLocationMessage;
 import com.codenvy.ide.ext.java.messages.ProposalAppliedMessage;
 import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.WorkerCodeBlock;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 
 /**
  * @author Evgen Vidolob

@@ -55,10 +55,10 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.NecessaryParenthesesChec
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.JavadocTagsSubProcessor;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.ProblemLocation;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -58,15 +58,15 @@ import com.codenvy.ide.ext.java.jdt.templates.api.TemplateException;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateVariable;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.edits.DeleteEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
+import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.edits.DeleteEdit;
-import com.codenvy.ide.api.text.edits.MalformedTreeException;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
 
 import java.util.AbstractList;
 import java.util.ArrayList;

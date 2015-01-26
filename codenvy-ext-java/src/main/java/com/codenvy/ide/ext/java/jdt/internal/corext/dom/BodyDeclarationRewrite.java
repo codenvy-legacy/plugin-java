@@ -15,7 +15,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.BodyDeclaration;
 import com.codenvy.ide.ext.java.jdt.core.dom.ChildListPropertyDescriptor;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 
 import java.util.List;
 

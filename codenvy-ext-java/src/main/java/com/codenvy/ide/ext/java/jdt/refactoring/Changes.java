@@ -10,11 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
+import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.edits.MalformedTreeException;
 
 public class Changes {
 
