@@ -44,8 +44,8 @@ import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ASTNodes;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.ASTRewriteCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.Document;
 
 import java.util.Collection;
 import java.util.Iterator;

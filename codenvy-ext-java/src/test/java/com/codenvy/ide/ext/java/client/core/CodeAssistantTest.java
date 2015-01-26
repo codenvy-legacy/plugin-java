@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core;
 
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.client.BaseTest;
 import com.codenvy.ide.ext.java.emul.FileSystem;
 import com.codenvy.ide.ext.java.jdt.codeassistant.CompletionProposalCollector;
@@ -25,6 +24,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.internal.codeassist.CompletionEngine;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.googlecode.gwt.test.GwtModule;
 import com.googlecode.gwt.test.GwtTestWithMockito;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;

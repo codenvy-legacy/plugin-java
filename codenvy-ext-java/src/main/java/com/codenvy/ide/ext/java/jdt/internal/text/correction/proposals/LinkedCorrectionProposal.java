@@ -15,8 +15,8 @@ import com.codenvy.ide.ext.java.jdt.core.dom.IMethodBinding;
 import com.codenvy.ide.ext.java.jdt.core.dom.MethodDeclaration;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.Document;
 
 
 /**

@@ -14,8 +14,8 @@ import com.codenvy.ide.ext.java.jdt.codeassistant.api.IProblemLocation;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.Document;
 
 import java.util.ArrayList;
 import java.util.HashMap;

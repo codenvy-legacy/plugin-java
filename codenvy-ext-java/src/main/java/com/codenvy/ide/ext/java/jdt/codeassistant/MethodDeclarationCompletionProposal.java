@@ -27,13 +27,13 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.CodeGenerat
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.Strings;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.TextUtilities;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.TextUtilities;
 
 import java.util.Collection;
 import java.util.Set;

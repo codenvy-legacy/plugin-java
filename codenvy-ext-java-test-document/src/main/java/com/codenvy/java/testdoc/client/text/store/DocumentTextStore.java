@@ -11,7 +11,7 @@
 package com.codenvy.java.testdoc.client.text.store;
 
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.LineTracker;
+import com.codenvy.ide.legacy.client.api.text.LineTracker;
 import com.codenvy.ide.legacy.client.core.text.TextStore;
 import com.codenvy.ide.util.loging.Log;
 

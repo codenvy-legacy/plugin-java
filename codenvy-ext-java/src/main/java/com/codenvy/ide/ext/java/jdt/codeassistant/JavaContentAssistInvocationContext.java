@@ -20,7 +20,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.SignatureUtil;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
 import com.codenvy.ide.ext.java.worker.WorkerTypeInfoStorage;
-import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.Document;
 
 
 /**

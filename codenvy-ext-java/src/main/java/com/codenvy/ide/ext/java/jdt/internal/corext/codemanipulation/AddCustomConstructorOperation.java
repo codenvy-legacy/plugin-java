@@ -23,12 +23,12 @@ import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite.ImportRewriteContext;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
 import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 
 
 /**

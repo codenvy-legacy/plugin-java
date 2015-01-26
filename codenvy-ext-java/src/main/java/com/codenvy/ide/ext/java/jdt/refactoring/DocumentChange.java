@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
 import com.codenvy.ide.legacy.client.api.text.edits.UndoEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 
 
 /**

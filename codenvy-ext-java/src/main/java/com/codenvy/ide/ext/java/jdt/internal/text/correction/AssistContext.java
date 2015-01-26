@@ -16,7 +16,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.NodeFinder;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ASTResolving;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.TextInvocationContext;
-import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.Document;
 
 
 public class AssistContext extends TextInvocationContext implements InvocationContext {

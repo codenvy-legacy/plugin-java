@@ -17,9 +17,9 @@ import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.TargetSourceRangeComputer;
 import com.codenvy.ide.ext.java.jdt.core.formatter.IndentManipulation;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.TokenScanner;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 
 import java.util.HashMap;
 import java.util.Map;

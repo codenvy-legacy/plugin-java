@@ -104,8 +104,8 @@ import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
 import com.codenvy.ide.ext.java.jdt.refactoring.Refactoring;
 import com.codenvy.ide.ext.java.jdt.refactoring.RefactoringStatus;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextChange;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.Document;
 
 import java.util.ArrayList;
 import java.util.Arrays;

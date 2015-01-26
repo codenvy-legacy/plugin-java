@@ -21,10 +21,10 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.CorrectionMessages;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextChange;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextFileChange;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.DocumentEvent;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.DocumentEvent;
 
 
 /**

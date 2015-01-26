@@ -24,7 +24,7 @@ import com.codenvy.ide.ext.java.jdt.internal.codeassist.CompletionEngine;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ASTNodes;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.NameMatcher;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.Document;
 
 import java.util.HashSet;
 

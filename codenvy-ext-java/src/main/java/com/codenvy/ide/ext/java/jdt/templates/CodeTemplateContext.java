@@ -19,10 +19,10 @@ import com.codenvy.ide.ext.java.jdt.templates.api.TemplateException;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateTranslator;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateVariableResolver;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
+import com.codenvy.ide.legacy.client.api.text.LineTracker;
 import com.codenvy.ide.legacy.client.core.text.DefaultLineTracker;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.LineTracker;
 import com.codenvy.ide.api.text.Region;
 
 import java.util.Iterator;

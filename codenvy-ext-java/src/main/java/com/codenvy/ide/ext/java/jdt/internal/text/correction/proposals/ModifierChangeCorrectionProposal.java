@@ -24,7 +24,7 @@ import com.codenvy.ide.ext.java.jdt.core.dom.VariableDeclarationStatement;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ASTResolving;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.VariableDeclarationRewrite;
-import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.Document;
 
 
 public class ModifierChangeCorrectionProposal extends LinkedCorrectionProposal {

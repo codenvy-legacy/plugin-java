@@ -11,8 +11,8 @@
 package com.codenvy.ide.ext.java.jdt.codeassistant;
 
 import com.codenvy.ide.ext.java.jdt.core.CompletionProposal;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.api.text.Document;
 
 
 /** Completions of inline tags such as &#x7b;&#x40;link &#x7d;. See {@link CompletionProposal#JAVADOC_INLINE_TAG}. */

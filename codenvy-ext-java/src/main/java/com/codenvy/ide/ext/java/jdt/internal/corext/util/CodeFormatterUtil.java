@@ -19,10 +19,10 @@ import com.codenvy.ide.ext.java.jdt.core.dom.Statement;
 import com.codenvy.ide.ext.java.jdt.core.formatter.CodeFormatter;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.legacy.client.api.text.Document;
 import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 
 import java.util.Map;

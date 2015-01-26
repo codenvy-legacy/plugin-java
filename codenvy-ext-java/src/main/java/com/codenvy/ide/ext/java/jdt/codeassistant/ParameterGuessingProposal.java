@@ -15,10 +15,10 @@ import com.codenvy.ide.ext.java.jdt.core.CompletionContext;
 import com.codenvy.ide.ext.java.jdt.core.CompletionProposal;
 import com.codenvy.ide.ext.java.jdt.core.Signature;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.SignatureUtil;
+import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.legacy.client.api.text.PositionUpdater;
 import com.codenvy.ide.api.text.BadPositionCategoryException;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Position;
-import com.codenvy.ide.api.text.PositionUpdater;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
 
