@@ -12,11 +12,11 @@ package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
 
 import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.rules.CharacterScanner;
-import com.codenvy.ide.api.text.rules.PartitionTokenScanner;
 import com.codenvy.ide.api.text.rules.Token;
 import com.codenvy.ide.api.text.rules.TokenImpl;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
+import com.codenvy.ide.legacy.client.api.text.rules.CharacterScanner;
+import com.codenvy.ide.legacy.client.api.text.rules.PartitionTokenScanner;
 
 /**
  * This scanner recognizes the JavaDoc comments, Java multi line comments, Java single line comments,
