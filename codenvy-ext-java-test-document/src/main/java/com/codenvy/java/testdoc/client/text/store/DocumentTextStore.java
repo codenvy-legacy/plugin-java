@@ -12,7 +12,7 @@ package com.codenvy.java.testdoc.client.text.store;
 
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.LineTracker;
-import com.codenvy.ide.text.TextStore;
+import com.codenvy.ide.legacy.client.core.text.TextStore;
 import com.codenvy.ide.util.loging.Log;
 
 /**
@@ -30,13 +30,13 @@ public class DocumentTextStore extends DocumentModel implements TextStore {
         this.lineTracker = lineTracker;
     }
 
-    /** @see com.codenvy.ide.text.TextStore#get(int) */
+    /** @see com.codenvy.ide.legacy.client.core.text.TextStore#get(int) */
     @Override
     public char get(int offset) {
         return get(offset, 1).charAt(0);
     }
 
-    /** @see com.codenvy.ide.text.TextStore#get(int, int) */
+    /** @see com.codenvy.ide.legacy.client.core.text.TextStore#get(int, int) */
     @Override
     public String get(int offset, int length) {
         try {
@@ -51,7 +51,7 @@ public class DocumentTextStore extends DocumentModel implements TextStore {
         return "";
     }
 
-    /** @see com.codenvy.ide.text.TextStore#getLength() */
+    /** @see com.codenvy.ide.legacy.client.core.text.TextStore#getLength() */
     @Override
     public int getLength() {
         int length = 0;
@@ -61,7 +61,7 @@ public class DocumentTextStore extends DocumentModel implements TextStore {
         return length;
     }
 
-    /** @see com.codenvy.ide.text.TextStore#replace(int, int, java.lang.String) */
+    /** @see com.codenvy.ide.legacy.client.core.text.TextStore#replace(int, int, java.lang.String) */
     @Override
     public void replace(int offset, int length, String text) {
 
@@ -79,7 +79,7 @@ public class DocumentTextStore extends DocumentModel implements TextStore {
         }
     }
 
-    /** @see com.codenvy.ide.text.TextStore#set(java.lang.String) */
+    /** @see com.codenvy.ide.legacy.client.core.text.TextStore#set(java.lang.String) */
     @Override
     public void set(String text) {
         deleteText(getFirstLine(), 0, getLength());
