@@ -22,6 +22,7 @@
     <inherits name="com.codenvy.ide.Text"/>
     <inherits name="com.codenvy.ide.TextImpl"/>
     <inherits name="com.codenvy.ide.collections.Collections"/>
+    <inherits name="com.codenvy.ide.legacy.Document"/>
 
     <entry-point class='com.codenvy.ide.ext.java.worker.JavaParserWorker'/>
     <add-linker name="dedicatedworker" />
