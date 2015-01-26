@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.codeassistant;
 
-import com.codenvy.ide.api.texteditor.codeassistant.CompletionProposal;
 import com.codenvy.ide.ext.java.jdt.codeassistant.api.JavaCompletionProposal;
+import com.codenvy.ide.legacy.client.api.completion.CompletionProposal;
 
 import java.util.Comparator;
 
