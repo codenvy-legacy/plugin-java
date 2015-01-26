@@ -12,13 +12,13 @@ package com.codenvy.ide.ext.java.jdt.core.formatter.comment;
 
 import com.codenvy.ide.ext.java.jdt.core.ToolFactory;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.BadPositionCategoryException;
 import com.codenvy.ide.api.text.DefaultPositionUpdater;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Position;
-import com.codenvy.ide.api.text.edits.TextEdit;
 
 import java.util.Map;
 

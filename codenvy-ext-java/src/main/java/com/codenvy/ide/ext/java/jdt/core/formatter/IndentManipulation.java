@@ -13,11 +13,11 @@ package com.codenvy.ide.ext.java.jdt.core.formatter;
 
 import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.ScannerHelper;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util;
+import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
 import com.codenvy.ide.legacy.client.core.text.DefaultLineTracker;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.LineTracker;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
 
 import java.util.ArrayList;
 import java.util.Arrays;

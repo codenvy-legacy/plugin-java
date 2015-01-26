@@ -16,10 +16,10 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.NodeFinder;
 import com.codenvy.ide.ext.java.jdt.core.dom.SimpleName;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.LinkedNodeFinder;
+import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 
 
 public class RenameNodeCorrectionProposal extends CUCorrectionProposal {

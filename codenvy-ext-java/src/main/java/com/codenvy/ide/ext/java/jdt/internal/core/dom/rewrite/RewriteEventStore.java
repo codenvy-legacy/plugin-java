@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite;
 
-import com.codenvy.ide.api.text.edits.TextEditGroup;
 import com.codenvy.ide.ext.java.jdt.core.Signature;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.Block;
 import com.codenvy.ide.ext.java.jdt.core.dom.StructuralPropertyDescriptor;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.TargetSourceRangeComputer;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 
 import java.util.ArrayList;
 import java.util.Arrays;

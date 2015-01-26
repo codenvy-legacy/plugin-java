@@ -27,11 +27,11 @@ import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.RewriteEventStore;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.RewriteEventStore.CopySourceInfo;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.RewriteEventStore.PropertyLocation;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.TrackedNodePosition;
+import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.TextUtilities;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 import java.util.HashMap;
 import java.util.Iterator;

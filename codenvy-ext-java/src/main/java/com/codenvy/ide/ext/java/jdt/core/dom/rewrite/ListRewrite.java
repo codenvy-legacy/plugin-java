@@ -21,7 +21,7 @@ import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.NodeInfoStore;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.RewriteEvent;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.RewriteEventStore;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.RewriteEventStore.CopySourceInfo;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 
 import java.util.Collections;
 import java.util.List;

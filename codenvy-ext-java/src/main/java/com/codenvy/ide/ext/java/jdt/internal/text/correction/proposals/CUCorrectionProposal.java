@@ -18,19 +18,19 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.util.Strings;
 import com.codenvy.ide.ext.java.jdt.refactoring.Change;
 import com.codenvy.ide.ext.java.jdt.refactoring.DocumentChange;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextChange;
+import com.codenvy.ide.legacy.client.api.text.edits.CopyTargetEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.DeleteEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.InsertEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MoveSourceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MoveTargetEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditVisitor;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.edits.CopyTargetEdit;
-import com.codenvy.ide.api.text.edits.DeleteEdit;
-import com.codenvy.ide.api.text.edits.InsertEdit;
-import com.codenvy.ide.api.text.edits.MoveSourceEdit;
-import com.codenvy.ide.api.text.edits.MoveTargetEdit;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
-import com.codenvy.ide.api.text.edits.TextEditVisitor;
 import com.google.gwt.user.client.ui.Image;
 
 

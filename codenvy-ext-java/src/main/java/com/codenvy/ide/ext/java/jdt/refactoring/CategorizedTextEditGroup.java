@@ -10,9 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.Assert;
-import com.codenvy.ide.api.text.edits.TextEdit;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
 
 
 /**

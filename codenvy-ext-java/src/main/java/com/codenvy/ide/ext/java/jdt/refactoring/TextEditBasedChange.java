@@ -12,6 +12,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditCopier;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEditProcessor;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
@@ -19,10 +23,6 @@ import com.codenvy.ide.runtime.Status;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.edits.TextEdit;
-import com.codenvy.ide.api.text.edits.TextEditCopier;
-import com.codenvy.ide.api.text.edits.TextEditGroup;
-import com.codenvy.ide.api.text.edits.TextEditProcessor;
 
 import java.util.ArrayList;
 import java.util.Iterator;

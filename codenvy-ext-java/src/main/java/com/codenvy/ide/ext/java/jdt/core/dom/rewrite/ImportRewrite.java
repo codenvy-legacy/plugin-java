@@ -13,8 +13,6 @@ package com.codenvy.ide.ext.java.jdt.core.dom.rewrite;
 
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 import com.codenvy.ide.ext.java.jdt.core.Signature;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CharOperation;
 import com.codenvy.ide.ext.java.jdt.core.dom.AST;
@@ -31,6 +29,8 @@ import com.codenvy.ide.ext.java.jdt.core.dom.PrimitiveType;
 import com.codenvy.ide.ext.java.jdt.core.dom.Type;
 import com.codenvy.ide.ext.java.jdt.core.dom.WildcardType;
 import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.ImportRewriteAnalyzer;
+import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 
 import java.util.ArrayList;
 import java.util.HashMap;

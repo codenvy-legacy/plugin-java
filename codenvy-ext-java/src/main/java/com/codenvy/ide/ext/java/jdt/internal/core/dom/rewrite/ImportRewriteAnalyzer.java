@@ -22,13 +22,13 @@ import com.codenvy.ide.ext.java.jdt.core.dom.LineComment;
 import com.codenvy.ide.ext.java.jdt.core.dom.PackageDeclaration;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
+import com.codenvy.ide.legacy.client.api.text.edits.DeleteEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.InsertEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
-import com.codenvy.ide.api.text.edits.DeleteEdit;
-import com.codenvy.ide.api.text.edits.InsertEdit;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
 
 import java.util.ArrayList;
 import java.util.Arrays;

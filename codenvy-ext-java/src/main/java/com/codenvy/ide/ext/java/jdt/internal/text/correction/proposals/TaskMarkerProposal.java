@@ -20,14 +20,14 @@ import com.codenvy.ide.ext.java.jdt.core.compiler.ITerminalSymbols;
 import com.codenvy.ide.ext.java.jdt.core.compiler.InvalidInputException;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.TokenScanner;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.CorrectionMessages;
+import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
+import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.api.text.Position;
 import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.TextEdit;
 
 
 public class TaskMarkerProposal extends CUCorrectionProposal {
