@@ -201,7 +201,7 @@ public class ImportCompletionProposal extends AbstractJavaCompletionProposal {
         return processJavadoc;
     }
 
-    /** @see com.codenvy.ide.editor.api.contentassist.CompletionProposal#isAutoInsertable() */
+    /** @see com.codenvy.ide.legacy.client.api.completion.editor.api.contentassist.CompletionProposal#isAutoInsertable() */
     @Override
     public boolean isAutoInsertable() {
         return true;
