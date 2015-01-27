@@ -10,19 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.client.wizard;
 
-import com.codenvy.api.project.shared.dto.BuildersDescriptor;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.wizard.project.my_wizard.ProjectWizard;
-import com.codenvy.ide.api.wizard.AbstractWizardPage;
+import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.ide.api.wizard1.AbstractWizardPage;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
 
 /**
  * Wizard page for Ant project.
@@ -30,41 +23,24 @@ import java.util.Arrays;
  * @author Vladyslav Zhukovskii
  */
 @Singleton
-public class AntPagePresenter extends AbstractWizardPage implements AntPageView.ActionDelegate {
+public class AntPagePresenter extends AbstractWizardPage<NewProject> implements AntPageView.ActionDelegate {
 
-    private AntPageView               view;
-    private DtoFactory                dtoFactory;
+    private AntPageView view;
+    private DtoFactory  dtoFactory;
 
     /** Create instance of {@link AntPagePresenter}. */
     @Inject
     public AntPagePresenter(AntPageView view, DtoFactory dtoFactory) {
-        super("Ant project settings", null);
+        super();
         this.view = view;
         this.dtoFactory = dtoFactory;
         view.setDelegate(this);
     }
 
     /** {@inheritDoc} */
-    @Nullable
-    @Override
-    public String getNotice() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
     @Override
     public boolean isCompleted() {
         return true;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void focusComponent() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void removeOptions() {
     }
 
     /** {@inheritDoc} */
@@ -79,17 +55,17 @@ public class AntPagePresenter extends AbstractWizardPage implements AntPageView.
         container.setWidget(view);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void commit(@Nonnull CommitCallback callback) {
-        ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
-        if (project != null) {
-            BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class).withDefault(AntAttributes.ANT_ID);
-            project.setBuilders(builders);
-            project.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
-            project.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
-        }
-
-        super.commit(callback);
-    }
+//    /** {@inheritDoc} */
+//    @Override
+//    public void commit(@Nonnull CommitCallback callback) {
+//        ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
+//        if (project != null) {
+//            BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class).withDefault(AntAttributes.ANT_ID);
+//            project.setBuilders(builders);
+//            project.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
+//            project.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
+//        }
+//
+//        super.commit(callback);
+//    }
 }

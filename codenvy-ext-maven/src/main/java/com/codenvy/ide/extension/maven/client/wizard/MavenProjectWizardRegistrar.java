@@ -10,8 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client.wizard;
 
+import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar;
-import com.codenvy.ide.api.wizard.WizardPage;
+import com.codenvy.ide.api.wizard1.WizardPage;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.google.inject.Inject;
@@ -28,7 +29,7 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
  */
 public class MavenProjectWizardRegistrar implements ProjectWizardRegistrar {
     public static final String CATEGORY = "JAVA";
-    private final Array<Provider<? extends WizardPage>> wizardPages;
+    private final Array<Provider<? extends WizardPage<NewProject>>> wizardPages;
 
     @Inject
     public MavenProjectWizardRegistrar(Provider<MavenPagePresenter> mavenPagePresenter) {
@@ -47,7 +48,7 @@ public class MavenProjectWizardRegistrar implements ProjectWizardRegistrar {
     }
 
     @Nonnull
-    public Array<Provider<? extends WizardPage>> getWizardPages() {
+    public Array<Provider<? extends WizardPage<NewProject>>> getWizardPages() {
         return wizardPages;
     }
 }
