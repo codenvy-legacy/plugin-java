@@ -55,6 +55,7 @@ public class QuickDocViewImpl implements QuickDocView {
         frame = new Frame();
         frame.setSize("100%", "100%");
         frame.getElement().getStyle().setBorderStyle(Style.BorderStyle.NONE);
+        frame.getElement().setAttribute("sandbox",null);
     }
 
     @Override
