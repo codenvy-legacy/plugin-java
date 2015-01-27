@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.ISourceElementRequestor;
@@ -255,7 +256,7 @@ public class IndexManager extends JobManager implements IIndexConstants {
         }
     }
 
-    public SourceElementParser getSourceElementParser(JavaProject project, ISourceElementRequestor requestor) {
+    public SourceElementParser getSourceElementParser(IJavaProject project, ISourceElementRequestor requestor) {
         // disable task tags to speed up parsing
         Map options = project.getOptions(true);
         options.put(JavaCore.COMPILER_TASK_TAGS, ""); //$NON-NLS-1$

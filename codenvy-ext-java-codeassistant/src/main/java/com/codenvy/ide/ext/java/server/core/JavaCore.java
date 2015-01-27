@@ -29,12 +29,52 @@ import org.eclipse.jdt.internal.core.ClasspathAttribute;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 
+import java.io.File;
+
 /**
  * @author Evgen Vidolob
  */
 public class JavaCore {
     public static  String         COMPILER_TASK_TAGS = org.eclipse.jdt.core.JavaCore.COMPILER_TASK_TAGS;
     private static StandardVMType standardVMType     = new StandardVMType();
+
+
+    /**
+     * Compiler option ID: Setting Source Compatibility Mode.
+     * <p>Specify whether which source level compatibility is used. From 1.4 on, <code>'assert'</code> is a keyword
+     *    reserved for assertion support. Also note, than when toggling to 1.4 mode, the target VM
+     *    level should be set to <code>"1.4"</code> and the compliance mode should be <code>"1.4"</code>.</p>
+     * <p>Source level 1.5 is necessary to enable generics, autoboxing, covariance, annotations, enumerations
+     *    enhanced for loop, static imports and varargs. Once toggled, the target VM level should be set to <code>"1.5"</code>
+     *    and the compliance mode should be <code>"1.5"</code>.</p>
+     * <p>Source level 1.6 is necessary to enable the computation of stack map tables. Once toggled, the target
+     *    VM level should be set to <code>"1.6"</code> and the compliance mode should be <code>"1.6"</code>.</p>
+     * <p>Once the source level 1.7 is toggled, the target VM level should be set to <code>"1.7"</code> and the compliance mode
+     *    should be <code>"1.7"</code>.</p>
+     * <dl>
+     * <dt>Option id:</dt><dd><code>"org.eclipse.jdt.core.compiler.source"</code></dd>
+     * <dt>Possible values:</dt><dd><code>{ "1.3", "1.4", "1.5", "1.6", "1.7" }</code></dd>
+     * <dt>Default:</dt><dd><code>"1.3"</code></dd>
+     * </dl>
+     * @since 2.0
+     * @category CompilerOptionID
+     */
+    public static final String COMPILER_SOURCE = org.eclipse.jdt.core.JavaCore.COMPILER_SOURCE;
+
+
+    /**
+     * Compiler option ID: Setting Compliance Level.
+     * <p>Select the compliance level for the compiler. In <code>"1.3"</code> mode, source and target settings
+     *    should not go beyond <code>"1.3"</code> level.</p>
+     * <dl>
+     * <dt>Option id:</dt><dd><code>"org.eclipse.jdt.core.compiler.compliance"</code></dd>
+     * <dt>Possible values:</dt><dd><code>{ "1.3", "1.4", "1.5", "1.6", "1.7" }</code></dd>
+     * <dt>Default:</dt><dd><code>"1.4"</code></dd>
+     * </dl>
+     * @since 2.0
+     * @category CompilerOptionID
+     */
+    public static final String COMPILER_COMPLIANCE = org.eclipse.jdt.core.JavaCore.COMPILER_COMPLIANCE;
 
 //    IClasspathContainer jreContainer = new JREContainer(new StandardVMType(), null, this);
 
@@ -577,7 +617,7 @@ public class JavaCore {
                 extraAttributes);
     }
 
-    public static IJavaElement create(IResource possibleFragment) {
+    public static IJavaElement create(File possibleFragment) {
         return null;
     }
 

@@ -886,6 +886,15 @@ public class JavaProject extends Openable implements IJavaProject {
         return true;
     }
 
+    /*
+	 * Returns whether the given resource is accessible through the children or the non-Java resources of this project.
+	 * Returns true if the resource is not in the project.
+	 * Assumes that the resource is a folder or a file.
+	 */
+    public boolean contains(File resource) {
+        return true;
+    }
+
     @Override
     public boolean exists() {
         return false;
@@ -1087,15 +1096,16 @@ public class JavaProject extends Openable implements IJavaProject {
 //        buff.append(getElementName());
     }
 
-//    @Override
-//    public IJavaElement[] getChildren() throws JavaModelException {
-//        return new IJavaElement[0];
-//    }
-//
-//    @Override
-//    public boolean hasChildren() throws JavaModelException {
-//        return false;
-//    }
+    /*
+     * Resets this project's caches
+     */
+    public void resetCaches() {
+        JavaProjectElementInfo
+                info = (JavaProjectElementInfo) manager.peekAtInfo(this);
+        if (info != null){
+            info.resetCaches();
+        }
+    }
 
     private void addToResult(IClasspathEntry rawEntry, IClasspathEntry resolvedEntry, ResolvedClasspath result,
                              LinkedHashSet<IClasspathEntry> resolvedEntries) {
@@ -1148,6 +1158,24 @@ public class JavaProject extends Openable implements IJavaProject {
 
         JavaProject other = (JavaProject) o;
         return this.getFullPath().equals(other.getFullPath());
+    }
+
+    /**
+     * Returns true if the given project is accessible and it has
+     * a java nature, otherwise false.
+     * @param project IProject
+     * @return boolean
+     */
+    public static boolean hasJavaNature(IProject project) {
+//        try {
+//            return project.hasNature(JavaCore.NATURE_ID);
+//        } catch (CoreException e) {
+//            if (ExternalJavaProject.EXTERNAL_PROJECT_NAME.equals(project.getName()))
+//                return true;
+//            // project does not exist or is not open
+//        }
+//        return false;
+        return true;
     }
 
     /*
