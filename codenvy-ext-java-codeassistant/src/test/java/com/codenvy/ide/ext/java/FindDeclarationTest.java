@@ -60,4 +60,13 @@ public class FindDeclarationTest extends BaseTest {
         assertThat(declaration.isBinary()).isFalse();
         assertThat(declaration.getPath()).isEqualTo("/multimoduleProject/test/src/main/java/com/codenvy/test/MyClass.java");
     }
+
+    @Test
+    public void findClassShouldReturnSourcePathInMavenModule() throws Exception {
+        JavaProject project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/multimoduleProject/test", getClass().getResource("/temp").getPath(), "ws", options);
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Lcom/codenvy/sub/ClassInSubModule;");
+        assertThat(declaration).isNotNull();
+        assertThat(declaration.isBinary()).isFalse();
+        assertThat(declaration.getPath()).isEqualTo("/multimoduleProject/subModule/src/main/java/com/codenvy/sub/ClassInSubModule.java");
+    }
 }
