@@ -169,7 +169,7 @@ public class JavaNavigation {
         while (element != null) {
             if (element instanceof ICompilationUnit) {
                 ICompilationUnit unit = ((ICompilationUnit)element).getPrimary();
-                return compilationUnitNavigation(unit, originalElement);
+                return compilationUnitNavigation(unit, originalElement, project.getWorkspacePath());
             }
 
             if (element instanceof IClassFile) {
@@ -399,11 +399,11 @@ public class JavaNavigation {
         return dto;
     }
 
-    private OpenDeclarationDescriptor compilationUnitNavigation(ICompilationUnit unit, IJavaElement element) throws JavaModelException {
+    private OpenDeclarationDescriptor compilationUnitNavigation(ICompilationUnit unit, IJavaElement element, String workspacePath)
+            throws JavaModelException {
         OpenDeclarationDescriptor dto = DtoFactory.getInstance().createDto(OpenDeclarationDescriptor.class);
-        String projectPath = unit.getJavaProject().getPath().toOSString();
         String absolutePath = unit.getPath().toOSString();
-        dto.setPath(((JavaProject)unit.getJavaProject()).getProjectPath() + absolutePath.substring(projectPath.length()));
+        dto.setPath(absolutePath.substring(workspacePath.length()));
         dto.setBinary(false);
         if (element instanceof ISourceReference) {
             ISourceRange nameRange = ((ISourceReference)element).getNameRange();
@@ -562,8 +562,8 @@ public class JavaNavigation {
                     JarEntry result = DtoFactory.getInstance().createDto(JarEntry.class);
                     result.setType(JarEntryType.FILE);
                     result.setPath(path);
-                    result.setName(entry.getName().substring(entry.getName().lastIndexOf("/") +1));
-                    return  result;
+                    result.setName(entry.getName().substring(entry.getName().lastIndexOf("/") + 1));
+                    return result;
                 }
             } finally {
                 if (jar != null) {

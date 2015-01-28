@@ -92,9 +92,10 @@ public class Plugin {
      * <p/>
      * Resulting map will contain next data <i>item1="value1"</i>,
      * <i>item2="value2"</i> and <i>properties=null</i>
+     * <p/>
+     * <b>Note: update methods should not be used on returned map</b>
      *
-     * @return plugin configuration or {@link java.util.Collections#emptyMap()}
-     * when plugin doesn't have configuration
+     * @return plugin configuration or empty map when plugin doesn't have configuration
      */
     public Map<String, String> getConfiguration() {
         if (configuration == null) {

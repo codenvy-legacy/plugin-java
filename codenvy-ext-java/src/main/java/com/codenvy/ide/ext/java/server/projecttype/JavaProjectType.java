@@ -28,7 +28,7 @@ public class JavaProjectType extends ProjectType {
     @Inject
     public JavaProjectType() {
 
-        super("java", "Java");
+        super("java", "Java",true, false);
         addConstantDefinition(Constants.LANGUAGE, "language", "java");
         addConstantDefinition(Constants.LANGUAGE_VERSION, "language version", "1.6");
 

@@ -553,6 +553,71 @@ public class ModelTest {
     }
 
     @Test
+    public void shouldBeAbleToUpdateBuildResource() throws Exception {
+        final File pom = getTestPomFile();
+        write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                   "<project>\n" +
+                   "    <build>\n" +
+                   "        <resources>\n" +
+                   "             <resource>\n" +
+                   "                 <targetPath>META-INF/temp</targetPath>\n" +
+                   "                 <filtering>true</filtering>\n" +
+                   "                 <!-- DIRECTORY -->\n" +
+                   "                 <directory>${basedir}/src/main/temp</directory>\n" +
+                   "                 <includes>\n" +
+                   "                     <include>configuration.xml</include>\n" +
+                   "                 </includes>\n" +
+                   "                 <excludes>\n" +
+                   "                     <exclude>**/*.properties</exclude>\n" +
+                   "                 </excludes>\n" +
+                   "            </resource>\n" +
+                   "         </resources>\n" +
+                   "    </build>\n" +
+                   "</project>");
+        final Model model = Model.readFrom(pom);
+
+        final Resource resource = model.getBuild()
+                                       .getResources()
+                                       .get(0);
+        resource.setDirectory("new-directory")
+                .setFiltering(false)
+                .setTargetPath("target-path")
+                .setIncludes(asList("include1", "include2", "include3"))
+                .setExcludes(asList("exclude1", "exclude2", "exclude3"));
+        model.save();
+
+        assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                "<project>\n" +
+                                "    <build>\n" +
+                                "        <resources>\n" +
+                                "             <resource>\n" +
+                                "                 <targetPath>target-path</targetPath>\n" +
+                                "                 <filtering>false</filtering>\n" +
+                                "                 <!-- DIRECTORY -->\n" +
+                                "                 <directory>new-directory</directory>\n" +
+                                "                 <includes>\n" +
+                                "                    <include>include1</include>\n" +
+                                "                    <include>include2</include>\n" +
+                                "                    <include>include3</include>\n" +
+                                "                 </includes>\n" +
+                                "                 <excludes>\n" +
+                                "                    <exclude>exclude1</exclude>\n" +
+                                "                    <exclude>exclude2</exclude>\n" +
+                                "                    <exclude>exclude3</exclude>\n" +
+                                "                 </excludes>\n" +
+                                "            </resource>\n" +
+                                "         </resources>\n" +
+                                "    </build>\n" +
+                                "</project>");
+        assertEquals(resource.getDirectory(), "new-directory");
+        assertEquals(resource.getTargetPath(), "target-path");
+        assertEquals(resource.getIncludes(), asList("include1", "include2", "include3"));
+        assertEquals(resource.getExcludes(), asList("exclude1", "exclude2", "exclude3"));
+        assertFalse(resource.isFiltering());
+    }
+
+
+    @Test
     public void shouldBeAbleToAddResourcesToBuild() throws Exception {
         final File pom = getTestPomFile();
         write(pom, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -748,7 +813,11 @@ public class ModelTest {
              .first()
              .setVersion("new-version")
              .setScope(null)
-             .addExclusion(new Exclusion("artifact-id", "group-id"));
+             .setOptional(true)
+             .setType("type")
+             .setClassifier("classifier")
+             .setExclusions(asList(new Exclusion("artifact1", "group1")))
+             .addExclusion(new Exclusion("artifact2", "group2"));
 
         model.writeTo(pom);
 
@@ -757,19 +826,28 @@ public class ModelTest {
         assertEquals(junit.getArtifactId(), "junit");
         assertEquals(junit.getVersion(), "new-version");
         assertEquals(junit.getScope(), "compile");
-        assertEquals(junit.getType(), "jar");
-        assertFalse(junit.isOptional());
+        assertEquals(junit.getType(), "type");
+        assertEquals(junit.getClassifier(), "classifier");
+        assertEquals(junit.getExclusions().size(), 2);
+        assertTrue(junit.isOptional());
         assertEquals(read(pom), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                 "<project>\n" +
                                 "    <dependencies>\n" +
                                 "        <dependency>\n" +
+                                "            <optional>true</optional>\n" +
                                 "            <groupId>org.junit</groupId>\n" +
                                 "            <artifactId>junit</artifactId>\n" +
                                 "            <version>new-version</version>\n" +
+                                "            <type>type</type>\n" +
+                                "            <classifier>classifier</classifier>\n" +
                                 "            <exclusions>\n" +
                                 "                <exclusion>\n" +
-                                "                    <groupId>group-id</groupId>\n" +
-                                "                    <artifactId>artifact-id</artifactId>\n" +
+                                "                    <groupId>group1</groupId>\n" +
+                                "                    <artifactId>artifact1</artifactId>\n" +
+                                "                </exclusion>\n" +
+                                "                <exclusion>\n" +
+                                "                    <groupId>group2</groupId>\n" +
+                                "                    <artifactId>artifact2</artifactId>\n" +
                                 "                </exclusion>\n" +
                                 "            </exclusions>\n" +
                                 "        </dependency>\n" +

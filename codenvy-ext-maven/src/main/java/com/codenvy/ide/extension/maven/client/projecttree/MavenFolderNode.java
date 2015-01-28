@@ -100,13 +100,9 @@ public class MavenFolderNode extends JavaFolderNode {
     }
 
     private Array<TreeNode<?>> getChildNodesForItems(Array<ItemReference> childItems, Array<ProjectDescriptor> modules) {
-        final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();
         Array<TreeNode<?>> oldChildren = Collections.createArray(getChildren().asIterable());
         Array<TreeNode<?>> newChildren = Collections.createArray();
         for (ItemReference item : childItems.asIterable()) {
-            if (!isShowHiddenItems && item.getName().startsWith(".")) {
-                continue;
-            }
             AbstractTreeNode node = createChildNode(item, modules);
             if (node != null) {
                 if (oldChildren.contains(node)) {

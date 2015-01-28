@@ -70,9 +70,9 @@ public class JavaProject extends Openable implements IJavaProject {
     /**
      * Value of the project's raw classpath if the .classpath file contains invalid entries.
      */
-    public static final IClasspathEntry[] INVALID_CLASSPATH = new IClasspathEntry[0];
-    private static final Logger                                     LOG       = LoggerFactory.getLogger(JavaProject.class);
-    private final        DirectoryStream.Filter<java.nio.file.Path> jarFilter = new DirectoryStream.Filter<java.nio.file.Path>() {
+    public static final  IClasspathEntry[]                          INVALID_CLASSPATH = new IClasspathEntry[0];
+    private static final Logger                                     LOG               = LoggerFactory.getLogger(JavaProject.class);
+    private final        DirectoryStream.Filter<java.nio.file.Path> jarFilter         = new DirectoryStream.Filter<java.nio.file.Path>() {
         @Override
         public boolean accept(java.nio.file.Path entry) throws IOException {
             return entry.getFileName().toString().endsWith("jar");
@@ -80,20 +80,22 @@ public class JavaProject extends Openable implements IJavaProject {
     };
     private JavaSearchNameEnvironment nameEnvironment;
     private String                    projectPath;
-    private String              tempDir;
-    private String              wsId;
-    private String              projectName;
-    private File                projectDir;
-    private Map<String, String> options;
-    private IClasspathEntry[]   rawClassPath;
-    private ResolvedClasspath   resolvedClasspath;
-    private IndexManager        indexManager;
+    private String                    tempDir;
+    private String                    wsId;
+    private String                    projectName;
+    private File                      projectDir;
+    private Map<String, String>       options;
+    private IClasspathEntry[]         rawClassPath;
+    private ResolvedClasspath         resolvedClasspath;
+    private IndexManager              indexManager;
+    private final String workspacePath;
 
     public JavaProject(File root, String projectPath, String tempDir, String ws, Map<String, String> options) {
         super(null, new JavaModelManager());
         this.projectPath = projectPath;
         this.tempDir = tempDir;
         wsId = ws;
+        workspacePath = root.getPath();
         int index = projectPath.lastIndexOf('/');
         projectName = index < 0 ? projectPath : projectPath.substring(index + 1);
         this.projectDir = new File(root, projectPath);
@@ -135,9 +137,10 @@ public class JavaProject extends Openable implements IJavaProject {
 
                     for (java.nio.file.Path dep : deps) {
                         String name = dep.getFileName().toString();
-                        File srcJar = new File(dep.getParent().toFile(), "sources/" + name.substring(0, name.lastIndexOf('.')) + "-sources.jar");
+                        File srcJar =
+                                new File(dep.getParent().toFile(), "sources/" + name.substring(0, name.lastIndexOf('.')) + "-sources.jar");
                         IPath srcPath = null;
-                        if(srcJar.exists()){
+                        if (srcJar.exists()) {
                             srcPath = new Path(srcJar.getAbsolutePath());
                         }
                         paths.add(JavaCore.newLibraryEntry(new Path(dep.toAbsolutePath().toString()), srcPath, null));
@@ -1161,6 +1164,10 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public JavaModelManager getJavaModelManager() {
         return manager;
+    }
+
+    public String getWorkspacePath() {
+        return workspacePath;
     }
 
     public static class ResolvedClasspath {

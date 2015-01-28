@@ -28,7 +28,7 @@ public class AntProjectType extends ProjectType {
     @Inject
     public AntProjectType(AntValueProviderFactory antValueProviderFactory,
                           JavaProjectType javaProjectType) {
-        super(AntAttributes.ANT_ID, AntAttributes.ANT_NAME);
+        super(AntAttributes.ANT_ID, AntAttributes.ANT_NAME, true, false);
         addParent(javaProjectType);
         setDefaultBuilder("ant");
         addVariableDefinition(AntAttributes.SOURCE_FOLDER, "", true, antValueProviderFactory);

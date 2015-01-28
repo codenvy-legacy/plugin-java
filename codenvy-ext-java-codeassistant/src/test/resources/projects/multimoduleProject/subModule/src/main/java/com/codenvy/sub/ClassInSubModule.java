@@ -9,7 +9,7 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.test;
+package com.codenvy.sub;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * Test javadoc for class.
  */
-public class MyClass {
+public class ClassInSubModule {
 
     /**
      * My test method javadoc;

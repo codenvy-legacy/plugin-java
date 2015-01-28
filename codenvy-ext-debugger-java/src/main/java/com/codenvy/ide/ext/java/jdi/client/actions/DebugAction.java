@@ -69,9 +69,10 @@ public class DebugAction extends ProjectAction {
     @Override
     public void updateProjectAction(ActionEvent e) {
         final CurrentProject currentProject = appContext.getCurrentProject();
+        boolean isRunningEnabled = currentProject != null && currentProject.getRunner() != null && currentProject.getIsRunningEnabled();
         final String projectTypeId = currentProject.getProjectDescription().getType();
         final String packaging = currentProject.getAttributeValue(MavenAttributes.PACKAGING);
         e.getPresentation().setVisible("war".equals(packaging) || projectTypeId.equals(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID));
-        e.getPresentation().setEnabled(currentProject.getIsRunningEnabled() && !runController.isAnyAppRunning());
+        e.getPresentation().setEnabled(isRunningEnabled && !runController.isAnyAppRunning());
     }
 }

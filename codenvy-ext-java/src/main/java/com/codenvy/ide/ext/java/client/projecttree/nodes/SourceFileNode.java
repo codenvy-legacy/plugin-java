@@ -32,15 +32,19 @@ import javax.annotation.Nonnull;
 public class SourceFileNode extends FileNode {
 
     @AssistedInject
-    public SourceFileNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
-                          EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    public SourceFileNode(@Assisted TreeNode<?> parent,
+                          @Assisted ItemReference data,
+                          @Assisted JavaTreeStructure treeStructure,
+                          EventBus eventBus,
+                          ProjectServiceClient projectServiceClient,
+                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     @Nonnull
     @Override
     public String getDisplayName() {
-        final String name = getData().getName();
+        final String name = getName();
         if (getTreeStructure().getSettings().isShowExtensionForJavaFiles()) {
             return name;
         }
