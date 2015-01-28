@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,13 +15,14 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.ext.java.client.projecttree.JavaProjectNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaProjectNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -33,10 +34,20 @@ public class AntProjectNode extends JavaProjectNode {
 
     /** Create instance of {@link AntProjectNode}. */
     @AssistedInject
-    protected AntProjectNode(@Assisted TreeNode<?> parent, @Assisted ProjectDescriptor data,
-                             @Assisted AntProjectTreeStructure treeStructure, EventBus eventBus, ProjectServiceClient projectServiceClient,
+    protected AntProjectNode(@Assisted TreeNode<?> parent,
+                             @Assisted ProjectDescriptor data,
+                             @Assisted AntProjectTreeStructure treeStructure,
+                             EventBus eventBus,
+                             ProjectServiceClient projectServiceClient,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+    }
+
+    /** {@inheritDoc} */
+    @Nonnull
+    @Override
+    public AntProjectTreeStructure getTreeStructure() {
+        return (AntProjectTreeStructure)super.getTreeStructure();
     }
 
     /** {@inheritDoc} */
@@ -44,9 +55,9 @@ public class AntProjectNode extends JavaProjectNode {
     @Override
     protected AbstractTreeNode<?> createChildNode(ItemReference item) {
         if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
-            return ((AntProjectTreeStructure)treeStructure).newSourceFolderNode(AntProjectNode.this, item);
+            return getTreeStructure().newSourceFolderNode(AntProjectNode.this, item);
         } else if ("folder".equals(item.getType())) {
-            return ((AntProjectTreeStructure)treeStructure).newJavaFolderNode(AntProjectNode.this, item);
+            return getTreeStructure().newJavaFolderNode(AntProjectNode.this, item);
         } else {
             return super.createChildNode(item);
         }

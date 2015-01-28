@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,15 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.generic.StorableNode;
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -35,9 +36,9 @@ public class PackageNode extends AbstractSourceContainerNode {
 
     @AssistedInject
     public PackageNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
-                       EventBus eventBus, EditorAgent editorAgent, ProjectServiceClient projectServiceClient,
+                       EventBus eventBus, ProjectServiceClient projectServiceClient,
                        DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, treeStructure, eventBus, editorAgent, projectServiceClient, dtoUnmarshallerFactory);
+        super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.package").getSVGImage());
     }
 
@@ -50,7 +51,7 @@ public class PackageNode extends AbstractSourceContainerNode {
     @Nonnull
     @Override
     public String getDisplayName() {
-        if (((JavaTreeStructure)treeStructure).getSettings().isCompactEmptyPackages()) {
+        if (getTreeStructure().getSettings().isCompactEmptyPackages()) {
             final String parentPath = ((StorableNode)getParent()).getPath();
             return getPath().replaceFirst(parentPath + "/", "").replace('/', '.');
         }
@@ -86,9 +87,9 @@ public class PackageNode extends AbstractSourceContainerNode {
             public void onDeleted() {
                 callback.onDeleted();
 
-                // if parent contains one package only after deleting child node then parent may be compacted
-                if (!isCompacted() && parent.getChildren().size() == 1 && parent.getChildren().get(0) instanceof PackageNode) {
-                    eventBus.fireEvent(new RefreshProjectTreeEvent(parent.getParent()));
+                // if parent package contains one package only then parent may be compacted after deleting this child node
+                if (!isCompacted() && getParent() instanceof PackageNode && hasOneChildPackageOnly((PackageNode)getParent())) {
+                    eventBus.fireEvent(new RefreshProjectTreeEvent(getParent().getParent()));
                 }
             }
 
@@ -100,9 +101,11 @@ public class PackageNode extends AbstractSourceContainerNode {
     }
 
     private boolean isCompacted() {
-        if (((JavaTreeStructure)treeStructure).getSettings().isCompactEmptyPackages()) {
-            return getDisplayName().contains(".");
-        }
-        return false;
+        return getTreeStructure().getSettings().isCompactEmptyPackages() && getDisplayName().contains(".");
+    }
+
+    private boolean hasOneChildPackageOnly(PackageNode pack) {
+        Array<TreeNode<?>> children = pack.getChildren();
+        return children.size() == 1 && children.get(0) instanceof PackageNode;
     }
 }

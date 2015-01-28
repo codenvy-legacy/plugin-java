@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,8 +31,8 @@ import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.maven.tools.MavenArtifact;
 import com.codenvy.ide.maven.tools.MavenUtils;
+import com.codenvy.ide.maven.tools.Model;
 
-import org.apache.maven.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +86,13 @@ public class MavenBuilder extends Builder {
 
     private static final String ASSEMBLY_DESCRIPTOR_FOR_JAR_WITH_DEPENDENCIES_FILE = "jar-with-dependencies-assembly-descriptor.xml";
     private static final String DEPENDENCIES_JSON_FILE                             = "dependencies.json";
+
+    private static final FilenameFilter SOURCES_AND_DOCS_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(java.io.File dir, String name) {
+            return !(name.endsWith("-sources.jar") || name.endsWith("-javadoc.jar"));
+        }
+    };
 
     private final Map<String, String> mavenProperties;
 
@@ -159,7 +166,7 @@ public class MavenBuilder extends Builder {
                         public void afterDownload(SourceManagerEvent event) {
                             if (workDir.equals(event.getWorkDir())) {
                                 try {
-                                    final Model model = MavenUtils.getModel(workDir);
+                                    final Model model = Model.readFrom(workDir);
                                     final String packaging = model.getPackaging();
                                     if ((packaging == null || "jar".equals(packaging)) && !MavenUtils.isCodenvyExtensionProject(model)) {
                                         addJarWithDependenciesAssemblyDescriptor(workDir, commandLine);
@@ -205,30 +212,7 @@ public class MavenBuilder extends Builder {
             return new BuildResult(false, getBuildReport(task));
         }
 
-        boolean mavenSuccess = false;
-        BufferedReader logReader = null;
-        try {
-            logReader = new BufferedReader(task.getBuildLogger().getReader());
-            String line;
-            while ((line = logReader.readLine()) != null) {
-                line = MavenUtils.removeLoggerPrefix(line);
-                if ("BUILD SUCCESS".equals(line)) {
-                    mavenSuccess = true;
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } finally {
-            if (logReader != null) {
-                try {
-                    logReader.close();
-                } catch (IOException ignored) {
-                }
-            }
-        }
-
-        if (!mavenSuccess) {
+        if (!isMavenTaskSuccess(task)) {
             return new BuildResult(false, getBuildReport(task));
         }
 
@@ -240,7 +224,7 @@ public class MavenBuilder extends Builder {
             case DEFAULT:
                 final Model model;
                 try {
-                    model = MavenUtils.getModel(workDir);
+                    model = Model.readFrom(workDir);
                 } catch (IOException e) {
                     throw new BuilderException(e);
                 }
@@ -252,7 +236,7 @@ public class MavenBuilder extends Builder {
                     final List<Model> modules;
                     final List<java.io.File> results = new LinkedList<>();
                     try {
-                        modules = MavenUtils.getModules(model);
+                        modules = MavenUtils.getModules(workDir);
                     } catch (IOException e) {
                         throw new BuilderException(e);
                     }
@@ -270,7 +254,7 @@ public class MavenBuilder extends Builder {
                         final java.io.File[] a = new java.io.File(child.getProjectDirectory(), "target").listFiles(new FilenameFilter() {
                             @Override
                             public boolean accept(java.io.File dir, String name) {
-                                return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar") && name.endsWith(fileExt);
+                                return SOURCES_AND_DOCS_FILTER.accept(dir, name) && name.endsWith(fileExt);
                             }
                         });
                         if (a != null && a.length > 0) {
@@ -290,9 +274,12 @@ public class MavenBuilder extends Builder {
                     files = new java.io.File(workDir, "target").listFiles(new FilenameFilter() {
                         @Override
                         public boolean accept(java.io.File dir, String name) {
-                            return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar") && name.endsWith(fileExt);
+                            return SOURCES_AND_DOCS_FILTER.accept(dir, name) && name.endsWith(fileExt);
                         }
                     });
+                }
+                if (files.length == 0) {
+                    files = new java.io.File(workDir, "target").listFiles(SOURCES_AND_DOCS_FILTER);
                 }
                 break;
             case LIST_DEPS:
@@ -323,6 +310,32 @@ public class MavenBuilder extends Builder {
         }
 
         return result;
+    }
+
+    private boolean isMavenTaskSuccess(FutureBuildTask task) throws BuilderException {
+        boolean mavenSuccess = false;
+        BufferedReader logReader = null;
+        try {
+            logReader = new BufferedReader(task.getBuildLogger().getReader());
+            String line;
+            while ((line = logReader.readLine()) != null) {
+                line = MavenUtils.removeLoggerPrefix(line);
+                if ("BUILD SUCCESS".equals(line)) {
+                    mavenSuccess = true;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new BuilderException(e);
+        } finally {
+            if (logReader != null) {
+                try {
+                    logReader.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+        return mavenSuccess;
     }
 
     /**

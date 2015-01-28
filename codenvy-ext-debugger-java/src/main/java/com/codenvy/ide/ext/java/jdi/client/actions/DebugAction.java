@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,9 +69,10 @@ public class DebugAction extends ProjectAction {
     @Override
     public void updateProjectAction(ActionEvent e) {
         final CurrentProject currentProject = appContext.getCurrentProject();
+        boolean isRunningEnabled = currentProject != null && currentProject.getRunner() != null && currentProject.getIsRunningEnabled();
         final String projectTypeId = currentProject.getProjectDescription().getType();
         final String packaging = currentProject.getAttributeValue(MavenAttributes.PACKAGING);
         e.getPresentation().setVisible("war".equals(packaging) || projectTypeId.equals(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID));
-        e.getPresentation().setEnabled(currentProject.getIsRunningEnabled() && !runController.isAnyAppRunning());
+        e.getPresentation().setEnabled(isRunningEnabled && !runController.isAnyAppRunning());
     }
 }

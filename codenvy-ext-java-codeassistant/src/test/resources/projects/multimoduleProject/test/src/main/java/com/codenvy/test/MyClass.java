@@ -9,7 +9,7 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package projects.multimoduleProject.test.src.main.java.com.codenvy.test;
+package com.codenvy.test;
 
 import java.io.Closeable;
 import java.io.IOException;

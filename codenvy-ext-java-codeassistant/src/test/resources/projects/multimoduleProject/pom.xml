@@ -19,5 +19,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>test</module>
+        <module>subModule</module>
     </modules>
 </project>

@@ -202,7 +202,7 @@ public class JavaSearchScope extends AbstractJavaSearchScope {
 					if ((includeMask & SOURCES) != 0) {
 						IPath path = entry.getPath();
 						if (pathToAdd == null || pathToAdd.equals(path)) {
-							add(projectPath.toString(), Util.relativePath(path, 1/*remove project segment*/), projectPathString,
+							add(projectPath.toString(), path.toOSString().substring(projectPath.toString().length()+1)/*Util.relativePath(path, 1*//*remove project segment*//*)*/, projectPathString,
 								false/*not a
 						package*/,
 								access);

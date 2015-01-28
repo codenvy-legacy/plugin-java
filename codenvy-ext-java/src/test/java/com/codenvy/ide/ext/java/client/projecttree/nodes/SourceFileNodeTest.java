@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
 
@@ -31,7 +31,7 @@ public class SourceFileNodeTest extends BaseNodeTest {
     public void setUp() {
         super.setUp();
         when(fileItemReference.getName()).thenReturn(FILE_ITEM_NAME);
-        sourceFileNode = new SourceFileNode(null, fileItemReference, null, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        sourceFileNode = new SourceFileNode(null, fileItemReference, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
     @Test

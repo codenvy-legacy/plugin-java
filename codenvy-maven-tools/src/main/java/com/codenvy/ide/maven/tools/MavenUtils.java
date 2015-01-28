@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,33 +17,18 @@ import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.vfs.server.VirtualFile;
 
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
-import org.apache.maven.model.Resource;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.nio.file.Files.exists;
 
 /**
  * A smattering of useful methods to work with the Maven POM.
@@ -57,10 +42,6 @@ public class MavenUtils {
     @Inject
     @Named("packaging2file-extension")
     private static Map<String, String> packagingToFileExtensionMapping;
-    /** Internal Maven POM reader. */
-    private static MavenXpp3Reader pomReader = new MavenXpp3Reader();
-    /** Internal Maven POM writer. */
-    private static MavenXpp3Writer pomWriter = new MavenXpp3Writer();
 
     /** Not instantiable. */
     private MavenUtils() {
@@ -83,87 +64,6 @@ public class MavenUtils {
     }
 
     /**
-     * Get description of maven project.
-     *
-     * @param sources
-     *         maven project directory. Note: Must contains pom.xml file.
-     * @return description of maven project
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static Model getModel(java.io.File sources) throws IOException {
-        return readModel(new java.io.File(sources, "pom.xml"));
-    }
-
-    /**
-     * Read description of maven project.
-     *
-     * @param pom
-     *         path to pom.xml file
-     * @return description of maven project
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static Model readModel(java.io.File pom) throws IOException {
-        return doReadModel(pom);
-    }
-
-    /**
-     * Read description of maven project.
-     *
-     * @param reader
-     *         {@link Reader} to read content of pom.xml file.
-     * @return description of maven project
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static Model readModel(Reader reader) throws IOException {
-        try {
-            return pomReader.read(reader, true);
-        } catch (XmlPullParserException e) {
-            throw new IOException(e);
-        }
-    }
-
-    /**
-     * Read description of maven project.
-     *
-     * @param stream
-     *         {@link InputStream} to read content of pom.xml file.
-     * @return description of maven project
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static Model readModel(InputStream stream) throws IOException {
-        try {
-            return pomReader.read(stream, true);
-        } catch (XmlPullParserException e) {
-            throw new IOException(e);
-        }
-    }
-
-    /**
-     * Read description of maven project.
-     *
-     * @param pom
-     *         {@link VirtualFile} to read content of pom.xml file.
-     * @return description of maven project
-     * @throws IOException
-     *         if an i/o error occurs
-     * @throws ForbiddenException
-     *         if {@code pom} isn't a file
-     * @throws ServerException
-     *         if other error occurs
-     */
-    public static Model readModel(VirtualFile pom) throws IOException, ForbiddenException, ServerException {
-        try (InputStream stream = pom.getContent().getStream()) {
-            return pomReader.read(stream, true);
-        } catch (XmlPullParserException e) {
-            throw new IOException(e);
-        }
-    }
-
-    /**
      * Get description of maven project and all its modules if any as plain list.
      *
      * @param sources
@@ -173,111 +73,31 @@ public class MavenUtils {
      *         if an i/o error occurs
      */
     public static List<Model> getModules(java.io.File sources) throws IOException {
-        return getModules(getModel(sources));
+        final LinkedList<Model> modules = new LinkedList<>();
+        addModules(Model.readFrom(sources), modules);
+        return modules;
     }
 
-    public static List<Model> getModules(Model model) throws IOException {
-        final List<Model> l = new LinkedList<>();
-        addModules(model, l);
-        return l;
-    }
+    private static void addModules(Model model, List<Model> modules) throws IOException {
+        if (!"pom".equals(model.getPackaging())) return;
 
-    private static void addModules(Model model, List<Model> l) throws IOException {
-        if (model.getPackaging().equals("pom")) {
-            for (String module : model.getModules()) {
-                final java.io.File pom = new java.io.File(new java.io.File(model.getProjectDirectory(), module), "pom.xml");
-                if (pom.exists()) {
-                    final Model child = readModel(pom);
-                    final Parent parent = newParent(model.getGroupId(), model.getArtifactId(), model.getVersion());
-                    parent.setRelativePath(child.getProjectDirectory().toPath().relativize(model.getPomFile().toPath()).toString());
-                    child.setParent(parent);
-                    l.add(child);
-                    addModules(child, l);
-                }
+        for (String module : model.getModules()) {
+            final Path modulePom = model.getProjectDirectory()
+                                        .toPath()
+                                        .resolve(module)
+                                        .resolve("pom.xml");
+            if (exists(modulePom)) {
+                final Model child = Model.readFrom(modulePom);
+                final String relativePath = modulePom.getParent()
+                                                     .relativize(model.getPomFile().toPath())
+                                                     .toString();
+                child.setParent(new Parent(model.getGroupId(),
+                                           model.getArtifactId(),
+                                           model.getVersion()).setRelativePath(relativePath));
+                modules.add(child);
+                addModules(child, modules);
             }
         }
-    }
-
-    /**
-     * Writes a specified {@link Model} to the path from which this model has been read.
-     *
-     * @param model
-     *         model to write
-     * @throws IOException
-     *         if an i/o error occurs
-     * @throws IllegalStateException
-     *         if method {@code model.getPomFile()} returns {@code null}
-     */
-    public static void writeModel(Model model) throws IOException {
-        final java.io.File pom = model.getPomFile();
-        if (pom == null) {
-            throw new IllegalStateException("Unable to write a model. Unknown path.");
-        }
-        writeModel(model, pom);
-    }
-
-    /**
-     * Writes a specified {@link Model} to the specified {@link java.io.File}.
-     *
-     * @param model
-     *         model to write
-     * @param pom
-     *         path to the file to write a model
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static void writeModel(Model model, java.io.File pom) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(pom.toPath(), Charset.forName("UTF-8"))) {
-            writeModel(model, writer);
-        }
-    }
-
-    /**
-     * Writes a specified {@link Model} to the specified {@link OutputStream}.
-     *
-     * @param model
-     *         model to write
-     * @param output
-     *         {@link OutputStream} to write a model
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static void writeModel(Model model, OutputStream output) throws IOException {
-        pomWriter.write(output, model);
-    }
-
-    /**
-     * Writes a specified {@link Model} to the specified {@link Writer}.
-     *
-     * @param model
-     *         model to write
-     * @param output
-     *         {@link Writer} to write a model
-     * @throws IOException
-     *         if an i/o error occurs
-     */
-    public static void writeModel(Model model, Writer output) throws IOException {
-        pomWriter.write(output, model);
-    }
-
-    /**
-     * Writes a specified {@link Model} to the specified {@link VirtualFile}.
-     *
-     * @param model
-     *         model to write
-     * @param output
-     *         {@link VirtualFile} to write a model
-     * @throws IOException
-     *         if an i/o error occurs
-     * @throws ForbiddenException
-     *         if {@code pom} isn't a file
-     * @throws ServerException
-     *         if other error occurs
-     */
-    public static void writeModel(Model model, VirtualFile output) throws IOException, ForbiddenException, ServerException {
-        final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        writeModel(model, bout);
-        output.updateContent(new ByteArrayInputStream(bout.toByteArray()), null);
     }
 
     /**
@@ -388,12 +208,12 @@ public class MavenUtils {
 
     /** Get source directories. */
     public static List<String> getSourceDirectories(VirtualFile pom) throws ServerException, IOException, ForbiddenException {
-        return getSourceDirectories(readModel(pom));
+        return getSourceDirectories(Model.readFrom(pom));
     }
 
     /** Get source directories. */
     public static List<String> getSourceDirectories(java.io.File pom) throws IOException {
-        return getSourceDirectories(readModel(pom));
+        return getSourceDirectories(Model.readFrom(pom));
     }
 
     /** Get resource directories. */
@@ -416,53 +236,12 @@ public class MavenUtils {
 
     /** Get resource directories. */
     public static List<String> getResourceDirectories(VirtualFile pom) throws ServerException, IOException, ForbiddenException {
-        return getResourceDirectories(readModel(pom));
+        return getResourceDirectories(Model.readFrom(pom));
     }
 
     /** Get resource directories. */
     public static List<String> getResourceDirectories(java.io.File pom) throws IOException {
-        return getResourceDirectories(readModel(pom));
-    }
-
-    /** Creates new {@link Dependency} instance. */
-    public static Dependency newDependency(String groupId, String artifactId, String version, String scope) {
-        final Dependency dependency = new Dependency();
-        dependency.setGroupId(groupId);
-        dependency.setArtifactId(artifactId);
-        dependency.setVersion(version);
-        dependency.setScope(scope);
-        return dependency;
-    }
-
-    /** Creates new {@link Model} instance. */
-    public static Model newModel(Parent parent, String groupId, String artifactId, String version, String packaging) {
-        final Model model = new Model();
-        model.setParent(parent);
-        model.setGroupId(groupId);
-        model.setArtifactId(artifactId);
-        model.setVersion(version);
-        model.setPackaging(packaging);
-        return model;
-    }
-
-    /** Creates new {@link Parent} instance. */
-    public static Parent newParent(String groupId, String artifactId, String version) {
-        final Parent parent = new Parent();
-        parent.setGroupId(groupId);
-        parent.setArtifactId(artifactId);
-        parent.setVersion(version);
-        return parent;
-    }
-
-    private static Model doReadModel(java.io.File pom) throws IOException {
-        final Model model;
-        try (Reader reader = Files.newBufferedReader(pom.toPath(), Charset.forName("UTF-8"))) {
-            model = pomReader.read(reader, true);
-        } catch (XmlPullParserException e) {
-            throw new IOException(e);
-        }
-        model.setPomFile(pom);
-        return model;
+        return getResourceDirectories(Model.readFrom(pom));
     }
 
     public static Map<String, String> getMavenVersionInformation() throws IOException {
@@ -524,7 +303,7 @@ public class MavenUtils {
 
     /** Checks is specified project is codenvy extension. */
     public static boolean isCodenvyExtensionProject(java.io.File workDir) throws IOException {
-        return isCodenvyExtensionProject(MavenUtils.getModel(workDir));
+        return isCodenvyExtensionProject(Model.readFrom(workDir));
     }
 
     public static boolean isCodenvyExtensionProject(Model pom) {

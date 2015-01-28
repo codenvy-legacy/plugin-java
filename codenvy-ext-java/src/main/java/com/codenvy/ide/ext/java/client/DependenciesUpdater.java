@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,7 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
-import com.codenvy.ide.ext.java.client.projecttree.ExternalLibrariesNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.ExternalLibrariesNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.extension.builder.client.build.BuildController;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;

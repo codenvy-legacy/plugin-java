@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,9 +19,9 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.outline.OutlineUpdater;
-import com.codenvy.ide.ext.java.client.projecttree.JarClassNode;
-import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFileNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JarClassNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFileNode;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -94,32 +94,42 @@ public class ProblemAnnotation extends Annotation implements JavaAnnotation, Qui
     }
 
     private void initializeImage() {
-        Element selectedImageElement = null;
+
+        fImageElement = Elements.createDivElement();
+        fImageElement.setClassName(javaRes.css().markElement());
+
+        final Element selectedImageElement = getSelectedImageElement();
+        if (selectedImageElement != null) {
+            fImageElement.appendChild(selectedImageElement.cloneNode(true));
+        }
+    }
+
+    private Element getSelectedImageElement() {
         if (!isQuickFixableStateSet()) {
             setQuickFixable(isProblem() && JavaAnnotationUtil.hasCorrections(this)); // no light bulb for tasks
         }
+        final String type = getType();
         if (isQuickFixable()) {
-            if (ERROR_ANNOTATION_TYPE.equals(getType())) {
-                selectedImageElement = fgQuickFixErrorElement;
-            } else {
-                selectedImageElement = fgQuickFixElement;
+            switch (type) {
+                case ERROR_ANNOTATION_TYPE:
+                    return fgQuickFixErrorElement;
+                default:
+                    return fgQuickFixElement;
             }
         } else {
-            String type = getType();
-            if (TASK_ANNOTATION_TYPE.equals(type)) {
-                selectedImageElement = fgTaskElement;
-            } else if (INFO_ANNOTATION_TYPE.equals(type)) {
-                selectedImageElement = fgInfoElement;
-            } else if (WARNING_ANNOTATION_TYPE.equals(type)) {
-                selectedImageElement = fgWarningElement;
-            } else if (ERROR_ANNOTATION_TYPE.equals(type)) {
-                selectedImageElement = fgErrorElement;
+            switch (type) {
+                case TASK_ANNOTATION_TYPE:
+                    return fgTaskElement;
+                case INFO_ANNOTATION_TYPE:
+                    return fgInfoElement;
+                case WARNING_ANNOTATION_TYPE:
+                    return fgWarningElement;
+                case ERROR_ANNOTATION_TYPE:
+                    return fgErrorElement;
+                default:
+                    return null;
             }
         }
-//        selectedImageElement.setClassName(javaRes.css().markElementIcon());
-        fImageElement = Elements.createDivElement();
-        fImageElement.setClassName(javaRes.css().markElement());
-        fImageElement.setInnerHTML(selectedImageElement.getOuterHTML());
     }
 
     @Override

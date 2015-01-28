@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,6 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-
 package com.codenvy.ide.ext.java;
 
 import com.codenvy.ide.ext.java.server.JavaNavigation;
@@ -60,5 +59,14 @@ public class FindDeclarationTest extends BaseTest {
         assertThat(declaration).isNotNull();
         assertThat(declaration.isBinary()).isFalse();
         assertThat(declaration.getPath()).isEqualTo("/multimoduleProject/test/src/main/java/com/codenvy/test/MyClass.java");
+    }
+
+    @Test
+    public void findClassShouldReturnSourcePathInMavenModule() throws Exception {
+        JavaProject project = new JavaProject(new File(getClass().getResource("/projects").getFile()), "/multimoduleProject/test", getClass().getResource("/temp").getPath(), "ws", options);
+        OpenDeclarationDescriptor declaration = navigation.findDeclaration(project, "Lcom/codenvy/sub/ClassInSubModule;");
+        assertThat(declaration).isNotNull();
+        assertThat(declaration.isBinary()).isFalse();
+        assertThat(declaration.getPath()).isEqualTo("/multimoduleProject/subModule/src/main/java/com/codenvy/sub/ClassInSubModule.java");
     }
 }

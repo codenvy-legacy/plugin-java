@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,14 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-
-package com.codenvy.ide.ext.java.client.projecttree;
+package com.codenvy.ide.ext.java.client.projecttree.nodes;
 
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.ext.java.shared.JarEntry;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -40,16 +40,19 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
      *         parent node
      * @param data
      *         an object this node encapsulates
-     * @param eventBus
+     * @param treeStructure
+     *         {@link com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure} which this node belongs
      * @param libId
+     * @param eventBus
      * @param service
      * @param dtoUnmarshallerFactory
      * @param iconRegistry
      */
     @AssistedInject
-    public JarClassNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted int libId, EventBus eventBus,
-                        JavaNavigationService service, DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
-        super(parent, data, eventBus, libId, service, dtoUnmarshallerFactory);
+    public JarClassNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted JavaTreeStructure treeStructure,
+                        @Assisted int libId, EventBus eventBus, JavaNavigationService service,
+                        DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
+        super(parent, data, treeStructure, eventBus, libId, service, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.class").getSVGImage());
     }
 
@@ -71,13 +74,13 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
     @Nonnull
     @Override
     public String getPath() {
-        return data.getPath();
+        return getData().getPath();
     }
 
     @Nonnull
     @Override
     public String getName() {
-        return data.getName();
+        return getData().getName();
     }
 
     @Nullable
@@ -98,7 +101,7 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
 
     @Override
     public void getContent(final AsyncCallback<String> callback) {
-        service.getContent(getProject().getPath(), libId, data.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+        service.getContent(getProject().getPath(), libId, getData().getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
             @Override
             protected void onSuccess(String result) {
                 callback.onSuccess(result);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,8 +21,8 @@ import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.ext.java.client.projecttree.PackageNode;
-import com.codenvy.ide.ext.java.client.projecttree.SourceFolderNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.PackageNode;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
