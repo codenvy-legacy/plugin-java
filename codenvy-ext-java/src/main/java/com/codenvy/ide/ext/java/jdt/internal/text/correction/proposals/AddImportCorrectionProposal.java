@@ -14,7 +14,7 @@ import com.codenvy.ide.ext.java.jdt.Images;
 import com.codenvy.ide.ext.java.jdt.codeassistant.QualifiedTypeNameHistory;
 import com.codenvy.ide.ext.java.jdt.core.dom.SimpleName;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 
 

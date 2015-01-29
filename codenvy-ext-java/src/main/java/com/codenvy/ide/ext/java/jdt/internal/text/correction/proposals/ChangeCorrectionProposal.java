@@ -18,7 +18,7 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.ICommandAccess;
 import com.codenvy.ide.ext.java.jdt.refactoring.Change;
 import com.codenvy.ide.ext.java.jdt.refactoring.NullChange;
 import com.codenvy.ide.ext.java.jdt.refactoring.RefactoringStatus;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;

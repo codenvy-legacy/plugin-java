@@ -49,7 +49,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ASTNodes;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.Bindings;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.TokenScanner;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.CorrectionMessages;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 
 import java.util.Arrays;

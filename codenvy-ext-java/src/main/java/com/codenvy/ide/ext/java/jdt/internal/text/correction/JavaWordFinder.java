@@ -15,7 +15,7 @@ import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
 import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 
 public class JavaWordFinder {
 

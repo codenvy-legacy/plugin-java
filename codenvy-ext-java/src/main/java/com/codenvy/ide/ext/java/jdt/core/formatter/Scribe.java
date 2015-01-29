@@ -27,10 +27,10 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.parser.TerminalTokens;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util;
 import com.codenvy.ide.ext.java.jdt.internal.core.util.CodeSnippetParsingUtil;
 import com.codenvy.ide.ext.java.jdt.internal.core.util.RecordedParsingInformation;
-import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
-import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.MalformedTreeException;
+import com.codenvy.ide.ext.java.jdt.text.edits.MultiTextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.ReplaceEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.text.RegionImpl;
 

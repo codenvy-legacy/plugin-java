@@ -58,10 +58,6 @@
                     <artifactId>codenvy-ide-api</artifactId>
                     <groupId>com.codenvy.ide</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>codenvy-ide-legacy-document</artifactId>
-                    <groupId>com.codenvy.ide</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

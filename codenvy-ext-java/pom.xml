@@ -40,11 +40,6 @@
             <artifactId>codenvy-ide-jseditor</artifactId>
             <version>${codenvy.ide.version}</version>
         </dependency>
-         <dependency>
-             <groupId>com.codenvy.ide</groupId>
-             <artifactId>codenvy-ide-legacy-document</artifactId>
-             <version>${codenvy.ide.version}</version>
-         </dependency>
         <dependency>
             <groupId>com.codenvy.platform-api</groupId>
             <artifactId>codenvy-api-builder</artifactId>
@@ -101,12 +96,6 @@
             <artifactId>gwt-user</artifactId>
             <version>${com.google.gwt.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>codenvy-ext-java-test-document</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -292,6 +281,7 @@
                         <exclude>**/readableNames</exclude>
                         <exclude>**/project</exclude>
                         <exclude>**/ext/java/client/editor/JavaAnnotation.java</exclude>
+                        <exclude>**/ext/java/jdt/text/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/jdt/codeassistant/api/ContentAssistInvocationContext.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/jdt/codeassistant/api/IProblemLocation.java</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/jdt/codeassistant/api/JavaCompletionProposal.java</exclude>

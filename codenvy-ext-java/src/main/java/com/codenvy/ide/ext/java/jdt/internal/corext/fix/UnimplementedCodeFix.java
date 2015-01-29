@@ -27,9 +27,9 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.structure.Compil
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.CorrectionMessages;
 import com.codenvy.ide.ext.java.jdt.refactoring.Change;
 import com.codenvy.ide.ext.java.jdt.refactoring.NullChange;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.MultiTextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;

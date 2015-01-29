@@ -22,7 +22,6 @@
     <inherits name="com.codenvy.ide.Text"/>
     <inherits name="com.codenvy.ide.Util"/>
     <inherits name="com.codenvy.ide.collections.Collections"/>
-    <inherits name="com.codenvy.ide.legacy.Document"/>
 
     <entry-point class='com.codenvy.ide.ext.java.worker.JavaParserWorker'/>
     <add-linker name="dedicatedworker" />
@@ -31,7 +30,6 @@
 
     <source path="worker"/>
     <source path="shared"/>
-    <source path="dto"/>
     <source path="messages"/>
     <source path="jdt"/>
 </module>

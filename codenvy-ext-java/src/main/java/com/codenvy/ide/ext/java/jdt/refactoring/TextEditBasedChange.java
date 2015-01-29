@@ -12,11 +12,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditCopier;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditProcessor;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditCopier;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditGroup;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditProcessor;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;

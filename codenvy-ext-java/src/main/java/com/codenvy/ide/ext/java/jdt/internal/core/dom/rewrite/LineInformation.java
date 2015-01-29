@@ -12,7 +12,7 @@
 package com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite;
 
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.api.text.BadLocationException;
 
 public abstract class LineInformation {

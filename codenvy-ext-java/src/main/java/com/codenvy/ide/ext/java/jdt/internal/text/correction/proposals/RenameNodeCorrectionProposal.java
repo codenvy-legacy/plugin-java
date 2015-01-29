@@ -16,9 +16,9 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.NodeFinder;
 import com.codenvy.ide.ext.java.jdt.core.dom.SimpleName;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.LinkedNodeFinder;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.ReplaceEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 import com.codenvy.ide.runtime.CoreException;
 
 

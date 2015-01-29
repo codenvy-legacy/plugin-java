@@ -18,7 +18,7 @@ import com.codenvy.ide.ext.java.messages.ProblemLocationMessage;
 import com.codenvy.ide.ext.java.messages.ProposalAppliedMessage;
 import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.WorkerCodeBlock;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 
 /**
  * @author Evgen Vidolob

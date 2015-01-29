@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.java.jdt.templates;
 
 import com.codenvy.ide.ext.java.jdt.codeassistant.api.CompletionProposal;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.Position;
 

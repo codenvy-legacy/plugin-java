@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.refactoring;
 
-import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
+import com.codenvy.ide.ext.java.jdt.text.edits.MalformedTreeException;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;
 import com.codenvy.ide.runtime.Status;

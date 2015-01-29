@@ -14,10 +14,10 @@ import com.codenvy.ide.ext.java.jdt.refactoring.CategorizedTextEditGroup;
 import com.codenvy.ide.ext.java.jdt.refactoring.GroupCategorySet;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextChange;
 import com.codenvy.ide.ext.java.jdt.refactoring.TextEditChangeGroup;
-import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
-import com.codenvy.ide.legacy.client.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
+import com.codenvy.ide.ext.java.jdt.text.edits.MalformedTreeException;
+import com.codenvy.ide.ext.java.jdt.text.edits.MultiTextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.Assert;
 
 

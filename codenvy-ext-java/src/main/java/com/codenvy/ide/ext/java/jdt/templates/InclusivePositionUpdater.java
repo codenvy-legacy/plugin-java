@@ -12,8 +12,8 @@ package com.codenvy.ide.ext.java.jdt.templates;
 
 import com.codenvy.ide.api.text.BadPositionCategoryException;
 import com.codenvy.ide.api.text.Position;
-import com.codenvy.ide.legacy.client.api.text.DocumentEvent;
-import com.codenvy.ide.legacy.client.api.text.PositionUpdater;
+import com.codenvy.ide.ext.java.jdt.text.DocumentEvent;
+import com.codenvy.ide.ext.java.jdt.text.PositionUpdater;
 
 
 /** Position updater that takes any change in [position.offset, position.offset + position.length] as belonging to the position. */
