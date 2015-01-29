@@ -17,7 +17,6 @@ import java.util.List;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import com.codenvy.ide.api.text.annotation.Annotation;
-import com.codenvy.ide.api.texteditor.quickassist.QuickFixableAnnotation;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.jdt.core.compiler.CategorizedProblem;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;

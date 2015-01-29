@@ -10,6 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
+import java.util.HashMap;
+import java.util.List;
+
+import org.junit.Before;
+
 import com.codenvy.ide.ext.java.client.BaseTest;
 import com.codenvy.ide.ext.java.client.core.quickfix.StringAsserts;
 import com.codenvy.ide.ext.java.emul.FileSystem;
@@ -31,15 +36,10 @@ import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterOptions;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.api.text.edits.TextEdit;
-
-import org.junit.Before;
-
-import java.util.HashMap;
-import java.util.List;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 
 public abstract class ASTRewritingTest extends BaseTest {
     /** @deprecated using deprecated code */
@@ -127,7 +127,7 @@ public abstract class ASTRewritingTest extends BaseTest {
     }
 
     protected String evaluateRewrite(ICompilationUnit cu, ASTRewrite rewrite) throws Exception {
-        Document document1 = new DocumentImpl(new String(cu.getContents()));
+        Document document1 = new WorkerDocument(new String(cu.getContents()));
         TextEdit res = rewrite.rewriteAST(document1, JavaCore.getOptions());
         res.apply(document1);
         String content1 = document1.get();

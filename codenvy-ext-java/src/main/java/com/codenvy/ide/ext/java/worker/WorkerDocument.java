@@ -11,13 +11,13 @@
 package com.codenvy.ide.ext.java.worker;
 
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.text.AbstractDocument;
-import com.codenvy.ide.text.ConfigurableLineTracker;
-import com.codenvy.ide.text.CopyOnWriteTextStore;
-import com.codenvy.ide.text.GapTextStore;
+import com.codenvy.ide.ext.java.jdt.text.AbstractDocument;
+import com.codenvy.ide.ext.java.jdt.text.ConfigurableLineTracker;
+import com.codenvy.ide.ext.java.jdt.text.CopyOnWriteTextStore;
+import com.codenvy.ide.ext.java.jdt.text.GapTextStore;
 
 /**
- * Default document implementation. Uses a {@link com.codenvy.ide.text.store.DocumentTextStore} as text store.
+ * Default document implementation. Uses a {@link CopyOnWriteTextStore} as text store.
  * <p>
  * The used line tracker considers the following strings as line delimiters: "\n", "\r", "\r\n". In case of a text replacement
  * across line delimiter boundaries and with different line delimiters, the line tracker might have to be repaired. Use
@@ -34,7 +34,7 @@ import com.codenvy.ide.text.GapTextStore;
  * document structures to efficiently handle updates.
  * </p>
  * <p>
- * See {@link com.codenvy.ide.text.GapTextStore} and <code>TreeLineTracker</code> for algorithmic behavior of the used document structures.
+ * See {@link com.codenvy.ide.ext.java.jdt.text.GapTextStore} and <code>TreeLineTracker</code> for algorithmic behavior of the used document structures.
  * </p>
  */
 public class WorkerDocument extends AbstractDocument {

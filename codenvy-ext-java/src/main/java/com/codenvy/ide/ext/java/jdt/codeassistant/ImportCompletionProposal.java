@@ -19,10 +19,10 @@ import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ContextSensitiveImportRewriteContext;
 import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.api.text.edits.TextEdit;
 
 
 /** Completion proposal for required imports. */
@@ -201,7 +201,7 @@ public class ImportCompletionProposal extends AbstractJavaCompletionProposal {
         return processJavadoc;
     }
 
-    /** @see com.codenvy.ide.editor.api.contentassist.CompletionProposal#isAutoInsertable() */
+    /** @see com.codenvy.ide.legacy.client.api.completion.editor.api.contentassist.CompletionProposal#isAutoInsertable() */
     @Override
     public boolean isAutoInsertable() {
         return true;

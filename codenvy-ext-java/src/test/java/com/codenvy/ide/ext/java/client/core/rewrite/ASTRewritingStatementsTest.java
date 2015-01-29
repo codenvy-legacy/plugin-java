@@ -10,6 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.codenvy.ide.ext.java.jdt.core.dom.AST;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.AbstractTypeDeclaration;
@@ -56,16 +63,9 @@ import com.codenvy.ide.ext.java.jdt.core.dom.WhileStatement;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.ICompilationUnit;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.api.text.edits.TextEdit;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 
 public class ASTRewritingStatementsTest extends ASTRewritingTest {
 
@@ -4364,7 +4364,7 @@ public class ASTRewritingStatementsTest extends ASTRewritingTest {
         ASTNode placeHolder = rewrite.createStringPlaceholder(toAppend, ASTNode.BLOCK);
         lrw.insertLast(placeHolder, null);
 
-        Document document1 = new DocumentImpl(String.valueOf(cu.getContents()));
+        Document document1 = new WorkerDocument(String.valueOf(cu.getContents()));
         TextEdit res = rewrite.rewriteAST(document1, null);
         res.apply(document1);
         String preview = document1.get();
@@ -4902,7 +4902,7 @@ public class ASTRewritingStatementsTest extends ASTRewritingTest {
         listRewrite.insertLast(newVariableDeclarationExpression, null);
         rewrite.remove(variableDeclarationStatement, null);
 
-        Document document1 = new DocumentImpl(String.valueOf(cu.getContents()));
+        Document document1 = new WorkerDocument(String.valueOf(cu.getContents()));
         TextEdit res = rewrite.rewriteAST(document1, null);
         res.apply(document1);
         String preview = document1.get();
@@ -4970,7 +4970,7 @@ public class ASTRewritingStatementsTest extends ASTRewritingTest {
         ListRewrite listRewrite = rewrite.getListRewrite(tryStatement, TryStatement.RESOURCES_PROPERTY);
         listRewrite.insertLast(newVariableDeclarationExpression, null);
 
-        Document document1 = new DocumentImpl(String.valueOf(cu.getContents()));
+        Document document1 = new WorkerDocument(String.valueOf(cu.getContents()));
         TextEdit res = rewrite.rewriteAST(document1, null);
         res.apply(document1);
         String preview = document1.get();
@@ -5039,7 +5039,7 @@ public class ASTRewritingStatementsTest extends ASTRewritingTest {
         ListRewrite listRewrite = rewrite.getListRewrite(tryStatement, TryStatement.RESOURCES_PROPERTY);
         listRewrite.insertLast(newVariableDeclarationExpression, null);
 
-        Document document1 = new DocumentImpl(String.valueOf(cu.getContents()));
+        Document document1 = new WorkerDocument(String.valueOf(cu.getContents()));
         TextEdit res = rewrite.rewriteAST(document1, null);
         res.apply(document1);
         String preview = document1.get();
