@@ -25,7 +25,7 @@ import com.codenvy.ide.ext.java.jdt.core.formatter.CodeFormatter;
 import com.codenvy.ide.ext.java.jdt.core.util.TypeFinder;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.lookup.ReferenceBinding;
 import com.codenvy.ide.ext.java.jdt.internal.corext.util.CodeFormatterUtil;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.Assert;
 
 import java.util.ArrayList;

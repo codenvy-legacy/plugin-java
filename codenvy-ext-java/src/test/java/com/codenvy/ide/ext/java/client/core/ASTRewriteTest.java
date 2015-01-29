@@ -22,11 +22,11 @@ import com.codenvy.ide.ext.java.jdt.core.dom.TypeDeclaration;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ASTRewrite;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ITrackedNodePosition;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ListRewrite;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.edits.MalformedTreeException;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.UndoEdit;
-import com.codenvy.java.testdoc.client.text.DocumentImpl;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.MalformedTreeException;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.UndoEdit;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
@@ -37,7 +37,7 @@ public class ASTRewriteTest extends ParserBaseTest {
     @Test
     public void testRewrite() {
 
-        Document document = new DocumentImpl("import java.util.List;\nclass X {}\n");
+        Document document = new WorkerDocument("import java.util.List;\nclass X {}\n");
         ASTParser parser = ASTParser.newParser(AST.JLS3);
         parser.setSource(document.get().toCharArray());
         CompilationUnit cu = (CompilationUnit)parser.createAST();

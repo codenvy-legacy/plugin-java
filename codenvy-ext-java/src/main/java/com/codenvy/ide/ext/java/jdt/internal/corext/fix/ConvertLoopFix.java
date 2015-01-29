@@ -16,7 +16,7 @@ package com.codenvy.ide.ext.java.jdt.internal.corext.fix;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.ForStatement;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.GenericVisitor;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.IStatus;
 
 import java.util.ArrayList;

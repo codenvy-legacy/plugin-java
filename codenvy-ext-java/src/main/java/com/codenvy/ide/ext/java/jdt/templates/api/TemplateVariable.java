@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.templates.api;
 
-import com.codenvy.ide.legacy.client.api.text.TextUtilities;
+import com.codenvy.ide.ext.java.jdt.text.TextUtilities;
 import com.codenvy.ide.runtime.Assert;
 
 

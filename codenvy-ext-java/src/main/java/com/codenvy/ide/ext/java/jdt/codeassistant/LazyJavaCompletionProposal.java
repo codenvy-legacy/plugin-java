@@ -17,7 +17,7 @@ import com.codenvy.ide.ext.java.jdt.codeassistant.ui.StyledString;
 import com.codenvy.ide.ext.java.jdt.core.CompletionProposal;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.Assert;
 
 

@@ -27,9 +27,9 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.java.testdoc.client.text.DocumentImpl;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 public class AdvancedQuickAssistTest extends QuickFixTest {
@@ -72,7 +72,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("&&");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -109,7 +109,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("&& (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -146,7 +146,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("&& c");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -186,7 +186,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("&&");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -286,7 +286,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (a");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -322,7 +322,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (a");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -359,7 +359,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (c");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -395,7 +395,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (c");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -431,7 +431,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (a");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -467,7 +467,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        b= 9;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset1 = buf.toString().indexOf("if (a");
         int offset2 = buf.toString().lastIndexOf("b= 9;");
@@ -511,7 +511,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        x= 9;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset1 = buf.toString().indexOf("if (a");
         int offset2 = buf.toString().lastIndexOf("x= 9;");
@@ -553,7 +553,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        b= 9;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("||");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -592,7 +592,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        b= 9;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("||");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -633,7 +633,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        b= 0;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -673,7 +673,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -714,7 +714,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -752,7 +752,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset1 = buf.toString().indexOf("if (");
         int offset2 = buf.toString().indexOf(") {", offset1);
@@ -786,7 +786,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (9+ 8);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         String str = "(9+ 8)";
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf(str), 0, "E");
@@ -818,7 +818,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset1 = buf.toString().indexOf("if (");
         int offset2 = buf.toString().indexOf(") {", offset1);
@@ -854,7 +854,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("(String) obj"), 0, "E");
         List<?> proposals = collectAssists(context, false);
@@ -887,7 +887,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("instanceof"), 0, "E");
         List<?> proposals = collectAssists(context, false);
@@ -920,7 +920,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("=="), 0, "E");
         List<?> proposals = collectAssists(context, false);
@@ -954,7 +954,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("+"), 0, "E");
         List<?> proposals = collectAssists(context, false);
@@ -986,7 +986,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        int d = a > 10 ? b : c;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("?"), 0, "E");
         List<?> proposals = collectAssists(context, false);
@@ -1018,7 +1018,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("a > 3"), "a > 3".length(), "E");
         List<?> proposals = collectAssists(context, false);
@@ -1054,7 +1054,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("a >"), "a >".length(), "E");
         List<?> proposals = collectAssists(context, false);
@@ -1076,7 +1076,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         AssistContext context = getCorrectionContext(cu, buf.toString().indexOf("a >"), 1, "E");
         List<?> proposals = collectAssists(context, false);
@@ -1098,7 +1098,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1135,7 +1135,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1175,7 +1175,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return 17;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (b");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1218,7 +1218,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (a");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1263,7 +1263,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            three();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (i == 1");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1306,7 +1306,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            foo(2);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1347,7 +1347,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            foo(2);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1387,7 +1387,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1424,7 +1424,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            return 2;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1462,7 +1462,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1497,7 +1497,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return a ? 4 : 5;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1529,7 +1529,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return a + 6 == 9 ? 4 : 5;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1566,7 +1566,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return 1;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (a");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1607,7 +1607,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return 1;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (a");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1648,7 +1648,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return 1;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (b");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1689,7 +1689,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return 1;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if (b");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1726,7 +1726,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return a == b.hashCode();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("==");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1758,7 +1758,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (0 == (a & b));\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("==");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1790,7 +1790,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        int n = (2 + 3) * (4 + 5);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("*");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1822,7 +1822,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (a < b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("<");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1854,7 +1854,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (a <= b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("<=");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1886,7 +1886,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (a > b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf(">");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1918,7 +1918,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (a >= b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf(">=");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1950,7 +1950,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return b != 0 != (a == b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!= (");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -1982,7 +1982,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return b > 0 != (a == b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!=");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2014,7 +2014,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return b == 0 == true == false;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("== false");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2046,7 +2046,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return b + 1 != a - 1;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!=");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2080,7 +2080,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2116,7 +2116,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            return;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2153,7 +2153,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2189,7 +2189,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2224,7 +2224,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            return;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2260,7 +2260,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2296,7 +2296,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("}") - 1;
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2331,7 +2331,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("}") - 1;
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2366,7 +2366,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("b instanceof");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2401,7 +2401,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("String)");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2436,7 +2436,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("}") - 1;
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2472,7 +2472,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("int x") - 1;
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2508,7 +2508,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            return;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("return") - 1;
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2544,7 +2544,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("            System.out.println(b);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("System") - 1;
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2579,7 +2579,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2613,7 +2613,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("return");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2647,7 +2647,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int startOffset = buf.toString().indexOf("return");
         int endOffset = buf.toString().indexOf("    }");
@@ -2685,7 +2685,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return list != null ? list : Collections.emptyList();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2720,7 +2720,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        Object res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2756,7 +2756,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2792,7 +2792,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        i += ( b ) ? 1 : 2;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("?");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2827,7 +2827,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        Object res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("res");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2862,7 +2862,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        Object res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("Object res");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2897,7 +2897,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        Object res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int startOffset = buf.toString().indexOf("Object res");
         int endOffset = buf.toString().indexOf("    }");
@@ -2934,7 +2934,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("res=");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -2970,7 +2970,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        res= (b == null) ? null : b.toString();\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int startOffset = buf.toString().indexOf("res=");
         int endOffset = buf.toString().indexOf("    }");
@@ -3011,7 +3011,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3047,7 +3047,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3086,7 +3086,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("if");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3122,7 +3122,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return d;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("var");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3155,7 +3155,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        boolean var= b && !b;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("var");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3186,7 +3186,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        boolean var= b & !b;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("var");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3218,7 +3218,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        b= var && !var;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("var");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3252,7 +3252,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        var |= b;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("var");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3286,7 +3286,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        var |= b;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("var");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3321,7 +3321,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("a ==");
         int length = "a == null ^ b == null".length();
@@ -3355,7 +3355,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!");
         int length = "!(a instanceof String)".length();
@@ -3389,7 +3389,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!");
         int length = "!(a instanceof String)".length();
@@ -3423,7 +3423,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!");
         int length = "!(a instanceof String)".length();
@@ -3457,7 +3457,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        } while (!(a instanceof String));\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!");
         int length = "!(a instanceof String)".length();
@@ -3490,7 +3490,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        assert !(a instanceof String);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!");
         int length = "!(a instanceof String)".length();
@@ -3522,7 +3522,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        boolean b= (i > 1) || !(j < 2 || k < 3);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!(");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3555,7 +3555,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        boolean b= (i > 1) && !(j < 2 && k < 3);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!(");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3588,7 +3588,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        boolean b= (i > 1) || !(j < 2 || k < 3);\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("(j < 2");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3622,7 +3622,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!(");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3645,7 +3645,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!(");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3668,7 +3668,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!(");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3702,7 +3702,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        boolean b = i > 1 || j >= 2 && k >= 3 || m > 4 || n > 5;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset1 = buf.toString().indexOf("j >= 2");
         int offset2 = buf.toString().indexOf(" || m > 4");
@@ -3737,7 +3737,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!b");
         int length = "!b".length();
@@ -3761,7 +3761,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("!(");
         int length = "!(a instanceof String)".length();
@@ -3785,7 +3785,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("a || b");
         int length = "a || b ? a : b".length();
@@ -3832,7 +3832,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        int stop;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset1 = buf.toString().indexOf("if (a == 1)");
         int offset2 = buf.toString().indexOf("int stop;");
@@ -3892,7 +3892,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("switch");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -3949,7 +3949,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("switch");
         AssistContext context = getCorrectionContext(cu, offset, 0, "A");
@@ -4007,7 +4007,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("switch");
         AssistContext context = getCorrectionContext(cu, offset, 0, "A");
@@ -4063,7 +4063,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        return false;\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("switch");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -4113,7 +4113,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        }\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("switch");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -4628,7 +4628,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        String string = \"Hello World\";\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("llo");
         int length = "llo".length();
@@ -4660,7 +4660,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        String string = \"Hello World\";\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("Hel");
         int length = "Hel".length();
@@ -4692,7 +4692,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        String string = \"Hello World\";\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("World");
         AssistContext context = getCorrectionContext(cu, offset, 0, "E");
@@ -4712,7 +4712,7 @@ public class AdvancedQuickAssistTest extends QuickFixTest {
         buf.append("        String string = \"Hello World\";\n");
         buf.append("    }\n");
         buf.append("}\n");
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("Hello");
         int length = "Hello World".length();

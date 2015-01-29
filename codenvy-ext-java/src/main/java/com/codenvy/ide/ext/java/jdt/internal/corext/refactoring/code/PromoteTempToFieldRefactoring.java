@@ -58,8 +58,8 @@ import com.codenvy.ide.ext.java.jdt.refactoring.Change;
 import com.codenvy.ide.ext.java.jdt.refactoring.Refactoring;
 import com.codenvy.ide.ext.java.jdt.refactoring.RefactoringStatus;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 

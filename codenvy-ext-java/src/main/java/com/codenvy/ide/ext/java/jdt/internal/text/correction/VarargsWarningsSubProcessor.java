@@ -27,7 +27,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.ASTResolvin
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.ASTRewriteCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.LinkedCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 
 import java.util.Collection;

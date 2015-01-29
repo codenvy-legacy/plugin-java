@@ -52,8 +52,8 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.GenericVisitor;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ScopeAnalyzer;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.ProblemLocation;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.CoreException;
 
 import java.util.ArrayList;

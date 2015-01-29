@@ -16,7 +16,7 @@ import com.codenvy.ide.ext.java.jdt.templates.api.GlobalTemplateVariables;
 import com.codenvy.ide.ext.java.jdt.templates.api.Template;
 import com.codenvy.ide.ext.java.jdt.templates.api.TemplateContextType;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.api.text.Position;

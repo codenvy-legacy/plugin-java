@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdt.internal.ui.text;
 
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
 

@@ -31,7 +31,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.SelectionAnalyzer;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.TokenScanner;
 import com.codenvy.ide.ext.java.jdt.internal.corext.refactoring.RefactoringCoreMessages;
 import com.codenvy.ide.ext.java.jdt.refactoring.RefactoringStatus;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.CoreException;
 
 import java.util.ArrayList;

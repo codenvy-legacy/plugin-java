@@ -50,11 +50,11 @@ import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.ASTRewrit
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.LinkedCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.quickassist.api.InvocationContext;
-import com.codenvy.ide.legacy.client.api.text.Document;
-import com.codenvy.ide.legacy.client.api.text.TextUtilities;
-import com.codenvy.ide.legacy.client.api.text.edits.InsertEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEdit;
-import com.codenvy.ide.legacy.client.api.text.edits.TextEditGroup;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.TextUtilities;
+import com.codenvy.ide.ext.java.jdt.text.edits.InsertEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEditGroup;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 import com.codenvy.ide.runtime.IStatus;

@@ -56,7 +56,7 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.dom.ASTNodes;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.Bindings;
 import com.codenvy.ide.ext.java.jdt.internal.corext.dom.LinkedNodeFinder;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.JavadocTagsSubProcessor;
-import com.codenvy.ide.legacy.client.api.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.runtime.CoreException;
 

@@ -20,7 +20,7 @@ import com.codenvy.ide.api.text.rules.TokenImpl;
 import com.codenvy.ide.ext.java.jdt.JavaPartitions;
 import com.codenvy.ide.jseditor.client.partition.PartitionScanner;
 import com.codenvy.ide.jseditor.client.partition.StringCharacterScanner;
-import com.codenvy.ide.legacy.client.api.text.rules.CharacterScanner;
+import com.codenvy.ide.ext.java.jdt.text.rules.CharacterScanner;
 
 /**
  * This scanner recognizes the JavaDoc comments, Java multi line comments, Java single line comments,
