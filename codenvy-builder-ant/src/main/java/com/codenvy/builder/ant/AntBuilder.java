@@ -577,7 +577,7 @@ public class AntBuilder extends Builder {
                         ObjectInputStream in = null;
                         try {
                             serverSocket = new ServerSocket(port);
-                            serverSocket.setSoTimeout(10000);
+                            serverSocket.setSoTimeout(30000); //This time is chosen empirically and necessary for some large projects. See IDEX-1957.
                             mySocket = serverSocket.accept();
                             in = new ObjectInputStream(mySocket.getInputStream());
                             while (!stop) {
