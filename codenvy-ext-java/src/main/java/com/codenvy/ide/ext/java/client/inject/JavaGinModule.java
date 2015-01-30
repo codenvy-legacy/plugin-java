@@ -66,14 +66,14 @@ public class JavaGinModule extends AbstractGinModule {
     @Singleton
     @Named("JavaFileType")
     protected FileType provideJavaFile() {
-        return new FileType("Java", JavaResources.INSTANCE.javaFile(), MimeType.APPLICATION_JAVA, "java");
+        return new FileType("Java", JavaResources.INSTANCE.javaFile(), MimeType.TEXT_X_JAVA, "java");
     }
 
     @Provides
     @Singleton
     @Named("JavaClassFileType")
     protected FileType provideJavaClassFile() {
-        return new FileType("Java Class", JavaResources.INSTANCE.javaClassIcon(), "application/java-class", "class");
+        return new FileType("Java Class", JavaResources.INSTANCE.javaClassIcon(), MimeType.APPLICATION_JAVA_CLASS, "class");
     }
 
     @Provides
@@ -88,6 +88,6 @@ public class JavaGinModule extends AbstractGinModule {
     @Singleton
     @Named("JsfFileType")
     protected FileType provideJsfFile() {
-        return new FileType("Jsf", JavaResources.INSTANCE.jsfFile(), MimeType.APPLICATION_JAVA, "jsf");
+        return new FileType("Jsf", JavaResources.INSTANCE.jsfFile(), MimeType.TEXT_X_JAVA, "jsf");
     }
 }
