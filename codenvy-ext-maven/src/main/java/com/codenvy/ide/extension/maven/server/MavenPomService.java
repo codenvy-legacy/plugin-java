@@ -82,22 +82,4 @@ public class MavenPomService {
         }
     }
 
-    @POST
-    @Path("/pom/add-module")
-    public void addModule(@QueryParam("projectpath") String projectPath, @QueryParam("module") String moduleName)
-            throws ServerException, ForbiddenException, IOException {
-        Project project = projectManager.getProject(wsId, projectPath);
-        VirtualFileEntry pom = project.getBaseFolder().getChild("pom.xml");
-        if(pom == null) {
-            throw new IllegalArgumentException("Can't find pom.xml file in path: " + projectPath);
-        }
-
-        Model model = Model.readFrom(pom.getVirtualFile());
-        if("pom".equals(model.getPackaging())){
-            model.addModule(moduleName);
-            model.writeTo(pom.getVirtualFile());
-        } else {
-            throw new IllegalArgumentException("Project must have packaging 'pom' in order to adding modules.");
-        }
-    }
 }
