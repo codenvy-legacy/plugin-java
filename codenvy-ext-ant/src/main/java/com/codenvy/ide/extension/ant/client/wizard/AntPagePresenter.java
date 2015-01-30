@@ -12,10 +12,12 @@ package com.codenvy.ide.extension.ant.client.wizard;
 
 import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.ide.api.wizard1.AbstractWizardPage;
-import com.codenvy.ide.dto.DtoFactory;
+import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.Arrays;
 
 /**
  * Wizard page for Ant project.
@@ -25,22 +27,27 @@ import com.google.inject.Singleton;
 @Singleton
 public class AntPagePresenter extends AbstractWizardPage<NewProject> implements AntPageView.ActionDelegate {
 
-    private AntPageView view;
-    private DtoFactory  dtoFactory;
+    private final AntPageView view;
 
     /** Create instance of {@link AntPagePresenter}. */
     @Inject
-    public AntPagePresenter(AntPageView view, DtoFactory dtoFactory) {
+    public AntPagePresenter(AntPageView view) {
         super();
         this.view = view;
-        this.dtoFactory = dtoFactory;
         view.setDelegate(this);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public boolean isCompleted() {
-        return true;
+    public void init(NewProject dataObject) {
+        super.init(dataObject);
+
+        // TODO: add constants for wizard context
+        final boolean isCreatingNewProject = Boolean.parseBoolean(context.get("isCreatingNewProject"));
+        if (isCreatingNewProject) {
+            // set default values
+            dataObject.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
+            dataObject.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
+        }
     }
 
     /** {@inheritDoc} */
@@ -54,18 +61,4 @@ public class AntPagePresenter extends AbstractWizardPage<NewProject> implements 
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
     }
-
-//    /** {@inheritDoc} */
-//    @Override
-//    public void commit(@Nonnull CommitCallback callback) {
-//        ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
-//        if (project != null) {
-//            BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class).withDefault(AntAttributes.ANT_ID);
-//            project.setBuilders(builders);
-//            project.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
-//            project.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
-//        }
-//
-//        super.commit(callback);
-//    }
 }
