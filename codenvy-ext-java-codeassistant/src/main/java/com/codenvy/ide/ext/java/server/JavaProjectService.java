@@ -173,7 +173,8 @@ public class JavaProjectService {
                     }
                 }
             } catch (Throwable t){
-                t.printStackTrace();
+                //catch all exceptions that may be happened
+                LOG.error("Can't update java model", t);
             }
         }
     }
