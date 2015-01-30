@@ -10,14 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
-import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.SourceModifierImpl;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.api.text.edits.MultiTextEdit;
-import com.codenvy.ide.api.text.edits.ReplaceEdit;
-import com.codenvy.ide.api.text.edits.SourceModifier;
-
 import org.junit.Test;
+
+import com.codenvy.ide.ext.java.jdt.internal.core.dom.rewrite.SourceModifierImpl;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.MultiTextEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.ReplaceEdit;
+import com.codenvy.ide.ext.java.jdt.text.edits.SourceModifier;
 
 /**
  *
@@ -39,7 +39,7 @@ public class SourceModifierTest extends ASTRewritingTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document buffer = new DocumentImpl(buf.toString());
+        Document buffer = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("while");
         int length = buf.toString().indexOf("return;") + "return;".length() - offset;
@@ -52,7 +52,7 @@ public class SourceModifierTest extends ASTRewritingTest {
             edit.addChild(replaces[i]);
         }
 
-        Document innerBuffer = new DocumentImpl(content);
+        Document innerBuffer = new WorkerDocument(content);
         edit.apply(innerBuffer);
 
         buffer.replace(offset, length, innerBuffer.get());
@@ -91,7 +91,7 @@ public class SourceModifierTest extends ASTRewritingTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document buffer = new DocumentImpl(buf.toString());
+        Document buffer = new WorkerDocument(buf.toString());
 
         int offset = buf.toString().indexOf("while");
         int length = buf.toString().indexOf("return;") + "return;".length() - offset;
@@ -104,7 +104,7 @@ public class SourceModifierTest extends ASTRewritingTest {
             edit.addChild(replaces[i]);
         }
 
-        Document innerBuffer = new DocumentImpl(content);
+        Document innerBuffer = new WorkerDocument(content);
         edit.apply(innerBuffer);
 
         buffer.replace(offset, length, innerBuffer.get());

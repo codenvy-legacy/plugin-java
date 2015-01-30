@@ -10,7 +10,17 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.quickfix;
 
-import com.codenvy.ide.api.text.Document;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mock;
+
 import com.codenvy.ide.ext.java.emul.FileSystem;
 import com.codenvy.ide.ext.java.jdt.CUVariables;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
@@ -20,20 +30,10 @@ import com.codenvy.ide.ext.java.jdt.internal.corext.codemanipulation.StubUtility
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.AssistContext;
 import com.codenvy.ide.ext.java.jdt.internal.text.correction.proposals.CUCorrectionProposal;
 import com.codenvy.ide.ext.java.jdt.templates.CodeTemplateContextType;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
 import com.codenvy.ide.ext.java.worker.WorkerMessageHandler;
-import com.codenvy.ide.text.DocumentImpl;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import static org.mockito.Mockito.when;
 
 public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     boolean BUG_25417 = true;
@@ -92,7 +92,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     //      buf.append("    }\n");
     //      buf.append("}\n");
     //
-    //      Document cu = new DocumentImpl(buf.toString());
+    //      Document cu = new WorkerDocument(buf.toString());
     //      CompilationUnit astRoot = getASTRoot(cu, "E");
     //      ArrayList proposals = collectCorrections(cu, astRoot);
     //      assertNumberOfProposals(proposals, 3);
@@ -152,7 +152,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -196,7 +196,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
     //      buf.append("    }\n");
     //      buf.append("}\n");
     //
-    //      Document cu = new DocumentImpl(buf.toString());
+    //      Document cu = new WorkerDocument(buf.toString());
     //      CompilationUnit astRoot = getASTRoot(cu, "E");
     //      ArrayList proposals = collectCorrections(cu, astRoot);
     //      assertNumberOfProposals(proposals, 3);
@@ -254,7 +254,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -287,7 +287,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -338,7 +338,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -387,7 +387,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 3);
@@ -455,7 +455,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 3);
@@ -518,7 +518,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -560,7 +560,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 3);
@@ -621,7 +621,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    int time= System.currentTimeMillis();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -663,7 +663,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -714,7 +714,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -765,7 +765,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -813,7 +813,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -864,7 +864,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -924,7 +924,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -995,7 +995,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -1072,7 +1072,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
         assertNumberOfProposals(proposals, 2);
@@ -1150,7 +1150,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -1226,7 +1226,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class Exception extends java.lang.Throwable {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -1302,7 +1302,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         String begin = "goo(1)", end = "goo(2));";
 
@@ -1373,7 +1373,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -1446,7 +1446,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 3);
@@ -1532,7 +1532,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -1576,7 +1576,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -1611,7 +1611,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -1653,7 +1653,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -1705,7 +1705,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -1750,7 +1750,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2); // 2 uncaught exceptions
         assertNumberOfProposals(proposals, 2);
@@ -1810,7 +1810,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2); // 2 uncaught exceptions
         assertNumberOfProposals(proposals, 2);
@@ -1866,7 +1866,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -1909,7 +1909,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -1971,7 +1971,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2010,7 +2010,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2066,7 +2066,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2123,7 +2123,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2185,7 +2185,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E implements Inter{\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2244,7 +2244,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends InterImpl {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
         assertNumberOfProposals(proposals, 2);
@@ -2300,7 +2300,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E implements Inter<String> {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2349,7 +2349,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E implements Inter<String> {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2397,7 +2397,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E implements Inter {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
         assertNumberOfProposals(proposals, 2);
@@ -2457,7 +2457,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2508,7 +2508,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    void foo();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "TestEnum");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -2549,7 +2549,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    public abstract void bar();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -2591,7 +2591,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    public abstract void bar();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
 
@@ -2632,7 +2632,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    public abstract boolean foo();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -2675,7 +2675,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2715,7 +2715,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends F {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2755,7 +2755,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends F {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -2809,7 +2809,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends F<Runnable> {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2849,7 +2849,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2891,7 +2891,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2931,7 +2931,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends F<String>.SubF<String> {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -2966,7 +2966,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "F");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -3011,7 +3011,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends F {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -3048,7 +3048,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends F {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -3084,7 +3084,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    private int count;\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3129,7 +3129,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    private int count, color= count;\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3178,7 +3178,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3233,7 +3233,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3294,7 +3294,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3355,7 +3355,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3407,7 +3407,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3455,7 +3455,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3503,7 +3503,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -3537,7 +3537,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    private final String c=\"Test\";\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "B");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -3581,7 +3581,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    String f=d;\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "B");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -3632,7 +3632,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "B");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
 
@@ -3685,7 +3685,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -3744,7 +3744,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "B");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
 
@@ -3802,7 +3802,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3857,7 +3857,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -3907,7 +3907,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -3940,7 +3940,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -3974,7 +3974,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4006,7 +4006,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4039,7 +4039,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4072,7 +4072,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4105,7 +4105,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4138,7 +4138,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4171,7 +4171,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4217,7 +4217,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4266,7 +4266,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4306,7 +4306,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -4359,7 +4359,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4394,7 +4394,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4432,7 +4432,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -4491,7 +4491,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -4560,7 +4560,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4602,7 +4602,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4644,7 +4644,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -4687,7 +4687,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -4726,7 +4726,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4775,7 +4775,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -4814,7 +4814,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4838,7 +4838,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4864,7 +4864,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4891,7 +4891,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4919,7 +4919,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4946,7 +4946,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -4970,7 +4970,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5006,7 +5006,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5044,7 +5044,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5086,7 +5086,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5127,7 +5127,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5170,7 +5170,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -5218,7 +5218,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -5257,7 +5257,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("public class E extends List {\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5304,7 +5304,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5344,7 +5344,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -5383,7 +5383,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -5421,7 +5421,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5481,7 +5481,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5548,7 +5548,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5613,7 +5613,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5676,7 +5676,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5748,7 +5748,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5824,7 +5824,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5878,7 +5878,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5928,7 +5928,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -5978,7 +5978,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 3);
@@ -6012,7 +6012,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 3);
@@ -6049,7 +6049,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 2);
@@ -6113,7 +6113,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
         assertNumberOfProposals(proposals, 1);
@@ -6161,7 +6161,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6256,7 +6256,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6342,7 +6342,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6388,7 +6388,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6433,7 +6433,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6472,7 +6472,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         options.put(JavaCore.COMPILER_PB_UNCHECKED_TYPE_OPERATION, JavaCore.WARNING);
         WorkerMessageHandler.get().getOptions().putAll(options);
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6514,7 +6514,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         options.put(JavaCore.COMPILER_PB_UNCHECKED_TYPE_OPERATION, JavaCore.WARNING);
         WorkerMessageHandler.get().getOptions().putAll(options);
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6552,7 +6552,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6592,7 +6592,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
 
@@ -6633,7 +6633,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -6667,7 +6667,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("        String value();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -6702,7 +6702,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -6762,7 +6762,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -6821,7 +6821,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    private List l= new ArrayList<String>();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -6878,7 +6878,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -6933,7 +6933,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -6989,7 +6989,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    private List<String> l= new ArrayList();\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -7042,7 +7042,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -7126,7 +7126,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -7212,7 +7212,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -7295,7 +7295,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    Map<String,String> m=Collections.EMPTY_MAP;\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "CollectionsTest");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -7339,7 +7339,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "CollectionsTest");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -7386,7 +7386,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "CollectionsTest");
         ArrayList<?> proposals = collectCorrections(cu, astRoot);
 
@@ -7433,7 +7433,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 3);
 
@@ -7489,7 +7489,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 2);
 
@@ -7535,7 +7535,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         ArrayList<?> proposals = collectCorrections(cu, astRoot, 1);
 
@@ -7577,7 +7577,7 @@ public class LocalCorrectionsQuickFixTest extends QuickFixTest {
         buf.append("    }\n");
         buf.append("}\n");
 
-        Document cu = new DocumentImpl(buf.toString());
+        Document cu = new WorkerDocument(buf.toString());
         CompilationUnit astRoot = getASTRoot(cu, "E");
         Assert.assertEquals(0, astRoot.getProblems().length); // see https://bugs.eclipse.org/bugs/show_bug.cgi?id=38751#c7
     }

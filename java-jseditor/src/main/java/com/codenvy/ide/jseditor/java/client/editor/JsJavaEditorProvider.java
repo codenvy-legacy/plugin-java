@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.jseditor.java.client.editor;
 
+import static com.codenvy.ide.jseditor.client.partition.DocumentPartitioner.DEFAULT_CONTENT_TYPE;
+
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -17,7 +19,6 @@ import javax.inject.Inject;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.editor.EditorProvider;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.text.Document;
 import com.codenvy.ide.ext.java.client.editor.FileWatcher;
 import com.codenvy.ide.jseditor.client.defaulteditor.DefaultEditorProvider;
 import com.codenvy.ide.jseditor.client.editorconfig.EditorUpdateAction;
@@ -74,7 +75,7 @@ public class JsJavaEditorProvider implements EditorProvider {
                 public void doRefresh() {
                     final Reconciler reconciler = configuration.getReconciler();
                     if (reconciler != null) {
-                        final ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(Document.DEFAULT_CONTENT_TYPE);
+                        final ReconcilingStrategy strategy = reconciler.getReconcilingStrategy(DEFAULT_CONTENT_TYPE);
                         if (strategy instanceof JavaReconcilerStrategy) {
                             ((JavaReconcilerStrategy)strategy).parse();
                         }

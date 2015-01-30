@@ -10,6 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.core.rewrite;
 
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.codenvy.ide.api.text.BadLocationException;
 import com.codenvy.ide.ext.java.client.BaseTest;
 import com.codenvy.ide.ext.java.client.core.quickfix.StringAsserts;
 import com.codenvy.ide.ext.java.jdt.core.JavaCore;
@@ -19,18 +26,11 @@ import com.codenvy.ide.ext.java.jdt.core.dom.ASTParser;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.rewrite.ImportRewrite;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
+import com.codenvy.ide.ext.java.worker.WorkerDocument;
+import com.codenvy.ide.ext.java.jdt.text.Document;
+import com.codenvy.ide.ext.java.jdt.text.edits.MalformedTreeException;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 import com.codenvy.ide.runtime.CoreException;
-import com.codenvy.ide.api.text.BadLocationException;
-import com.codenvy.ide.api.text.Document;
-import com.codenvy.ide.text.DocumentImpl;
-import com.codenvy.ide.api.text.edits.MalformedTreeException;
-import com.codenvy.ide.api.text.edits.TextEdit;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
 
 public class ImportRewriteTest extends BaseTest {
 
@@ -72,7 +72,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "com", "pack"};
@@ -115,7 +115,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java.util", "java.new", "p"};
@@ -150,7 +150,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java.util", "java.new", "p"};
@@ -189,7 +189,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "java.util", "com", "pack"};
@@ -222,7 +222,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "java.util", "com", "pack"};
@@ -254,7 +254,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "java.util", "com", "pack"};
@@ -374,7 +374,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "", "org", "#", "pack"};
@@ -414,7 +414,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"org", "com", "pack", "#", ""};
@@ -461,7 +461,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "com", "pack"};
@@ -496,7 +496,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"java", "com", "pack"};
@@ -852,7 +852,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"#", "java"};
@@ -887,7 +887,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"#", "java"};
@@ -924,7 +924,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("\n");
         buf.append("public class C {\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"#", "java"};
@@ -970,7 +970,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("public class C {\n");
         buf.append("    public final static int CONST= 9;\n");
         buf.append("}\n");
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         String[] order = new String[]{"#", "java"};
@@ -1036,7 +1036,7 @@ public class ImportRewriteTest extends BaseTest {
         buf.append("}\n");
 
         String[] order = new String[]{"java"};
-        Document d = new DocumentImpl(buf.toString());
+        Document d = new WorkerDocument(buf.toString());
         CompilationUnit cu = createCompilationUnit(d, "C");
 
         ImportRewrite imports = newImportsRewrite(d, cu, order, 1, 1, false);
