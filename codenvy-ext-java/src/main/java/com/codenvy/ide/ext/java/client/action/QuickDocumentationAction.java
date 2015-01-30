@@ -49,7 +49,10 @@ public class QuickDocumentationAction extends ProjectAction {
         if (editorAgent.getActiveEditor() != null) {
             EditorInput input = editorAgent.getActiveEditor().getEditorInput();
             VirtualFile file = input.getFile();
-            if (file.getMediaType().equals(MimeType.APPLICATION_JAVA) || file.getMediaType().equals("application/java-class")) {
+            String mediaType = file.getMediaType();
+            if (mediaType != null && (mediaType.equals(MimeType.TEXT_X_JAVA) ||
+                                      mediaType.equals(MimeType.TEXT_X_JAVA_SOURCE) ||
+                                      mediaType.equals(MimeType.APPLICATION_JAVA_CLASS))) {
                 e.getPresentation().setEnabledAndVisible(true);
                 return;
             }

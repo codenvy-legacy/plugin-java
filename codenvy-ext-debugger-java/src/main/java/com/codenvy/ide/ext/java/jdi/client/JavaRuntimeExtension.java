@@ -24,7 +24,8 @@ import com.codenvy.ide.extension.runner.client.RunnerLocalizationConstant;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import static com.codenvy.ide.MimeType.APPLICATION_JAVA;
+import static com.codenvy.ide.MimeType.TEXT_X_JAVA;
+import static com.codenvy.ide.MimeType.TEXT_X_JAVA_SOURCE;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN_CONTEXT_MENU;
 import static com.codenvy.ide.api.constraints.Anchor.AFTER;
@@ -65,6 +66,7 @@ public class JavaRuntimeExtension {
 
         debuggerManager.registeredDebugger(MavenAttributes.MAVEN_ID, debuggerPresenter);
         debuggerManager.registeredDebugger(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID, debuggerPresenter);
-        resolverFactory.addResolver(APPLICATION_JAVA, javaFqnResolver);
+        resolverFactory.addResolver(TEXT_X_JAVA, javaFqnResolver);
+        resolverFactory.addResolver(TEXT_X_JAVA_SOURCE, javaFqnResolver);
     }
 }
