@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2014 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.java.server.core.resources;
 
 import com.codenvy.api.vfs.server.observation.VirtualFileEvent;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
@@ -26,16 +27,30 @@ import java.io.File;
  */
 public class ResourceDeltaImpl implements IResourceDelta {
 
-    private VirtualFileEvent event;
     protected static int KIND_MASK = 0xFF;
+    private File workspace;
+    private VirtualFileEvent event;
+    protected int status;
 
-    public ResourceDeltaImpl(VirtualFileEvent event) {
+    public ResourceDeltaImpl(File workspace, VirtualFileEvent event) {
+        this.workspace = workspace;
         this.event = event;
+//        status|= KIND_MASK;
+        switch (event.getType()) {
+            case CONTENT_UPDATED:
+                status |= CHANGED | CONTENT;
+                break;
+            case CREATED:
+                status |= ADDED;
+                break;
+            case DELETED:
+                status |= REMOVED;
+        }
     }
 
     @Override
     public File getFile() {
-        return null;
+        return new File(workspace, event.getPath());
     }
 
     @Override
@@ -49,8 +64,16 @@ public class ResourceDeltaImpl implements IResourceDelta {
     }
 
     @Override
-    public void accept(IResourceDeltaVisitor iResourceDeltaVisitor, int i) throws CoreException {
-
+    public void accept(IResourceDeltaVisitor visitor, int memberFlags) throws CoreException {
+        final boolean includePhantoms = (memberFlags & IContainer.INCLUDE_PHANTOMS) != 0;
+//        final boolean includeTeamPrivate = (memberFlags & IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS) != 0;
+//        final boolean includeHidden = (memberFlags & IContainer.INCLUDE_HIDDEN) != 0;
+//        int mask = includePhantoms ? ALL_WITH_PHANTOMS : REMOVED | ADDED | CHANGED;
+//        if ((getKind() & mask) == 0)
+//            return;
+//        if (!visitor.visit(this))
+//            return;
+        visitor.visit(this);
     }
 
     @Override
@@ -60,22 +83,22 @@ public class ResourceDeltaImpl implements IResourceDelta {
 
     @Override
     public org.eclipse.core.resources.IResourceDelta[] getAffectedChildren() {
-        return new org.eclipse.core.resources.IResourceDelta[0];
+        return new IResourceDelta[0];
     }
 
     @Override
     public org.eclipse.core.resources.IResourceDelta[] getAffectedChildren(int i) {
-        return new org.eclipse.core.resources.IResourceDelta[0];
+        return new IResourceDelta[0];
     }
 
     @Override
     public org.eclipse.core.resources.IResourceDelta[] getAffectedChildren(int i, int i1) {
-        return new org.eclipse.core.resources.IResourceDelta[0];
+        return new IResourceDelta[0];
     }
 
     @Override
     public int getFlags() {
-        return 0;
+        return status & ~KIND_MASK;
     }
 
     @Override
@@ -85,7 +108,7 @@ public class ResourceDeltaImpl implements IResourceDelta {
 
     @Override
     public int getKind() {
-        return 0;
+        return status & KIND_MASK;
     }
 
     @Override

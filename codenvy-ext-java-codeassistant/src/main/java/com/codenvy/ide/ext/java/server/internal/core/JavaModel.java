@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.server.internal.core;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -27,7 +26,6 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.internal.core.util.MementoTokenizer;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -54,24 +52,25 @@ protected JavaModel(JavaModelManager manager) throws Error {
 }
 protected boolean buildStructure(OpenableElementInfo info, IProgressMonitor pm, Map newElements, File underlyingResource)	/*throws JavaModelException*/ {
 
-	// determine my children
-	IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-	int length = projects.length;
-	IJavaElement[] children = new IJavaElement[length];
-	int index = 0;
-	for (int i = 0; i < length; i++) {
-		IProject project = projects[i];
-		if (JavaProject.hasJavaNature(project)) {
-			children[index++] = getJavaProject(project);
-		}
-	}
-	if (index < length)
-		System.arraycopy(children, 0, children = new IJavaElement[index], 0, index);
-	info.setChildren(children);
-
-	newElements.put(this, info);
-
-	return true;
+//	// determine my children
+//	IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+//	int length = projects.length;
+//	IJavaElement[] children = new IJavaElement[length];
+//	int index = 0;
+//	for (int i = 0; i < length; i++) {
+//		IProject project = projects[i];
+//		if (JavaProject.hasJavaNature(project)) {
+//			children[index++] = getJavaProject(project);
+//		}
+//	}
+//	if (index < length)
+//		System.arraycopy(children, 0, children = new IJavaElement[index], 0, index);
+//	info.setChildren(children);
+//
+//	newElements.put(this, info);
+//
+//	return true;
+	throw new UnsupportedOperationException();
 }
 /*
  * @see IJavaModel
@@ -198,10 +197,11 @@ public IJavaProject getJavaProject(IResource resource) {
  * @see org.eclipse.jdt.core.IJavaModel
  */
 public IJavaProject[] getJavaProjects() throws JavaModelException {
-	ArrayList list = getChildrenOfType(JAVA_PROJECT);
-	IJavaProject[] array= new IJavaProject[list.size()];
-	list.toArray(array);
-	return array;
+//	ArrayList list = getChildrenOfType(JAVA_PROJECT);
+//	IJavaProject[] array= new IJavaProject[list.size()];
+//	list.toArray(array);
+//	return array;
+	return new IJavaProject[]{manager.getJavaProject()};
 
 }
 /**
@@ -225,7 +225,18 @@ public File resource(PackageFragmentRoot root) {
 //	return ResourcesPlugin.getWorkspace().getRoot();
 	throw new UnsupportedOperationException();
 }
-/**
+
+	@Override
+	public boolean isOpen() {
+		return  true;
+	}
+
+	@Override
+	public void open(IProgressMonitor pm) throws JavaModelException {
+
+	}
+
+	/**
  * @see org.eclipse.jdt.core.IOpenable
  */
 public IResource getUnderlyingResource() {

@@ -91,6 +91,7 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public JavaProject(File root, String projectPath, String tempDir, String ws, Map<String, String> options) {
         super(null, new JavaModelManager());
+        manager.setJavaProject(this);
         this.projectPath = projectPath;
         this.tempDir = tempDir;
         wsId = ws;
@@ -156,11 +157,7 @@ public class JavaProject extends Openable implements IJavaProject {
         indexManager.indexAll(this);
         indexManager.saveIndexes();
         manager.setIndexManager(indexManager);
-        try {
-            nameEnvironment = new SearchableEnvironment(this, (ICompilationUnit[])null);
-        } catch (JavaModelException e) {
-            LOG.error("Can't create SearchableEnvironment", e);
-        }
+        creteNewNameEnvironment();
     }
 
     public SearchableEnvironment getNameEnvironment() {
@@ -1199,6 +1196,14 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public String getWorkspacePath() {
         return workspacePath;
+    }
+
+    public void creteNewNameEnvironment() {
+        try {
+            nameEnvironment = new SearchableEnvironment(this, (ICompilationUnit[])null);
+        } catch (JavaModelException e) {
+            LOG.error("Can't create SearchableEnvironment", e);
+        }
     }
 
     public static class ResolvedClasspath {

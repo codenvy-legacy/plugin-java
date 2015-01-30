@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.java.server.core;
 import com.codenvy.ide.ext.java.server.core.launching.JREContainer;
 import com.codenvy.ide.ext.java.server.core.launching.StandardVMType;
 import com.codenvy.ide.ext.java.server.internal.core.ClasspathEntry;
+import com.codenvy.ide.ext.java.server.internal.core.JavaModelManager;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 
 import org.eclipse.core.resources.IResource;
@@ -617,8 +618,8 @@ public class JavaCore {
                 extraAttributes);
     }
 
-    public static IJavaElement create(File possibleFragment) {
-        return null;
+    public static IJavaElement create(File file) {
+        return JavaModelManager.create(file, null);
     }
 
     /**

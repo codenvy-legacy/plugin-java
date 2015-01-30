@@ -373,11 +373,11 @@ public class DeltaProcessingState implements IResourceChangeListener {
 				// source attachment path
 				if (entry.getEntryKind() != IClasspathEntry.CPE_LIBRARY) continue;
 				String propertyString = null;
-				try {
-					propertyString = Util.getSourceAttachmentProperty(path);
-				} catch (JavaModelException e) {
-					e.printStackTrace();
-				}
+//				try {
+//					propertyString = Util.getSourceAttachmentProperty(path);
+//				} catch (JavaModelException e) {
+//					e.printStackTrace();
+//				}
 				IPath sourceAttachmentPath;
 				if (propertyString != null) {
 					int index= propertyString.lastIndexOf(PackageFragmentRoot.ATTACHMENT_PROPERTY_DELIMITER);

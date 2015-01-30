@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.ide.ext.java.server.core.JavaConventions;
 import com.codenvy.ide.ext.java.server.internal.core.search.BasicSearchEngine;
 import com.codenvy.ide.ext.java.server.internal.core.search.IRestrictedAccessTypeRequestor;
 import com.codenvy.ide.ext.java.server.internal.core.search.JavaWorkspaceScope;
@@ -34,14 +35,13 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IParent;
 import org.eclipse.jdt.core.IProblemRequestor;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
-import org.eclipse.jdt.internal.core.*;
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
 import org.eclipse.jdt.internal.core.util.HashtableOfArrayToObject;
 import org.eclipse.jdt.internal.core.util.LRUCache;
@@ -141,6 +141,7 @@ public class JavaModelManager {
      * The unique workspace scope
      */
     public JavaWorkspaceScope workspaceScope;
+    private JavaProject javaProject;
 
 //    public static JavaModelManager getJavaModelManager() {
 //        return MANAGER;
@@ -1263,6 +1264,14 @@ public class JavaModelManager {
 
     public boolean forceBatchInitializations(boolean initAfterLoad) {
         return false;
+    }
+
+    public void setJavaProject(JavaProject javaProject) {
+        this.javaProject = javaProject;
+    }
+
+    public JavaProject getJavaProject() {
+        return javaProject;
     }
 
     /**
