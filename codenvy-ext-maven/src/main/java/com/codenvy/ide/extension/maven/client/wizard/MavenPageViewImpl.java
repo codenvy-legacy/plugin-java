@@ -59,6 +59,10 @@ public class MavenPageViewImpl implements MavenPageView {
     public MavenPageViewImpl() {
         rootElement = ourUiBinder.createAndBindUi(this);
         archetypes = Collections.createArray();
+
+        artifactId.setFocus(true);
+        packagingField.setSelectedIndex(0);
+        generateFromArchetype.setValue(false);
     }
 
     @Override
@@ -128,18 +132,6 @@ public class MavenPageViewImpl implements MavenPageView {
     }
 
     @Override
-    public void reset() {
-        artifactId.setText("");
-        artifactId.setFocus(true);
-        groupId.setText("");
-        versionField.setText("1.0-SNAPSHOT");
-        packagingField.setSelectedIndex(0);
-        generateFromArchetype.setValue(false);
-        archetypes.clear();
-        archetypeField.clear();
-    }
-
-    @Override
     public void setPackagingVisibility(boolean visible) {
         packagingLabel.setVisible(visible);
         packagingField.setVisible(visible);
@@ -174,7 +166,7 @@ public class MavenPageViewImpl implements MavenPageView {
 
     @UiHandler({"versionField", "groupId", "artifactId"})
     void onKeyUp(KeyUpEvent event) {
-        delegate.onTextsChange();
+        delegate.onCoordinatesChanged();
     }
 
     @UiHandler("packagingField")
@@ -225,8 +217,7 @@ public class MavenPageViewImpl implements MavenPageView {
         archetypeField.clear();
     }
 
-    interface MavenPageViewImplUiBinder
-            extends UiBinder<DockLayoutPanel, MavenPageViewImpl> {
+    interface MavenPageViewImplUiBinder extends UiBinder<DockLayoutPanel, MavenPageViewImpl> {
     }
 
     interface Style extends CssResource {

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.client.wizard;
 
-import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.api.project.shared.dto.ImportProject;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar;
 import com.codenvy.ide.api.wizard1.WizardPage;
 import com.codenvy.ide.collections.Array;
@@ -29,7 +29,7 @@ import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
  */
 public class AntProjectWizardRegistrar implements ProjectWizardRegistrar {
     public static final String CATEGORY = "JAVA";
-    private final Array<Provider<? extends WizardPage<NewProject>>> wizardPages;
+    private final Array<Provider<? extends WizardPage<ImportProject>>> wizardPages;
 
     @Inject
     public AntProjectWizardRegistrar(Provider<AntPagePresenter> antPagePresenter) {
@@ -48,7 +48,7 @@ public class AntProjectWizardRegistrar implements ProjectWizardRegistrar {
     }
 
     @Nonnull
-    public Array<Provider<? extends WizardPage<NewProject>>> getWizardPages() {
+    public Array<Provider<? extends WizardPage<ImportProject>>> getWizardPages() {
         return wizardPages;
     }
 }

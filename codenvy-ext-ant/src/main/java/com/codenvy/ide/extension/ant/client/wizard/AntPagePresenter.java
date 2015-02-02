@@ -10,22 +10,31 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.client.wizard;
 
-import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode;
 import com.codenvy.ide.api.wizard1.AbstractWizardPage;
-import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE;
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.DEF_SRC_PATH;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.DEF_TEST_SRC_PATH;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.TEST_SOURCE_FOLDER;
 
 /**
  * Wizard page for Ant project.
  *
  * @author Vladyslav Zhukovskii
+ * @author Artem Zatsarynnyy
  */
-@Singleton
-public class AntPagePresenter extends AbstractWizardPage<NewProject> implements AntPageView.ActionDelegate {
+public class AntPagePresenter extends AbstractWizardPage<ImportProject> implements AntPageView.ActionDelegate {
 
     private final AntPageView view;
 
@@ -38,15 +47,15 @@ public class AntPagePresenter extends AbstractWizardPage<NewProject> implements 
     }
 
     @Override
-    public void init(NewProject dataObject) {
+    public void init(ImportProject dataObject) {
         super.init(dataObject);
 
-        // TODO: add constants for wizard context
-        final boolean isCreatingNewProject = Boolean.parseBoolean(context.get("isCreatingNewProject"));
-        if (isCreatingNewProject) {
+        final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
+        if (CREATE == wizardMode) {
             // set default values
-            dataObject.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
-            dataObject.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
+            Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+            attributes.put(SOURCE_FOLDER, Arrays.asList(DEF_SRC_PATH));
+            attributes.put(TEST_SOURCE_FOLDER, Arrays.asList(DEF_TEST_SRC_PATH));
         }
     }
 

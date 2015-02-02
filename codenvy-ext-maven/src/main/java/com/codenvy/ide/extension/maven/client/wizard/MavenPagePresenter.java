@@ -10,15 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client.wizard;
 
-import com.codenvy.api.project.shared.dto.BuildersDescriptor;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
-import com.codenvy.api.project.shared.dto.NewProject;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode;
 import com.codenvy.ide.api.wizard1.AbstractWizardPage;
 import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.client.MavenArchetype;
-import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
 import com.codenvy.ide.util.loging.Log;
@@ -28,24 +26,44 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE;
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.UPDATE;
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_ARTIFACT_ID_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATION_STRATEGY;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GROUP_ID_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_REPOSITORY_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_VERSION_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_TEST_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GENERATION_STRATEGY_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
  * @author Evgen Vidolob
+ * @author Artem Zatsarynnyy
  */
-@Singleton
-public class MavenPagePresenter extends AbstractWizardPage<NewProject> implements MavenPageView.ActionDelegate {
+public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implements MavenPageView.ActionDelegate {
 
-    protected MavenPageView             view;
-    protected EventBus                  eventBus;
-    private   MavenPomServiceClient     pomReaderClient;
-    private   Map<String, List<String>> attributes;
-    private   DtoFactory                dtoFactory;
+    protected final MavenPageView         view;
+    protected final EventBus              eventBus;
+    private final   MavenPomServiceClient pomReaderClient;
+    private final   DtoFactory            dtoFactory;
 
     @Inject
     public MavenPagePresenter(MavenPageView view, EventBus eventBus, MavenPomServiceClient pomReaderClient, DtoFactory dtoFactory) {
@@ -58,45 +76,36 @@ public class MavenPagePresenter extends AbstractWizardPage<NewProject> implement
     }
 
     @Override
-    public void init(NewProject dataObject) {
+    public void init(ImportProject dataObject) {
         super.init(dataObject);
 
-        // TODO: add constants for wizard context
-        final boolean isCreatingNewProject = Boolean.parseBoolean(context.get("isCreatingNewProject"));
-        if (isCreatingNewProject) {
+        final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
+        if (CREATE == wizardMode) {
             // set default values
-            Map<String, List<String>> attr = dataObject.getAttributes();
-            attr.put(MavenAttributes.VERSION, Arrays.asList("1.0-SNAPSHOT"));
-            attr.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
-            attr.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+            Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+            attributes.put(ARTIFACT_ID, Arrays.asList("my_artifact"));
+            attributes.put(GROUP_ID, Arrays.asList("my_group"));
+            attributes.put(VERSION, Arrays.asList(DEFAULT_VERSION));
+            attributes.put(PACKAGING, Arrays.asList("jar"));
+            attributes.put(SOURCE_FOLDER, Arrays.asList(DEFAULT_SOURCE_FOLDER));
+            attributes.put(TEST_SOURCE_FOLDER, Arrays.asList(DEFAULT_TEST_SOURCE_FOLDER));
         }
     }
 
     @Override
     public boolean isCompleted() {
-        // TODO: move it to go() method
-        boolean isArtifactIdCompleted = !view.getArtifactId().equals("");
-        boolean isGroupIdCompleted = !view.getGroupId().equals("");
-        boolean isVersionFieldCompleted = !view.getVersion().equals("");
-
-        view.showArtifactIdMissingIndicator(!isArtifactIdCompleted);
-        view.showGroupIdMissingIndicator(!isGroupIdCompleted);
-        view.showVersionMissingIndicator(!isVersionFieldCompleted);
-
-        return isCoordinatesValid();
+        return isCoordinatesCompleted();
     }
 
-    private boolean isCoordinatesValid() {
-        Map<String, List<String>> attr = dataObject.getAttributes();
+    private boolean isCoordinatesCompleted() {
+        String artifactId = getAttribute(ARTIFACT_ID);
+        boolean artifactIdCompleted = artifactId != null && !artifactId.isEmpty();
 
-        List<String> artifactIdValues = attr.get(MavenAttributes.ARTIFACT_ID);
-        final boolean artifactIdCompleted = !(artifactIdValues == null || artifactIdValues.isEmpty() || artifactIdValues.get(0).isEmpty());
+        String groupId = getAttribute(GROUP_ID);
+        boolean groupIdCompleted = groupId != null && !groupId.isEmpty();
 
-        List<String> groupIdValues = attr.get(MavenAttributes.GROUP_ID);
-        final boolean groupIdCompleted = !(groupIdValues == null || groupIdValues.isEmpty() || groupIdValues.get(0).isEmpty());
-
-        List<String> versionValues = attr.get(MavenAttributes.VERSION);
-        final boolean versionCompleted = !(versionValues == null || versionValues.isEmpty() || versionValues.get(0).isEmpty());
+        String version = getAttribute(VERSION);
+        boolean versionCompleted = version != null && !version.isEmpty();
 
         return artifactIdCompleted && groupIdCompleted && versionCompleted;
     }
@@ -104,86 +113,71 @@ public class MavenPagePresenter extends AbstractWizardPage<NewProject> implement
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-        view.reset();
+        updateView();
+        validateCoordinates();
 
-        // TODO: update view from dataObject
+        final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
+        final String projectName = dataObject.getProject().getName();
 
-        // setting project name from the main wizard page
-        final String projectName = dataObject.getName();
-        if (projectName != null) {
+        // use project name for artifactId and groupId for new project
+        if (CREATE == wizardMode && projectName != null) {
             view.setArtifactId(projectName);
             view.setGroupId(projectName);
             scheduleTextChanges();
         }
 
-        ProjectDescriptor projectUpdate = null; //wizardContext.getData(ProjectWizard.PROJECT_FOR_UPDATE);
-//        ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
-
-        view.setArchetypeSectionVisibility(projectUpdate == null);
-        view.setPackagingVisibility(!view.isGenerateFromArchetypeSelected());
+        view.setArchetypeSectionVisibility(UPDATE != wizardMode);
         view.enableArchetypes(view.isGenerateFromArchetypeSelected());
-//        if (projectUpdate == null && view.isGenerateFromArchetypeSelected()) {
-//            view.setArchetypes(getAvailableArchetypes());
-//        }
 
-        if (dataObject != null) {
-            attributes = dataObject.getAttributes();
-            attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
-            attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
-
-            if (view.isGenerateFromArchetypeSelected()) {
-                HashMap<String, String> options = new HashMap<>();
-                options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
-                dataObject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class).withOptions(options));
-            } else {
-                dataObject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class));
-            }
-
-            BuildersDescriptor builders = dataObject.getBuilders();
-            if (builders == null) {
-                builders = dtoFactory.createDto(BuildersDescriptor.class);
-                dataObject.setBuilders(builders);
-            }
-            builders.setDefault("maven");
-            if (projectUpdate != null) {
-                List<String> artifactIdAttr = attributes.get(MavenAttributes.ARTIFACT_ID);
-                if (artifactIdAttr != null) {
-                    view.setArtifactId(artifactIdAttr.get(0));
-                    if (attributes.get(MavenAttributes.GROUP_ID) == null || attributes.get(MavenAttributes.GROUP_ID).isEmpty()) {
-                        view.setGroupId(attributes.get(MavenAttributes.PARENT_GROUP_ID).get(0));
-                    } else {
-                        view.setGroupId(attributes.get(MavenAttributes.GROUP_ID).get(0));
+        if (UPDATE == wizardMode) {
+            Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+            if (attributes.get(ARTIFACT_ID) == null) {
+                // TODO use estimateProject() instead
+                // TODO do it in generic Wizard
+                pomReaderClient.readPomAttributes(projectName, new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+                    @Override
+                    protected void onSuccess(String result) {
+                        Jso jso = Jso.deserialize(result);
+                        view.setArtifactId(jso.getStringField(ARTIFACT_ID));
+                        view.setGroupId(jso.getStringField(GROUP_ID));
+                        view.setVersion(jso.getStringField(VERSION));
+                        view.setPackaging(jso.getStringField(PACKAGING));
+                        scheduleTextChanges();
                     }
 
-                    if (attributes.get(MavenAttributes.VERSION) == null || attributes.get(MavenAttributes.VERSION).isEmpty()) {
-                        view.setVersion(attributes.get(MavenAttributes.PARENT_VERSION).get(0));
-                    } else {
-                        view.setVersion(attributes.get(MavenAttributes.VERSION).get(0));
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        Log.error(MavenPagePresenter.class, exception);
                     }
-                    view.setPackaging(attributes.get(MavenAttributes.PACKAGING).get(0));
-                    scheduleTextChanges();
-                } else {
-                    // TODO use estimateProject() instead
-                    // TODO do it in generic Wizard
-
-                    pomReaderClient.readPomAttributes(projectUpdate.getPath(), new AsyncRequestCallback<String>(new StringUnmarshaller()) {
-                        @Override
-                        protected void onSuccess(String result) {
-                            Jso jso = Jso.deserialize(result);
-                            view.setArtifactId(jso.getStringField(MavenAttributes.ARTIFACT_ID));
-                            view.setGroupId(jso.getStringField(MavenAttributes.GROUP_ID));
-                            view.setVersion(jso.getStringField(MavenAttributes.VERSION));
-                            view.setPackaging(jso.getStringField(MavenAttributes.PACKAGING));
-                            scheduleTextChanges();
-                        }
-
-                        @Override
-                        protected void onFailure(Throwable exception) {
-                            Log.error(MavenPagePresenter.class, exception);
-                        }
-                    });
-                }
+                });
             }
+        }
+    }
+
+    /** Updates view from data-object. */
+    private void updateView() {
+        final String artifactId = getAttribute(ARTIFACT_ID);
+        if (artifactId != null) {
+            view.setArtifactId(artifactId);
+        }
+
+        final String groupId = getAttribute(GROUP_ID);
+        if (groupId != null) {
+            view.setGroupId(groupId);
+        } else {
+            view.setGroupId(getAttribute(PARENT_GROUP_ID));
+        }
+
+        final String version = getAttribute(VERSION);
+        if (version != null) {
+            view.setVersion(version);
+        } else {
+            view.setVersion(getAttribute(PARENT_VERSION));
+        }
+
+        final String packaging = getAttribute(PACKAGING);
+        if (packaging != null && !packaging.isEmpty()) {
+            view.setPackaging(packaging);
         }
     }
 
@@ -191,31 +185,35 @@ public class MavenPagePresenter extends AbstractWizardPage<NewProject> implement
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
-                onTextsChange();
+                onCoordinatesChanged();
             }
         });
     }
 
     @Override
-    public void onTextsChange() {
-        attributes.put(MavenAttributes.ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
-        attributes.put(MavenAttributes.GROUP_ID, Arrays.asList(view.getGroupId()));
-        attributes.put(MavenAttributes.VERSION, Arrays.asList(view.getVersion()));
+    public void onCoordinatesChanged() {
+        Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+        attributes.put(ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
+        attributes.put(GROUP_ID, Arrays.asList(view.getGroupId()));
+        attributes.put(VERSION, Arrays.asList(view.getVersion()));
         packagingChanged(view.getPackaging());
-
+        validateCoordinates();
         updateDelegate.updateControls();
     }
 
     @Override
     public void packagingChanged(String packaging) {
-        attributes.put(MavenAttributes.PACKAGING, Arrays.asList(packaging));
+        Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+        attributes.put(PACKAGING, Arrays.asList(packaging));
         if ("pom".equals(packaging)) {
-            attributes.remove(MavenAttributes.SOURCE_FOLDER);
-            attributes.remove(MavenAttributes.TEST_SOURCE_FOLDER);
+            attributes.remove(SOURCE_FOLDER);
+            attributes.remove(TEST_SOURCE_FOLDER);
         } else {
-            attributes.put(MavenAttributes.SOURCE_FOLDER, Arrays.asList("src/main/java"));
-            attributes.put(MavenAttributes.TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+            attributes.put(SOURCE_FOLDER, Arrays.asList(DEFAULT_SOURCE_FOLDER));
+            attributes.put(TEST_SOURCE_FOLDER, Arrays.asList(DEFAULT_TEST_SOURCE_FOLDER));
         }
+
+        updateDelegate.updateControls();
     }
 
     @Override
@@ -228,27 +226,52 @@ public class MavenPagePresenter extends AbstractWizardPage<NewProject> implement
             view.setArchetypes(getAvailableArchetypes());
         }
 
+        final GeneratorDescription generatorDescription = dtoFactory.createDto(GeneratorDescription.class);
         if (isGenerateFromArchetype) {
-            dataObject.setGeneratorDescription(getGeneratorDescription(view.getArchetype()));
-        } else {
-            dataObject.setGeneratorDescription(dtoFactory.createDto(GeneratorDescription.class));
+            fillGeneratorDescription(generatorDescription);
         }
+        dataObject.getProject().setGeneratorDescription(generatorDescription);
+
+        updateDelegate.updateControls();
     }
 
     @Override
     public void archetypeChanged(MavenArchetype archetype) {
-        dataObject.setGeneratorDescription(getGeneratorDescription(view.getArchetype()));
+        fillGeneratorDescription(dataObject.getProject().getGeneratorDescription());
+        updateDelegate.updateControls();
     }
 
-    private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
+    private void fillGeneratorDescription(GeneratorDescription generatorDescription) {
+        MavenArchetype archetype = view.getArchetype();
         HashMap<String, String> options = new HashMap<>();
-        options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
-        options.put("archetypeGroupId", archetype.getGroupId());
-        options.put("archetypeArtifactId", archetype.getArtifactId());
-        options.put("archetypeVersion", archetype.getVersion());
+        options.put(GENERATION_STRATEGY_OPTION, ARCHETYPE_GENERATION_STRATEGY);
+        options.put(ARCHETYPE_GROUP_ID_OPTION, archetype.getGroupId());
+        options.put(ARCHETYPE_ARTIFACT_ID_OPTION, archetype.getArtifactId());
+        options.put(ARCHETYPE_VERSION_OPTION, archetype.getVersion());
         if (archetype.getRepository() != null) {
-            options.put("archetypeRepository", archetype.getRepository());
+            options.put(ARCHETYPE_REPOSITORY_OPTION, archetype.getRepository());
         }
-        return dtoFactory.createDto(GeneratorDescription.class).withOptions(options);
+        generatorDescription.setOptions(options);
+    }
+
+    private void validateCoordinates() {
+        boolean isArtifactIdCompleted = !view.getArtifactId().isEmpty();
+        boolean isGroupIdCompleted = !view.getGroupId().isEmpty();
+        boolean isVersionFieldCompleted = !view.getVersion().isEmpty();
+
+        view.showArtifactIdMissingIndicator(!isArtifactIdCompleted);
+        view.showGroupIdMissingIndicator(!isGroupIdCompleted);
+        view.showVersionMissingIndicator(!isVersionFieldCompleted);
+    }
+
+    /** Reads single value of attribute from data-object. */
+    @Nullable
+    private String getAttribute(String attrId) {
+        Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+        List<String> values = attributes.get(attrId);
+        if (!(values == null || values.isEmpty())) {
+            return values.get(0);
+        }
+        return null;
     }
 }

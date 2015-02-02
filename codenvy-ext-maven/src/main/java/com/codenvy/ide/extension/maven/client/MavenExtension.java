@@ -76,7 +76,6 @@ public class MavenExtension {
                                         new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null));
     }
 
-    // TODO: consider special service for getting available archetypes
     public static Array<MavenArchetype> getAvailableArchetypes() {
         return archetypes;
     }

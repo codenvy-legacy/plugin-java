@@ -28,8 +28,6 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
 
     void setArchetypes(Array<MavenArchetype> archetypes);
 
-    void reset();
-
     String getGroupId();
 
     void setGroupId(String group);
@@ -59,8 +57,7 @@ public interface MavenPageView extends View<MavenPageView.ActionDelegate> {
     void clearArchetypes();
 
     public interface ActionDelegate {
-
-        void onTextsChange();
+        void onCoordinatesChanged();
 
         void packagingChanged(String packaging);
 
