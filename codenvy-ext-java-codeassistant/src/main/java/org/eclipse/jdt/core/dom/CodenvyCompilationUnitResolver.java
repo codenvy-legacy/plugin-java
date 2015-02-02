@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.jdt.core.dom;
 
+import com.codenvy.ide.ext.java.server.internal.core.SourceTypeElementInfo;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -22,7 +24,9 @@ import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
 import org.eclipse.jdt.internal.compiler.IProblemFactory;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
+import org.eclipse.jdt.internal.compiler.env.ISourceType;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.core.CancelableNameEnvironment;
 import org.eclipse.jdt.internal.core.CancelableProblemFactory;
@@ -316,4 +320,13 @@ public class CodenvyCompilationUnitResolver extends CompilationUnitResolver {
         return compilationUnit;
     }
 
+    /*
+ * Add additional source types
+ */
+    public void accept(ISourceType[] sourceTypes, org.eclipse.jdt.internal.compiler.lookup.PackageBinding packageBinding, AccessRestriction accessRestriction) {
+        // Need to reparse the entire source of the compilation unit so as to get source positions
+        // (case of processing a source that was not known by beginToCompile (e.g. when asking to createBinding))
+        SourceTypeElementInfo sourceType = (SourceTypeElementInfo) sourceTypes[0];
+        accept((org.eclipse.jdt.internal.compiler.env.ICompilationUnit) sourceType.getHandle().getCompilationUnit(), accessRestriction);
+    }
 }

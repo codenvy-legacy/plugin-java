@@ -261,7 +261,7 @@ public class WorkerNameEnvironment implements INameEnvironment {
     }
 
     private String runSyncRequest(String url) {
-        XmlHttpWraper xmlhttp = nativeRunSyncReques(url);
+        XmlHttpWrapper xmlhttp = nativeRunSyncReques(url);
         int status = xmlhttp.getStatusCode();
         if (status == 200) {
             return xmlhttp.getResponseText();
@@ -271,7 +271,7 @@ public class WorkerNameEnvironment implements INameEnvironment {
         }
     }
 
-    private native XmlHttpWraper nativeRunSyncReques(String url)/*-{
+    private native XmlHttpWrapper nativeRunSyncReques(String url)/*-{
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", url, false);
         xmlhttp.send();
@@ -350,11 +350,11 @@ public class WorkerNameEnvironment implements INameEnvironment {
         blackListTypes.clear();
     }
 
-    private static final class XmlHttpWraper extends JavaScriptObject {
+    private static final class XmlHttpWrapper extends JavaScriptObject {
         /**
          *
          */
-        protected XmlHttpWraper() {
+        protected XmlHttpWrapper() {
         }
 
         public native int getStatusCode()/*-{

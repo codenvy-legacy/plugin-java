@@ -64,10 +64,9 @@ public class TypeBindingConvector {
                    binding.superclass() == null ? JsonNull.INSTANCE
                                                 : new JsonPrimitive(new String(binding.superclass().constantPoolName())));
         long annotationTagBits = binding.getAnnotationTagBits();
-        //remove AreMethodsComplete bit tag from annotation type
-        if (binding.isAnnotationType() && (annotationTagBits & TagBits.AreMethodsComplete) != 0){
-            annotationTagBits &= ~TagBits.AreMethodsComplete;
-        }
+        //remove AreMethodsComplete bit tag from type
+        annotationTagBits &= ~TagBits.AreMethodsComplete;
+
         object.add("tagBits", new JsonPrimitive(String.valueOf(annotationTagBits)));
         object.add("anonymous", new JsonPrimitive(binding.isAnonymousType()));
         object.add("local", new JsonPrimitive(binding.isLocalType()));

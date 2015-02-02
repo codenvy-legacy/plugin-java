@@ -715,8 +715,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
         // resolve any array bindings which reference the unresolvedType
         ReferenceBinding cachedType =
                 packageBinding.getType0(binaryBinding.compoundName[binaryBinding.compoundName.length - 1]);
-        if (cachedType !=
-            null) { // update reference to unresolved binding after having read classfile (knows whether generic for raw conversion)
+        if (cachedType != null) { // update reference to unresolved binding after having read classfile (knows whether generic for raw conversion)
             if (cachedType instanceof UnresolvedReferenceBinding) {
                 ((UnresolvedReferenceBinding)cachedType).setResolvedType(binaryBinding, this);
             } else {
