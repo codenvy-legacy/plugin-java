@@ -16,7 +16,6 @@ import com.codenvy.api.project.shared.Builders;
 import com.codenvy.ide.ant.tools.AntUtils;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
-import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
 import com.codenvy.ide.ext.java.server.internal.core.util.JavaElementFinder;
 import com.codenvy.ide.maven.tools.MavenUtils;
 
@@ -78,7 +77,7 @@ public class JavaProject extends Openable implements IJavaProject {
             return entry.getFileName().toString().endsWith("jar");
         }
     };
-    private JavaSearchNameEnvironment nameEnvironment;
+    private SearchableEnvironment nameEnvironment;
     private String                    projectPath;
     private String                    tempDir;
     private String                    wsId;
@@ -92,6 +91,7 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public JavaProject(File root, String projectPath, String tempDir, String ws, Map<String, String> options) {
         super(null, new JavaModelManager());
+        manager.setJavaProject(this);
         this.projectPath = projectPath;
         this.tempDir = tempDir;
         wsId = ws;
@@ -157,10 +157,10 @@ public class JavaProject extends Openable implements IJavaProject {
         indexManager.indexAll(this);
         indexManager.saveIndexes();
         manager.setIndexManager(indexManager);
-        nameEnvironment = new JavaSearchNameEnvironment(this, null);
+        creteNewNameEnvironment();
     }
 
-    public JavaSearchNameEnvironment getNameEnvironment() {
+    public SearchableEnvironment getNameEnvironment() {
         return nameEnvironment;
     }
 
@@ -886,6 +886,15 @@ public class JavaProject extends Openable implements IJavaProject {
         return true;
     }
 
+    /*
+	 * Returns whether the given resource is accessible through the children or the non-Java resources of this project.
+	 * Returns true if the resource is not in the project.
+	 * Assumes that the resource is a folder or a file.
+	 */
+    public boolean contains(File resource) {
+        return true;
+    }
+
     @Override
     public boolean exists() {
         return false;
@@ -1087,15 +1096,16 @@ public class JavaProject extends Openable implements IJavaProject {
 //        buff.append(getElementName());
     }
 
-//    @Override
-//    public IJavaElement[] getChildren() throws JavaModelException {
-//        return new IJavaElement[0];
-//    }
-//
-//    @Override
-//    public boolean hasChildren() throws JavaModelException {
-//        return false;
-//    }
+    /*
+     * Resets this project's caches
+     */
+    public void resetCaches() {
+        JavaProjectElementInfo
+                info = (JavaProjectElementInfo) manager.peekAtInfo(this);
+        if (info != null){
+            info.resetCaches();
+        }
+    }
 
     private void addToResult(IClasspathEntry rawEntry, IClasspathEntry resolvedEntry, ResolvedClasspath result,
                              LinkedHashSet<IClasspathEntry> resolvedEntries) {
@@ -1150,6 +1160,24 @@ public class JavaProject extends Openable implements IJavaProject {
         return this.getFullPath().equals(other.getFullPath());
     }
 
+    /**
+     * Returns true if the given project is accessible and it has
+     * a java nature, otherwise false.
+     * @param project IProject
+     * @return boolean
+     */
+    public static boolean hasJavaNature(IProject project) {
+//        try {
+//            return project.hasNature(JavaCore.NATURE_ID);
+//        } catch (CoreException e) {
+//            if (ExternalJavaProject.EXTERNAL_PROJECT_NAME.equals(project.getName()))
+//                return true;
+//            // project does not exist or is not open
+//        }
+//        return false;
+        return true;
+    }
+
     /*
      * Returns a new search name environment for this project. This name environment first looks in the working copies
      * of the given owner.
@@ -1168,6 +1196,14 @@ public class JavaProject extends Openable implements IJavaProject {
 
     public String getWorkspacePath() {
         return workspacePath;
+    }
+
+    public void creteNewNameEnvironment() {
+        try {
+            nameEnvironment = new SearchableEnvironment(this, (ICompilationUnit[])null);
+        } catch (JavaModelException e) {
+            LOG.error("Can't create SearchableEnvironment", e);
+        }
     }
 
     public static class ResolvedClasspath {

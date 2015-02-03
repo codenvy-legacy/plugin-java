@@ -191,6 +191,7 @@
                         <exclude>**/readableNames</exclude>
                         <exclude>**/projects/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/javadoc/**</exclude>
+                        <exclude>**/com/codenvy/ide/ext/java/server/core/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/dom/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/corext/util/**</exclude>
                         <exclude>**/com/codenvy/ide/ext/java/server/internal/core/**</exclude>

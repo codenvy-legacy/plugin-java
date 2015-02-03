@@ -35,7 +35,7 @@ public class JavadocTest extends BaseTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void createFinder() throws Exception {
         finder = new JavadocFinder(urlPart);
     }
 
@@ -118,7 +118,7 @@ public class JavadocTest extends BaseTest {
     }
 
     private void testDoc(String handle, String content){
-        String handl = getHanldeForRtJarStart() + handle;
+        String handl = getHandldeForRtJarStart() + handle;
         String javadoc = finder.findJavadoc4Handle(project, handl);
         assertThat(javadoc).contains(content);
     }
