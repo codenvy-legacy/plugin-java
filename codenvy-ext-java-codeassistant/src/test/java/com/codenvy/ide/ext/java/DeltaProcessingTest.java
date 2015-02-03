@@ -14,12 +14,10 @@ package com.codenvy.ide.ext.java;
 import com.codenvy.api.vfs.server.observation.CreateEvent;
 import com.codenvy.api.vfs.server.observation.DeleteEvent;
 import com.codenvy.ide.ext.java.server.core.resources.ResourceChangedEvent;
-import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -32,20 +30,6 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class DeltaProcessingTest extends BaseTest {
 
-//    @Test
-//    public void testDelta() throws Exception {
-//        ResourceChangedEvent event = new ResourceChangedEvent(new File(BaseTest.class.getResource("/projects").getFile()),new UpdateContentEvent("projects", "/test/src/main/java/com/codenvy/test/MyClass.java"));
-//        IType type = project.findType("com.codenvy.test.MyClass");
-//        project.getJavaModelManager().deltaState.resourceChanged(event);
-//        IType type2 = project.findType("com.codenvy.test.MyClass");
-//    }
-
-    @Before
-    public void setUp() throws Exception {
-        project = new JavaProject(new File(BaseTest.class.getResource("/projects").getFile()), "/test",BaseTest.class.getResource("/temp").getPath(),
-                        "ws", options);
-
-    }
 
     @After
     public void tearDown() throws Exception {

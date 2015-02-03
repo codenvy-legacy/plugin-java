@@ -35,7 +35,7 @@ public class JavadocTest extends BaseTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void createFinder() throws Exception {
         finder = new JavadocFinder(urlPart);
     }
 
