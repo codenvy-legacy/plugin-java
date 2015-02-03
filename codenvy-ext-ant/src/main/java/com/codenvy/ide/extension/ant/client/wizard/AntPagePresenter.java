@@ -12,10 +12,9 @@ package com.codenvy.ide.extension.ant.client.wizard;
 
 import com.codenvy.api.project.shared.dto.ImportProject;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode;
-import com.codenvy.ide.api.wizard1.AbstractWizardPage;
+import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import java.util.Arrays;
 import java.util.List;

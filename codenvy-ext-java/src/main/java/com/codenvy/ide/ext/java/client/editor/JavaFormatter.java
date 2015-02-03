@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.client.editor;
 
+import com.codenvy.ide.api.text.Document;
+import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.texteditor.ContentFormatter;
 
 /**
@@ -19,4 +21,8 @@ import com.codenvy.ide.api.texteditor.ContentFormatter;
  */
 public class JavaFormatter implements ContentFormatter {
 
+    @Override
+    public void format(Document document, Region region) {
+
+    }
 }
