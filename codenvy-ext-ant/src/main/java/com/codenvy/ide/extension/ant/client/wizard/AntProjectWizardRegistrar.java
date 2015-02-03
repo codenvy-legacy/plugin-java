@@ -20,6 +20,7 @@ import com.google.inject.Provider;
 
 import javax.annotation.Nonnull;
 
+import static com.codenvy.ide.ext.java.shared.Constants.JAVA_CATEGORY;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
 
 /**
@@ -28,7 +29,6 @@ import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
  * @author Artem Zatsarynnyy
  */
 public class AntProjectWizardRegistrar implements ProjectWizardRegistrar {
-    public static final String CATEGORY = "JAVA";
     private final Array<Provider<? extends WizardPage<ImportProject>>> wizardPages;
 
     @Inject
@@ -44,7 +44,7 @@ public class AntProjectWizardRegistrar implements ProjectWizardRegistrar {
 
     @Nonnull
     public String getCategory() {
-        return CATEGORY;
+        return JAVA_CATEGORY;
     }
 
     @Nonnull
