@@ -13,12 +13,10 @@ package com.codenvy.ide.ext.java.client.inject;
 import com.codenvy.ide.MimeType;
 import com.codenvy.ide.api.extension.ExtensionGinModule;
 import com.codenvy.ide.api.filetypes.FileType;
-import com.codenvy.ide.api.texteditor.ContentFormatter;
 import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocPresenter;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
-import com.codenvy.ide.ext.java.client.editor.JavaFormatter;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationServiceImpl;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
@@ -45,7 +43,6 @@ public class JavaGinModule extends AbstractGinModule {
     @Override
     protected void configure() {
         bind(JavaParserWorker.class).to(JavaParserWorkerImpl.class).in(Singleton.class);
-        bind(ContentFormatter.class).to(JavaFormatter.class);
         bind(FormatController.class).asEagerSingleton();
         bind(ProjectStateListener.class).asEagerSingleton();
         bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
