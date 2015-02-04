@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -81,13 +81,10 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
         final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
         if (CREATE == wizardMode) {
             // set default values
-            Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
-            attributes.put(ARTIFACT_ID, Arrays.asList("my_artifact"));
-            attributes.put(GROUP_ID, Arrays.asList("my_group"));
-            attributes.put(VERSION, Arrays.asList(DEFAULT_VERSION));
-            attributes.put(PACKAGING, Arrays.asList("jar"));
-            attributes.put(SOURCE_FOLDER, Arrays.asList(DEFAULT_SOURCE_FOLDER));
-            attributes.put(TEST_SOURCE_FOLDER, Arrays.asList(DEFAULT_TEST_SOURCE_FOLDER));
+            setAttribute(VERSION, DEFAULT_VERSION);
+            setAttribute(PACKAGING, "jar");
+            setAttribute(SOURCE_FOLDER, DEFAULT_SOURCE_FOLDER);
+            setAttribute(TEST_SOURCE_FOLDER, DEFAULT_TEST_SOURCE_FOLDER);
         }
     }
 
@@ -97,33 +94,33 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
     }
 
     private boolean isCoordinatesCompleted() {
-        String artifactId = getAttribute(ARTIFACT_ID);
-        boolean artifactIdCompleted = artifactId != null && !artifactId.isEmpty();
+        final String artifactId = getAttribute(ARTIFACT_ID);
+        final String groupId = getAttribute(GROUP_ID);
+        final String version = getAttribute(VERSION);
 
-        String groupId = getAttribute(GROUP_ID);
-        boolean groupIdCompleted = groupId != null && !groupId.isEmpty();
-
-        String version = getAttribute(VERSION);
-        boolean versionCompleted = version != null && !version.isEmpty();
-
-        return artifactIdCompleted && groupIdCompleted && versionCompleted;
+        return !(artifactId.isEmpty() || groupId.isEmpty() || version.isEmpty());
     }
 
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-        updateView();
-        validateCoordinates();
 
         final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
         final String projectName = dataObject.getProject().getName();
 
         // use project name for artifactId and groupId for new project
         if (CREATE == wizardMode && projectName != null) {
-            view.setArtifactId(projectName);
-            view.setGroupId(projectName);
-            scheduleTextChanges();
+            if (getAttribute(ARTIFACT_ID).isEmpty()) {
+                setAttribute(ARTIFACT_ID, projectName);
+            }
+            if (getAttribute(GROUP_ID).isEmpty()) {
+                setAttribute(GROUP_ID, projectName);
+            }
+            updateDelegate.updateControls();
         }
+
+        updateView();
+        validateCoordinates();
 
         view.setArchetypeSectionVisibility(UPDATE != wizardMode);
         view.enableArchetypes(view.isGenerateFromArchetypeSelected());
@@ -155,27 +152,27 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
 
     /** Updates view from data-object. */
     private void updateView() {
+        Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+
         final String artifactId = getAttribute(ARTIFACT_ID);
-        if (artifactId != null) {
+        if (!artifactId.isEmpty()) {
             view.setArtifactId(artifactId);
         }
 
-        final String groupId = getAttribute(GROUP_ID);
-        if (groupId != null) {
-            view.setGroupId(groupId);
+        if (attributes.get(GROUP_ID) != null) {
+            view.setGroupId(getAttribute(GROUP_ID));
         } else {
             view.setGroupId(getAttribute(PARENT_GROUP_ID));
         }
 
-        final String version = getAttribute(VERSION);
-        if (version != null) {
-            view.setVersion(version);
+        if (attributes.get(VERSION) != null) {
+            view.setVersion(getAttribute(VERSION));
         } else {
             view.setVersion(getAttribute(PARENT_VERSION));
         }
 
         final String packaging = getAttribute(PACKAGING);
-        if (packaging != null && !packaging.isEmpty()) {
+        if (!packaging.isEmpty()) {
             view.setPackaging(packaging);
         }
     }
@@ -191,10 +188,10 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
 
     @Override
     public void onCoordinatesChanged() {
-        Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
-        attributes.put(ARTIFACT_ID, Arrays.asList(view.getArtifactId()));
-        attributes.put(GROUP_ID, Arrays.asList(view.getGroupId()));
-        attributes.put(VERSION, Arrays.asList(view.getVersion()));
+        setAttribute(ARTIFACT_ID, view.getArtifactId());
+        setAttribute(GROUP_ID, view.getGroupId());
+        setAttribute(VERSION, view.getVersion());
+
         packagingChanged(view.getPackaging());
         validateCoordinates();
         updateDelegate.updateControls();
@@ -254,23 +251,25 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
     }
 
     private void validateCoordinates() {
-        boolean isArtifactIdCompleted = !view.getArtifactId().isEmpty();
-        boolean isGroupIdCompleted = !view.getGroupId().isEmpty();
-        boolean isVersionFieldCompleted = !view.getVersion().isEmpty();
-
-        view.showArtifactIdMissingIndicator(!isArtifactIdCompleted);
-        view.showGroupIdMissingIndicator(!isGroupIdCompleted);
-        view.showVersionMissingIndicator(!isVersionFieldCompleted);
+        view.showArtifactIdMissingIndicator(view.getArtifactId().isEmpty());
+        view.showGroupIdMissingIndicator(view.getGroupId().isEmpty());
+        view.showVersionMissingIndicator(view.getVersion().isEmpty());
     }
 
     /** Reads single value of attribute from data-object. */
-    @Nullable
+    @Nonnull
     private String getAttribute(String attrId) {
         Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
         List<String> values = attributes.get(attrId);
         if (!(values == null || values.isEmpty())) {
             return values.get(0);
         }
-        return null;
+        return "";
+    }
+
+    /** Sets single value of attribute of data-object. */
+    private void setAttribute(String attrId, String value) {
+        Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+        attributes.put(attrId, Arrays.asList(value));
     }
 }
