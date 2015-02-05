@@ -14,6 +14,7 @@ import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
 import com.codenvy.ide.ext.java.jdt.core.dom.IBinding;
+import com.codenvy.ide.ext.java.jdt.core.dom.IMethodBinding;
 import com.codenvy.ide.ext.java.jdt.core.dom.IVariableBinding;
 import com.codenvy.ide.ext.java.jdt.core.dom.MethodInvocation;
 import com.codenvy.ide.ext.java.jdt.core.dom.NodeFinder;
@@ -105,9 +106,15 @@ public class WorkerJavadocHandleComputer implements MessageFilter.MessageRecipie
 
     private String getKeyForMethod(IBinding binding) {
         String key = binding.getKey();
-        String fqn = key.substring(0, key.indexOf(';'));
-        String substring = key.substring(key.indexOf(';'), key.length());
+        String fqn = key.substring(0, key.indexOf(';') + 1);
+        String substring = key.substring(key.indexOf(';') + 1, key.length());
         substring = substring.replaceAll("/", ".");
+        if(binding instanceof IMethodBinding){
+            if (((IMethodBinding)binding).isConstructor()){
+                substring = substring.substring(1);
+                substring = "." + binding.getName() + substring;
+            }
+        }
         return fqn + substring;
     }
 }

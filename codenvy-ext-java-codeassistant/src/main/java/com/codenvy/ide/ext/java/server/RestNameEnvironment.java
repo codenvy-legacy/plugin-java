@@ -23,11 +23,13 @@ import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
-import com.codenvy.ide.ext.java.server.internal.core.search.matching.JavaSearchNameEnvironment;
+import com.codenvy.ide.ext.java.server.internal.core.SearchableEnvironment;
+import com.codenvy.ide.ext.java.server.internal.core.SourceTypeElementInfo;
 import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.inject.name.Named;
 
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CodenvyCompilationUnitResolver;
@@ -36,10 +38,11 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
+import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
+import org.eclipse.jdt.internal.compiler.env.ISourceType;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +122,7 @@ public class RestNameEnvironment {
     @javax.ws.rs.Path("findTypeCompound")
     public String findTypeCompound(@QueryParam("compoundTypeName") String compoundTypeName, @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
         try {
             NameEnvironmentAnswer answer = environment.findType(getCharArrayFrom(compoundTypeName));
             if (answer == null && compoundTypeName.contains("$")) {
@@ -168,7 +171,7 @@ public class RestNameEnvironment {
     public String findType(@QueryParam("typename") String typeName, @QueryParam("packagename") String packageName,
                            @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
 
         NameEnvironmentAnswer answer = environment.findType(typeName.toCharArray(), getCharArrayFrom(packageName));
         try {
@@ -187,7 +190,7 @@ public class RestNameEnvironment {
     public String isPackage(@QueryParam("packagename") String packageName, @QueryParam("parent") String parentPackageName,
                             @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
         return String.valueOf(environment.isPackage(getCharArrayFrom(parentPackageName), packageName.toCharArray()));
     }
 
@@ -196,7 +199,7 @@ public class RestNameEnvironment {
     @Produces(MediaType.APPLICATION_JSON)
     public String findPackages(@QueryParam("packagename") String packageName, @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
         JsonSearchRequester requestor = new JsonSearchRequester();
         environment.findPackages(packageName.toCharArray(), requestor);
         return requestor.toJsonString();
@@ -209,7 +212,7 @@ public class RestNameEnvironment {
                                               @QueryParam("camelcase") boolean camelCaseMatch,
                                               @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
         JsonSearchRequester searchRequester = new JsonSearchRequester();
         environment.findConstructorDeclarations(prefix.toCharArray(), camelCaseMatch, searchRequester, null);
         return searchRequester.toJsonString();
@@ -223,7 +226,7 @@ public class RestNameEnvironment {
                             @QueryParam("searchfor") int searchFor,
                             @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
         JsonSearchRequester searchRequester = new JsonSearchRequester();
         environment.findTypes(qualifiedName.toCharArray(), findMembers, camelCaseMatch, searchFor, searchRequester);
         return searchRequester.toJsonString();
@@ -236,7 +239,7 @@ public class RestNameEnvironment {
                                  @QueryParam("searchfor") int searchFor,
                                  @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
-        JavaSearchNameEnvironment environment = javaProject.getNameEnvironment();
+        SearchableEnvironment environment = javaProject.getNameEnvironment();
         JsonSearchRequester searchRequester = new JsonSearchRequester();
         environment.findExactTypes(missingSimpleName.toCharArray(), findMembers, searchFor, searchRequester);
         return searchRequester.toJsonString();
@@ -388,8 +391,8 @@ public class RestNameEnvironment {
 
 
     @Nonnull
-    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType,
-                                                @Nullable BuildOptions options)
+    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType, @Nullable
+    BuildOptions options)
             throws Exception {
         Pair<String, String> projectParam = Pair.of("project", projectName);
         Pair<String, String> typeParam = Pair.of("type", analyzeType);
@@ -397,7 +400,7 @@ public class RestNameEnvironment {
     }
 
 
-    private String processAnswer(NameEnvironmentAnswer answer, IJavaProject project, INameEnvironmentWithProgress environment)
+    private String processAnswer(NameEnvironmentAnswer answer, IJavaProject project, INameEnvironment environment)
             throws JavaModelException {
         if (answer == null) return null;
         if (answer.isBinaryType()) {
@@ -405,25 +408,39 @@ public class RestNameEnvironment {
             return BinaryTypeConvector.toJsonBinaryType(binaryType);
         } else if (answer.isCompilationUnit()) {
             ICompilationUnit compilationUnit = answer.getCompilationUnit();
-            CompilationUnit result = getCompilationUnit(project, environment, compilationUnit);
-
-            BindingASTVisitor visitor = new BindingASTVisitor();
-            result.accept(visitor);
-            Map<TypeBinding, ?> bindings = (Map<TypeBinding, ?>)result.getProperty("compilerBindingsToASTBindings");
-            SourceTypeBinding binding = null;
-            for (Map.Entry<TypeBinding, ?> entry : bindings.entrySet()) {
-                if (entry.getValue().equals(visitor.typeBinding)) {
-                    binding = (SourceTypeBinding)entry.getKey();
-                    break;
-                }
+            return getSourceTypeInfo(project, environment, compilationUnit);
+        } else if (answer.isSourceType()) {
+            ISourceType[] sourceTypes = answer.getSourceTypes();
+            if (sourceTypes.length == 1) {
+                ISourceType sourceType = sourceTypes[0];
+                SourceTypeElementInfo elementInfo = (SourceTypeElementInfo)sourceType;
+                IType handle = elementInfo.getHandle();
+                org.eclipse.jdt.core.ICompilationUnit unit = handle.getCompilationUnit();
+                return getSourceTypeInfo(project, environment, (ICompilationUnit)unit);
             }
-            if (binding == null) return null;
-            return TypeBindingConvector.toJsonBinaryType(binding);
         }
         return null;
     }
 
-    private CompilationUnit getCompilationUnit(IJavaProject project, INameEnvironmentWithProgress environment,
+    private String getSourceTypeInfo(IJavaProject project, INameEnvironment environment, ICompilationUnit compilationUnit)
+            throws JavaModelException {
+        CompilationUnit result = getCompilationUnit(project, environment, compilationUnit);
+
+        BindingASTVisitor visitor = new BindingASTVisitor();
+        result.accept(visitor);
+        Map<TypeBinding, ?> bindings = (Map<TypeBinding, ?>)result.getProperty("compilerBindingsToASTBindings");
+        SourceTypeBinding binding = null;
+        for (Map.Entry<TypeBinding, ?> entry : bindings.entrySet()) {
+            if (entry.getValue().equals(visitor.typeBinding)) {
+                binding = (SourceTypeBinding)entry.getKey();
+                break;
+            }
+        }
+        if (binding == null) return null;
+        return TypeBindingConvector.toJsonBinaryType(binding);
+    }
+
+    private CompilationUnit getCompilationUnit(IJavaProject project, INameEnvironment environment,
                                                ICompilationUnit compilationUnit) throws JavaModelException {
         int flags = 0;
         flags |= org.eclipse.jdt.core.ICompilationUnit.ENABLE_STATEMENTS_RECOVERY;
@@ -439,6 +456,9 @@ public class RestNameEnvironment {
     }
 
     private char[][] getCharArrayFrom(String list) {
+        if(list.isEmpty()){
+            return null;
+        }
         String[] strings = list.split(",");
         char[][] arr = new char[strings.length][];
         for (int i = 0; i < strings.length; i++) {

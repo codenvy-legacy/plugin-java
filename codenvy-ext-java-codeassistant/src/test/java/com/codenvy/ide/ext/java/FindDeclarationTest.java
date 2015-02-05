@@ -15,6 +15,7 @@ import com.codenvy.ide.ext.java.server.SourcesFromBytecodeGenerator;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;

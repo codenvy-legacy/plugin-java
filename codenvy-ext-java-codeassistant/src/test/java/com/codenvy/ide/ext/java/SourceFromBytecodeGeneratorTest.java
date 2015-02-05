@@ -28,7 +28,7 @@ public class SourceFromBytecodeGeneratorTest extends BaseTest {
     private IType zipFileSystem;
 
     @Before
-    public void setUp() throws Exception {
+    public void findType() throws Exception {
         type = project.findType("com.sun.nio.zipfs.ZipFileStore");
         zipFileSystem = project.findType("com.sun.nio.zipfs.ZipFileSystem");
     }

@@ -15,6 +15,7 @@ import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.notification.EventSubscriber;
 import com.codenvy.api.vfs.server.observation.VirtualFileEvent;
 import com.codenvy.commons.lang.IoUtil;
+import com.codenvy.ide.ext.java.server.core.resources.ResourceChangedEvent;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.inject.Inject;
@@ -142,28 +143,38 @@ public class JavaProjectService {
             final VirtualFileEvent.ChangeType eventType = event.getType();
             final String eventWorkspace = event.getWorkspaceId();
             final String eventPath = event.getPath();
-
-            if (eventType == VirtualFileEvent.ChangeType.DELETED) {
-                JavaProject javaProject = cache.get(eventWorkspace + eventPath);
-                if (javaProject != null) {
-                    removeProject(eventWorkspace, eventPath);
-                } else if (event.isFolder()) {
-                    if (isProjectDependencyExist(eventWorkspace, eventPath)) {
-                        deleteDependencyDirectory(eventWorkspace, eventPath);
+            try {
+                if (eventType == VirtualFileEvent.ChangeType.DELETED) {
+                    JavaProject javaProject = cache.get(eventWorkspace + eventPath);
+                    if (javaProject != null) {
+                        removeProject(eventWorkspace, eventPath);
+                    } else if (event.isFolder()) {
+                        if (isProjectDependencyExist(eventWorkspace, eventPath)) {
+                            deleteDependencyDirectory(eventWorkspace, eventPath);
+                        }
                     }
-                }
-            } else {
-                if (projectInWs.containsKey(eventWorkspace)) {
-                    for (String path : projectInWs.get(eventWorkspace)) {
-                        if (eventPath.startsWith(path)) {
-                            JavaProject javaProject = cache.get(eventWorkspace + path);
-                            if (javaProject != null)
-                                javaProject.getNameEnvironment().reset();
-                            javaProject.getIndexManager().indexAll(javaProject);
-                            break;
+                } else {
+                    if (projectInWs.containsKey(eventWorkspace)) {
+                        for (String path : projectInWs.get(eventWorkspace)) {
+                            if (eventPath.startsWith(path)) {
+                                JavaProject javaProject = cache.get(eventWorkspace + path);
+                                if (javaProject != null) {
+                                    try {
+                                        javaProject.getJavaModelManager().deltaState.resourceChanged(
+                                                new ResourceChangedEvent(fsMountStrategy.getMountPath(eventWorkspace), event));
+                                        javaProject.creteNewNameEnvironment();
+                                    } catch (ServerException e) {
+                                        LOG.error("Can't update java model", e);
+                                    }
+                                }
+                                break;
+                            }
                         }
                     }
                 }
+            } catch (Throwable t){
+                //catch all exceptions that may be happened
+                LOG.error("Can't update java model", t);
             }
         }
     }

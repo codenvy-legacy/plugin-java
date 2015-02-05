@@ -15,6 +15,7 @@ import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.junit.Before;
 
 import java.io.File;
 import java.util.HashMap;
@@ -26,11 +27,15 @@ import java.util.Map;
 public class BaseTest {
 
     protected static Map<String, String> options = new HashMap<>();
-    protected static JavaProject         project =
-            new JavaProject(new File(BaseTest.class.getResource("/projects").getFile()), "/test",BaseTest.class.getResource("/temp").getPath(),
-                            "ws", options);
+    protected static JavaProject         project;
 
 
+
+    @Before
+    public void setUp() throws Exception {
+        project = new JavaProject(new File(BaseTest.class.getResource("/projects").getFile()), "/test",BaseTest.class.getResource("/temp").getPath(),
+                                  "ws", options);
+    }
 
     public BaseTest() {
         options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_7);
@@ -48,7 +53,7 @@ public class BaseTest {
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.DISABLED);
     }
 
-    protected static String getHanldeForRtJarStart(){
+    protected static String getHandldeForRtJarStart() {
         String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
         javaHome = javaHome.replaceAll("/","\\\\/");
         return "☂/" + javaHome;
