@@ -33,7 +33,7 @@ public class MavenValueProviderFactory implements ValueProviderFactory {
     protected Model readModel(FolderEntry projectFolder) throws ValueStorageException, ServerException, ForbiddenException, IOException {
         FileEntry pomFile = (FileEntry)projectFolder.getChild("pom.xml");
         if (pomFile == null) {
-            throw new ValueStorageException("pomN.xml does not exist.");
+            throw new ValueStorageException("pom.xml does not exist.");
         }
         return Model.readFrom(pomFile.getInputStream());
     }

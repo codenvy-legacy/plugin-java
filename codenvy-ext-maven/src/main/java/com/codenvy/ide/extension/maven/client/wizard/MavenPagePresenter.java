@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.client.wizard;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.ImportProject;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode;
@@ -18,6 +19,7 @@ import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.StringMapUnmarshaller;
 import com.codenvy.ide.rest.StringUnmarshaller;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.core.client.Scheduler;
@@ -35,23 +37,7 @@ import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.UPDATE;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_ARTIFACT_ID_OPTION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATION_STRATEGY;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GROUP_ID_OPTION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_REPOSITORY_OPTION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_VERSION_OPTION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_TEST_SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GENERATION_STRATEGY_OPTION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.*;
 
 /**
  * @author Evgen Vidolob
@@ -59,17 +45,20 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
  */
 public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implements MavenPageView.ActionDelegate {
 
-    protected final MavenPageView         view;
-    protected final EventBus              eventBus;
-    private final   MavenPomServiceClient pomReaderClient;
-    private final   DtoFactory            dtoFactory;
+    protected final MavenPageView        view;
+    protected final EventBus             eventBus;
+    private final   ProjectServiceClient projectServiceClient;
+    private final   DtoFactory           dtoFactory;
 
     @Inject
-    public MavenPagePresenter(MavenPageView view, EventBus eventBus, MavenPomServiceClient pomReaderClient, DtoFactory dtoFactory) {
+    public MavenPagePresenter(MavenPageView view,
+                              EventBus eventBus,
+                              ProjectServiceClient projectServiceClient,
+                              DtoFactory dtoFactory) {
         super();
         this.view = view;
         this.eventBus = eventBus;
-        this.pomReaderClient = pomReaderClient;
+        this.projectServiceClient = projectServiceClient;
         this.dtoFactory = dtoFactory;
         view.setDelegate(this);
     }
@@ -133,22 +122,22 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
             if (attributes.get(ARTIFACT_ID) == null) {
                 // TODO use estimateProject() instead
                 // TODO do it in generic Wizard
-                pomReaderClient.readPomAttributes(projectName, new AsyncRequestCallback<String>(new StringUnmarshaller()) {
-                    @Override
-                    protected void onSuccess(String result) {
-                        Jso jso = Jso.deserialize(result);
-                        view.setArtifactId(jso.getStringField(ARTIFACT_ID));
-                        view.setGroupId(jso.getStringField(GROUP_ID));
-                        view.setVersion(jso.getStringField(VERSION));
-                        view.setPackaging(jso.getStringField(PACKAGING));
-                        scheduleTextChanges();
-                    }
+                projectServiceClient.estimateProject(context.get(""), MAVEN_ID ,
+                                                     new AsyncRequestCallback<Map<String,String>>(new StringMapUnmarshaller()) {
+                                                         @Override
+                                                         protected void onSuccess(Map<String, String> result) {
+                                                             view.setArtifactId(result.get(ARTIFACT_ID));
+                                                             view.setGroupId(result.get(GROUP_ID));
+                                                             view.setVersion(result.get(VERSION));
+                                                             view.setPackaging(result.get(PACKAGING));
+                                                             scheduleTextChanges();
+                                                         }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        Log.error(MavenPagePresenter.class, exception);
-                    }
-                });
+                                                         @Override
+                                                         protected void onFailure(Throwable exception) {
+                                                             Log.error(MavenPagePresenter.class, exception);
+                                                         }
+                                                     });
             }
         }
     }
