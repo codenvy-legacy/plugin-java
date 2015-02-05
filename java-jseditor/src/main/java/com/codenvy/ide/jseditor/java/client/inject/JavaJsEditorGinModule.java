@@ -18,6 +18,8 @@ import com.codenvy.ide.jseditor.java.client.editor.JavaPartitionerFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JavaQuickAssistProcessorFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JavaReconcilerStrategyFactory;
 import com.codenvy.ide.jseditor.java.client.editor.JsJavaEditorConfigurationFactory;
+import com.codenvy.ide.jseditor.java.client.editor.JavaFormatter;
+import com.codenvy.ide.jseditor.client.formatter.ContentFormatter;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
 
@@ -31,6 +33,7 @@ public class JavaJsEditorGinModule extends AbstractGinModule {
         install(new GinFactoryModuleBuilder().build(JsJavaEditorConfigurationFactory.class));
         install(new GinFactoryModuleBuilder().build(JavaReconcilerStrategyFactory.class));
         install(new GinFactoryModuleBuilder().build(JavaAnnotationModelFactory.class));
+        bind(ContentFormatter.class).to(JavaFormatter.class);
         bind(JavaPartitionScanner.class);
         bind(JavaPartitionerFactory.class);
     }
