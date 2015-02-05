@@ -22,6 +22,7 @@ import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;
 import com.codenvy.ide.jseditor.client.changeintercept.ChangeInterceptorProvider;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistProcessor;
 import com.codenvy.ide.jseditor.client.editorconfig.DefaultTextEditorConfiguration;
+import com.codenvy.ide.jseditor.client.formatter.ContentFormatter;
 import com.codenvy.ide.jseditor.client.partition.DocumentPartitioner;
 import com.codenvy.ide.jseditor.client.partition.DocumentPositionMap;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistProcessor;
@@ -48,9 +49,10 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     private final AnnotationModel annotationModel;
     private final QuickAssistProcessor quickAssistProcessors;
     private final ChangeInterceptorProvider changeInterceptors;
+    private final ContentFormatter contentFormatter;
 
     @AssistedInject
-    public JsJavaEditorConfiguration(@Assisted final EmbeddedTextEditorPresenter< ? > editor,
+    public JsJavaEditorConfiguration(@Assisted final EmbeddedTextEditorPresenter<?> editor,
                                      final UserActivityManager userActivityManager,
                                      final JavaResources javaResources,
                                      final JavaCodeAssistProcessorFactory codeAssistProcessorFactory,
@@ -59,7 +61,9 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
                                      final JavaPartitionerFactory partitionerFactory,
                                      final JavaReconcilerStrategyFactory strategyFactory,
                                      final Provider<DocumentPositionMap> docPositionMapProvider,
-                                     final JavaAnnotationModelFactory javaAnnotationModelFactory) {
+                                     final JavaAnnotationModelFactory javaAnnotationModelFactory,
+                                     final ContentFormatter contentFormatter) {
+        this.contentFormatter = contentFormatter;
         this.outlineModel = new OutlineModel(new JavaNodeRenderer(javaResources));
 
         final JavaCodeAssistProcessor codeAssistProcessor = codeAssistProcessorFactory.create(editor);
@@ -116,6 +120,11 @@ public class JsJavaEditorConfiguration extends DefaultTextEditorConfiguration {
     @Override
     public AnnotationModel getAnnotationModel() {
         return this.annotationModel;
+    }
+
+    @Override
+    public ContentFormatter getContentFormatter() {
+        return contentFormatter;
     }
 
     @Override
