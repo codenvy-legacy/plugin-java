@@ -45,7 +45,6 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private final JavaParserWorker         worker;
     private final OutlineModel             outlineModel;
     private final JavaCodeAssistProcessor  codeAssistProcessor;
-    private final JavaLocalizationConstant localizationConstant;
     private final AnnotationModel          annotationModel;
 
     private VirtualFile      file;
@@ -59,14 +58,12 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
                                   @Assisted final JavaCodeAssistProcessor codeAssistProcessor,
                                   @Assisted final AnnotationModel annotationModel,
                                   final BuildContext buildContext,
-                                  final JavaParserWorker worker,
-                                  final JavaLocalizationConstant localizationConstant) {
+                                  final JavaParserWorker worker) {
         this.editor = editor;
         this.buildContext = buildContext;
         this.worker = worker;
         this.outlineModel = outlineModel;
         this.codeAssistProcessor = codeAssistProcessor;
-        this.localizationConstant = localizationConstant;
         this.annotationModel = annotationModel;
 
     }
