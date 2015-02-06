@@ -191,6 +191,7 @@ public class StandardVMType implements IVMInstallType {
 		String installPath = javaHome.getAbsolutePath();
 		LibraryInfo info = Launching.getLibraryInfo(installPath);
 		if (info == null || Launching.timeStampChanged(installPath)) {
+            //Todo IDEX-1255 Incorrect log message
 //			info = fgFailedInstallPath.get(installPath);
 //			if (info == null) {
 //				info = generateLibraryInfo(javaHome, javaExecutable);
