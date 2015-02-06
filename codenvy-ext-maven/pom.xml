@@ -68,7 +68,7 @@
         <dependency>
             <groupId>com.codenvy.plugin-runner</groupId>
             <artifactId>codenvy-plugin-runner</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${codenvy.plugin.runner.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
