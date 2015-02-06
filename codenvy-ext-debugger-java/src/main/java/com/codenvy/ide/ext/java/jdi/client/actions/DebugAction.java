@@ -11,8 +11,6 @@
 package com.codenvy.ide.ext.java.jdi.client.actions;
 
 import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.app.AppContext;
@@ -21,8 +19,6 @@ import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeLocalizationConstant;
 import com.codenvy.ide.ext.java.jdi.client.JavaRuntimeResources;
 import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.extension.runner.client.ProjectRunCallback;
-import com.codenvy.ide.extension.runner.client.run.RunController;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -30,24 +26,22 @@ import com.google.inject.Singleton;
  * Action to run project on runner in debug mode.
  *
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 @Singleton
 public class DebugAction extends ProjectAction {
 
-    private final RunController        runController;
     private final DebuggerPresenter    debuggerPresenter;
     private final AnalyticsEventLogger eventLogger;
-    private       AppContext           appContext;
+    private final AppContext           appContext;
 
     @Inject
-    public DebugAction(RunController runController,
-                       DebuggerPresenter debuggerPresenter,
+    public DebugAction(DebuggerPresenter debuggerPresenter,
                        JavaRuntimeResources resources,
                        JavaRuntimeLocalizationConstant localizationConstants,
                        AnalyticsEventLogger eventLogger,
                        AppContext appContext) {
         super(localizationConstants.debugAppActionText(), localizationConstants.debugAppActionDescription(), resources.debug());
-        this.runController = runController;
         this.debuggerPresenter = debuggerPresenter;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
@@ -57,22 +51,22 @@ public class DebugAction extends ProjectAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        debuggerPresenter.debug(true, new ProjectRunCallback() {
-            @Override
-            public void onRun(ApplicationProcessDescriptor appDescriptor, ProjectDescriptor projectDescriptor) {
-                debuggerPresenter.attachDebugger(appDescriptor, projectDescriptor);
-            }
-        });
+        debuggerPresenter.debug();
     }
 
     /** {@inheritDoc} */
     @Override
     public void updateProjectAction(ActionEvent e) {
         final CurrentProject currentProject = appContext.getCurrentProject();
-        boolean isRunningEnabled = currentProject != null && currentProject.getRunner() != null && currentProject.getIsRunningEnabled();
+        if (currentProject == null) {
+            return;
+        }
+
         final String projectTypeId = currentProject.getProjectDescription().getType();
         final String packaging = currentProject.getAttributeValue(MavenAttributes.PACKAGING);
+
         e.getPresentation().setVisible("war".equals(packaging) || projectTypeId.equals(com.codenvy.ide.Constants.CODENVY_PLUGIN_ID));
-        e.getPresentation().setEnabled(isRunningEnabled && !runController.isAnyAppRunning());
+        e.getPresentation().setEnabled(currentProject.getRunner() != null && currentProject.getIsRunningEnabled());
     }
+
 }

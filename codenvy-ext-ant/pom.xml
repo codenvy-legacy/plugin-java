@@ -43,9 +43,9 @@
             <version>${com.google.code.guice.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.ide</groupId>
-            <artifactId>codenvy-ext-runner</artifactId>
-            <version>${codenvy.ide.version}</version>
+            <groupId>com.codenvy.plugin-runner</groupId>
+            <artifactId>codenvy-plugin-runner</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

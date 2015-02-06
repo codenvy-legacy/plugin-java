@@ -10,29 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.jdi.client;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Method;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
+import com.codenvy.api.runner.dto.RunOptions;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
+import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
@@ -48,15 +32,47 @@ import com.codenvy.ide.ext.java.jdi.shared.BreakPoint;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
 import com.codenvy.ide.ext.java.jdi.shared.Location;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
-import com.codenvy.ide.extension.runner.client.run.RunController;
+import com.codenvy.ide.ext.runner.client.manager.RunnerManagerPresenter;
+import com.codenvy.ide.ext.runner.client.models.Runner;
+import com.codenvy.ide.ext.runner.client.runneractions.impl.launch.common.RunnerApplicationStatusEventHandler;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.web.bindery.event.shared.Event;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.lang.reflect.Method;
+
+import static com.codenvy.api.runner.ApplicationStatus.NEW;
+import static com.codenvy.api.runner.ApplicationStatus.RUNNING;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyByte;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Testing {@link DebuggerPresenter} functionality.
  *
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     private static final String DEBUG_HOST = "localhost";
@@ -64,6 +80,12 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     private static final String VM_NAME    = "vm_name";
     private static final String VM_VERSION = "vm_version";
     private static final String MIME_TYPE  = "application/java";
+
+    @Captor
+    private ArgumentCaptor<RunnerApplicationStatusEventHandler> runnerApplicationStatusEventHandlerArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<ProjectActionHandler>                projectActionHandlerArgumentCaptor;
+
     @Mock
     private DebuggerView                 view;
     @Mock
@@ -75,7 +97,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Mock
     private ApplicationProcessDescriptor applicationProcessDescriptor;
     @Mock
-    private RunController                runController;
+    private RunnerManagerPresenter       runnerManagerPresenter;
     @Mock
     private BreakpointManager            gutterManager;
     @Mock
@@ -90,6 +112,14 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     private ProjectDescriptor            project;
     @Mock
     private AsyncCallback<Void>          asyncCallbackVoid;
+    @Mock
+    private AppContext                   appContext;
+    @Mock
+    private CurrentProject               currentProject;
+    @Mock
+    private Runner                       runner;
+    @Mock
+    private Runner                       runner2;
 
     @Before
     public void setUp() {
@@ -104,7 +134,91 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     }
 
     @Test
+    public void debuggerShouldNotBeShowedIfStatusOfOtheRunnerIsChanged() throws Exception {
+        when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
+        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(appContext.getCurrentProject()).thenReturn(currentProject);
+
+        when(runner.getProcessId()).thenReturn(1L);
+        when(runner2.getProcessId()).thenReturn(2L);
+
+        presenter.debug();
+
+        verify(eventBus, times(2)).addHandler(Matchers.<Event.Type<RunnerApplicationStatusEventHandler>>any(),
+                                              runnerApplicationStatusEventHandlerArgumentCaptor.capture());
+
+        RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
+
+        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+
+        verify(service, never()).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
+    }
+
+    @Test
+    public void debuggerShouldNotBeShowedIfCurrentProjectIsNull() throws Exception {
+        when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
+        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(appContext.getCurrentProject()).thenReturn(null);
+
+        when(runner.getProcessId()).thenReturn(1L);
+        when(runner2.getProcessId()).thenReturn(1L);
+
+        presenter.debug();
+
+        verify(eventBus, times(2)).addHandler(Matchers.<Event.Type<RunnerApplicationStatusEventHandler>>any(),
+                                              runnerApplicationStatusEventHandlerArgumentCaptor.capture());
+
+        RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
+
+        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+
+        verify(service, never()).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
+    }
+
+    @Test
+    public void debuggerShouldNotBeShowedIfRunnerNotStarted() throws Exception {
+        when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
+        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(appContext.getCurrentProject()).thenReturn(currentProject);
+        when(applicationProcessDescriptor.getStatus()).thenReturn(NEW);
+
+        when(runner.getProcessId()).thenReturn(1L);
+        when(runner2.getProcessId()).thenReturn(1L);
+
+        presenter.debug();
+
+        verify(eventBus, times(2)).addHandler(Matchers.<Event.Type<RunnerApplicationStatusEventHandler>>any(),
+                                              runnerApplicationStatusEventHandlerArgumentCaptor.capture());
+
+        RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
+
+        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+
+        verify(service, never()).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
+
+    }
+
+    @Test
+    public void debuggerShouldBeShowed() throws Exception {
+        prepareEventHandlers();
+
+        presenter.debug();
+
+        verify(eventBus, times(2)).addHandler(Matchers.<Event.Type<RunnerApplicationStatusEventHandler>>any(),
+                                              runnerApplicationStatusEventHandlerArgumentCaptor.capture());
+
+        RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
+
+        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+
+        verify(service).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
+
+    }
+
+    @Test
     public void testConnectDebuggerRequestIsSuccessful() throws Exception {
+        prepareEventHandlers();
+
         final DebuggerInfo debuggerInfoMock = mock(DebuggerInfo.class);
         when(debuggerInfoMock.getVmName()).thenReturn(VM_NAME);
         when(debuggerInfoMock.getVmVersion()).thenReturn(VM_VERSION);
@@ -119,7 +233,14 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
             }
         }).when(service).connect(anyString(), anyInt(), (AsyncRequestCallback<DebuggerInfo>)anyObject());
 
-        presenter.attachDebugger(applicationProcessDescriptor, project);
+        presenter.debug();
+
+        verify(eventBus, times(2)).addHandler(Matchers.<Event.Type<RunnerApplicationStatusEventHandler>>any(),
+                                              runnerApplicationStatusEventHandlerArgumentCaptor.capture());
+
+        RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
+
+        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
 
         verify(service).connect(eq(DEBUG_HOST), eq(DEBUG_PORT), (AsyncRequestCallback<DebuggerInfo>)anyObject());
         verifySetEnableButtons(DISABLE_BUTTON);
@@ -131,6 +252,8 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
     @Test
     public void testConnectDebuggerRequestIsFailed() throws Exception {
+        prepareEventHandlers();
+
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -142,10 +265,27 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
             }
         }).when(service).connect(anyString(), anyInt(), (AsyncRequestCallback<DebuggerInfo>)anyObject());
 
-        presenter.attachDebugger(applicationProcessDescriptor, project);
+        presenter.debug();
+
+        verify(eventBus, times(2)).addHandler(Matchers.<Event.Type<RunnerApplicationStatusEventHandler>>any(),
+                                              runnerApplicationStatusEventHandlerArgumentCaptor.capture());
+
+        RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
+
+        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
 
         verify(service).connect(eq(DEBUG_HOST), eq(DEBUG_PORT), (AsyncRequestCallback<DebuggerInfo>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
+    }
+
+    private void prepareEventHandlers() {
+        when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
+        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(appContext.getCurrentProject()).thenReturn(currentProject);
+        when(applicationProcessDescriptor.getStatus()).thenReturn(RUNNING);
+
+        when(runner.getProcessId()).thenReturn(1L);
+        when(runner2.getProcessId()).thenReturn(1L);
     }
 
     @Test
@@ -167,7 +307,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         verifySetEnableButtons(DISABLE_BUTTON);
 
-        verify(runController).stopActiveProject(false);
+        verify(runnerManagerPresenter).stopRunAction(Matchers.<Runner>any());
         verify(gutterManager).unmarkCurrentBreakpoint();
         verify(gutterManager).removeAllBreakpoints();
         verify(view).setEnableRemoveAllBreakpointsButton(DISABLE_BUTTON);
@@ -486,4 +626,5 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
         verify(view).setEnableStepReturnButton(eq(enabled));
         verify(view).setEnableEvaluateExpressionButtonEnable(eq(enabled));
     }
+
 }

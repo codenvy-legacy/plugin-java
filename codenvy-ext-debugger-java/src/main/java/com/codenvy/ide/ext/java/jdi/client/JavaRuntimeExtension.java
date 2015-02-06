@@ -20,7 +20,6 @@ import com.codenvy.ide.ext.java.jdi.client.debug.DebuggerPresenter;
 import com.codenvy.ide.ext.java.jdi.client.fqn.FqnResolverFactory;
 import com.codenvy.ide.ext.java.jdi.client.fqn.JavaFqnResolver;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.extension.runner.client.RunnerLocalizationConstant;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -29,12 +28,14 @@ import static com.codenvy.ide.MimeType.TEXT_X_JAVA_SOURCE;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN;
 import static com.codenvy.ide.api.action.IdeActions.GROUP_RUN_CONTEXT_MENU;
 import static com.codenvy.ide.api.constraints.Anchor.AFTER;
+import static com.codenvy.ide.ext.runner.client.constants.ActionId.RUN_APP_ID;
 
 /**
  * Extension allows debug Java web applications.
  *
  * @author Andrey Plotnikov
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 @Singleton
 @Extension(title = "Java Debugger", version = "3.0.0")
@@ -51,14 +52,13 @@ public class JavaRuntimeExtension {
                                 DebuggerPresenter debuggerPresenter,
                                 FqnResolverFactory resolverFactory,
                                 JavaFqnResolver javaFqnResolver,
-                                JavaRuntimeLocalizationConstant localizationConstant,
-                                RunnerLocalizationConstant runnerLocalizationConstants) {
+                                JavaRuntimeLocalizationConstant localizationConstant) {
         // register actions
         actionManager.registerAction(localizationConstant.debugAppActionId(), debugAction);
 
         // add actions in main menu
         DefaultActionGroup runMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN);
-        runMenuActionGroup.add(debugAction, new Constraints(AFTER, runnerLocalizationConstants.customRunAppActionId()));
+        runMenuActionGroup.add(debugAction, new Constraints(AFTER, RUN_APP_ID.getId()));
 
         // add actions in context menu
         DefaultActionGroup runContextGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN_CONTEXT_MENU);

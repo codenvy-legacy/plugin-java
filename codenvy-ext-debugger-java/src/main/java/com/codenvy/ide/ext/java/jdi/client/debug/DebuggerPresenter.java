@@ -14,6 +14,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.runner.dto.ApplicationProcessDescriptor;
 import com.codenvy.api.runner.dto.RunOptions;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.ActivePartChangedEvent;
@@ -51,8 +52,10 @@ import com.codenvy.ide.ext.java.jdi.shared.StackFrameDump;
 import com.codenvy.ide.ext.java.jdi.shared.StepEvent;
 import com.codenvy.ide.ext.java.jdi.shared.Value;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
-import com.codenvy.ide.extension.runner.client.ProjectRunCallback;
-import com.codenvy.ide.extension.runner.client.run.RunController;
+import com.codenvy.ide.ext.runner.client.manager.RunnerManagerPresenter;
+import com.codenvy.ide.ext.runner.client.models.Runner;
+import com.codenvy.ide.ext.runner.client.runneractions.impl.launch.common.RunnerApplicationStatusEvent;
+import com.codenvy.ide.ext.runner.client.runneractions.impl.launch.common.RunnerApplicationStatusEventHandler;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.HTTPStatus;
@@ -75,6 +78,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.codenvy.api.runner.ApplicationStatus.RUNNING;
 import static com.codenvy.ide.api.event.FileEvent.FileOperation.OPEN;
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -87,39 +91,41 @@ import static com.codenvy.ide.ext.java.jdi.shared.DebuggerEvent.STEP;
  *
  * @author Vitaly Parfonov
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 @Singleton
 public class DebuggerPresenter extends BasePresenter implements DebuggerView.ActionDelegate, Debugger {
     private static final String TITLE = "Debug";
-    private final DtoFactory             dtoFactory;
-    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final AppContext appContext;
+    private final DtoFactory                             dtoFactory;
+    private final DtoUnmarshallerFactory                 dtoUnmarshallerFactory;
+    private final AppContext                             appContext;
     /** Channel identifier to receive events from debugger over WebSocket. */
-    private String                                 debuggerEventsChannel;
+    private       String                                 debuggerEventsChannel;
     /** Channel identifier to receive event when debugger will disconnected. */
-    private String                                 debuggerDisconnectedChannel;
-    private DebuggerView                           view;
-    private EventBus                               eventBus;
-    private RunController                          runController;
-    private DebuggerServiceClient                  service;
-    private JavaRuntimeLocalizationConstant        constant;
-    private DebuggerInfo                           debuggerInfo;
-    private MessageBus                             messageBus;
-    private BreakpointManager                      breakpointManager;
-    private WorkspaceAgent                         workspaceAgent;
-    private FqnResolverFactory                     resolverFactory;
-    private EditorAgent                            editorAgent;
-    private Variable                               selectedVariable;
-    private EvaluateExpressionPresenter            evaluateExpressionPresenter;
-    private ChangeValuePresenter                   changeValuePresenter;
-    private NotificationManager                    notificationManager;
+    private       String                                 debuggerDisconnectedChannel;
+    private       DebuggerView                           view;
+    private       EventBus                               eventBus;
+    private       RunnerManagerPresenter                 runnerManagerPresenter;
+    private       DebuggerServiceClient                  service;
+    private       JavaRuntimeLocalizationConstant        constant;
+    private       DebuggerInfo                           debuggerInfo;
+    private       MessageBus                             messageBus;
+    private       BreakpointManager                      breakpointManager;
+    private       WorkspaceAgent                         workspaceAgent;
+    private       FqnResolverFactory                     resolverFactory;
+    private       EditorAgent                            editorAgent;
+    private       Variable                               selectedVariable;
+    private       EvaluateExpressionPresenter            evaluateExpressionPresenter;
+    private       ChangeValuePresenter                   changeValuePresenter;
+    private       NotificationManager                    notificationManager;
     /** Handler for processing events which is received from debugger over WebSocket connection. */
-    private SubscriptionHandler<DebuggerEventList> debuggerEventsHandler;
-    private SubscriptionHandler<Void>              debuggerDisconnectedHandler;
-    private List<Variable>                         variables;
-    private ApplicationProcessDescriptor           appDescriptor;
-    private ProjectDescriptor                      project;
-    private Location                               executionPoint;
+    private       SubscriptionHandler<DebuggerEventList> debuggerEventsHandler;
+    private       SubscriptionHandler<Void>              debuggerDisconnectedHandler;
+    private       List<Variable>                         variables;
+    private       ApplicationProcessDescriptor           appDescriptor;
+    private       ProjectDescriptor                      project;
+    private       Location                               executionPoint;
+    private       Runner                                 runner;
 
     /** Create presenter. */
     @Inject
@@ -135,13 +141,13 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                              final EvaluateExpressionPresenter evaluateExpressionPresenter,
                              ChangeValuePresenter changeValuePresenter,
                              final NotificationManager notificationManager,
-                             final RunController runController,
+                             final RunnerManagerPresenter runnerManagerPresenter,
                              final DtoFactory dtoFactory,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
                              AppContext appContext) {
         this.view = view;
         this.eventBus = eventBus;
-        this.runController = runController;
+        this.runnerManagerPresenter = runnerManagerPresenter;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.appContext = appContext;
@@ -179,7 +185,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                             (com.codenvy.ide.websocket.rest.exceptions.ServerException)exception;
                     if (HTTPStatus.INTERNAL_ERROR == serverException.getHTTPStatus() && serverException.getMessage() != null
                         && serverException.getMessage().contains("not found")) {
-                        runController.stopActiveProject(false);
+                        runnerManagerPresenter.stopRunAction(runner);
                         onDebuggerDisconnected();
                         return;
                     }
@@ -226,6 +232,26 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                     changeButtonsEnableState(false);
                     onDebuggerDisconnected();
                     closeView();
+                }
+            }
+        });
+
+        configureStatusRunEventHandler();
+    }
+
+    private void configureStatusRunEventHandler() {
+        eventBus.addHandler(RunnerApplicationStatusEvent.TYPE, new RunnerApplicationStatusEventHandler() {
+            @Override
+            public void onRunnerStatusChanged(@Nonnull ApplicationProcessDescriptor applicationProcessDescriptor,
+                                              @Nonnull Runner changedRunner) {
+                CurrentProject currentProject = appContext.getCurrentProject();
+                if (runner == null || runner.getProcessId() != changedRunner.getProcessId() || currentProject == null) {
+                    return;
+                }
+
+                runner = changedRunner;
+                if (RUNNING.equals(applicationProcessDescriptor.getStatus())) {
+                    attachDebugger(applicationProcessDescriptor, currentProject.getProjectDescription());
                 }
             }
         });
@@ -597,19 +623,12 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         workspaceAgent.removePart(this);
     }
 
-    /**
-     * Debug active project.
-     *
-     * @param isUserAction
-     *         points whether the build is started directly by user interaction
-     * @param callback
-     *         callback that will be notified when project will be run
-     */
-    public void debug(final boolean isUserAction, final ProjectRunCallback callback) {
+    /** Debug active project. */
+    public void debug() {
         RunOptions runOptions = dtoFactory.createDto(RunOptions.class);
         runOptions.setInDebugMode(true);
 
-        runController.runActiveProject(runOptions, callback, isUserAction);
+        runner = runnerManagerPresenter.launchRunner(runOptions);
     }
 
     /**
@@ -620,7 +639,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
      * @param project
      *         project to debug
      */
-    public void attachDebugger(@Nonnull final ApplicationProcessDescriptor appDescriptor, ProjectDescriptor project) {
+    private void attachDebugger(@Nonnull final ApplicationProcessDescriptor appDescriptor, ProjectDescriptor project) {
         this.project = project;
         this.appDescriptor = appDescriptor;
         service.connect(appDescriptor.getDebugHost(), appDescriptor.getDebugPort(),
@@ -652,7 +671,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                 @Override
                 protected void onSuccess(Void result) {
                     changeButtonsEnableState(false);
-                    runController.stopActiveProject(false);
+                    runnerManagerPresenter.stopRunAction(runner);
                     onDebuggerDisconnected();
                     closeView();
                 }
