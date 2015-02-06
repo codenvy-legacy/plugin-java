@@ -27,10 +27,10 @@ import com.google.inject.Singleton;
 public class QuickDocViewImpl implements QuickDocView {
 
 
-    private final PopupPanel      popupPanel;
+    private final PopupPanel popupPanel;
     private final DockLayoutPanel rootPanel;
-    private       ActionDelegate  delegate;
-    private       Frame           frame;
+    private ActionDelegate delegate;
+    private Frame frame;
 
     @Inject
     public QuickDocViewImpl() {
@@ -55,7 +55,7 @@ public class QuickDocViewImpl implements QuickDocView {
         frame = new Frame();
         frame.setSize("100%", "100%");
         frame.getElement().getStyle().setBorderStyle(Style.BorderStyle.NONE);
-        frame.getElement().setAttribute("sandbox",null);
+        frame.getElement().setAttribute("sandbox", ""); // empty value, not null
     }
 
     @Override
