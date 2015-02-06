@@ -191,17 +191,17 @@ public class StandardVMType implements IVMInstallType {
 		String installPath = javaHome.getAbsolutePath();
 		LibraryInfo info = Launching.getLibraryInfo(installPath);
 		if (info == null || Launching.timeStampChanged(installPath)) {
-			info = fgFailedInstallPath.get(installPath);
-			if (info == null) {
-				info = generateLibraryInfo(javaHome, javaExecutable);
-				if (info == null) {
+//			info = fgFailedInstallPath.get(installPath);
+//			if (info == null) {
+//				info = generateLibraryInfo(javaHome, javaExecutable);
+//				if (info == null) {
 					info = getDefaultLibraryInfo(javaHome);
 					fgFailedInstallPath.put(installPath, info);
-				} else {
-					// only persist if we were able to generate information - see bug 70011
-					Launching.setLibraryInfo(installPath, info);
-				}
-			}
+//				} else {
+//					// only persist if we were able to generate information - see bug 70011
+//					Launching.setLibraryInfo(installPath, info);
+//				}
+//			}
 		}
 		return info;
 	}
