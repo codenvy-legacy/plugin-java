@@ -25,6 +25,7 @@ import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFileNode;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;
+import com.codenvy.ide.jseditor.client.document.Document;
 import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
 import com.codenvy.ide.jseditor.client.reconciler.DirtyRegion;
 import com.codenvy.ide.jseditor.client.reconciler.ReconcilingStrategy;
@@ -48,7 +49,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private final AnnotationModel          annotationModel;
 
     private VirtualFile      file;
-    private EmbeddedDocument document;
+    private Document document;
     private boolean first = true;
     private boolean sourceFromClass;
 
@@ -93,7 +94,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
         }
 
         String packageName = "";
-        if(file instanceof SourceFileNode) {
+        if (file instanceof SourceFileNode) {
             if (((SourceFileNode)file).getParent() instanceof PackageNode) {
                 packageName = ((PackageNode)((SourceFileNode)file).getParent()).getQualifiedName();
             }
