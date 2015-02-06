@@ -29,7 +29,7 @@ import com.codenvy.ide.jseditor.client.annotation.QueryAnnotationsEvent.Annotati
 import com.codenvy.ide.jseditor.client.annotation.QueryAnnotationsEvent.QueryCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CodeAssistCallback;
 import com.codenvy.ide.jseditor.client.codeassist.CompletionProposal;
-import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
+import com.codenvy.ide.jseditor.client.document.Document;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistInvocationContext;
 import com.codenvy.ide.jseditor.client.quickfix.QuickAssistProcessor;
 import com.codenvy.ide.jseditor.client.text.LinearRange;
@@ -62,7 +62,7 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
     @Override
     public void computeQuickAssistProposals(final QuickAssistInvocationContext quickAssistContext, final CodeAssistCallback callback) {
         final TextEditor textEditor = quickAssistContext.getTextEditor();
-        final EmbeddedDocument document = textEditor.getDocument();
+        final Document document = textEditor.getDocument();
 
         LinearRange tempRange;
         if (quickAssistContext.getLine() != null) {
@@ -201,7 +201,12 @@ public class JavaQuickAssistProcessor implements QuickAssistProcessor {
             for (final Annotation annotation : annotations.keySet()) {
                 if (JavaAnnotationUtil.isQuickFixableType(annotation)) {
                     final Position pos = annotations.get(annotation);
-                    result.put(annotation, pos);
+                    final int lineStart = lineRange.getStartOffset();
+                    final int lineEnd = lineRange.getStartOffset() + lineRange.getLength();
+                    if (isInside(pos.getOffset(), lineStart, lineEnd)
+                        || isInside(pos.getOffset() + pos.getLength(), lineStart, lineEnd)) {
+                        result.put(annotation, pos);
+                    }
                 }
             }
             if (result.isEmpty()) {

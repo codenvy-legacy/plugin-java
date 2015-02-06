@@ -25,6 +25,7 @@ import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFileNode;
 import com.codenvy.ide.ext.java.jdt.core.IProblemRequestor;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
 import com.codenvy.ide.jseditor.client.annotation.AnnotationModel;
+import com.codenvy.ide.jseditor.client.document.Document;
 import com.codenvy.ide.jseditor.client.document.EmbeddedDocument;
 import com.codenvy.ide.jseditor.client.reconciler.DirtyRegion;
 import com.codenvy.ide.jseditor.client.reconciler.ReconcilingStrategy;
@@ -44,11 +45,10 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
     private final JavaParserWorker         worker;
     private final OutlineModel             outlineModel;
     private final JavaCodeAssistProcessor  codeAssistProcessor;
-    private final JavaLocalizationConstant localizationConstant;
     private final AnnotationModel          annotationModel;
 
     private VirtualFile      file;
-    private EmbeddedDocument document;
+    private Document document;
     private boolean first = true;
     private boolean sourceFromClass;
 
@@ -58,14 +58,12 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
                                   @Assisted final JavaCodeAssistProcessor codeAssistProcessor,
                                   @Assisted final AnnotationModel annotationModel,
                                   final BuildContext buildContext,
-                                  final JavaParserWorker worker,
-                                  final JavaLocalizationConstant localizationConstant) {
+                                  final JavaParserWorker worker) {
         this.editor = editor;
         this.buildContext = buildContext;
         this.worker = worker;
         this.outlineModel = outlineModel;
         this.codeAssistProcessor = codeAssistProcessor;
-        this.localizationConstant = localizationConstant;
         this.annotationModel = annotationModel;
 
     }
@@ -93,7 +91,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
         }
 
         String packageName = "";
-        if(file instanceof SourceFileNode) {
+        if (file instanceof SourceFileNode) {
             if (((SourceFileNode)file).getParent() instanceof PackageNode) {
                 packageName = ((PackageNode)((SourceFileNode)file).getParent()).getQualifiedName();
             }
