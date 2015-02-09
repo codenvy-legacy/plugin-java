@@ -38,15 +38,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${com.google.code.guice.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.codenvy.plugin-runner</groupId>
             <artifactId>codenvy-plugin-runner</artifactId>
             <version>${codenvy.plugin.runner.version}</version>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${com.google.code.guice.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

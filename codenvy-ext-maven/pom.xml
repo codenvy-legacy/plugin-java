@@ -61,15 +61,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>${javax.validation.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.codenvy.plugin-runner</groupId>
             <artifactId>codenvy-plugin-runner</artifactId>
             <version>${codenvy.plugin.runner.version}</version>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${javax.validation.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>

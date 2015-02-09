@@ -32,7 +32,7 @@ import com.codenvy.ide.ext.java.jdi.shared.BreakPoint;
 import com.codenvy.ide.ext.java.jdi.shared.DebuggerInfo;
 import com.codenvy.ide.ext.java.jdi.shared.Location;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
-import com.codenvy.ide.ext.runner.client.manager.RunnerManagerPresenter;
+import com.codenvy.ide.ext.runner.client.manager.RunnerManager;
 import com.codenvy.ide.ext.runner.client.models.Runner;
 import com.codenvy.ide.ext.runner.client.runneractions.impl.launch.common.RunnerApplicationStatusEventHandler;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -97,7 +97,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Mock
     private ApplicationProcessDescriptor applicationProcessDescriptor;
     @Mock
-    private RunnerManagerPresenter       runnerManagerPresenter;
+    private RunnerManager                runnerManager;
     @Mock
     private BreakpointManager            gutterManager;
     @Mock
@@ -136,7 +136,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Test
     public void debuggerShouldNotBeShowedIfStatusOfOtheRunnerIsChanged() throws Exception {
         when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
-        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(runnerManager.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
 
         when(runner.getProcessId()).thenReturn(1L);
@@ -157,7 +157,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Test
     public void debuggerShouldNotBeShowedIfCurrentProjectIsNull() throws Exception {
         when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
-        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(runnerManager.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
         when(appContext.getCurrentProject()).thenReturn(null);
 
         when(runner.getProcessId()).thenReturn(1L);
@@ -178,7 +178,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
     @Test
     public void debuggerShouldNotBeShowedIfRunnerNotStarted() throws Exception {
         when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
-        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(runnerManager.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
         when(applicationProcessDescriptor.getStatus()).thenReturn(NEW);
 
@@ -280,7 +280,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
     private void prepareEventHandlers() {
         when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
-        when(runnerManagerPresenter.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
+        when(runnerManager.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
         when(applicationProcessDescriptor.getStatus()).thenReturn(RUNNING);
 
@@ -307,7 +307,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         verifySetEnableButtons(DISABLE_BUTTON);
 
-        verify(runnerManagerPresenter).stopRunAction(Matchers.<Runner>any());
+        verify(runnerManager).stopRunAction(Matchers.<Runner>any());
         verify(gutterManager).unmarkCurrentBreakpoint();
         verify(gutterManager).removeAllBreakpoints();
         verify(view).setEnableRemoveAllBreakpointsButton(DISABLE_BUTTON);

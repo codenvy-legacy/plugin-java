@@ -52,7 +52,7 @@ import com.codenvy.ide.ext.java.jdi.shared.StackFrameDump;
 import com.codenvy.ide.ext.java.jdi.shared.StepEvent;
 import com.codenvy.ide.ext.java.jdi.shared.Value;
 import com.codenvy.ide.ext.java.jdi.shared.Variable;
-import com.codenvy.ide.ext.runner.client.manager.RunnerManagerPresenter;
+import com.codenvy.ide.ext.runner.client.manager.RunnerManager;
 import com.codenvy.ide.ext.runner.client.models.Runner;
 import com.codenvy.ide.ext.runner.client.runneractions.impl.launch.common.RunnerApplicationStatusEvent;
 import com.codenvy.ide.ext.runner.client.runneractions.impl.launch.common.RunnerApplicationStatusEventHandler;
@@ -105,7 +105,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     private       String                                 debuggerDisconnectedChannel;
     private       DebuggerView                           view;
     private       EventBus                               eventBus;
-    private       RunnerManagerPresenter                 runnerManagerPresenter;
+    private       RunnerManager                          runnerManager;
     private       DebuggerServiceClient                  service;
     private       JavaRuntimeLocalizationConstant        constant;
     private       DebuggerInfo                           debuggerInfo;
@@ -141,13 +141,13 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                              final EvaluateExpressionPresenter evaluateExpressionPresenter,
                              ChangeValuePresenter changeValuePresenter,
                              final NotificationManager notificationManager,
-                             final RunnerManagerPresenter runnerManagerPresenter,
+                             final RunnerManager runnerManager,
                              final DtoFactory dtoFactory,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
                              AppContext appContext) {
         this.view = view;
         this.eventBus = eventBus;
-        this.runnerManagerPresenter = runnerManagerPresenter;
+        this.runnerManager = runnerManager;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.appContext = appContext;
@@ -185,7 +185,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                             (com.codenvy.ide.websocket.rest.exceptions.ServerException)exception;
                     if (HTTPStatus.INTERNAL_ERROR == serverException.getHTTPStatus() && serverException.getMessage() != null
                         && serverException.getMessage().contains("not found")) {
-                        runnerManagerPresenter.stopRunAction(runner);
+                        runnerManager.stopRunAction(runner);
                         onDebuggerDisconnected();
                         return;
                     }
@@ -628,7 +628,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         RunOptions runOptions = dtoFactory.createDto(RunOptions.class);
         runOptions.setInDebugMode(true);
 
-        runner = runnerManagerPresenter.launchRunner(runOptions);
+        runner = runnerManager.launchRunner(runOptions);
     }
 
     /**
@@ -671,7 +671,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                 @Override
                 protected void onSuccess(Void result) {
                     changeButtonsEnableState(false);
-                    runnerManagerPresenter.stopRunAction(runner);
+                    runnerManager.stopRunAction(runner);
                     onDebuggerDisconnected();
                     closeView();
                 }
