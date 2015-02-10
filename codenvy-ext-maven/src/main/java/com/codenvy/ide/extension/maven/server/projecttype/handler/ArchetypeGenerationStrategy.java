@@ -105,7 +105,6 @@ public class ArchetypeGenerationStrategy implements GeneratorStrategy {
             throw new ServerException("Generator service URL is not initialized");
         }
 
-        //Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
         AttributeValue artifactId = attributes.get(ARTIFACT_ID);
         AttributeValue groupId = attributes.get(GROUP_ID);
         AttributeValue version = attributes.get(VERSION);

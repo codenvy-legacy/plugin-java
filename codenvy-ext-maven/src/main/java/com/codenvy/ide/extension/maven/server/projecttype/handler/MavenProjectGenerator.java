@@ -35,7 +35,7 @@ public class MavenProjectGenerator implements CreateProjectHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(MavenProjectGenerator.class);
 
-    private final Map<String, GeneratorStrategy> strategies = new HashMap<>();;
+    private final Map<String, GeneratorStrategy> strategies = new HashMap<>();
 
     @Inject
     public MavenProjectGenerator(Set<GeneratorStrategy> generatorStrategies) {

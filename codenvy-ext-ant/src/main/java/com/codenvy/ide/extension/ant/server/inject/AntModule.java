@@ -12,7 +12,9 @@ package com.codenvy.ide.extension.ant.server.inject;
 
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueProviderFactory;
+import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.type.ProjectType;
+import com.codenvy.ide.extension.ant.server.project.type.AntProjectGenerator;
 import com.codenvy.ide.extension.ant.server.project.type.AntProjectType;
 import com.codenvy.ide.extension.ant.server.project.type.AntProjectTypeResolver;
 import com.codenvy.ide.extension.ant.server.project.type.AntValueProviderFactory;
@@ -33,5 +35,7 @@ public class AntModule extends AbstractModule {
 
         Multibinder<ProjectType> projectTypeMultibinder = Multibinder.newSetBinder(binder(), ProjectType.class);
         projectTypeMultibinder.addBinding().to(AntProjectType.class);
+
+        Multibinder.newSetBinder(binder(), ProjectHandler.class).addBinding().to(AntProjectGenerator.class);
     }
 }

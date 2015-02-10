@@ -13,7 +13,6 @@ package com.codenvy.ide.extension.ant.server.project.type;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
@@ -22,10 +21,15 @@ import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.ant.tools.AntUtils;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.BUILD_FILE;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.DEF_TEST_SRC_PATH;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.TEST_SOURCE_FOLDER;
 
 /**
  * Provide value for specific property from Ant project.
@@ -87,8 +91,26 @@ public class AntValueProviderFactory implements ValueProviderFactory {
         public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
                 org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(projectFolder));
-                return Collections.unmodifiableList(getValues(attributeName));
-            } catch (Exception e) {
+                if (SOURCE_FOLDER.equals(attributeName)) {
+                    String srcDir = antProject.getProperty("src.dir");
+                    if (srcDir == null) {
+                        srcDir = DEF_TEST_SRC_PATH;
+                    } else {
+                        // Don't show absolute path (seems Ant parser resolves it automatically). User shouldn't know any absolute paths on our
+                        // file system. This is temporary solution, this shouldn't be actual when get rid form ant parsers for build.xml files.
+                        final java.nio.file.Path relPath = antProject.getBaseDir().toPath().relativize(Paths.get(srcDir));
+                        srcDir = relPath.toString();
+                    }
+                    return Arrays.asList(srcDir);
+                } else if(TEST_SOURCE_FOLDER.equals(attributeName)) {
+                    String testDir = antProject.getProperty("test.dir");
+                    if (testDir == null) {
+                        testDir = DEF_TEST_SRC_PATH;
+                    }
+                    return Arrays.asList(testDir);
+                }
+                return Collections.emptyList();
+            } catch (IOException | ForbiddenException | ServerException e) {
                 throw readException(e);
             }
         }

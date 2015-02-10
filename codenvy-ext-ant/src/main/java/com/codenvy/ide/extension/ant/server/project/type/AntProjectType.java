@@ -35,8 +35,4 @@ public class AntProjectType extends ProjectType {
         addVariableDefinition(AntAttributes.TEST_SOURCE_FOLDER, "", true, antValueProviderFactory);
 
     }
-
-
-    /** {@inheritDoc} */
-
 }
