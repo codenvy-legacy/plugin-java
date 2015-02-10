@@ -12,6 +12,7 @@ package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.action.ActionPermission;
 import com.codenvy.ide.api.action.ProjectAction;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.build.BuildContext;
@@ -32,6 +33,7 @@ public class CustomBuildAction extends ProjectAction {
     private final AppContext           appContext;
     private final MavenBuildPresenter  presenter;
     private final AnalyticsEventLogger eventLogger;
+    private final ActionPermission     actionPermission;
     private       BuildContext         buildContext;
 
     @Inject
@@ -40,20 +42,24 @@ public class CustomBuildAction extends ProjectAction {
                              MavenLocalizationConstant localizationConstant,
                              AppContext appContext,
                              AnalyticsEventLogger eventLogger,
-                             BuildContext buildContext) {
+                             BuildContext buildContext,
+                             ActionPermission actionPermission) {
         super(localizationConstant.buildProjectControlTitle(),
               localizationConstant.buildProjectControlDescription(), resources.build());
         this.presenter = presenter;
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.buildContext = buildContext;
+        this.actionPermission = actionPermission;
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        presenter.showDialog();
+        if (actionPermission.isAllowed()) {
+            presenter.showDialog();
+        }
     }
 
     /** {@inheritDoc} */
