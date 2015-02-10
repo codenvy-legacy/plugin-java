@@ -15,12 +15,10 @@ import com.codenvy.api.project.shared.dto.GeneratorDescription;
 import com.codenvy.api.project.shared.dto.ImportProject;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
-import com.codenvy.ide.collections.Jso;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringMapUnmarshaller;
-import com.codenvy.ide.rest.StringUnmarshaller;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
@@ -35,9 +33,27 @@ import java.util.Map;
 
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.UPDATE;
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.PROJECT_PATH_KEY;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.*;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_ARTIFACT_ID_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATION_STRATEGY;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GROUP_ID_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_REPOSITORY_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_VERSION_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_TEST_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GENERATION_STRATEGY_OPTION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
  * @author Evgen Vidolob
@@ -74,6 +90,22 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
             setAttribute(PACKAGING, "jar");
             setAttribute(SOURCE_FOLDER, DEFAULT_SOURCE_FOLDER);
             setAttribute(TEST_SOURCE_FOLDER, DEFAULT_TEST_SOURCE_FOLDER);
+        } else if (UPDATE == wizardMode && getAttribute(ARTIFACT_ID).isEmpty()) {
+            projectServiceClient.estimateProject(context.get(PROJECT_PATH_KEY), MAVEN_ID,
+                                                 new AsyncRequestCallback<Map<String, String>>(new StringMapUnmarshaller()) {
+                                                     @Override
+                                                     protected void onSuccess(Map<String, String> result) {
+                                                         setAttribute(ARTIFACT_ID, result.get(ARTIFACT_ID));
+                                                         setAttribute(GROUP_ID, result.get(GROUP_ID));
+                                                         setAttribute(VERSION, result.get(VERSION));
+                                                         setAttribute(PACKAGING, result.get(PACKAGING));
+                                                     }
+
+                                                     @Override
+                                                     protected void onFailure(Throwable exception) {
+                                                         Log.error(MavenPagePresenter.class, exception);
+                                                     }
+                                                 });
         }
     }
 
@@ -117,10 +149,8 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
         if (UPDATE == wizardMode) {
             Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
             if (attributes.get(ARTIFACT_ID) == null) {
-                // TODO use estimateProject() instead
-                // TODO do it in generic Wizard
-                projectServiceClient.estimateProject(context.get(""), MAVEN_ID ,
-                                                     new AsyncRequestCallback<Map<String,String>>(new StringMapUnmarshaller()) {
+                projectServiceClient.estimateProject(context.get(""), MAVEN_ID,
+                                                     new AsyncRequestCallback<Map<String, String>>(new StringMapUnmarshaller()) {
                                                          @Override
                                                          protected void onSuccess(Map<String, String> result) {
                                                              view.setArtifactId(result.get(ARTIFACT_ID));
