@@ -307,7 +307,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         verifySetEnableButtons(DISABLE_BUTTON);
 
-        verify(runnerManager).stopRunAction(Matchers.<Runner>any());
+        verify(runnerManager).stopRunner(Matchers.<Runner>any());
         verify(gutterManager).unmarkCurrentBreakpoint();
         verify(gutterManager).removeAllBreakpoints();
         verify(view).setEnableRemoveAllBreakpointsButton(DISABLE_BUTTON);
