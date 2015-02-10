@@ -20,7 +20,6 @@ import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringMapUnmarshaller;
 import com.codenvy.ide.util.loging.Log;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
@@ -145,28 +144,6 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
 
         view.setArchetypeSectionVisibility(UPDATE != wizardMode);
         view.enableArchetypes(view.isGenerateFromArchetypeSelected());
-
-        if (UPDATE == wizardMode) {
-            Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
-            if (attributes.get(ARTIFACT_ID) == null) {
-                projectServiceClient.estimateProject(context.get(""), MAVEN_ID,
-                                                     new AsyncRequestCallback<Map<String, String>>(new StringMapUnmarshaller()) {
-                                                         @Override
-                                                         protected void onSuccess(Map<String, String> result) {
-                                                             view.setArtifactId(result.get(ARTIFACT_ID));
-                                                             view.setGroupId(result.get(GROUP_ID));
-                                                             view.setVersion(result.get(VERSION));
-                                                             view.setPackaging(result.get(PACKAGING));
-                                                             scheduleTextChanges();
-                                                         }
-
-                                                         @Override
-                                                         protected void onFailure(Throwable exception) {
-                                                             Log.error(MavenPagePresenter.class, exception);
-                                                         }
-                                                     });
-            }
-        }
     }
 
     /** Updates view from data-object. */
@@ -194,15 +171,6 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
         if (!packaging.isEmpty()) {
             view.setPackaging(packaging);
         }
-    }
-
-    private void scheduleTextChanges() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                onCoordinatesChanged();
-            }
-        });
     }
 
     @Override
