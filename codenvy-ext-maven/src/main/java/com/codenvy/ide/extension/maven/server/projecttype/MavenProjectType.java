@@ -30,13 +30,13 @@ public class MavenProjectType extends ProjectType {
                             JavaProjectType javaProjectType) {
 
         super(MavenAttributes.MAVEN_ID, MavenAttributes.MAVEN_NAME, true, false);
-        addVariableDefinition(MavenAttributes.GROUP_ID, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.GROUP_ID, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.ARTIFACT_ID, "", true, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.VERSION, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.VERSION, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.PARENT_VERSION, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.PARENT_ARTIFACT_ID, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.PARENT_GROUP_ID, "", false, mavenValueProviderFactory);
-        addVariableDefinition(MavenAttributes.PACKAGING, "", true, mavenValueProviderFactory);
+        addVariableDefinition(MavenAttributes.PACKAGING, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", false, mavenValueProviderFactory);
 
