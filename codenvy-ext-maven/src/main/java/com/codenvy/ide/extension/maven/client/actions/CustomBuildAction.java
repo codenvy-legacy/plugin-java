@@ -61,11 +61,11 @@ public class CustomBuildAction extends ProjectAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        if (buildActionPermit.isAllowed()) {
-            presenter.showDialog();
-        } else {
+        if (!buildActionPermit.isAllowed()) {
             buildActionDenyAccessDialog.show();
+            return;
         }
+        presenter.showDialog();
     }
 
     /** {@inheritDoc} */
