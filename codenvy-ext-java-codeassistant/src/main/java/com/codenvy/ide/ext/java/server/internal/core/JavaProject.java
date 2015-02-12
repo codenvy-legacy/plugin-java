@@ -11,8 +11,8 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
-import com.codenvy.api.project.server.Builders;
-import com.codenvy.api.project.server.ProjectJson2;
+import com.codenvy.api.project.server.ProjectJson;
+import com.codenvy.api.project.shared.Builders;
 import com.codenvy.ide.ant.tools.AntUtils;
 import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
@@ -168,9 +168,9 @@ public class JavaProject extends Openable implements IJavaProject {
         File codenvy = new File(projectDir, com.codenvy.api.project.server.Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
         List<File> sources = new LinkedList<>();
 
-        final ProjectJson2 projectJson;
+        final ProjectJson projectJson;
         try (FileInputStream in = new FileInputStream(codenvy)) {
-            projectJson = ProjectJson2.load(in);
+            projectJson = ProjectJson.load(in);
         }
 
         Builders defBuilder = projectJson.getBuilders();

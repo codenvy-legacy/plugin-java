@@ -25,12 +25,9 @@ import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
-import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
-import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
@@ -40,15 +37,12 @@ import com.codenvy.ide.extension.maven.client.actions.UpdateDependencyAction;
 import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenEvent;
 import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenHandler;
 import com.codenvy.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
-import com.codenvy.ide.extension.maven.client.wizard.MavenPagePresenter;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
-import com.codenvy.ide.extension.runner.client.wizard.SelectRunnerPagePresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -70,17 +64,8 @@ public class MavenExtension {
     private static Array<MavenArchetype> archetypes;
 
     @Inject
-    public MavenExtension(Provider<MavenPagePresenter> mavenPagePresenter,
-                          Provider<SelectRunnerPagePresenter> runnerPagePresenter,
-                          ProjectTypeWizardRegistry wizardRegistry,
-                          NotificationManager notificationManager,
-                          TreeStructureProviderRegistry treeStructureProviderRegistry,
+    public MavenExtension(TreeStructureProviderRegistry treeStructureProviderRegistry,
                           PreSelectedProjectTypeManager preSelectedProjectManager) {
-
-        ProjectWizard wizard = new ProjectWizard(notificationManager);
-        wizard.addPage(mavenPagePresenter);
-        wizard.addPage(runnerPagePresenter);
-        wizardRegistry.addWizard(MavenAttributes.MAVEN_ID, wizard);
 
         treeStructureProviderRegistry.associateProjectTypeToTreeProvider(MavenAttributes.MAVEN_ID, MavenProjectTreeStructureProvider.ID);
 
@@ -91,7 +76,6 @@ public class MavenExtension {
                                         new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null));
     }
 
-    // TODO: consider special service for getting available archetypes
     public static Array<MavenArchetype> getAvailableArchetypes() {
         return archetypes;
     }

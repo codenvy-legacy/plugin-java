@@ -10,62 +10,52 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.ant.client.wizard;
 
-import com.codenvy.api.project.shared.dto.BuildersDescriptor;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode;
 import com.codenvy.ide.api.wizard.AbstractWizardPage;
-import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE;
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.DEF_SRC_PATH;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.DEF_TEST_SRC_PATH;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.TEST_SOURCE_FOLDER;
 
 /**
  * Wizard page for Ant project.
  *
  * @author Vladyslav Zhukovskii
+ * @author Artem Zatsarynnyy
  */
-@Singleton
-public class AntPagePresenter extends AbstractWizardPage implements AntPageView.ActionDelegate {
+public class AntPagePresenter extends AbstractWizardPage<ImportProject> implements AntPageView.ActionDelegate {
 
-    private AntPageView               view;
-    private DtoFactory                dtoFactory;
+    private final AntPageView view;
 
     /** Create instance of {@link AntPagePresenter}. */
     @Inject
-    public AntPagePresenter(AntPageView view, DtoFactory dtoFactory) {
-        super("Ant project settings", null);
+    public AntPagePresenter(AntPageView view) {
+        super();
         this.view = view;
-        this.dtoFactory = dtoFactory;
         view.setDelegate(this);
     }
 
-    /** {@inheritDoc} */
-    @Nullable
     @Override
-    public String getNotice() {
-        return null;
-    }
+    public void init(ImportProject dataObject) {
+        super.init(dataObject);
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean isCompleted() {
-        return true;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void focusComponent() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void removeOptions() {
+        final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
+        if (CREATE == wizardMode) {
+            // set default values
+            Map<String, List<String>> attributes = dataObject.getProject().getAttributes();
+            attributes.put(SOURCE_FOLDER, Arrays.asList(DEF_SRC_PATH));
+            attributes.put(TEST_SOURCE_FOLDER, Arrays.asList(DEF_TEST_SRC_PATH));
+        }
     }
 
     /** {@inheritDoc} */
@@ -78,19 +68,5 @@ public class AntPagePresenter extends AbstractWizardPage implements AntPageView.
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void commit(@Nonnull CommitCallback callback) {
-        ProjectDescriptor project = wizardContext.getData(ProjectWizard.PROJECT);
-        if (project != null) {
-            BuildersDescriptor builders = dtoFactory.createDto(BuildersDescriptor.class).withDefault(AntAttributes.ANT_ID);
-            project.setBuilders(builders);
-            project.getAttributes().put(AntAttributes.SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_SRC_PATH));
-            project.getAttributes().put(AntAttributes.TEST_SOURCE_FOLDER, Arrays.asList(AntAttributes.DEF_TEST_SRC_PATH));
-        }
-
-        super.commit(callback);
     }
 }

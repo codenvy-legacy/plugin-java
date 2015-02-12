@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype.generators;
+package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
@@ -21,8 +21,7 @@ import com.codenvy.api.core.util.FileCleaner;
 import com.codenvy.api.core.util.HttpDownloadPlugin;
 import com.codenvy.api.core.util.ValueHolder;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectGenerator;
-import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.vfs.server.VirtualFileSystem;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.commons.lang.NamedThreadFactory;
@@ -35,11 +34,11 @@ import com.google.inject.name.Named;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,10 +48,9 @@ import java.util.concurrent.Executors;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.FAILED;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.IN_PROGRESS;
 import static com.codenvy.generator.archetype.dto.GenerationTaskDescriptor.Status.SUCCESSFUL;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATION_STRATEGY;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
 
 /**
@@ -60,7 +58,8 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
  *
  * @author Artem Zatsarynnyy
  */
-public class ArchetypeProjectGenerator implements ProjectGenerator {
+@Singleton
+public class ArchetypeGenerationStrategy implements GeneratorStrategy {
     private static final long CHECK_GENERATION_STATUS_DELAY = 1000;
     private final String                    generatorServiceUrl;
     private final VirtualFileSystemRegistry vfsRegistry;
@@ -68,8 +67,8 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     private ExecutorService executor;
 
     @Inject
-    public ArchetypeProjectGenerator(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
-                                     VirtualFileSystemRegistry vfsRegistry) {
+    public ArchetypeGenerationStrategy(@Named("builder.slave_builder_urls") String[] slaveBuilderURLs,
+                                       VirtualFileSystemRegistry vfsRegistry) {
         // As a temporary solution we're using first slave builder URL
         // in order to get archetype-generator service URL.
         this.generatorServiceUrl = getGeneratorServiceUrl(slaveBuilderURLs);
@@ -84,19 +83,14 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
         return slaveBuilderURL.replace("/internal/builder", "/generator-archetype");
     }
 
-    @Override
-    public String getId() {
-        return ARCHETYPE_GENERATOR_ID;
-    }
 
-    @Override
-    public String getProjectTypeId() {
-        return MAVEN_ID;
+    public String getId() {
+        return ARCHETYPE_GENERATION_STRATEGY;
     }
 
     @PostConstruct
     void start() {
-        executor = Executors.newCachedThreadPool(new NamedThreadFactory("-ProjectGenerator-" + getId() + "-", true));
+        executor = Executors.newCachedThreadPool(new NamedThreadFactory("-ProjectGenerator-maven-archetype-", true));
     }
 
     @PreDestroy
@@ -105,17 +99,16 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
     }
 
     @Override
-    public void generateProject(final FolderEntry baseFolder, NewProject newProjectDescriptor)
+    public void generateProject(final FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options)
             throws ForbiddenException, ConflictException, ServerException {
         if (generatorServiceUrl == null) {
             throw new ServerException("Generator service URL is not initialized");
         }
 
-        Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
-        List<String> artifactId = attributes.get(ARTIFACT_ID);
-        List<String> groupId = attributes.get(GROUP_ID);
-        List<String> version = attributes.get(VERSION);
-        if (groupId == null || groupId.isEmpty() || artifactId == null || artifactId.isEmpty() || version == null || version.isEmpty()) {
+        AttributeValue artifactId = attributes.get(ARTIFACT_ID);
+        AttributeValue groupId = attributes.get(GROUP_ID);
+        AttributeValue version = attributes.get(VERSION);
+        if (groupId == null || artifactId == null || version == null) {
             throw new ServerException("Missed some required attribute (groupId, artifactId or version)");
         }
 
@@ -124,8 +117,8 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
         String archetypeVersion = null;
         String archetypeRepository = null;
         Map<String, String> archetypeProperties = new HashMap<>();
-
-        for (Map.Entry<String, String> entry : newProjectDescriptor.getGeneratorDescription().getOptions().entrySet()) {
+        options.remove("type"); //TODO: remove prop 'type' now it use only for detecting generation strategy
+        for (Map.Entry<String, String> entry : options.entrySet()) {
             switch (entry.getKey()) {
                 case "archetypeGroupId":
                     archetypeGroupId = entry.getValue();
@@ -159,7 +152,7 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
 
         try {
             Callable<GenerationTaskDescriptor> callable =
-                    createGenerationTask(archetype, groupId.get(0), artifactId.get(0), version.get(0));
+                    createGenerationTask(archetype, groupId.getString(), artifactId.getString(), version.getString());
             final GenerationTaskDescriptor task = executor.submit(callable).get();
             if (task.getStatus() == SUCCESSFUL) {
                 final File downloadFolder = Files.createTempDirectory("generated-project-").toFile();
@@ -208,7 +201,8 @@ public class ArchetypeProjectGenerator implements ProjectGenerator {
                             return generateTask;
                         }
                     }
-                } catch (IOException | ServerException | NotFoundException | UnauthorizedException | ForbiddenException | ConflictException e) {
+                } catch (IOException | ServerException | NotFoundException | UnauthorizedException | ForbiddenException |
+                        ConflictException e) {
                     throw new ServerException(e);
                 }
             }
