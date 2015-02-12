@@ -37,25 +37,23 @@ public class AntProjectTypeResolver implements ProjectTypeResolver {
 
     /** {@inheritDoc} */
     @Override
-    public boolean resolve(FolderEntry folderEntry) throws ServerException, ValueStorageException, InvalidValueException {
+    public boolean resolve(FolderEntry folderEntry)
+            throws ServerException, ValueStorageException, InvalidValueException {
         try {
             if (!folderEntry.isProjectFolder()) {
-                ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(ANT_ID);
-            
-
+                ProjectType projectType = projectManager.getProjectTypeRegistry().getProjectType(ANT_ID);
                 if (projectType == null) {
                     return false;
                 }
-
                 if (folderEntry.getChild(AntAttributes.BUILD_FILE) == null) {
                     return false;
                 }
-
-            Project project = new Project(folderEntry, projectManager);
-            project.updateConfig(createProjectConfig(projectType));
-            
-            return true;
-        } catch (ForbiddenException e) {
+                Project project = new Project(folderEntry, projectManager);
+                project.updateConfig(createProjectConfig(projectType));
+                return true;
+            }
+            return false;//project configure in initial source
+        } catch (ForbiddenException | ProjectTypeConstraintException e) {
             throw new ServerException("An error occurred when trying to resolve ant project.", e);
         }
     }
