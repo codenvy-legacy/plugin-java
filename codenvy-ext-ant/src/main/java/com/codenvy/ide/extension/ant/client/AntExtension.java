@@ -21,7 +21,6 @@ import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.ext.java.shared.Constants;
-import com.codenvy.ide.ext.runner.client.wizard.SelectRunnerPagePresenter;
 import com.codenvy.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
