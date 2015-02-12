@@ -14,14 +14,12 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectGenerator;
-import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.api.project.server.handlers.CreateProjectHandler;
+import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.ide.ant.tools.buildfile.BuildFileGenerator;
 
-import java.util.List;
 import java.util.Map;
 
-import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_GENERATOR_ID;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.ANT_ID;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.BUILD_FILE;
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.SOURCE_FOLDER;
@@ -32,32 +30,26 @@ import static com.codenvy.ide.extension.ant.shared.AntAttributes.TEST_SOURCE_FOL
  *
  * @author Artem Zatsarynnyy
  */
-public class AntProjectGenerator implements ProjectGenerator {
+public class AntProjectGenerator implements CreateProjectHandler {
 
     @Override
-    public String getId() {
-        return ANT_GENERATOR_ID;
-    }
-
-    @Override
-    public String getProjectTypeId() {
+    public String getProjectType() {
         return ANT_ID;
     }
 
     @Override
-    public void generateProject(FolderEntry baseFolder, NewProject newProjectDescriptor)
+    public void onCreateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options)
             throws ForbiddenException, ConflictException, ServerException {
-        final String buildXmlContent = new BuildFileGenerator(newProjectDescriptor.getName()).getBuildFileContent();
+        final String buildXmlContent = new BuildFileGenerator(baseFolder.getName()).getBuildFileContent();
         baseFolder.createFile(BUILD_FILE, buildXmlContent.getBytes(), "text/xml");
 
-        Map<String, List<String>> attributes = newProjectDescriptor.getAttributes();
-        List<String> sourceFolders = attributes.get(SOURCE_FOLDER);
+        AttributeValue sourceFolders = attributes.get(SOURCE_FOLDER);
         if (sourceFolders != null) {
-            baseFolder.createFolder(sourceFolders.get(0));
+            baseFolder.createFolder(sourceFolders.getString());
         }
-        List<String> testSourceFolders = attributes.get(TEST_SOURCE_FOLDER);
+        AttributeValue testSourceFolders = attributes.get(TEST_SOURCE_FOLDER);
         if (testSourceFolders != null) {
-            baseFolder.createFolder(testSourceFolders.get(0));
+            baseFolder.createFolder(testSourceFolders.getString());
         }
     }
 }

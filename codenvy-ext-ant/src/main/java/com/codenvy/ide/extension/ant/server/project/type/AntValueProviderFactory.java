@@ -12,7 +12,7 @@ package com.codenvy.ide.extension.ant.server.project.type;
 
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.Project;
+import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ValueProvider;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
@@ -21,17 +21,22 @@ import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.ant.tools.AntUtils;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static com.codenvy.ide.extension.ant.shared.AntAttributes.BUILD_FILE;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.DEF_TEST_SRC_PATH;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.SOURCE_FOLDER;
+import static com.codenvy.ide.extension.ant.shared.AntAttributes.TEST_SOURCE_FOLDER;
 
 /**
  * Provide value for specific property from Ant project.
  *
  * @author Vladyslav Zhukovskii
  */
-public abstract class AbstractAntValueProviderFactory implements ValueProviderFactory {
+public class AntValueProviderFactory implements ValueProviderFactory {
 
     /**
      * Try to find build.xml in project root directory and parse it into {@link org.apache.tools.ant.Project} to ba able to obtain various
@@ -46,8 +51,8 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
      *         if access to build file is forbidden
      * @throws ValueStorageException
      */
-    protected VirtualFile getBuildXml(Project project) throws ServerException, ForbiddenException, ValueStorageException {
-        VirtualFileEntry buildXml = project.getBaseFolder().getChild(BUILD_FILE);
+    protected VirtualFile getBuildXml(FolderEntry project) throws ServerException, ForbiddenException, ValueStorageException {
+        VirtualFileEntry buildXml = project.getChild(BUILD_FILE);
         if (buildXml == null) {
             throw new ValueStorageException(BUILD_FILE + " does not exist.");
         }
@@ -64,29 +69,56 @@ public abstract class AbstractAntValueProviderFactory implements ValueProviderFa
         return new ValueStorageException("Can't write build.xml: " + e.getMessage());
     }
 
-    /** Provide access to value of various information from {@link org.apache.tools.ant.Project}. */
-    protected abstract class AntValueProvider implements ValueProvider {
+    @Override
+    public ValueProvider newInstance(FolderEntry projectFolder) {
+        return new AntValueProvider(projectFolder);
+    }
 
+
+
+    /** Provide access to value of various information from {@link org.apache.tools.ant.Project}. */
+    protected class AntValueProvider implements ValueProvider {
         /** IDE project. */
-        protected Project project;
+        private final FolderEntry projectFolder;
 
         /** Create instance of {@link AntValueProvider}. */
-        protected AntValueProvider(Project project) {
-            this.project = project;
+        protected AntValueProvider(FolderEntry projectFolder) {
+            this.projectFolder = projectFolder;
         }
 
         /** {@inheritDoc} */
         @Override
-        public List<String> getValues() throws ValueStorageException {
+        public List<String> getValues(String attributeName) throws ValueStorageException {
             try {
-                org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(project));
-                return Collections.unmodifiableList(getValues(antProject));
-            } catch (Exception e) {
+                org.apache.tools.ant.Project antProject = AntUtils.readProject(getBuildXml(projectFolder));
+                if (SOURCE_FOLDER.equals(attributeName)) {
+                    String srcDir = antProject.getProperty("src.dir");
+                    if (srcDir == null) {
+                        srcDir = DEF_TEST_SRC_PATH;
+                    } else {
+                        // Don't show absolute path (seems Ant parser resolves it automatically). User shouldn't know any absolute paths on our
+                        // file system. This is temporary solution, this shouldn't be actual when get rid form ant parsers for build.xml files.
+                        final java.nio.file.Path relPath = antProject.getBaseDir().toPath().relativize(Paths.get(srcDir));
+                        srcDir = relPath.toString();
+                    }
+                    return Arrays.asList(srcDir);
+                } else if(TEST_SOURCE_FOLDER.equals(attributeName)) {
+                    String testDir = antProject.getProperty("test.dir");
+                    if (testDir == null) {
+                        testDir = DEF_TEST_SRC_PATH;
+                    }
+                    return Arrays.asList(testDir);
+                }
+                return Collections.emptyList();
+            } catch (IOException | ForbiddenException | ServerException e) {
                 throw readException(e);
             }
         }
 
-        /** @return value for the specified attribute from {@link org.apache.tools.ant.Project}. */
-        public abstract List<String> getValues(org.apache.tools.ant.Project antProject);
+        @Override
+        public void setValues(String attributeName, List<String> value) throws ValueStorageException {
+
+        }
+
     }
 }

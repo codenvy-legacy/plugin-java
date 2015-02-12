@@ -14,15 +14,15 @@ import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.DefaultProjectManager;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectType;
-import com.codenvy.api.project.server.ProjectTypeDescriptionRegistry;
 import com.codenvy.api.project.server.ProjectTypeResolver;
-import com.codenvy.api.project.server.ValueProviderFactory;
+import com.codenvy.api.project.server.handlers.ProjectHandler;
+import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
+import com.codenvy.api.project.server.type.ProjectType;
+import com.codenvy.api.project.server.type.ProjectTypeRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.VirtualFileSystemUser;
 import com.codenvy.api.vfs.server.VirtualFileSystemUserContext;
 import com.codenvy.api.vfs.server.impl.memory.MemoryFileSystemProvider;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectTypeResolver;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -91,12 +91,28 @@ public class MavenProjectTypeResolverTest {
 
     @Before
     public void setUp() throws Exception {
-        final ProjectTypeDescriptionRegistry projectTypeRegistry = new ProjectTypeDescriptionRegistry("test");
+
+        Set<ProjectType> pts = new HashSet<>();
+        final ProjectType pt = new ProjectType("maven", "Maven type", true, false) {
+            {
+                //addParent(parent);
+                //addConstantDefinition("child_const", "Constant", "const_value");
+            }
+        };
+
+
+        pts.add(pt);
+        final ProjectTypeRegistry projectTypeRegistry = new ProjectTypeRegistry(pts);
+
+
         VirtualFileSystemRegistry virtualFileSystemRegistry = new VirtualFileSystemRegistry();
         EventService eventService = new EventService();
+        //ProjectGeneratorRegistry generatorRegistry = new ProjectGeneratorRegistry(new HashSet<ProjectGenerator>());
+        ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<ProjectHandler>());
         projectManager =
-                new DefaultProjectManager(projectTypeRegistry, Collections.<ValueProviderFactory>emptySet(), virtualFileSystemRegistry,
-                                          eventService);
+                new DefaultProjectManager(virtualFileSystemRegistry,
+                                          eventService,
+                                          projectTypeRegistry, handlerRegistry);
         MockitoAnnotations.initMocks(this);
         // Bind components
         Injector injector = Guice.createInjector(new AbstractModule() {
@@ -120,8 +136,7 @@ public class MavenProjectTypeResolverTest {
         virtualFileSystemRegistry.registerProvider(workspace, memoryFileSystemProvider);
 
 
-        final ProjectType projectType = new ProjectType("maven", "maven", "java");
-        projectTypeRegistry.registerProjectType(projectType);
+        //projectTypeRegistry.registerProjectType(projectType);
         mavenProjectTypeResolver = injector.getInstance(MavenProjectTypeResolver.class);
         projectManager = injector.getInstance(ProjectManager.class);
     }
@@ -142,11 +157,11 @@ public class MavenProjectTypeResolverTest {
         boolean resolve = mavenProjectTypeResolver.resolve(test);
         Assert.assertTrue(resolve);
         Assert.assertNotNull(projectManager.getProject(workspace, "test"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription());
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription().getProjectType());
-        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getDescription().getProjectType().getId());
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getDescription().getBuilders());
-        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getDescription().getBuilders().getDefault());
+        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig());
+        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig().getTypeId());
+        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getConfig().getTypeId());
+        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig().getBuilders());
+        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getConfig().getBuilders().getDefault());
     }
 
 

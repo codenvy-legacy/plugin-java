@@ -18,22 +18,17 @@ import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.extension.Extension;
-import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
-import com.codenvy.ide.api.projecttype.wizard.ProjectTypeWizardRegistry;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.ext.runner.client.wizard.SelectRunnerPagePresenter;
 import com.codenvy.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
-import com.codenvy.ide.extension.ant.client.wizard.AntPagePresenter;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -52,17 +47,7 @@ public class AntExtension {
                         final DependenciesUpdater dependenciesUpdater,
                         final DtoUnmarshallerFactory dtoUnmarshallerFactory,
                         final ProjectServiceClient projectServiceClient,
-                        Provider<AntPagePresenter> antPagePresenterProvider,
-                        Provider<SelectRunnerPagePresenter> runnerPagePresenter,
-                        NotificationManager notificationManager,
-                        ProjectTypeWizardRegistry projectTypeWizardRegistry,
                         TreeStructureProviderRegistry treeStructureProviderRegistry) {
-        ProjectWizard wizard = new ProjectWizard(notificationManager);
-        wizard.addPage(antPagePresenterProvider);
-        wizard.addPage(runnerPagePresenter);
-
-        projectTypeWizardRegistry.addWizard("ant", wizard);
-
         // Handle project opened event to fire update dependencies.
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override

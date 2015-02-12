@@ -12,7 +12,6 @@ package com.codenvy.ide.extension.maven.client.wizard;
 
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
-import com.codenvy.ide.rest.AsyncRequestLoader;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
@@ -26,16 +25,13 @@ public class MavenPomServiceClient {
 
     private final AsyncRequestFactory asyncRequestFactory;
     private final String              baseUrl;
-    private final AsyncRequestLoader  loader;
 
     @Inject
     public MavenPomServiceClient(@Named("restContext") String baseUrl,
                                  @Named("workspaceId") String workspaceId,
-                                 AsyncRequestLoader loader,
                                  AsyncRequestFactory asyncRequestFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
         this.baseUrl = baseUrl + "/maven/" + workspaceId + "/pom";
-        this.loader = loader;
     }
 
     public void readPomAttributes(String projectPath, AsyncRequestCallback<String> callback) {

@@ -20,11 +20,11 @@ import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.notification.EventSubscriber;
 import com.codenvy.api.core.rest.HttpJsonHelper;
-import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ProjectCreatedEvent;
-import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.commons.lang.Pair;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.Model;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -60,15 +60,21 @@ public class MavenMultimoduleAutoBuilder implements EventSubscriber<ProjectCreat
     public void onEvent(ProjectCreatedEvent event) {
             try {
                 Project project = manager.getProject(event.getWorkspaceId(), event.getProjectPath());
+
                 if (project != null) {
-                    if (project.getBaseFolder().getChild("pom.xml") != null) {
-                        Model model = Model.readFrom(project.getBaseFolder().getChild("pom.xml").getVirtualFile());
-                        if ("pom".equals(model.getPackaging())) {
-                            buildMavenProject(project);
-                        }
-                    }
+                    AttributeValue packaging = project.getConfig().getAttributes().get(MavenAttributes.PACKAGING);
+                    if(packaging != null && packaging.getString().equals("pom"))
+                        buildMavenProject(project);
+
+//                    if (project.getBaseFolder().getChild("pom.xml") != null) {
+//                        Model model = Model.readFrom(project.getBaseFolder().getChild("pom.xml").getVirtualFile());
+//                        if ("pom".equals(model.getPackaging())) {
+//                            buildMavenProject(project);
+//                        }
+//                    }
                 }
-            } catch (ForbiddenException | ServerException | IOException e) {
+            } catch (ForbiddenException | ServerException | ProjectTypeConstraintException
+                    | ValueStorageException e) {
                 LOG.error(e.getMessage(), e);
             }
 
