@@ -19,11 +19,11 @@ import com.codenvy.ide.ext.java.jdt.core.dom.Statement;
 import com.codenvy.ide.ext.java.jdt.core.formatter.CodeFormatter;
 import com.codenvy.ide.ext.java.jdt.core.formatter.DefaultCodeFormatterConstants;
 import com.codenvy.ide.ext.java.worker.WorkerDocument;
-import com.codenvy.ide.ext.java.jdt.text.Document;
-import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 import com.codenvy.ide.runtime.Assert;
 import com.codenvy.ide.api.text.BadLocationException;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.api.text.Region;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 
 import java.util.Map;
 
@@ -35,9 +35,6 @@ public class CodeFormatterUtil {
      *
      * @param indentationUnits
      *         the number of indentation units to generate
-     * @param project
-     *         the project from which to get the formatter settings, <code>null</code> if the workspace default should be
-     *         used
      * @return the indent string
      */
     public static String createIndentString(int indentationUnits) {
@@ -48,9 +45,6 @@ public class CodeFormatterUtil {
     /**
      * Gets the current tab width.
      *
-     * @param project
-     *         The project where the source is used, used for project specific options or <code>null</code> if the project
-     *         is unknown and the workspace default should be used
      * @return The tab width
      */
     public static int getTabWidth() {
@@ -70,9 +64,6 @@ public class CodeFormatterUtil {
     /**
      * Returns the current indent width.
      *
-     * @param project
-     *         the project where the source is used or, <code>null</code> if the project is unknown and the workspace
-     *         default should be used
      * @return the indent width
      * @since 3.1
      */
@@ -89,8 +80,6 @@ public class CodeFormatterUtil {
     /**
      * Returns the possibly <code>project</code>-specific core preference defined under <code>key</code>.
      *
-     * @param project
-     *         the project to get the preference from, or <code>null</code> to get the global preference
      * @param key
      *         the key of the preference
      * @return the value of the preference
@@ -104,8 +93,6 @@ public class CodeFormatterUtil {
      * Returns the possibly <code>project</code>-specific core preference defined under <code>key</code>, or <code>def</code> if
      * the value is not a integer.
      *
-     * @param project
-     *         the project to get the preference from, or <code>null</code> to get the global preference
      * @param key
      *         the key of the preference
      * @param def
@@ -137,9 +124,6 @@ public class CodeFormatterUtil {
      * @param lineSeparator
      *         The line separator to use in formatted source, if set to <code>null</code>, then the platform default
      *         one will be used.
-     * @param project
-     *         The project from which to retrieve the formatter options from If set to <code>null</code>, then use the
-     *         current settings from {@link JavaCore#getOptions()}.
      * @return the formatted source string
      */
     public static String format(int kind, String source, int indentationLevel, String lineSeparator) {
