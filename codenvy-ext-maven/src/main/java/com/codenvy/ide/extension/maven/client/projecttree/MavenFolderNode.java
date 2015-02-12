@@ -52,7 +52,7 @@ public class MavenFolderNode extends JavaFolderNode {
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
-        getModules(getData(), new AsyncCallback<Array<ProjectDescriptor>>() {
+        getModules(getProject().getData(), new AsyncCallback<Array<ProjectDescriptor>>() {
             @Override
             public void onSuccess(final Array<ProjectDescriptor> modules) {
                 getChildren(getData().getPath(), new AsyncCallback<Array<ItemReference>>() {
@@ -79,17 +79,23 @@ public class MavenFolderNode extends JavaFolderNode {
     /**
      * Method helps to retrieve modules of the specified project using Codenvy Project API.
      *
-     * @param folder
-     *         folder to retrieve its modules
+     * @param project
+     *         project to retrieve its modules
      * @param callback
      *         callback to return retrieved modules
      */
-    protected void getModules(ItemReference folder, final AsyncCallback<Array<ProjectDescriptor>> callback) {
+    protected void getModules(final ProjectDescriptor project, final AsyncCallback<Array<ProjectDescriptor>> callback) {
         final Unmarshallable<Array<ProjectDescriptor>> unmarshaller = dtoUnmarshallerFactory.newArrayUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.getModules(folder.getPath(), new AsyncRequestCallback<Array<ProjectDescriptor>>(unmarshaller) {
+        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<Array<ProjectDescriptor>>(unmarshaller) {
             @Override
             protected void onSuccess(Array<ProjectDescriptor> result) {
-                callback.onSuccess(result);
+                Array<ProjectDescriptor> modules = Collections.createArray();
+                for (ProjectDescriptor projectDescriptor : result.asIterable()) {
+                    if (projectDescriptor.getPath().startsWith(project.getPath())) {
+                        modules.add(projectDescriptor);
+                    }
+                }
+                callback.onSuccess(modules);
             }
 
             @Override

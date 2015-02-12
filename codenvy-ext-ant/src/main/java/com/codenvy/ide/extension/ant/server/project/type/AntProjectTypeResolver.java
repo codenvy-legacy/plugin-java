@@ -12,15 +12,16 @@ package com.codenvy.ide.extension.ant.server.project.type;
 
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.Builders;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.InvalidValueException;
 import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ProjectDescription;
+import com.codenvy.api.project.server.ProjectConfig;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectType;
+import com.codenvy.api.project.server.ProjectTypeConstraintException;
 import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.ValueStorageException;
+import com.codenvy.api.project.server.type.ProjectType;
+import com.codenvy.api.project.shared.Builders;
 import com.codenvy.ide.extension.ant.shared.AntAttributes;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -40,6 +41,7 @@ public class AntProjectTypeResolver implements ProjectTypeResolver {
         try {
             if (!folderEntry.isProjectFolder()) {
                 ProjectType projectType = projectManager.getTypeDescriptionRegistry().getProjectType(ANT_ID);
+            
 
                 if (projectType == null) {
                     return false;
@@ -49,21 +51,19 @@ public class AntProjectTypeResolver implements ProjectTypeResolver {
                     return false;
                 }
 
-                Project project = new Project(folderEntry, projectManager);
-                project.updateDescription(createProjectDescriptor(projectType));
-
-                return true;
-            }
-            return false;//project configure in initial source
+            Project project = new Project(folderEntry, projectManager);
+            project.updateConfig(createProjectConfig(projectType));
+            
+            return true;
         } catch (ForbiddenException e) {
             throw new ServerException("An error occurred when trying to resolve ant project.", e);
         }
     }
 
-    /** Create new {@link com.codenvy.api.project.server.Builders} description for resolved project. */
-    private ProjectDescription createProjectDescriptor(ProjectType projectType) {
+    /** Create new {@link com.codenvy.api.project.shared.Builders} description for resolved project. */
+    private ProjectConfig createProjectConfig(ProjectType projectType) {
         Builders builders = new Builders();
         builders.setDefault("ant");
-        return new ProjectDescription(projectType, builders, null);
+        return new ProjectConfig("Ant project type", projectType.getId(), null, null, new Builders(projectType.getDefaultBuilder()), null);
     }
 }

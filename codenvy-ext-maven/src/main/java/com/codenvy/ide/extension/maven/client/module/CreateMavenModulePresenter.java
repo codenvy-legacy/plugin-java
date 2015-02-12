@@ -20,6 +20,7 @@ import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.extension.maven.client.wizard.MavenPomServiceClient;
+import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.NameUtils;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
@@ -43,7 +43,6 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_ARTIFACT_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PARENT_VERSION;
-import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SIMPLE_GENERATOR_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.VERSION;
@@ -111,7 +110,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         if (view.isGenerateFromArchetypeSelected()) {
             generatorDescription = getGeneratorDescription(view.getArchetype());
         } else {
-            generatorDescription = dtoFactory.createDto(GeneratorDescription.class).withName(SIMPLE_GENERATOR_ID);
+            generatorDescription = dtoFactory.createDto(GeneratorDescription.class);//.withName(SIMPLE_GENERATION_STRATEGY);
             if (!"pom".equals(view.getPackaging())) {
                 attributes.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
                 attributes.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
@@ -122,6 +121,8 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         newProject.setGeneratorDescription(generatorDescription);
 
         view.showButtonLoader(true);
+
+        // TODO as a handler of addModule
         projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject,
                                     new AsyncRequestCallback<ProjectDescriptor>() {
                                         @Override
@@ -204,12 +205,13 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
         HashMap<String, String> options = new HashMap<>();
+        options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
         options.put("archetypeGroupId", archetype.getGroupId());
         options.put("archetypeArtifactId", archetype.getArtifactId());
         options.put("archetypeVersion", archetype.getVersion());
         if (archetype.getRepository() != null) {
             options.put("archetypeRepository", archetype.getRepository());
         }
-        return dtoFactory.createDto(GeneratorDescription.class).withName(ARCHETYPE_GENERATOR_ID).withOptions(options);
+        return dtoFactory.createDto(GeneratorDescription.class).withOptions(options);
     }
 }
