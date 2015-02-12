@@ -31,7 +31,6 @@ import com.codenvy.ide.api.projecttype.wizard.PreSelectedProjectTypeManager;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
-import com.codenvy.ide.ext.runner.client.wizard.SelectRunnerPagePresenter;
 import com.codenvy.ide.extension.maven.client.actions.CreateMavenModuleAction;
 import com.codenvy.ide.extension.maven.client.actions.CustomBuildAction;
 import com.codenvy.ide.extension.maven.client.actions.UpdateDependencyAction;
