@@ -242,16 +242,17 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     private void configureStatusRunEventHandler() {
         eventBus.addHandler(RunnerApplicationStatusEvent.TYPE, new RunnerApplicationStatusEventHandler() {
             @Override
-            public void onRunnerStatusChanged(@Nonnull ApplicationProcessDescriptor applicationProcessDescriptor,
-                                              @Nonnull Runner changedRunner) {
+            public void onRunnerStatusChanged(@Nonnull Runner changedRunner) {
                 CurrentProject currentProject = appContext.getCurrentProject();
-                if (runner == null || runner.getProcessId() != changedRunner.getProcessId() || currentProject == null) {
+                ApplicationProcessDescriptor descriptor = changedRunner.getDescriptor();
+                if (descriptor == null || runner == null || runner.getProcessId() != changedRunner.getProcessId() ||
+                    currentProject == null) {
                     return;
                 }
 
                 runner = changedRunner;
-                if (RUNNING.equals(applicationProcessDescriptor.getStatus())) {
-                    attachDebugger(applicationProcessDescriptor, currentProject.getProjectDescription());
+                if (RUNNING.equals(descriptor.getStatus())) {
+                    attachDebugger(descriptor, currentProject.getProjectDescription());
                 }
             }
         });

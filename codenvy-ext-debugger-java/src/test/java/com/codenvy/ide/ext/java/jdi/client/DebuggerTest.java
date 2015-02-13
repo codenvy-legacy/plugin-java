@@ -149,7 +149,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
 
-        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+        applicationStatusEventHandler.onRunnerStatusChanged(runner);
 
         verify(service, never()).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
     }
@@ -170,7 +170,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
 
-        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+        applicationStatusEventHandler.onRunnerStatusChanged(runner);
 
         verify(service, never()).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
     }
@@ -192,7 +192,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
 
-        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+        applicationStatusEventHandler.onRunnerStatusChanged(runner);
 
         verify(service, never()).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
 
@@ -209,7 +209,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
 
-        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+        applicationStatusEventHandler.onRunnerStatusChanged(runner);
 
         verify(service).connect(anyString(), anyByte(), (AsyncRequestCallback<DebuggerInfo>)any());
 
@@ -240,7 +240,7 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
 
-        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+        applicationStatusEventHandler.onRunnerStatusChanged(runner);
 
         verify(service).connect(eq(DEBUG_HOST), eq(DEBUG_PORT), (AsyncRequestCallback<DebuggerInfo>)anyObject());
         verifySetEnableButtons(DISABLE_BUTTON);
@@ -272,13 +272,14 @@ public class DebuggerTest extends com.codenvy.ide.ext.java.jdi.client.BaseTest {
 
         RunnerApplicationStatusEventHandler applicationStatusEventHandler = runnerApplicationStatusEventHandlerArgumentCaptor.getValue();
 
-        applicationStatusEventHandler.onRunnerStatusChanged(applicationProcessDescriptor, runner);
+        applicationStatusEventHandler.onRunnerStatusChanged(runner);
 
         verify(service).connect(eq(DEBUG_HOST), eq(DEBUG_PORT), (AsyncRequestCallback<DebuggerInfo>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
     }
 
     private void prepareEventHandlers() {
+        when(runner.getDescriptor()).thenReturn(applicationProcessDescriptor);
         when(dtoFactory.createDto(RunOptions.class)).thenReturn(mock(RunOptions.class));
         when(runnerManager.launchRunner(Matchers.<RunOptions>any())).thenReturn(runner2);
         when(appContext.getCurrentProject()).thenReturn(currentProject);
