@@ -16,6 +16,6 @@ public interface Constants {
     final String JAVA_CATEGORY    = "Java";
     // project attribute names
     final String LANGUAGE         = "language";
-    final String LANGUAGE_VERSION = "language.version";
+    final String LANGUAGE_VERSION = "languageVersion";
     final String FRAMEWORK        = "framework";
 }
