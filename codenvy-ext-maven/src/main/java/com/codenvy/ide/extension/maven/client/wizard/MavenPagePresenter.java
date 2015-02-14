@@ -125,6 +125,8 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
                         if (packagingValues != null && !packagingValues.isEmpty()) {
                             setAttribute(PACKAGING, packagingValues.get(0));
                         }
+
+                        updateDelegate.updateControls();
                     }
 
                     @Override
