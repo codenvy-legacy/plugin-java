@@ -19,7 +19,6 @@ import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.client.MavenArchetype;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringMapListUnmarshaller;
-import com.codenvy.ide.rest.StringMapUnmarshaller;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -91,22 +90,48 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
             setAttribute(SOURCE_FOLDER, DEFAULT_SOURCE_FOLDER);
             setAttribute(TEST_SOURCE_FOLDER, DEFAULT_TEST_SOURCE_FOLDER);
         } else if (UPDATE == wizardMode && getAttribute(ARTIFACT_ID).isEmpty()) {
-            projectServiceClient.estimateProject(context.get(PROJECT_PATH_KEY), MAVEN_ID,
-                                                 new AsyncRequestCallback<Map<String, List<String>>>(new StringMapListUnmarshaller()) {
-                                                     @Override
-                                                     protected void onSuccess(Map<String, List<String>> result) {
-                                                         setAttribute(ARTIFACT_ID, result.get(ARTIFACT_ID).get(0));
-                                                         setAttribute(GROUP_ID, result.get(GROUP_ID).get(0));
-                                                         setAttribute(VERSION, result.get(VERSION).get(0));
-                                                         setAttribute(PACKAGING, result.get(PACKAGING).get(0));
-                                                     }
-
-                                                     @Override
-                                                     protected void onFailure(Throwable exception) {
-                                                         Log.error(MavenPagePresenter.class, exception);
-                                                     }
-                                                 });
+            estimateAndSetAttributes();
         }
+    }
+
+    private void estimateAndSetAttributes() {
+        projectServiceClient.estimateProject(
+                context.get(PROJECT_PATH_KEY), MAVEN_ID,
+                new AsyncRequestCallback<Map<String, List<String>>>(new StringMapListUnmarshaller()) {
+                    @Override
+                    protected void onSuccess(Map<String, List<String>> result) {
+                        List<String> artifactIdValues = result.get(ARTIFACT_ID);
+                        if (artifactIdValues != null && !artifactIdValues.isEmpty()) {
+                            setAttribute(ARTIFACT_ID, artifactIdValues.get(0));
+                        }
+
+                        List<String> groupIdValues = result.get(GROUP_ID);
+                        List<String> parentGroupIdValues = result.get(PARENT_GROUP_ID);
+                        if (groupIdValues != null && !groupIdValues.isEmpty()) {
+                            setAttribute(GROUP_ID, groupIdValues.get(0));
+                        } else if (parentGroupIdValues != null && !parentGroupIdValues.isEmpty()) {
+                            setAttribute(GROUP_ID, parentGroupIdValues.get(0));
+                        }
+
+                        List<String> versionValues = result.get(VERSION);
+                        List<String> parentVersionValues = result.get(PARENT_VERSION);
+                        if (versionValues != null && !versionValues.isEmpty()) {
+                            setAttribute(VERSION, versionValues.get(0));
+                        } else if (parentVersionValues != null && !parentVersionValues.isEmpty()) {
+                            setAttribute(VERSION, parentVersionValues.get(0));
+                        }
+
+                        List<String> packagingValues = result.get(PACKAGING);
+                        if (packagingValues != null && !packagingValues.isEmpty()) {
+                            setAttribute(PACKAGING, packagingValues.get(0));
+                        }
+                    }
+
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        Log.error(MavenPagePresenter.class, exception);
+                    }
+                });
     }
 
     @Override
