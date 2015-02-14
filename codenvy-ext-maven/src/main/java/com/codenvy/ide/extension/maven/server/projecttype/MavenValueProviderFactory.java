@@ -14,7 +14,13 @@ package com.codenvy.ide.extension.maven.server.projecttype;
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.project.server.*;
+import com.codenvy.api.project.server.FileEntry;
+import com.codenvy.api.project.server.FolderEntry;
+import com.codenvy.api.project.server.InvalidValueException;
+import com.codenvy.api.project.server.ValueProvider;
+import com.codenvy.api.project.server.ValueProviderFactory;
+import com.codenvy.api.project.server.ValueStorageException;
+import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.Build;
@@ -89,6 +95,8 @@ public class MavenValueProviderFactory implements ValueProviderFactory {
                     value = model.getParent().getArtifactId();
                 if (attributeName.equals(MavenAttributes.PARENT_GROUP_ID) && model.getParent() != null)
                     value = model.getParent().getGroupId();
+                if (attributeName.equals(MavenAttributes.PARENT_VERSION) && model.getParent() != null)
+                    value = model.getParent().getVersion();
                 if (attributeName.equals(MavenAttributes.SOURCE_FOLDER)) {
                     Build build = model.getBuild();
                     if (build != null && build.getSourceDirectory() != null) {
@@ -105,8 +113,6 @@ public class MavenValueProviderFactory implements ValueProviderFactory {
                         value = "src/test/java";
                     }
                 }
-
-
 
                 return Arrays.asList(value);
             } catch (ServerException | ForbiddenException | IOException e) {
@@ -138,9 +144,5 @@ public class MavenValueProviderFactory implements ValueProviderFactory {
                 throwWriteException(e);
             }
         }
-
-
-
-
     }
 }
