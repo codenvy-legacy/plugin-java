@@ -37,9 +37,7 @@ import static com.codenvy.ide.ext.java.client.JavaUtils.checkCompilationUnitName
 import static com.codenvy.ide.ext.java.client.JavaUtils.checkPackageName;
 import static com.codenvy.ide.ext.java.client.JavaUtils.isValidCompilationUnitName;
 import static com.codenvy.ide.ext.java.client.JavaUtils.isValidPackageName;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.*;
 
 /**
  * Presenter for creating Java source file.
@@ -63,7 +61,7 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
                                       DtoUnmarshallerFactory dtoUnmarshallerFactory, EventBus eventBus, DialogFactory dialogFactory,
                                       AppContext appContext) {
         this.appContext = appContext;
-        sourceFileTypes = Collections.createArray(CLASS, INTERFACE, ENUM);
+        sourceFileTypes = Collections.createArray(CLASS, INTERFACE, ENUM, ANNOTATION);
         this.view = view;
         this.selectionAgent = selectionAgent;
         this.projectServiceClient = projectServiceClient;
@@ -122,6 +120,9 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
                 case ENUM:
                     createEnum(fileNameWithoutExtension, parent, packageFragment);
                     break;
+                case ANNOTATION:
+                    createAnnotation(fileNameWithoutExtension, parent, packageFragment);
+                    break;
             }
         }
     }
@@ -159,6 +160,11 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
     private void createEnum(String name, FolderNode parent, String packageFragment) {
         createSourceFile(name, parent, packageFragment,
                          getPackageQualifier(parent, packageFragment) + "public enum " + name + DEFAULT_CONTENT);
+    }
+
+    private void createAnnotation(String name, FolderNode parent, String packageFragment) {
+        createSourceFile(name, parent, packageFragment,
+                getPackageQualifier(parent, packageFragment) + "public @interface " + name + DEFAULT_CONTENT);
     }
 
     private String getPackageQualifier(FolderNode parent, String packageFragment) {

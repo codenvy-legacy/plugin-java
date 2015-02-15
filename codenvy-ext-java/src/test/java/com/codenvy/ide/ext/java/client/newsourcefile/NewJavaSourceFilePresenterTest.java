@@ -62,6 +62,7 @@ public class NewJavaSourceFilePresenterTest {
     private static String SRC_FOLDER_PATH      = "/project/src/main/java";
     private static String CODENVY_PACKAGE_PATH = "/project/src/main/java/com/codenvy";
     private static String PACKAGE_NAME         = "com.codenvy";
+    //mocks for constructor
     @Mock
     private NewJavaSourceFileView      view;
     @Mock
@@ -74,14 +75,18 @@ public class NewJavaSourceFilePresenterTest {
     private DtoUnmarshallerFactory     dtoUnmarshallerFactory;
     @Mock
     private AppContext                 appContext;
-    @InjectMocks
-    private NewJavaSourceFilePresenter presenter;
+
     @Mock
     private SourceFolderNode           srcFolder;
     @Mock
     private PackageNode                codenvyPackage;
     @Mock
     private ItemReference              createdFile;
+    @Mock
+    private Selection                  selection;
+
+    @InjectMocks
+    private NewJavaSourceFilePresenter presenter;
 
     @Before
     public void setUp() {
@@ -162,7 +167,6 @@ public class NewJavaSourceFilePresenterTest {
 
     @Test
     public void shouldCreateClassInsideSourceFolder() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(srcFolder);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
@@ -181,7 +185,6 @@ public class NewJavaSourceFilePresenterTest {
 
     @Test
     public void shouldCreateClassInsidePackage() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(codenvyPackage);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
@@ -199,8 +202,43 @@ public class NewJavaSourceFilePresenterTest {
     }
 
     @Test
+    public void shouldCreateAnnotationInsideSourceFolder() throws Exception {
+        when(selection.getFirstElement()).thenReturn(srcFolder);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "\npublic @interface " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ANNOTATION);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+    }
+
+    @Test
+    public void shouldCreateAnnotationInsidePackage() throws Exception {
+        when(selection.getFirstElement()).thenReturn(codenvyPackage);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic @interface " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ANNOTATION);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+    }
+
+    @Test
     public void shouldCreateInterfaceInsideSourceFolder() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(srcFolder);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
@@ -219,7 +257,6 @@ public class NewJavaSourceFilePresenterTest {
 
     @Test
     public void shouldCreateInterfaceInsidePackage() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(codenvyPackage);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
@@ -238,7 +275,6 @@ public class NewJavaSourceFilePresenterTest {
 
     @Test
     public void shouldCreateEnumInsideSourceFolder() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(srcFolder);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
@@ -257,7 +293,6 @@ public class NewJavaSourceFilePresenterTest {
 
     @Test
     public void shouldCreateEnumInsidePackage() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(codenvyPackage);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
