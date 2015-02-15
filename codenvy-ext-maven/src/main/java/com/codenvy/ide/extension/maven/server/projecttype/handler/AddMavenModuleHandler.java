@@ -49,7 +49,7 @@ public class AddMavenModuleHandler implements CreateModuleHandler {
             if ("pom".equals(model.getPackaging())) {
                 final String relativePath = modulePath.substring(parentFolder.getPath().length() + 1);
                 if (!model.getModules().contains(relativePath)) {
-                    model.addModule(modulePath);
+                    model.addModule(relativePath);
                     model.writeTo(pom.getVirtualFile());
                 }
             } else {
