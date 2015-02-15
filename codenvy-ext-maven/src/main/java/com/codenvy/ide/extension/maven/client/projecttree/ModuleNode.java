@@ -13,10 +13,14 @@ package com.codenvy.ide.extension.maven.client.projecttree;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
+import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenEvent;
+import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.assistedinject.Assisted;
@@ -30,6 +34,8 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class ModuleNode extends MavenProjectNode {
 
+    private final AppContext appContext;
+
     @AssistedInject
     public ModuleNode(@Assisted TreeNode<?> parent,
                       @Assisted ProjectDescriptor data,
@@ -37,8 +43,10 @@ public class ModuleNode extends MavenProjectNode {
                       EventBus eventBus,
                       ProjectServiceClient projectServiceClient,
                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                      IconRegistry iconRegistry) {
+                      IconRegistry iconRegistry,
+                      AppContext appContext) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
+        this.appContext = appContext;
         setDisplayIcon(iconRegistry.getIcon("maven.module").getSVGImage());
     }
 
@@ -48,5 +56,30 @@ public class ModuleNode extends MavenProjectNode {
             eventBus.fireEvent(new BeforeModuleOpenEvent(this));
         }
         super.getChildren(path, callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void delete(final DeleteCallback callback) {
+        final CurrentProject currentProject = appContext.getCurrentProject();
+        if (currentProject == null) {
+            throw new IllegalStateException("No opened project.");
+        }
+
+        final String rootProjectPath = currentProject.getRootProject().getPath();
+        final String moduleRelativePath = getPath().substring(rootProjectPath.length() + 1);
+        projectServiceClient.deleteModule(rootProjectPath, moduleRelativePath, new AsyncRequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void result) {
+                getParent().getChildren().remove(ModuleNode.this);
+                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(getParent()));
+                callback.onDeleted();
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                callback.onFailure(exception);
+            }
+        });
     }
 }
