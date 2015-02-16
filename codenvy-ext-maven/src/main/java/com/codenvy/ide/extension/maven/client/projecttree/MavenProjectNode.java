@@ -145,7 +145,8 @@ public class MavenProjectNode extends JavaProjectNode {
             if (module != null) {
                 return getTreeStructure().newModuleNode(this, module);
             }
-            return null;
+            // if project isn't a module - show it as folder
+            return getTreeStructure().newJavaFolderNode(MavenProjectNode.this, item);
         } else if (JavaSourceFolderUtil.isSourceFolder(item, getProject())) {
             return getTreeStructure().newSourceFolderNode(MavenProjectNode.this, item);
         } else if ("folder".equals(item.getType())) {
