@@ -15,7 +15,6 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
-import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.collections.Array;
@@ -71,9 +70,7 @@ public class ModuleNode extends MavenProjectNode {
         projectServiceClient.deleteModule(rootProjectPath, moduleRelativePath, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
-                getParent().getChildren().remove(ModuleNode.this);
-                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(getParent()));
-                callback.onDeleted();
+                ModuleNode.super.delete(callback);
             }
 
             @Override
