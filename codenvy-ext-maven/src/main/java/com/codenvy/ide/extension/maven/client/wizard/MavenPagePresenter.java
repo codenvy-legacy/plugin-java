@@ -171,7 +171,7 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
         updateView();
         validateCoordinates();
 
-        view.setArchetypeSectionVisibility(UPDATE != wizardMode);
+        view.setArchetypeSectionVisibility(CREATE == wizardMode);
         view.enableArchetypes(view.isGenerateFromArchetypeSelected());
     }
 
