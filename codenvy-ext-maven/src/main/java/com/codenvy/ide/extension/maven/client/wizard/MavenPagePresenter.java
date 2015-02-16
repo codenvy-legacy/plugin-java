@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE;
+import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.CREATE_MODULE;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardMode.UPDATE;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.PROJECT_PATH_KEY;
 import static com.codenvy.ide.api.projecttype.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
@@ -89,7 +90,7 @@ public class MavenPagePresenter extends AbstractWizardPage<ImportProject> implem
             setAttribute(PACKAGING, "jar");
             setAttribute(SOURCE_FOLDER, DEFAULT_SOURCE_FOLDER);
             setAttribute(TEST_SOURCE_FOLDER, DEFAULT_TEST_SOURCE_FOLDER);
-        } else if (UPDATE == wizardMode && getAttribute(ARTIFACT_ID).isEmpty()) {
+        } else if (CREATE_MODULE == wizardMode || UPDATE == wizardMode && getAttribute(ARTIFACT_ID).isEmpty()) {
             estimateAndSetAttributes();
         }
     }
