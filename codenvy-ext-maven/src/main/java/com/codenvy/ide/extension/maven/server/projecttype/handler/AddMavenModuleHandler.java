@@ -19,7 +19,6 @@ import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.api.project.server.handlers.CreateModuleHandler;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.maven.tools.Model;
-import com.codenvy.ide.util.loging.Log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ public class AddMavenModuleHandler implements CreateModuleHandler {
     public void onCreateModule(FolderEntry parentFolder, String modulePath, ProjectConfig moduleConfig, Map<String, String> options)
             throws ForbiddenException, ConflictException, ServerException {
         if (!moduleConfig.getTypeId().equals(MavenAttributes.MAVEN_ID)) {
-            Log.warn(AddMavenModuleHandler.class, "Module must be Maven project to able be added to Maven project");
+            LOG.warn("Module must be Maven project to able be added to Maven project");
             throw new IllegalArgumentException("Module must be Maven project to able be added to Maven project");
         }
         VirtualFileEntry pom = parentFolder.getChild("pom.xml");
@@ -48,8 +47,11 @@ public class AddMavenModuleHandler implements CreateModuleHandler {
         try {
             Model model = Model.readFrom(pom.getVirtualFile());
             if ("pom".equals(model.getPackaging())) {
-                model.addModule(modulePath);
-                model.writeTo(pom.getVirtualFile());
+                final String relativePath = modulePath.substring(parentFolder.getPath().length() + 1);
+                if (!model.getModules().contains(relativePath)) {
+                    model.addModule(relativePath);
+                    model.writeTo(pom.getVirtualFile());
+                }
             } else {
                 throw new IllegalArgumentException("Project must have packaging 'pom' in order to adding modules.");
             }

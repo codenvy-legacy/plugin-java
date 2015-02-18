@@ -19,8 +19,6 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.extension.maven.client.MavenArchetype;
-import com.codenvy.ide.extension.maven.client.wizard.MavenPomServiceClient;
-import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.NameUtils;
@@ -36,7 +34,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.codenvy.ide.extension.maven.client.MavenExtension.getAvailableArchetypes;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARCHETYPE_GENERATION_STRATEGY;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.ARTIFACT_ID;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_SOURCE_FOLDER;
+import static com.codenvy.ide.extension.maven.shared.MavenAttributes.DEFAULT_TEST_SOURCE_FOLDER;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.GROUP_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.PACKAGING;
@@ -57,7 +58,6 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
     private ProjectServiceClient  projectService;
     private DtoFactory            dtoFactory;
     private EventBus              eventBus;
-    private MavenPomServiceClient mavenPomServiceClient;
     private DialogFactory         dialogFactory;
 
     private String moduleName;
@@ -67,12 +67,11 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     @Inject
     public CreateMavenModulePresenter(CreateMavenModuleView view, ProjectServiceClient projectService, DtoFactory dtoFactory,
-                                      EventBus eventBus, MavenPomServiceClient mavenPomServiceClient, DialogFactory dialogFactory) {
+                                      EventBus eventBus, DialogFactory dialogFactory) {
         this.view = view;
         this.projectService = projectService;
         this.dtoFactory = dtoFactory;
         this.eventBus = eventBus;
-        this.mavenPomServiceClient = mavenPomServiceClient;
         this.dialogFactory = dialogFactory;
         view.setDelegate(this);
     }
@@ -97,6 +96,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         newProject.setType(MAVEN_ID);
         newProject.setVisibility(parentProject.getProjectDescription().getVisibility());
         newProject.setBuilders(dtoFactory.createDto(BuildersDescriptor.class).withDefault("maven"));
+
         Map<String, List<String>> attributes = new HashMap<>();
         attributes.put(ARTIFACT_ID, Arrays.asList(artifactId));
         attributes.put(GROUP_ID, Arrays.asList(view.getGroupId()));
@@ -105,29 +105,29 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
         attributes.put(PARENT_ARTIFACT_ID, Arrays.asList(parentProject.getAttributeValue(ARTIFACT_ID)));
         attributes.put(PARENT_GROUP_ID, Arrays.asList(parentProject.getAttributeValue(GROUP_ID)));
         attributes.put(PARENT_VERSION, Arrays.asList(parentProject.getAttributeValue(VERSION)));
+        newProject.setAttributes(attributes);
 
         GeneratorDescription generatorDescription;
         if (view.isGenerateFromArchetypeSelected()) {
             generatorDescription = getGeneratorDescription(view.getArchetype());
         } else {
-            generatorDescription = dtoFactory.createDto(GeneratorDescription.class);//.withName(SIMPLE_GENERATION_STRATEGY);
+            generatorDescription = dtoFactory.createDto(GeneratorDescription.class);
             if (!"pom".equals(view.getPackaging())) {
-                attributes.put(SOURCE_FOLDER, Arrays.asList("src/main/java"));
-                attributes.put(TEST_SOURCE_FOLDER, Arrays.asList("src/test/java"));
+                attributes.put(SOURCE_FOLDER, Arrays.asList(DEFAULT_SOURCE_FOLDER));
+                attributes.put(TEST_SOURCE_FOLDER, Arrays.asList(DEFAULT_TEST_SOURCE_FOLDER));
             }
         }
-
-        newProject.setAttributes(attributes);
         newProject.setGeneratorDescription(generatorDescription);
 
         view.showButtonLoader(true);
 
-        // TODO as a handler of addModule
         projectService.createModule(parentProject.getProjectDescription().getPath(), moduleName, newProject,
                                     new AsyncRequestCallback<ProjectDescriptor>() {
                                         @Override
                                         protected void onSuccess(ProjectDescriptor result) {
-                                            addModuleToParentPom();
+                                            view.close();
+                                            view.showButtonLoader(false);
+                                            eventBus.fireEvent(new RefreshProjectTreeEvent());
                                         }
 
                                         @Override
@@ -137,22 +137,6 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
                                             Log.error(CreateMavenModulePresenter.class, exception);
                                         }
                                     });
-    }
-
-    private void addModuleToParentPom() {
-        mavenPomServiceClient.addModule(parentProject.getProjectDescription().getPath(), moduleName, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                view.close();
-                view.showButtonLoader(false);
-                eventBus.fireEvent(new RefreshProjectTreeEvent());
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                Log.error(CreateMavenModulePresenter.class, exception);
-            }
-        });
     }
 
     @Override
@@ -205,7 +189,7 @@ public class CreateMavenModulePresenter implements CreateMavenModuleView.ActionD
 
     private GeneratorDescription getGeneratorDescription(MavenArchetype archetype) {
         HashMap<String, String> options = new HashMap<>();
-        options.put("type", MavenAttributes.ARCHETYPE_GENERATION_STRATEGY);
+        options.put("type", ARCHETYPE_GENERATION_STRATEGY);
         options.put("archetypeGroupId", archetype.getGroupId());
         options.put("archetypeArtifactId", archetype.getArtifactId());
         options.put("archetypeVersion", archetype.getVersion());
