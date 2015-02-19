@@ -303,7 +303,7 @@ public class WorkerMessageHandler implements MessageHandler, MessageFilter.Messa
                 nameEnvironment.setProjectPath(message.projectPath());
                 cuVar = new CUVariables(message.fileName(), message.packageName(), projectName);
 
-                ASTParser parser = ASTParser.newParser(AST.JLS3);
+                ASTParser parser = ASTParser.newParser(AST.JLS4);
                 parser.setSource(message.source());
                 parser.setKind(ASTParser.K_COMPILATION_UNIT);
                 parser.setUnitName(message.fileName().substring(0, message.fileName().lastIndexOf('.')));

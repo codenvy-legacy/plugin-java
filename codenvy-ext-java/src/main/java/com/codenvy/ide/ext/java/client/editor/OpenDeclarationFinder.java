@@ -20,6 +20,7 @@ import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
+import com.codenvy.ide.ext.java.messages.JavadocHandleComputed;
 import com.codenvy.ide.ext.java.shared.OpenDeclarationDescriptor;
 import com.codenvy.ide.jseditor.client.text.LinearRange;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
@@ -68,14 +69,23 @@ public class OpenDeclarationFinder {
         EmbeddedTextEditorPresenter editor = ((EmbeddedTextEditorPresenter)activeEditor);
         int offset = editor.getCursorOffset();
         final VirtualFile file = editor.getEditorInput().getFile();
-        worker.computeJavadocHandle(offset, file.getPath(), new JavaParserWorker.Callback<String>() {
+        worker.computeJavadocHandle(offset, file.getPath(), new JavaParserWorker.Callback<JavadocHandleComputed>() {
             @Override
-            public void onCallback(String result) {
+            public void onCallback(JavadocHandleComputed result) {
                 if (result != null) {
-                    sendRequest(result, file.getProject());
+                    handle(result, file);
                 }
             }
         });
+    }
+
+    private void handle(JavadocHandleComputed result, VirtualFile file) {
+        if (result.getOffset() != -1 && result.isSource()) {
+           EditorPartPresenter editorPartPresenter = editorAgent.getActiveEditor();
+           fileOpened(editorPartPresenter, result.getOffset());
+        } else {
+            sendRequest(result.getKey(), file.getProject());
+        }
     }
 
     private void sendRequest(String bindingKey, ProjectNode project) {
@@ -102,7 +112,7 @@ public class OpenDeclarationFinder {
             if (descriptor.getPath().equals(s)) {
                 EditorPartPresenter editorPartPresenter = openedEditors.get(s);
                 editorAgent.activateEditor(editorPartPresenter);
-                fileOpened(editorPartPresenter, descriptor);
+                fileOpened(editorPartPresenter, descriptor.getOffset());
                 return;
             }
         }
@@ -110,20 +120,22 @@ public class OpenDeclarationFinder {
 
         TreeStructure tree = context.getCurrentProject().getCurrentTree();
         if (descriptor.isBinary()) {
-            if(tree instanceof JavaTreeStructure){
-                ((JavaTreeStructure)tree).getClassFileByPath(context.getCurrentProject().getProjectDescription().getPath(), descriptor.getLibId(), descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        Log.error(OpenDeclarationFinder.class, caught);
-                    }
+            if (tree instanceof JavaTreeStructure) {
+                ((JavaTreeStructure)tree)
+                        .getClassFileByPath(context.getCurrentProject().getProjectDescription().getPath(), descriptor.getLibId(),
+                                            descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
+                            @Override
+                            public void onFailure(Throwable caught) {
+                                Log.error(OpenDeclarationFinder.class, caught);
+                            }
 
-                    @Override
-                    public void onSuccess(TreeNode<?> result) {
-                        if (result instanceof VirtualFile) {
-                            openFile((VirtualFile)result, descriptor);
-                        }
-                    }
-                });
+                            @Override
+                            public void onSuccess(TreeNode<?> result) {
+                                if (result instanceof VirtualFile) {
+                                    openFile((VirtualFile)result, descriptor);
+                                }
+                            }
+                        });
             }
         } else {
             tree.getNodeByPath(descriptor.getPath(), new AsyncCallback<TreeNode<?>>() {
@@ -146,15 +158,15 @@ public class OpenDeclarationFinder {
         editorAgent.openEditor(result, new EditorAgent.OpenEditorCallback() {
             @Override
             public void onEditorOpened(EditorPartPresenter editor) {
-                fileOpened(editor, descriptor);
+                fileOpened(editor, descriptor.getOffset());
             }
         });
     }
 
-    private void fileOpened(EditorPartPresenter editor, OpenDeclarationDescriptor descriptor) {
+    private void fileOpened(EditorPartPresenter editor, int offset) {
         if (editor instanceof EmbeddedTextEditorPresenter) {
             ((EmbeddedTextEditorPresenter)editor).getDocument().setSelectedRange(
-                    LinearRange.createWithStart(descriptor.getOffset()).andLength(descriptor.getLength()), true);
+                    LinearRange.createWithStart(offset).andLength(0), true);
         }
     }
 }

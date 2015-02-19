@@ -127,10 +127,10 @@ public interface ClassFileConstants {
      */
     long CLDC_1_1 = ((long)ClassFileConstants.MAJOR_VERSION_1_1 << 16) + ClassFileConstants.MINOR_VERSION_4;
 
-    // // jdk level used to denote future releases: optional behavior is not enabled for now, but may become so. In order to enable
-    // these,
-    // // search for references to this constant, and change it to one of the official JDT constants above.
-    // long JDK_DEFERRED = Long.MAX_VALUE;
+    // jdk level used to denote future releases: optional behavior is not enabled for now, but may become so. In order to enable
+//    these,
+    // search for references to this constant, and change it to one of the official JDT constants above.
+    long JDK_DEFERRED = Long.MAX_VALUE;
     //
     // int INT_ARRAY = 10;
     // int BYTE_ARRAY = 8;

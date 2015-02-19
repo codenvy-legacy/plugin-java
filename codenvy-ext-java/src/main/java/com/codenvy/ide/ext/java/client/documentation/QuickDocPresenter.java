@@ -14,6 +14,7 @@ import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
+import com.codenvy.ide.ext.java.messages.JavadocHandleComputed;
 import com.codenvy.ide.jseditor.client.position.PositionConverter;
 import com.codenvy.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import com.codenvy.ide.util.loging.Log;
@@ -61,12 +62,12 @@ public class QuickDocPresenter implements QuickDocumentation, QuickDocView.Actio
         int offset = editor.getCursorOffset();
         final PositionConverter.PixelCoordinates coordinates = editor.getPositionConverter().offsetToPixel(offset);
 
-        worker.computeJavadocHandle(offset, editor.getEditorInput().getFile().getPath(), new JavaParserWorker.Callback<String>() {
+        worker.computeJavadocHandle(offset, editor.getEditorInput().getFile().getPath(), new JavaParserWorker.Callback<JavadocHandleComputed>() {
             @Override
-            public void onCallback(String result) {
+            public void onCallback(JavadocHandleComputed result) {
                 if (result != null) {
-                    result = URL.encodeQueryString(result);
-                    view.show(caContext + "/javadoc/" + appContext.getWorkspace().getId() + "/find?fqn=" + result + "&projectpath=" +
+                    String key = URL.encodeQueryString(result.getKey());
+                    view.show(caContext + "/javadoc/" + appContext.getWorkspace().getId() + "/find?fqn=" + key + "&projectpath=" +
                               appContext.getCurrentProject().getProjectDescription().getPath(), coordinates.getX(), coordinates.getY() + 16);
                 }
             }
