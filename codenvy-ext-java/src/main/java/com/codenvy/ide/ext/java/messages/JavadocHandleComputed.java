@@ -25,12 +25,48 @@ public class JavadocHandleComputed extends MessageImpl {
         }
     }-*/;
 
-    public final native String getHandle() /*-{
-        return this["handle"];
+    public final native String getFqn() /*-{
+        return this["fqn"];
     }-*/;
 
-    public final native JavadocHandleComputed setHandle(String handle) /*-{
-        this["handle"] = handle;
+    public final native JavadocHandleComputed setFqn(String fqn) /*-{
+        this["fqn"] = fqn;
+        return this;
+    }-*/;
+
+    public final native String getKey() /*-{
+        return this["key"];
+    }-*/;
+
+    public final native JavadocHandleComputed setKey(String key) /*-{
+        this["key"] = key;
+        return this;
+    }-*/;
+
+    public final native int getOffset() /*-{
+        return this["offset"];
+    }-*/;
+
+    public final native JavadocHandleComputed setOffset(int offset) /*-{
+        this["offset"] = offset;
+        return this;
+    }-*/;
+
+    public final native boolean isSource() /*-{
+        return this["source"];
+    }-*/;
+
+    public final native JavadocHandleComputed setSource(boolean source) /*-{
+        this["source"] = source;
+        return this;
+    }-*/;
+
+    public final native boolean isDeclaration() /*-{
+        return this["declaration"];
+    }-*/;
+
+    public final native JavadocHandleComputed setDeclaration(boolean declaration) /*-{
+        this["declaration"] = declaration;
         return this;
     }-*/;
 

@@ -797,4 +797,24 @@ public class RecoveredType extends RecoveredStatement implements TerminalTokens 
             this.typeDeclaration.bodyEnd = end;
         }
     }
+
+    public void annotationsConsumed(Annotation[] consumedAnnotations) {
+        RecoveredAnnotation[] keep = new RecoveredAnnotation[this.pendingAnnotationCount];
+        int numKeep = 0;
+        int pendingCount = this.pendingAnnotationCount;
+        int consumedLength = consumedAnnotations.length;
+        outerLoop:
+        for (int i = 0; i < pendingCount; i++) {
+            Annotation pendingAnnotationAST = this.pendingAnnotations[i].annotation;
+            for (int j = 0; j < consumedLength; j++) {
+                if (consumedAnnotations[j] == pendingAnnotationAST)
+                    continue outerLoop;
+            }
+            keep[numKeep++] = this.pendingAnnotations[i];
+        }
+        if (numKeep != this.pendingAnnotationCount) {
+            this.pendingAnnotations = keep;
+            this.pendingAnnotationCount = numKeep;
+        }
+    }
 }

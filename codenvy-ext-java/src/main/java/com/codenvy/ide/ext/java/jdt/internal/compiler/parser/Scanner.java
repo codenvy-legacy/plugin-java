@@ -3923,7 +3923,8 @@ public class Scanner implements TerminalTokens {
             this.withoutUnicodeBuffer = new char[length + (1 + 10)];
         int bLength = this.withoutUnicodeBuffer.length;
         if (1 + length >= bLength) {
-            System.arraycopy(this.withoutUnicodeBuffer, 0, this.withoutUnicodeBuffer = new char[length + (1 + 10)], 0,
+            this.withoutUnicodeBuffer = new char[length + (1 + 10)];
+            System.arraycopy(this.withoutUnicodeBuffer, 0, this.withoutUnicodeBuffer, 0,
                              bLength);
         }
         System.arraycopy(this.source, this.startPosition, this.withoutUnicodeBuffer, 1, length);

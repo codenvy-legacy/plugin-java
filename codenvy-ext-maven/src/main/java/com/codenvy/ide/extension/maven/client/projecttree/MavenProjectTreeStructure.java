@@ -67,8 +67,8 @@ public class MavenProjectTreeStructure extends JavaTreeStructure {
 
     @Override
     public MavenFolderNode newJavaFolderNode(@Nonnull AbstractTreeNode parent, @Nonnull ItemReference data) {
-        if (!"folder".equals(data.getType())) {
-            throw new IllegalArgumentException("The associated ItemReference type must be - folder.");
+        if (!"folder".equals(data.getType()) && !"project".equals(data.getType())) {
+            throw new IllegalArgumentException("The associated ItemReference type must be - folder or project.");
         }
         return getNodeFactory().newMavenFolderNode(parent, data, this);
     }
