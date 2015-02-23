@@ -16,7 +16,6 @@ import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.text.Region;
 import com.codenvy.ide.api.texteditor.outline.OutlineModel;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.ext.java.client.JavaLocalizationConstant;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.outline.OutlineUpdater;
 import com.codenvy.ide.ext.java.client.projecttree.nodes.JarClassNode;
@@ -97,7 +96,7 @@ public class JavaReconcilerStrategy implements ReconcilingStrategy, JavaParserWo
             }
         }
 
-        worker.parse(document.getContents(), file.getName(), file.getPath(), packageName, file.getProject().getPath(), sourceFromClass, this);
+        worker.parse(document.getContents(), file.getName(), file.getPath(), packageName, file.getProject().getPath(), false, this);
     }
 
     @Override

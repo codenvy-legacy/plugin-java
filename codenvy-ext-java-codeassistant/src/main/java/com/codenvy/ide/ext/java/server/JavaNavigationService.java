@@ -48,6 +48,11 @@ public class JavaNavigationService {
     public OpenDeclarationDescriptor findDeclaration(@QueryParam("projectpath") String projectPath, @QueryParam("bindingkey") String bindingKey)
             throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
+        if(bindingKey.contains(";.")){
+            String fqn = bindingKey.substring(0, bindingKey.indexOf(";."));
+            String bodyDeclaration = bindingKey.substring(bindingKey.indexOf(";."));
+            bindingKey = fqn + bodyDeclaration.replaceAll("/",".");
+        }
         return navigation.findDeclaration(project, bindingKey);
     }
 
