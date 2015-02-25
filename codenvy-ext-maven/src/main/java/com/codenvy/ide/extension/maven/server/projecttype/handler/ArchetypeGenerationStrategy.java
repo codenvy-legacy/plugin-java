@@ -24,11 +24,11 @@ import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.type.AttributeValue;
 import com.codenvy.api.vfs.server.VirtualFileSystem;
 import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
-import com.codenvy.commons.lang.NamedThreadFactory;
 import com.codenvy.commons.lang.Pair;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.generator.archetype.dto.GenerationTaskDescriptor;
 import com.codenvy.generator.archetype.dto.MavenArchetype;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.name.Named;
 
 import javax.annotation.PostConstruct;
@@ -90,7 +90,8 @@ public class ArchetypeGenerationStrategy implements GeneratorStrategy {
 
     @PostConstruct
     void start() {
-        executor = Executors.newCachedThreadPool(new NamedThreadFactory("-ProjectGenerator-maven-archetype-", true));
+        executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("-ProjectGenerator-maven-archetype-")
+                                                                           .setDaemon(true).build());
     }
 
     @PreDestroy
