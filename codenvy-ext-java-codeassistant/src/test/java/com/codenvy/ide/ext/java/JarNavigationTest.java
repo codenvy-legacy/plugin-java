@@ -174,7 +174,7 @@ public class JarNavigationTest extends BaseTest {
         String content = navigation.getContent(project, root.hashCode(), "/com/google/gwt/user/User.gwt.xml");
         assertThat(content).isNotNull().contains("<!-- Combines all user facilities into a single module for convenience.     -->")
                            .contains("<!-- Most new code should inherit this module.                              -->")
-        .contains("<source path=\"client\" />");
+        .contains("<inherits name=\"com.google.gwt.core.Core\"/>");
     }
 
     @Test
