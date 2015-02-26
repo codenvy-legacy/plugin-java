@@ -22,7 +22,6 @@
     <packaging>jar</packaging>
     <name>Codenvy Extension :: Java : Codeassistant</name>
     <dependencies>
-
         <dependency>
             <groupId>com.codenvy.platform-api</groupId>
             <artifactId>codenvy-api-builder</artifactId>
@@ -74,6 +73,11 @@
             <groupId>com.codenvy.vfs</groupId>
             <artifactId>codenvy-vfs-impl</artifactId>
             <version>${codenvy.vfs.impl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${com.google.guava.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.birt.runtime</groupId>

@@ -1186,7 +1186,7 @@ public class JavaProject extends Openable implements IJavaProject {
         return new SearchableEnvironment(this, owner);
     }
 
-    public String getVfsId() {
+    public String getWsId() {
         return wsId;
     }
 
