@@ -12,7 +12,10 @@ package com.codenvy.ide.extension.maven.client.actions;
 
 import com.codenvy.api.analytics.client.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.action.permits.ActionDenyAccessDialog;
+import com.codenvy.ide.api.action.permits.ActionPermit;
 import com.codenvy.ide.api.action.ProjectAction;
+import com.codenvy.ide.api.action.permits.Build;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.build.BuildContext;
 import com.codenvy.ide.extension.maven.client.MavenLocalizationConstant;
@@ -29,10 +32,12 @@ import com.google.inject.Singleton;
 @Singleton
 public class CustomBuildAction extends ProjectAction {
 
-    private final AppContext           appContext;
-    private final MavenBuildPresenter  presenter;
-    private final AnalyticsEventLogger eventLogger;
-    private       BuildContext         buildContext;
+    private final AppContext             appContext;
+    private final MavenBuildPresenter    presenter;
+    private final AnalyticsEventLogger   eventLogger;
+    private final ActionPermit           buildActionPermit;
+    private final ActionDenyAccessDialog buildActionDenyAccessDialog;
+    private       BuildContext           buildContext;
 
     @Inject
     public CustomBuildAction(MavenBuildPresenter presenter,
@@ -40,20 +45,28 @@ public class CustomBuildAction extends ProjectAction {
                              MavenLocalizationConstant localizationConstant,
                              AppContext appContext,
                              AnalyticsEventLogger eventLogger,
-                             BuildContext buildContext) {
+                             BuildContext buildContext,
+                             @Build ActionPermit buildActionPermit,
+                             @Build ActionDenyAccessDialog buildActionDenyAccessDialog) {
         super(localizationConstant.buildProjectControlTitle(),
               localizationConstant.buildProjectControlDescription(), resources.build());
         this.presenter = presenter;
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.buildContext = buildContext;
+        this.buildActionPermit = buildActionPermit;
+        this.buildActionDenyAccessDialog = buildActionDenyAccessDialog;
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        presenter.showDialog();
+        if (buildActionPermit.isAllowed()) {
+            presenter.showDialog();
+        } else {
+            buildActionDenyAccessDialog.show();
+        }
     }
 
     /** {@inheritDoc} */
