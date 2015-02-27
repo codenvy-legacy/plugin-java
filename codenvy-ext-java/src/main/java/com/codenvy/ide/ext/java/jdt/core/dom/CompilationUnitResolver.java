@@ -43,7 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-class CompilationUnitResolver extends Compiler {
+public class CompilationUnitResolver extends Compiler {
     public static final int RESOLVE_BINDING = 0x1;
 
     public static final int PARTIAL = 0x2;

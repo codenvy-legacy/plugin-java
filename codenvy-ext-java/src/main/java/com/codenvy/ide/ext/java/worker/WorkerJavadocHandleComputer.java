@@ -10,17 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.java.worker;
 
-import com.codenvy.ide.api.text.Region;
-import com.codenvy.ide.ext.java.jdt.core.dom.ASTNode;
 import com.codenvy.ide.ext.java.jdt.core.dom.CompilationUnit;
-import com.codenvy.ide.ext.java.jdt.core.dom.IBinding;
-import com.codenvy.ide.ext.java.jdt.core.dom.IMethodBinding;
-import com.codenvy.ide.ext.java.jdt.core.dom.IVariableBinding;
-import com.codenvy.ide.ext.java.jdt.core.dom.MethodInvocation;
-import com.codenvy.ide.ext.java.jdt.core.dom.NodeFinder;
-import com.codenvy.ide.ext.java.jdt.core.dom.SimpleName;
-import com.codenvy.ide.ext.java.jdt.core.dom.SimpleType;
-import com.codenvy.ide.ext.java.jdt.internal.text.correction.JavaWordFinder;
+import com.codenvy.ide.ext.java.jdt.internal.codeassist.SelectionEngine;
+import com.codenvy.ide.ext.java.jdt.internal.core.SelectionRequestor;
+import com.codenvy.ide.ext.java.jdt.internal.core.SelectionResult;
 import com.codenvy.ide.ext.java.messages.ComputeJavadocHandle;
 import com.codenvy.ide.ext.java.messages.JavadocHandleComputed;
 import com.google.gwt.webworker.client.messages.MessageFilter;
@@ -42,79 +35,27 @@ public class WorkerJavadocHandleComputer implements MessageFilter.MessageRecipie
 
     @Override
     public void onMessageReceived(ComputeJavadocHandle message) {
-        CompilationUnit cu = cuCache.getCompilationUnit(message.getFilePath());
-        String source = cuCache.getSource(message.getFilePath());
-        String handle;
+        String filePath = message.getFilePath();
+        CompilationUnit cu = cuCache.getCompilationUnit(filePath);
+        String source = cuCache.getSource(filePath);
+
+        SelectionResult result;
         if (cu == null || source == null) {
-            handle = null;
+            result = null;
         } else {
-            WorkerDocument document = new WorkerDocument(source);
-            Region word = JavaWordFinder.findWord(document, message.getOffset());
-            handle = getHandle(word, cu);
+            SelectionRequestor requestor = new SelectionRequestor(cu, source);
+            SelectionEngine selectionEngine = new SelectionEngine(WorkerMessageHandler.get().getNameEnvironment(), requestor, WorkerMessageHandler.get().getOptions());
+
+            String fileName = filePath.substring(
+                    filePath.lastIndexOf("/"), filePath.lastIndexOf('.'));
+            selectionEngine.select(new com.codenvy.ide.ext.java.jdt.compiler.batch.CompilationUnit(source.toCharArray(), fileName, "UTF-8"), message.getOffset(), 0);
+            result = requestor.getSelectionResult();
         }
 
-        JavadocHandleComputed result = JavadocHandleComputed.make();
-        result.setId(message.id()).setHandle(handle);
-        worker.sendMessage(result.serialize());
-    }
-
-    private String getHandle(Region word, CompilationUnit cu) {
-        NodeFinder nf = new NodeFinder(cu, word.getOffset(), word.getLength());
-        ASTNode coveringNode = nf.getCoveredNode();
-        if (coveringNode == null) {
-            return null;
+        JavadocHandleComputed respMessage = JavadocHandleComputed.make();
+        if(result != null){
+           respMessage.setId(message.id()).setKey(result.getKey()).setFqn(result.getFqn()).setOffset(result.getOffset()).setSource(result.isSource()).setDeclaration(result.isDeclaration());
         }
-        if (coveringNode.getNodeType() == ASTNode.MODIFIER)
-            return null;
-
-
-        if (coveringNode instanceof SimpleName) {
-            SimpleName nn = (SimpleName)coveringNode;
-            IBinding binding = nn.resolveBinding();
-            if (binding.getKind() == IBinding.VARIABLE) {
-                IVariableBinding var = (IVariableBinding)binding;
-                if (var.isField()) {
-                    return var.getKey();
-                }
-            }
-
-
-            if (binding.getKind() == IBinding.METHOD) {
-                return getKeyForMethod(binding);
-            }
-
-            if (binding.getKind() == IBinding.VARIABLE) {
-                return getKeyForMethod(binding);
-            }
-            return binding.getKey();
-        }
-
-        ASTNode parentNode = coveringNode.getParent();
-
-        if (parentNode instanceof SimpleType) {
-            SimpleType type = (SimpleType)parentNode;
-            return type.resolveBinding().getKey();
-        }
-        if (parentNode instanceof MethodInvocation) {
-            MethodInvocation mi = (MethodInvocation)parentNode;
-            return getKeyForMethod(mi.resolveMethodBinding());
-
-        }
-
-        return null;
-    }
-
-    private String getKeyForMethod(IBinding binding) {
-        String key = binding.getKey();
-        String fqn = key.substring(0, key.indexOf(';') + 1);
-        String substring = key.substring(key.indexOf(';') + 1, key.length());
-        substring = substring.replaceAll("/", ".");
-        if(binding instanceof IMethodBinding){
-            if (((IMethodBinding)binding).isConstructor()){
-                substring = substring.substring(1);
-                substring = "." + binding.getName() + substring;
-            }
-        }
-        return fqn + substring;
+        worker.sendMessage(respMessage.serialize());
     }
 }

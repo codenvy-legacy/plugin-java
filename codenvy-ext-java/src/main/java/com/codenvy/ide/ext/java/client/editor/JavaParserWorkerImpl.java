@@ -129,8 +129,8 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     @SuppressWarnings("unchecked")
     private void handleJavadocMessage(JavadocHandleComputed message) {
         if (callbacks.containsKey(message.getId())) {
-            Callback<String> callback = (Callback<String>)callbacks.remove(message.getId());
-            callback.onCallback(message.getHandle());
+            Callback<JavadocHandleComputed> callback = (Callback<JavadocHandleComputed>)callbacks.remove(message.getId());
+            callback.onCallback(message);
         }
 
     }
@@ -289,7 +289,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     }
 
     @Override
-    public void computeJavadocHandle(int offset, String filePath, Callback<String> callback) {
+    public void computeJavadocHandle(int offset, String filePath, Callback<JavadocHandleComputed> callback) {
         String uuid = UUID.uuid();
         ComputeJavadocHandle message = ComputeJavadocHandle.make();
         message.setOffset(offset).setId(uuid).setFilePath(filePath);
@@ -317,7 +317,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
     /** {@inheritDoc} */
     @Override
     public void parse(String content, String fileName, String filePath, String packageName, String projectPath,
-                      boolean needParseMethodBody, WorkerCallback<IProblem> callback) {
+                      boolean ignoreMethodBody, WorkerCallback<IProblem> callback) {
         if (worker == null) {
             return;
         }
@@ -326,7 +326,7 @@ public class JavaParserWorkerImpl implements JavaParserWorker, ProjectActionHand
         String uuid = UUID.uuid();
         arrayCallbacks.put(uuid, callback);
         parseMessage.setSource(content).setFileName(fileName).setFilePath(filePath).setId(uuid).setPackageName(packageName)
-                    .setProjectPath(projectPath).setIgnoreMethodBodiess(needParseMethodBody);
+                    .setProjectPath(projectPath).setIgnoreMethodBodiess(ignoreMethodBody);
         worker.postMessage(parseMessage.serialize());
     }
 

@@ -16,10 +16,10 @@ import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.core.util.StreamPump;
 import com.codenvy.commons.lang.IoUtil;
-import com.codenvy.commons.lang.NamedThreadFactory;
 import com.codenvy.commons.lang.ZipUtils;
 import com.codenvy.generator.archetype.dto.MavenArchetype;
 import com.codenvy.ide.maven.tools.MavenUtils;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,8 +81,9 @@ public class ArchetypeGenerator {
             throw new IllegalStateException(String.format("Unable to create directory %s", projectsFolder.getAbsolutePath()));
         }
 
-        executor = Executors.newCachedThreadPool(new NamedThreadFactory("ArchetypeGenerator-", true));
-        scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("ArchetypeGeneratorSchedulerPool-", true));
+        executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("ArchetypeGenerator-").setDaemon(true).build());
+        scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("ArchetypeGeneratorSchedulerPool-")
+                                                                                         .setDaemon(true).build());
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 int num = 0;

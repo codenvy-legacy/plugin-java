@@ -14,11 +14,12 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.js.JsoArray;
 import com.codenvy.ide.collections.js.JsoStringMap;
 import com.codenvy.ide.ext.java.jdt.core.compiler.IProblem;
+import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
+import com.codenvy.ide.ext.java.messages.JavadocHandleComputed;
 import com.codenvy.ide.ext.java.messages.ProblemLocationMessage;
 import com.codenvy.ide.ext.java.messages.ProposalAppliedMessage;
 import com.codenvy.ide.ext.java.messages.WorkerProposal;
 import com.codenvy.ide.ext.java.messages.impl.WorkerCodeBlock;
-import com.codenvy.ide.ext.java.jdt.text.edits.TextEdit;
 
 /**
  * @author Evgen Vidolob
@@ -47,7 +48,7 @@ public interface JavaParserWorker {
 
     void preferenceFormatSettings(JsoStringMap<String> settings);
 
-    void computeJavadocHandle(int offset, String filePath, Callback<String> callback);
+    void computeJavadocHandle(int offset, String filePath, Callback<JavadocHandleComputed> callback);
 
     void fileClosed(String path);
 

@@ -43,7 +43,11 @@ public class JavadocService {
     public String findJavadoc(@QueryParam("fqn") String fqn, @QueryParam("projectpath") String projectPath, @Context UriInfo uriInfo) throws JavaModelException {
         JavaProject project = service.getOrCreateJavaProject(wsId, projectPath);
         String urlPart = getUrlPart(projectPath, uriInfo.getBaseUriBuilder());
-
+        if(fqn.contains(";.")){
+            String name = fqn.substring(0, fqn.indexOf(";."));
+            String bodyDeclaration = fqn.substring(fqn.indexOf(";."));
+            fqn = name + bodyDeclaration.replaceAll("/",".");
+        }
 
         return new JavadocFinder(urlPart).findJavadoc(project, fqn);
     }

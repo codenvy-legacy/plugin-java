@@ -363,6 +363,12 @@ public class FileSystem implements INameEnvironment, SuffixConstants {
     @Override
     public void findTypes(char[] qualifiedName, boolean b, boolean camelCaseMatch, int searchFor,
                           final ISearchRequestor requestor) {
+        String fqn = new String(qualifiedName);
+        if(fqn.equals("AtomicBoolean")){
+            NameEnvironmentAnswer answer = findClass("java/util/concurrent/atomic/AtomicBoolean", qualifiedName, true);
+            requestor.acceptType("java.util.concurrent.atomic".toCharArray(),qualifiedName, null, answer.getBinaryType().getModifiers(), null);
+        }
+
     }
 
     @Override

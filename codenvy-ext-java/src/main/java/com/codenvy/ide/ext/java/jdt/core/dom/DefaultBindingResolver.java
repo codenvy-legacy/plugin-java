@@ -99,7 +99,7 @@ public class DefaultBindingResolver extends BindingResolver {
     Map astNodesToBlockScope;
 
     /** This map is used to get an ast node from its binding (new binding) or DOM */
-    Map bindingsToAstNodes;
+    public Map bindingsToAstNodes;
 
     /* The shared binding tables accros ASTs. */
     BindingTables bindingTables;
