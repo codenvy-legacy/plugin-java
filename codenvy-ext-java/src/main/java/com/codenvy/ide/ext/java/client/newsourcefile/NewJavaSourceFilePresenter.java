@@ -37,7 +37,10 @@ import static com.codenvy.ide.ext.java.client.JavaUtils.checkCompilationUnitName
 import static com.codenvy.ide.ext.java.client.JavaUtils.checkPackageName;
 import static com.codenvy.ide.ext.java.client.JavaUtils.isValidCompilationUnitName;
 import static com.codenvy.ide.ext.java.client.JavaUtils.isValidPackageName;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.*;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ANNOTATION;
 
 /**
  * Presenter for creating Java source file.

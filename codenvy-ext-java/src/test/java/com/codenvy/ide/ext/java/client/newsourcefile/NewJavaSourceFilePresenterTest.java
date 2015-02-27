@@ -50,6 +50,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ANNOTATION;
 
 /**
  * Testing {@link NewJavaSourceFilePresenter} functionality.
@@ -209,7 +212,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "\npublic @interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ANNOTATION);
+        when(view.getSelectedType()).thenReturn(ANNOTATION);
 
         presenter.onOkClicked();
 
@@ -227,7 +230,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic @interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ANNOTATION);
+        when(view.getSelectedType()).thenReturn(ANNOTATION);
 
         presenter.onOkClicked();
 
@@ -245,7 +248,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "\npublic interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.INTERFACE);
+        when(view.getSelectedType()).thenReturn(INTERFACE);
 
         presenter.onOkClicked();
 
@@ -263,7 +266,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.INTERFACE);
+        when(view.getSelectedType()).thenReturn(INTERFACE);
 
         presenter.onOkClicked();
 
@@ -281,7 +284,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "\npublic enum " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ENUM);
+        when(view.getSelectedType()).thenReturn(ENUM);
 
         presenter.onOkClicked();
 
@@ -299,7 +302,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic enum " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ENUM);
+        when(view.getSelectedType()).thenReturn(ENUM);
 
         presenter.onOkClicked();
 
