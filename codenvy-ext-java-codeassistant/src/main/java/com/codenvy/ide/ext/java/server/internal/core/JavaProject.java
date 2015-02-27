@@ -77,7 +77,7 @@ public class JavaProject extends Openable implements IJavaProject {
             return entry.getFileName().toString().endsWith("jar");
         }
     };
-    private SearchableEnvironment nameEnvironment;
+    private volatile SearchableEnvironment nameEnvironment;
     private String                    projectPath;
     private String                    tempDir;
     private String                    wsId;
@@ -1198,7 +1198,7 @@ public class JavaProject extends Openable implements IJavaProject {
         return workspacePath;
     }
 
-    public void creteNewNameEnvironment() {
+    public synchronized void creteNewNameEnvironment() {
         try {
             nameEnvironment = new SearchableEnvironment(this, (ICompilationUnit[])null);
         } catch (JavaModelException e) {

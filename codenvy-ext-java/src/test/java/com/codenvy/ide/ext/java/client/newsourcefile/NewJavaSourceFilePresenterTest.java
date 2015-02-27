@@ -54,6 +54,7 @@ import static org.mockito.Mockito.when;
 import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
 import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
 import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ANNOTATION;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
 
 /**
  * Testing {@link NewJavaSourceFilePresenter} functionality.
@@ -177,7 +178,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "\npublic class " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.CLASS);
+        when(view.getSelectedType()).thenReturn(CLASS);
 
         presenter.onOkClicked();
 
@@ -195,7 +196,7 @@ public class NewJavaSourceFilePresenterTest {
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic class " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.CLASS);
+        when(view.getSelectedType()).thenReturn(CLASS);
 
         presenter.onOkClicked();
 
