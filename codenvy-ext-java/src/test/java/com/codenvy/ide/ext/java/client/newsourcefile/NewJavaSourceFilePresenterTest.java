@@ -14,6 +14,7 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
+import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeStructure;
@@ -26,7 +27,6 @@ import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
@@ -42,6 +42,7 @@ import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Method;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -50,6 +51,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ANNOTATION;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
 
 /**
  * Testing {@link NewJavaSourceFilePresenter} functionality.
@@ -62,6 +67,7 @@ public class NewJavaSourceFilePresenterTest {
     private static String SRC_FOLDER_PATH      = "/project/src/main/java";
     private static String CODENVY_PACKAGE_PATH = "/project/src/main/java/com/codenvy";
     private static String PACKAGE_NAME         = "com.codenvy";
+    //mocks for constructor
     @Mock
     private NewJavaSourceFileView      view;
     @Mock
@@ -74,14 +80,18 @@ public class NewJavaSourceFilePresenterTest {
     private DtoUnmarshallerFactory     dtoUnmarshallerFactory;
     @Mock
     private AppContext                 appContext;
-    @InjectMocks
-    private NewJavaSourceFilePresenter presenter;
+
     @Mock
     private SourceFolderNode           srcFolder;
     @Mock
     private PackageNode                codenvyPackage;
     @Mock
     private ItemReference              createdFile;
+    @Mock
+    private Selection                  selection;
+
+    @InjectMocks
+    private NewJavaSourceFilePresenter presenter;
 
     @Before
     public void setUp() {
@@ -162,115 +172,145 @@ public class NewJavaSourceFilePresenterTest {
 
     @Test
     public void shouldCreateClassInsideSourceFolder() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(srcFolder);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
         final String fileContent = "\npublic class " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.CLASS);
+        when(view.getSelectedType()).thenReturn(CLASS);
 
         presenter.onOkClicked();
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
     }
 
     @Test
     public void shouldCreateClassInsidePackage() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(codenvyPackage);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic class " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.CLASS);
+        when(view.getSelectedType()).thenReturn(CLASS);
 
         presenter.onOkClicked();
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+    }
+
+    @Test
+    public void shouldCreateAnnotationInsideSourceFolder() throws Exception {
+        when(selection.getFirstElement()).thenReturn(srcFolder);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "\npublic @interface " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(ANNOTATION);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+    }
+
+    @Test
+    public void shouldCreateAnnotationInsidePackage() throws Exception {
+        when(selection.getFirstElement()).thenReturn(codenvyPackage);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+
+        final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic @interface " + FILE_NAME + " {\n}\n";
+
+        when(view.getName()).thenReturn(FILE_NAME);
+        when(view.getSelectedType()).thenReturn(ANNOTATION);
+
+        presenter.onOkClicked();
+
+        verify(view).close();
+        verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
+                Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
     }
 
     @Test
     public void shouldCreateInterfaceInsideSourceFolder() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(srcFolder);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
         final String fileContent = "\npublic interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.INTERFACE);
+        when(view.getSelectedType()).thenReturn(INTERFACE);
 
         presenter.onOkClicked();
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
     }
 
     @Test
     public void shouldCreateInterfaceInsidePackage() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(codenvyPackage);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic interface " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.INTERFACE);
+        when(view.getSelectedType()).thenReturn(INTERFACE);
 
         presenter.onOkClicked();
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
     }
 
     @Test
     public void shouldCreateEnumInsideSourceFolder() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(srcFolder);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
         final String fileContent = "\npublic enum " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ENUM);
+        when(view.getSelectedType()).thenReturn(ENUM);
 
         presenter.onOkClicked();
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
     }
 
     @Test
     public void shouldCreateEnumInsidePackage() throws Exception {
-        Selection selection = mock(Selection.class);
         when(selection.getFirstElement()).thenReturn(codenvyPackage);
         when(selectionAgent.getSelection()).thenReturn(selection);
 
         final String fileContent = "package " + PACKAGE_NAME + ";\n\npublic enum " + FILE_NAME + " {\n}\n";
 
         when(view.getName()).thenReturn(FILE_NAME);
-        when(view.getSelectedType()).thenReturn(JavaSourceFileType.ENUM);
+        when(view.getSelectedType()).thenReturn(ENUM);
 
         presenter.onOkClicked();
 
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(Matchers.<Event<Object>>anyObject());
+        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
     }
 }

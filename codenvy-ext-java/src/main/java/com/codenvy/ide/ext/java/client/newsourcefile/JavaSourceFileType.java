@@ -18,7 +18,8 @@ package com.codenvy.ide.ext.java.client.newsourcefile;
 enum JavaSourceFileType {
     CLASS("Class"),
     INTERFACE("Interface"),
-    ENUM("Enum");
+    ENUM("Enum"),
+    ANNOTATION("Annotation");
 
     private final String value;
 
