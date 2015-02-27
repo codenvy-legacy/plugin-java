@@ -50,7 +50,7 @@ public class JavaProjectService {
     /** Logger. */
     private static final Logger LOG = LoggerFactory.getLogger(JavaProjectService.class);
 
-    private Cache<String, JavaProject>                cache;
+    private Cache<String, JavaProject> cache;
     private ConcurrentHashMap<String, CopyOnWriteArraySet<String>> projectInWs = new ConcurrentHashMap<>();
     private LocalFSMountStrategy fsMountStrategy;
     private String               tempDir;
@@ -165,31 +165,32 @@ public class JavaProjectService {
                     JavaProject javaProject = cache.getIfPresent(eventWorkspace + eventPath);
                     if (javaProject != null) {
                         removeProject(eventWorkspace, eventPath);
+                        return;
                     } else if (event.isFolder()) {
                         if (isProjectDependencyExist(eventWorkspace, eventPath)) {
                             deleteDependencyDirectory(eventWorkspace, eventPath);
-                        }
-                    }
-                } else {
-                    if (projectInWs.containsKey(eventWorkspace)) {
-                        for (String path : projectInWs.get(eventWorkspace)) {
-                            if (eventPath.startsWith(path)) {
-                                JavaProject javaProject = cache.getIfPresent(eventWorkspace + path);
-                                if (javaProject != null) {
-                                    try {
-                                        javaProject.getJavaModelManager().deltaState.resourceChanged(
-                                                new ResourceChangedEvent(fsMountStrategy.getMountPath(eventWorkspace), event));
-                                        javaProject.creteNewNameEnvironment();
-                                    } catch (ServerException e) {
-                                        LOG.error("Can't update java model", e);
-                                    }
-                                }
-                                break;
-                            }
+                            return;
                         }
                     }
                 }
-            } catch (Throwable t){
+                if (projectInWs.containsKey(eventWorkspace)) {
+                    for (String path : projectInWs.get(eventWorkspace)) {
+                        if (eventPath.startsWith(path)) {
+                            JavaProject javaProject = cache.getIfPresent(eventWorkspace + path);
+                            if (javaProject != null) {
+                                try {
+                                    javaProject.getJavaModelManager().deltaState.resourceChanged(
+                                            new ResourceChangedEvent(fsMountStrategy.getMountPath(eventWorkspace), event));
+                                    javaProject.creteNewNameEnvironment();
+                                } catch (ServerException e) {
+                                    LOG.error("Can't update java model", e);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (Throwable t) {
                 //catch all exceptions that may be happened
                 LOG.error("Can't update java model", t);
             }
