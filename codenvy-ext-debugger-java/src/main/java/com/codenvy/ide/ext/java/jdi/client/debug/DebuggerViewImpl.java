@@ -31,7 +31,6 @@ import com.codenvy.ide.ui.tree.TreeNodeElement;
 import com.codenvy.ide.util.dom.Elements;
 import com.codenvy.ide.util.input.SignalEvent;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -54,11 +53,14 @@ import java.util.List;
 /**
  * The implementation of {@link DebuggerView}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> implements DebuggerView {
-    private static DebuggerViewImplUiBinder ourUiBinder = GWT.create(DebuggerViewImplUiBinder.class);
+
+    interface DebuggerViewImplUiBinder extends UiBinder<Widget, DebuggerViewImpl> {
+    }
+
     @UiField
     PushButton                      btnResume;
     @UiField
@@ -89,6 +91,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
     Resources                       coreRes;
     @UiField(provided = true)
     SplitLayoutPanel splitPanel = new SplitLayoutPanel(3);
+
     private final DtoFactory                dtoFactory;
     private       SimpleList<Breakpoint>    breakpoints;
     private       Tree<Variable>            variables;
@@ -105,9 +108,13 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
      * @param rendererResources
      */
     @Inject
-    protected DebuggerViewImpl(PartStackUIResources partStackUIResources, JavaRuntimeResources resources,
-                               JavaRuntimeLocalizationConstant locale, Resources coreRes,
-                               VariableTreeNodeRenderer.Resources rendererResources, DtoFactory dtoFactory) {
+    protected DebuggerViewImpl(PartStackUIResources partStackUIResources,
+                               JavaRuntimeResources resources,
+                               JavaRuntimeLocalizationConstant locale,
+                               Resources coreRes,
+                               VariableTreeNodeRenderer.Resources rendererResources,
+                               DtoFactory dtoFactory,
+                               DebuggerViewImplUiBinder uiBinder) {
         super(partStackUIResources);
 
         this.locale = locale;
@@ -115,7 +122,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
         this.coreRes = coreRes;
         this.dtoFactory = dtoFactory;
 
-        container.add(ourUiBinder.createAndBindUi(this));
+        setContentWidget(uiBinder.createAndBindUi(this));
 
         btnResume.getElement().appendChild(new SVGImage(resources.resumeButton()).getElement());
         btnStepInto.getElement().appendChild(new SVGImage(resources.stepIntoButton()).getElement());
@@ -397,6 +404,4 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
         delegate.onEvaluateExpressionButtonClicked();
     }
 
-    interface DebuggerViewImplUiBinder extends UiBinder<Widget, DebuggerViewImpl> {
-    }
 }
