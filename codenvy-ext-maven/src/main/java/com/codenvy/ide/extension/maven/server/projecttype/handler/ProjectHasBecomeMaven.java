@@ -16,10 +16,9 @@ import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.handlers.PostImportProjectHandler;
+import com.codenvy.api.project.server.handlers.ProjectTypeChangedHandler;
 import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectResolver;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import java.io.IOException;
 
@@ -28,15 +27,14 @@ import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 /**
  * @author Vitaly Parfonov
  */
-@Singleton
-public class MavenProjectImportedHandler implements PostImportProjectHandler {
+public class ProjectHasBecomeMaven implements ProjectTypeChangedHandler {
 
 
     @Inject
     private ProjectManager projectManager;
 
     @Override
-    public void onProjectImported(FolderEntry projectFolder)
+    public void onProjectTypeChanged(FolderEntry projectFolder)
             throws ForbiddenException, ConflictException, ServerException, IOException, NotFoundException {
         MavenProjectResolver.resolve(projectFolder, projectManager);
 

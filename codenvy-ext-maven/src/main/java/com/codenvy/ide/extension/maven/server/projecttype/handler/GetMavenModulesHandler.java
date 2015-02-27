@@ -10,36 +10,32 @@
  *******************************************************************************/
 package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
-import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.handlers.PostImportProjectHandler;
-import com.codenvy.ide.extension.maven.server.projecttype.MavenProjectResolver;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import com.codenvy.api.project.server.handlers.GetModulesHandler;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.codenvy.ide.extension.maven.shared.MavenAttributes.MAVEN_ID;
 
 /**
  * @author Vitaly Parfonov
  */
-@Singleton
-public class MavenProjectImportedHandler implements PostImportProjectHandler {
-
-
-    @Inject
-    private ProjectManager projectManager;
+public class GetMavenModulesHandler implements GetModulesHandler {
 
     @Override
-    public void onProjectImported(FolderEntry projectFolder)
-            throws ForbiddenException, ConflictException, ServerException, IOException, NotFoundException {
-        MavenProjectResolver.resolve(projectFolder, projectManager);
-
+    public void onGetModules(FolderEntry parentProjectFolder, List<String> modulePaths) throws ForbiddenException, ServerException,
+                                                                                               NotFoundException, IOException {
+        //TODO: need add checking on module described in parent pom
+        List<FolderEntry> childFolders = parentProjectFolder.getChildFolders();
+        for (FolderEntry folderEntry : childFolders) {
+            if (folderEntry.isProjectFolder() && !modulePaths.contains(folderEntry.getPath())) {
+                modulePaths.add(folderEntry.getPath());
+            }
+        }
     }
 
     @Override
