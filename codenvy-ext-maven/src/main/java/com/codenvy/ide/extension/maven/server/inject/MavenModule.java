@@ -22,6 +22,7 @@ import com.codenvy.ide.extension.maven.server.projecttype.handler.AddMavenModule
 import com.codenvy.ide.extension.maven.server.projecttype.handler.ArchetypeGenerationStrategy;
 import com.codenvy.ide.extension.maven.server.projecttype.handler.GeneratorStrategy;
 import com.codenvy.ide.extension.maven.server.projecttype.handler.MavenProjectGenerator;
+import com.codenvy.ide.extension.maven.server.projecttype.handler.MavenProjectImportedHandler;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -36,6 +37,7 @@ public class MavenModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), ProjectType.class).addBinding().to(MavenProjectType.class);
         Multibinder.newSetBinder(binder(), ProjectHandler.class).addBinding().to(MavenProjectGenerator.class);
         Multibinder.newSetBinder(binder(), ProjectHandler.class).addBinding().to(AddMavenModuleHandler.class);
+        Multibinder.newSetBinder(binder(), ProjectHandler.class).addBinding().to(MavenProjectImportedHandler.class);
         Multibinder.newSetBinder(binder(), GeneratorStrategy.class).addBinding().to(ArchetypeGenerationStrategy.class);
         Multibinder.newSetBinder(binder(), ProjectTypeResolver.class).addBinding().to(MavenProjectTypeResolver.class);
     }
