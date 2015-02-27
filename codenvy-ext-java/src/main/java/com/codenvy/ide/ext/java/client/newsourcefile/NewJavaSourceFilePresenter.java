@@ -151,23 +151,31 @@ public class NewJavaSourceFilePresenter implements NewJavaSourceFileView.ActionD
     }
 
     private void createClass(String name, FolderNode parent, String packageFragment) {
-        createSourceFile(name, parent, packageFragment,
-                         getPackageQualifier(parent, packageFragment) + "public class " + name + DEFAULT_CONTENT);
+        String content = getPackageQualifier(parent, packageFragment) +
+                         "public class " + name + DEFAULT_CONTENT;
+
+        createSourceFile(name, parent, packageFragment, content);
     }
 
     private void createInterface(String name, FolderNode parent, String packageFragment) {
-        createSourceFile(name, parent, packageFragment,
-                         getPackageQualifier(parent, packageFragment) + "public interface " + name + DEFAULT_CONTENT);
+        String content = getPackageQualifier(parent, packageFragment) +
+                         "public interface " + name + DEFAULT_CONTENT;
+
+        createSourceFile(name, parent, packageFragment, content);
     }
 
     private void createEnum(String name, FolderNode parent, String packageFragment) {
-        createSourceFile(name, parent, packageFragment,
-                         getPackageQualifier(parent, packageFragment) + "public enum " + name + DEFAULT_CONTENT);
+        String content = getPackageQualifier(parent, packageFragment) +
+                         "public enum " + name + DEFAULT_CONTENT;
+
+        createSourceFile(name, parent, packageFragment, content);
     }
 
     private void createAnnotation(String name, FolderNode parent, String packageFragment) {
-        createSourceFile(name, parent, packageFragment,
-                getPackageQualifier(parent, packageFragment) + "public @interface " + name + DEFAULT_CONTENT);
+        String content = getPackageQualifier(parent, packageFragment) +
+                         "public @interface " + name + DEFAULT_CONTENT;
+
+        createSourceFile(name, parent, packageFragment, content);
     }
 
     private String getPackageQualifier(FolderNode parent, String packageFragment) {
