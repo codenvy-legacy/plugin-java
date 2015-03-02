@@ -13,25 +13,27 @@ package com.codenvy.ide.ext.java.server.projecttype;
 import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
+import java.util.Arrays;
+
+import static com.codenvy.ide.api.projecttype.RunnerCategory.JAVA;
 
 /**
  * @author gazarenkov
+ * @author Dmitry Shnurenko
  */
-@Singleton
 public class JavaProjectType extends ProjectType {
     private static final Logger LOG = LoggerFactory.getLogger(JavaProjectType.class);
 
     @Inject
     public JavaProjectType() {
-
-        super("java", "Java",true, false);
+        super("java", "Java", true, false);
         addConstantDefinition(Constants.LANGUAGE, "language", "java");
         addConstantDefinition(Constants.LANGUAGE_VERSION, "language version", "1.6");
-
+        addRunnerCategories(Arrays.asList(JAVA.toString()));
     }
 
 }

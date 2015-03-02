@@ -19,7 +19,14 @@ import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** @author Vladyslav Zhukovskii */
+import java.util.Arrays;
+
+import static com.codenvy.ide.api.projecttype.RunnerCategory.JAVA;
+
+/**
+ * @author Vladyslav Zhukovskii
+ * @author Dmitry Shnurenko
+ */
 @Singleton
 public class AntProjectType extends ProjectType {
     private static final Logger LOG = LoggerFactory.getLogger(AntProjectType.class);
@@ -33,6 +40,6 @@ public class AntProjectType extends ProjectType {
         setDefaultBuilder("ant");
         addVariableDefinition(AntAttributes.SOURCE_FOLDER, "", true, antValueProviderFactory);
         addVariableDefinition(AntAttributes.TEST_SOURCE_FOLDER, "", true, antValueProviderFactory);
-
+        addRunnerCategories(Arrays.asList(JAVA.toString()));
     }
 }

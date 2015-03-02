@@ -19,8 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.Arrays;
 
-/** @author Evgen Vidolob */
+import static com.codenvy.ide.api.projecttype.RunnerCategory.JAVA;
+
+/**
+ * @author Evgen Vidolob
+ * @author Dmitry Shnurenko
+ */
 @Singleton
 public class MavenProjectType extends ProjectType {
     private static final Logger LOG = LoggerFactory.getLogger(MavenProjectType.class);
@@ -39,6 +45,7 @@ public class MavenProjectType extends ProjectType {
         addVariableDefinition(MavenAttributes.PACKAGING, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.SOURCE_FOLDER, "", false, mavenValueProviderFactory);
         addVariableDefinition(MavenAttributes.TEST_SOURCE_FOLDER, "", false, mavenValueProviderFactory);
+        addRunnerCategories(Arrays.asList(JAVA.toString()));
 
         addParent(javaProjectType);
         setDefaultBuilder("maven");
