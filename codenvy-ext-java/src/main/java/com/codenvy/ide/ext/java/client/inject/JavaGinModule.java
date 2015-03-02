@@ -17,15 +17,14 @@ import com.codenvy.ide.ext.java.client.JavaExtension;
 import com.codenvy.ide.ext.java.client.JavaResources;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocPresenter;
 import com.codenvy.ide.ext.java.client.documentation.QuickDocumentation;
-import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
-import com.codenvy.ide.ext.java.client.navigation.JavaNavigationServiceImpl;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorker;
 import com.codenvy.ide.ext.java.client.editor.JavaParserWorkerImpl;
 import com.codenvy.ide.ext.java.client.format.FormatController;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
+import com.codenvy.ide.ext.java.client.navigation.JavaNavigationServiceImpl;
 import com.codenvy.ide.ext.java.client.newsourcefile.NewJavaSourceFileView;
 import com.codenvy.ide.ext.java.client.newsourcefile.NewJavaSourceFileViewImpl;
 import com.codenvy.ide.ext.java.client.projecttree.JavaNodeFactory;
-import com.codenvy.ide.ext.java.client.watcher.ProjectStateListener;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
 import com.google.inject.Provides;
@@ -44,7 +43,6 @@ public class JavaGinModule extends AbstractGinModule {
     protected void configure() {
         bind(JavaParserWorker.class).to(JavaParserWorkerImpl.class).in(Singleton.class);
         bind(FormatController.class).asEagerSingleton();
-        bind(ProjectStateListener.class).asEagerSingleton();
         bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
         bind(QuickDocumentation.class).to(QuickDocPresenter.class).in(Singleton.class);
         bind(JavaNavigationService.class).to(JavaNavigationServiceImpl.class);

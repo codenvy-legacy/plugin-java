@@ -8,13 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.extension.maven.server.projecttype;
+package com.codenvy.ide.extension.maven.server.projecttype.handler;
 
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.project.server.DefaultProjectManager;
 import com.codenvy.api.project.server.FolderEntry;
+import com.codenvy.api.project.server.Project;
+import com.codenvy.api.project.server.ProjectConfig;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.project.server.ProjectTypeResolver;
 import com.codenvy.api.project.server.handlers.ProjectHandler;
 import com.codenvy.api.project.server.handlers.ProjectHandlerRegistry;
 import com.codenvy.api.project.server.type.ProjectType;
@@ -38,10 +39,13 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 /**
- * @author vetal
+ * @author Vitaly Parfonov
  */
-public class MavenProjectTypeResolverTest {
+public class MavenProjectImportedTest {
 
     private static final String workspace = "my_ws";
 
@@ -82,7 +86,7 @@ public class MavenProjectTypeResolverTest {
             "   </modules>" +
             "</project>";
 
-    private MavenProjectTypeResolver mavenProjectTypeResolver;
+    private MavenProjectImportedHandler mavenProjectImportedHandler;
 
     private static final String      vfsUser       = "dev";
     private static final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
@@ -94,10 +98,6 @@ public class MavenProjectTypeResolverTest {
 
         Set<ProjectType> pts = new HashSet<>();
         final ProjectType pt = new ProjectType("maven", "Maven type", true, false) {
-            {
-                //addParent(parent);
-                //addConstantDefinition("child_const", "Constant", "const_value");
-            }
         };
 
 
@@ -118,9 +118,8 @@ public class MavenProjectTypeResolverTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                Multibinder<ProjectTypeResolver> projectTypeResolverMultibinder =
-                        Multibinder.newSetBinder(binder(), ProjectTypeResolver.class);
-                projectTypeResolverMultibinder.addBinding().to(MavenProjectTypeResolver.class);
+                Multibinder<ProjectHandler> projectTypeResolverMultibinder = Multibinder.newSetBinder(binder(), ProjectHandler.class);
+                projectTypeResolverMultibinder.addBinding().to(MavenProjectImportedHandler.class);
                 bind(ProjectManager.class).toInstance(projectManager);
             }
         });
@@ -136,82 +135,67 @@ public class MavenProjectTypeResolverTest {
         virtualFileSystemRegistry.registerProvider(workspace, memoryFileSystemProvider);
 
 
-        //projectTypeRegistry.registerProjectType(projectType);
-        mavenProjectTypeResolver = injector.getInstance(MavenProjectTypeResolver.class);
+        mavenProjectImportedHandler = injector.getInstance(MavenProjectImportedHandler.class);
         projectManager = injector.getInstance(ProjectManager.class);
     }
 
-
     @Test
-    public void withoutPomXml() throws Exception {
-        FolderEntry test = projectManager.getProjectsRoot(workspace).createFolder("test");
-        boolean resolve = mavenProjectTypeResolver.resolve(test);
-        Assert.assertFalse(resolve);
-        Assert.assertNull(projectManager.getProject(workspace, "test"));
-    }
-
-    @Test
-    public void withPomXml() throws Exception {
-        FolderEntry test = projectManager.getProjectsRoot(workspace).createFolder("test");
-        test.createFile("pom.xml", pomJar.getBytes(), "text/xml");
-        boolean resolve = mavenProjectTypeResolver.resolve(test);
-        Assert.assertTrue(resolve);
-        Assert.assertNotNull(projectManager.getProject(workspace, "test"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig());
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig().getTypeId());
+    public void shouldNotChangeParentProjectType() throws Exception {
+        Project test = projectManager.createProject(workspace, "test", new ProjectConfig("maven", "maven"), null, null);
+        test.getBaseFolder().createFile("pom.xml", pomJar.getBytes(), "text/xml");
+        mavenProjectImportedHandler.onProjectImported(test.getBaseFolder());
+        assertNotNull(projectManager.getProject(workspace, "test"));
+        assertNotNull(projectManager.getProject(workspace, "test").getConfig());
+        assertNotNull(projectManager.getProject(workspace, "test").getConfig().getTypeId());
         Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getConfig().getTypeId());
-        Assert.assertNotNull(projectManager.getProject(workspace, "test").getConfig().getBuilders());
-        Assert.assertEquals("maven", projectManager.getProject(workspace, "test").getConfig().getBuilders().getDefault());
+        assertNotNull(projectManager.getProject(workspace, "test").getConfig().getBuilders());
     }
 
 
     @Test
     public void withPomXmlWithFolders() throws Exception {
-        FolderEntry test = projectManager.getProjectsRoot(workspace).createFolder("test");
-        test.createFile("pom.xml", pomJar.getBytes(), "text/xml");
-
-        FolderEntry folder = test.createFolder("folder1");
+        Project test = projectManager.createProject(workspace, "test", new ProjectConfig("maven", "maven"), null, null);
+        test.getBaseFolder().createFile("pom.xml", pomJar.getBytes(), "text/xml");
+        FolderEntry folder = test.getBaseFolder().createFolder("folder1");
         folder.createFile("pom.xml", pomJar.getBytes(), "text/xml");
 
-        FolderEntry folder1 = test.createFolder("folder2");
+        FolderEntry folder1 = test.getBaseFolder().createFolder("folder2");
         folder1.createFile("pom.xml", pomJar.getBytes(), "text/xml");
 
-
-        boolean resolve = mavenProjectTypeResolver.resolve(test);
-        Assert.assertTrue(resolve);
-        Assert.assertNotNull(projectManager.getProject(workspace, "test"));
-        Assert.assertNull(projectManager.getProject(workspace, "test/folder1"));
-        Assert.assertNull(projectManager.getProject(workspace, "test/folder2"));
-
+        mavenProjectImportedHandler.onProjectImported(test.getBaseFolder());
+        assertNotNull(projectManager.getProject(workspace, "test"));
+        assertNull(projectManager.getProject(workspace, "test/folder1"));
+        assertNull(projectManager.getProject(workspace, "test/folder2"));
     }
+
 
     @Test
     public void withPomXmlMultiModule() throws Exception {
-        FolderEntry test = projectManager.getProjectsRoot(workspace).createFolder("test");
-        test.createFile("pom.xml", pom.getBytes(), "text/xml");
+        Project test = projectManager.createProject(workspace, "test", new ProjectConfig("maven", "maven"), null, null);
+        test.getBaseFolder().createFile("pom.xml", pom.getBytes(), "text/xml");
 
-        FolderEntry module1 = test.createFolder("module1");
+        FolderEntry module1 = test.getBaseFolder().createFolder("module1");
         module1.createFile("pom.xml", pom.getBytes(), "text/xml");
 
-        FolderEntry module2 = test.createFolder("module2");
+        FolderEntry module2 = test.getBaseFolder().createFolder("module2");
         module2.createFile("pom.xml", pom.getBytes(), "text/xml");
 
-        FolderEntry moduleNotDescribedInParentPom = test.createFolder("moduleNotDescribedInParentPom");
+        FolderEntry moduleNotDescribedInParentPom = test.getBaseFolder().createFolder("moduleNotDescribedInParentPom");
         moduleNotDescribedInParentPom.createFile("pom.xml", pom.getBytes(), "text/xml");
 
 
-        boolean resolve = mavenProjectTypeResolver.resolve(test);
-        Assert.assertTrue(resolve);
-        Assert.assertNotNull(projectManager.getProject(workspace, "test"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "test/module1"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "test/module2"));
-        Assert.assertNull(projectManager.getProject(workspace, "test/moduleNotDescribedInParentPom"));
+        mavenProjectImportedHandler.onProjectImported(test.getBaseFolder());
+        assertNotNull(projectManager.getProject(workspace, "test"));
+        assertNotNull(projectManager.getProject(workspace, "test/module1"));
+        assertNotNull(projectManager.getProject(workspace, "test/module2"));
+        assertNull(projectManager.getProject(workspace, "test/moduleNotDescribedInParentPom"));
     }
 
     @Test
     public void withPomXmlMultiModuleWithNesting() throws Exception {
         //test for multi module project in which the modules are specified in format: <module>../module</module>
-        FolderEntry rootProject = projectManager.getProjectsRoot(workspace).createFolder("rootProject");
+        FolderEntry rootProject =
+                projectManager.createProject(workspace, "rootProject", new ProjectConfig("maven", "maven"), null, null).getBaseFolder();
         rootProject.createFile("pom.xml", pom.getBytes(), "text/xml");
 
         FolderEntry module1 = rootProject.createFolder("module1");
@@ -227,13 +211,11 @@ public class MavenProjectTypeResolverTest {
         moduleNotDescribedInParentPom.createFile("pom.xml", pom.getBytes(), "text/xml");
 
 
-        boolean resolve = mavenProjectTypeResolver.resolve(rootProject);
-        Assert.assertTrue(resolve);
-        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject/module1"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject/module2"));
-        Assert.assertNotNull(projectManager.getProject(workspace, "rootProject/module3"));
-        Assert.assertNull(projectManager.getProject(workspace, "rootProject/test/moduleNotDescribedInParentPom"));
+        mavenProjectImportedHandler.onProjectImported(rootProject);
+        assertNotNull(projectManager.getProject(workspace, "rootProject"));
+        assertNotNull(projectManager.getProject(workspace, "rootProject/module1"));
+        assertNotNull(projectManager.getProject(workspace, "rootProject/module2"));
+        assertNotNull(projectManager.getProject(workspace, "rootProject/module3"));
+        assertNull(projectManager.getProject(workspace, "rootProject/test/moduleNotDescribedInParentPom"));
     }
-
 }
