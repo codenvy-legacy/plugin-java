@@ -42,7 +42,7 @@ public class FileWatcher {
         eventBus.addHandler(ItemEvent.TYPE, new ItemHandler() {
             @Override
             public void onItem(ItemEvent event) {
-                if (event.getOperation() == ItemEvent.ItemOperation.DELETE) {
+                if (event.getOperation() == ItemEvent.ItemOperation.DELETED) {
                     if (event.getItem() instanceof SourceFileNode) {
                         String fqn = getFQN(((SourceFileNode)event.getItem()));
                         worker.removeFqnFromCache(fqn);

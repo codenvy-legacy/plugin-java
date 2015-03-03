@@ -21,8 +21,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -48,7 +48,7 @@ public class JarClassNode extends JarEntryNode implements VirtualFile {
      * @param dtoUnmarshallerFactory
      * @param iconRegistry
      */
-    @AssistedInject
+    @Inject
     public JarClassNode(@Assisted TreeNode<?> parent, @Assisted JarEntry data, @Assisted JavaTreeStructure treeStructure,
                         @Assisted int libId, EventBus eventBus, JavaNavigationService service,
                         DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {

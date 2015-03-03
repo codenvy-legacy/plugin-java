@@ -17,8 +17,8 @@ import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -34,7 +34,7 @@ public class JavaProjectNode extends ProjectNode {
     protected boolean shouldAddExternalLibrariesNode = true;
     private ExternalLibrariesNode librariesNode;
 
-    @AssistedInject
+    @Inject
     public JavaProjectNode(@Assisted TreeNode<?> parent,
                            @Assisted ProjectDescriptor data,
                            @Assisted JavaTreeStructure treeStructure,

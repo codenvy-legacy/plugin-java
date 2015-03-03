@@ -17,12 +17,11 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.java.client.navigation.JavaNavigationService;
-import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
@@ -46,13 +45,16 @@ public class AntProjectTreeStructure extends JavaTreeStructure {
     /** {@inheritDoc} */
     @Override
     public void getRootNodes(@Nonnull AsyncCallback<Array<TreeNode<?>>> callback) {
-        CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject != null) {
-            ProjectNode projectRoot = getNodeFactory().newAntProjectNode(null, currentProject.getRootProject(), this);
-            callback.onSuccess(Collections.<TreeNode<?>>createArray(projectRoot));
-        } else {
-            callback.onFailure(new IllegalStateException("No opened project"));
+        if (projectNode == null) {
+            final CurrentProject currentProject = appContext.getCurrentProject();
+            if (currentProject != null) {
+                projectNode = getNodeFactory().newAntProjectNode(null, currentProject.getRootProject(), this);
+            } else {
+                callback.onFailure(new IllegalStateException("No project is opened."));
+                return;
+            }
         }
+        callback.onSuccess(Collections.<TreeNode<?>>createArray(projectNode));
     }
 
     @Override

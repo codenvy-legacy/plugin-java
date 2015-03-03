@@ -14,11 +14,12 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.FileEventHandler;
-import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.projecttree.TreeStructureProviderRegistry;
+import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.ext.java.client.DependenciesUpdater;
 import com.codenvy.ide.ext.java.shared.Constants;
 import com.codenvy.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
@@ -70,16 +71,15 @@ public class AntExtension {
             @Override
             public void onFileOperation(final FileEvent event) {
                 if (event.getOperationType() == FileEvent.FileOperation.SAVE && "build.xml".equals(event.getFile().getName())) {
+                    final ProjectNode project = event.getFile().getProject();
                     Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-                    projectServiceClient.getProject(event.getFile().getProject().getData().getPath(),
+                    projectServiceClient.getProject(project.getData().getPath(),
                                                     new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
                                                         @Override
                                                         protected void onSuccess(ProjectDescriptor result) {
-                                                            if (!result.getAttributes()
-                                                                       .equals(event.getFile().getProject().getData().getAttributes())) {
-                                                                event.getFile().getProject().setData(result);
-                                                                eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(
-                                                                        event.getFile().getProject()));
+                                                            if (!result.getAttributes().equals(project.getData().getAttributes())) {
+                                                                project.setData(result);
+                                                                eventBus.fireEvent(new RefreshProjectTreeEvent(project));
                                                             }
                                                         }
 

@@ -19,9 +19,9 @@ import com.codenvy.ide.api.constraints.Anchor;
 import com.codenvy.ide.api.constraints.Constraints;
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.FileEventHandler;
-import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.icon.Icon;
 import com.codenvy.ide.api.icon.IconRegistry;
@@ -111,7 +111,7 @@ public class MavenExtension {
                                 protected void onSuccess(ProjectDescriptor result) {
                                     if (!result.getAttributes().equals(project.getData().getAttributes())) {
                                         project.setData(result);
-                                        eventBus.fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(project));
+                                        eventBus.fireEvent(new RefreshProjectTreeEvent(project));
                                     }
                                 }
 
