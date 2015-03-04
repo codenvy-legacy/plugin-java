@@ -155,6 +155,11 @@ public abstract class AbstractSourceContainerNode extends FolderNode {
         }
     }
 
+    @Override
+    public boolean canContainsFolder() {
+        return false;
+    }
+
     private static class NodeComparator implements Comparator<TreeNode> {
         @Override
         public int compare(TreeNode o1, TreeNode o2) {

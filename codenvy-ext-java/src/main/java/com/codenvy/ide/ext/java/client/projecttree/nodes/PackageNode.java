@@ -109,10 +109,4 @@ public class PackageNode extends AbstractSourceContainerNode {
         Array<TreeNode<?>> children = pack.getChildren();
         return children.size() == 1 && children.get(0) instanceof PackageNode;
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean canContainsFolder() {
-        return false;
-    }
 }
