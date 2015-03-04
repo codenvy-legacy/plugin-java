@@ -80,6 +80,7 @@ public class PackageNode extends AbstractSourceContainerNode {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void delete(final DeleteCallback callback) {
         super.delete(new DeleteCallback() {
@@ -107,5 +108,11 @@ public class PackageNode extends AbstractSourceContainerNode {
     private boolean hasOneChildPackageOnly(PackageNode pack) {
         Array<TreeNode<?>> children = pack.getChildren();
         return children.size() == 1 && children.get(0) instanceof PackageNode;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canContainsFolder() {
+        return false;
     }
 }
