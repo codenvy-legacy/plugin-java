@@ -23,8 +23,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -47,7 +47,7 @@ public class ExternalLibrariesNode extends AbstractTreeNode<Object> implements O
      *         an object this node encapsulates
      * @param eventBus
      */
-    @AssistedInject
+    @Inject
     ExternalLibrariesNode(@Assisted JavaProjectNode parent, @Assisted Object data, @Assisted JavaTreeStructure treeStructure,
                           EventBus eventBus, IconRegistry iconRegistry, JavaNavigationService service,
                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {

@@ -17,8 +17,8 @@ import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaFolderNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 public class AntFolderNode extends JavaFolderNode {
 
     /** Create instance of {@link AntFolderNode}. */
-    @AssistedInject
+    @Inject
     protected AntFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted AntProjectTreeStructure treeStructure,
                             EventBus eventBus, ProjectServiceClient projectServiceClient,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory) {

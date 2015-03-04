@@ -15,11 +15,11 @@ import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
-import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaProjectNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaProjectNode;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 public class AntProjectNode extends JavaProjectNode {
 
     /** Create instance of {@link AntProjectNode}. */
-    @AssistedInject
+    @Inject
     protected AntProjectNode(@Assisted TreeNode<?> parent,
                              @Assisted ProjectDescriptor data,
                              @Assisted AntProjectTreeStructure treeStructure,

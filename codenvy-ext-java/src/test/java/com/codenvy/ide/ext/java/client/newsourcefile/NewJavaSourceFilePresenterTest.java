@@ -14,7 +14,6 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
-import com.codenvy.ide.api.event.NodeChangedEvent;
 import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.api.projecttree.TreeStructure;
@@ -27,6 +26,7 @@ import com.codenvy.ide.ext.java.client.projecttree.nodes.SourceFolderNode;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
@@ -42,6 +42,10 @@ import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Method;
 
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ANNOTATION;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
+import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -51,10 +55,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ENUM;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.INTERFACE;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.ANNOTATION;
-import static com.codenvy.ide.ext.java.client.newsourcefile.JavaSourceFileType.CLASS;
 
 /**
  * Testing {@link NewJavaSourceFilePresenter} functionality.
@@ -185,7 +185,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -203,7 +203,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -221,7 +221,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -239,7 +239,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -257,7 +257,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -275,7 +275,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -293,7 +293,7 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(SRC_FOLDER_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 
     @Test
@@ -311,6 +311,6 @@ public class NewJavaSourceFilePresenterTest {
         verify(view).close();
         verify(projectServiceClient).createFile(eq(CODENVY_PACKAGE_PATH), eq(FILE_NAME + ".java"), eq(fileContent), anyString(),
                                                 Matchers.<AsyncRequestCallback<ItemReference>>anyObject());
-        verify(eventBus, times(2)).fireEvent(NodeChangedEvent.createNodeChildrenChangedEvent(any(FileNode.class)));
+        verify(eventBus, times(2)).fireEvent(any(Event.class));
     }
 }

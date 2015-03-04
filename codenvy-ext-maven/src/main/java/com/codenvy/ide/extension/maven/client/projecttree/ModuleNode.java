@@ -22,8 +22,8 @@ import com.codenvy.ide.extension.maven.client.event.BeforeModuleOpenEvent;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -35,7 +35,7 @@ public class ModuleNode extends MavenProjectNode {
 
     private final AppContext appContext;
 
-    @AssistedInject
+    @Inject
     public ModuleNode(@Assisted TreeNode<?> parent,
                       @Assisted ProjectDescriptor data,
                       @Assisted MavenProjectTreeStructure treeStructure,

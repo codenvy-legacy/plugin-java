@@ -23,8 +23,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
  */
 public class MavenFolderNode extends JavaFolderNode {
 
-    @AssistedInject
+    @Inject
     public MavenFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted MavenProjectTreeStructure treeStructure,
                            EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
