@@ -35,9 +35,13 @@ import static com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil.g
 public class PackageNode extends AbstractSourceContainerNode {
 
     @Inject
-    public PackageNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
-                       EventBus eventBus, ProjectServiceClient projectServiceClient,
-                       DtoUnmarshallerFactory dtoUnmarshallerFactory, IconRegistry iconRegistry) {
+    public PackageNode(@Assisted TreeNode<?> parent,
+                       @Assisted ItemReference data,
+                       @Assisted JavaTreeStructure treeStructure,
+                       EventBus eventBus,
+                       ProjectServiceClient projectServiceClient,
+                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                       IconRegistry iconRegistry) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.package").getSVGImage());
     }

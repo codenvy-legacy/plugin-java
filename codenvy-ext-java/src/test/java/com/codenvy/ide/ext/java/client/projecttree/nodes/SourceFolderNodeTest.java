@@ -17,10 +17,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /** @author Artem Zatsarynnyy */
 public class SourceFolderNodeTest extends BaseNodeTest {
@@ -31,34 +27,17 @@ public class SourceFolderNodeTest extends BaseNodeTest {
     @Before
     public void setUp() {
         super.setUp();
-        sourceFolderNode =
-                new SourceFolderNode(null, folderItemReference, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory,
-                                     iconRegistry);
+        sourceFolderNode = new SourceFolderNode(null,
+                                                folderItemReference,
+                                                treeStructure,
+                                                eventBus,
+                                                projectServiceClient,
+                                                dtoUnmarshallerFactory,
+                                                iconRegistry);
     }
 
     @Test
     public void testIsRenamable() throws Exception {
         assertFalse(sourceFolderNode.isRenamable());
-    }
-
-    @Test
-    public void shouldCreateChildSourceFileNode() {
-        ItemReference javaFileItem = mock(ItemReference.class);
-        when(javaFileItem.getName()).thenReturn("Test.java");
-        when(javaFileItem.getType()).thenReturn("file");
-
-        sourceFolderNode.createChildNode(javaFileItem);
-
-        verify(treeStructure).newSourceFileNode(eq(sourceFolderNode), eq(javaFileItem));
-    }
-
-    @Test
-    public void shouldCreateChildPackageNode() {
-        ItemReference packageItem = mock(ItemReference.class);
-        when(packageItem.getType()).thenReturn("folder");
-
-        sourceFolderNode.createChildNode(packageItem);
-
-        verify(treeStructure).newPackageNode(eq(sourceFolderNode), eq(packageItem));
     }
 }

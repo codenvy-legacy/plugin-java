@@ -28,8 +28,12 @@ import com.google.web.bindery.event.shared.EventBus;
 public class SourceFolderNode extends AbstractSourceContainerNode {
 
     @Inject
-    public SourceFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
-                            EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
+    public SourceFolderNode(@Assisted TreeNode<?> parent,
+                            @Assisted ItemReference data,
+                            @Assisted JavaTreeStructure treeStructure,
+                            EventBus eventBus,
+                            ProjectServiceClient projectServiceClient,
+                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             IconRegistry iconRegistry) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
         setDisplayIcon(iconRegistry.getIcon("java.sourceFolder").getSVGImage());
