@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 public class JavaProjectNode extends ProjectNode {
 
     protected boolean shouldAddExternalLibrariesNode = true;
-    private ExternalLibrariesNode librariesNode;
 
     @Inject
     public JavaProjectNode(@Assisted TreeNode<?> parent,
@@ -42,7 +41,6 @@ public class JavaProjectNode extends ProjectNode {
                            ProjectServiceClient projectServiceClient,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
-        librariesNode = treeStructure.newExternalLibrariesNode(this);
     }
 
     @Nonnull
@@ -54,13 +52,9 @@ public class JavaProjectNode extends ProjectNode {
     @Override
     public void setChildren(Array<TreeNode<?>> children) {
         if (getTreeStructure().getSettings().isShowExternalLibraries() && shouldAddExternalLibrariesNode) {
-            librariesNode = getTreeStructure().newExternalLibrariesNode(this);
+            ExternalLibrariesNode librariesNode = getTreeStructure().newExternalLibrariesNode(this);
             children.add(librariesNode);
         }
         super.setChildren(children);
-    }
-
-    public ExternalLibrariesNode getLibrariesNode() {
-        return librariesNode;
     }
 }

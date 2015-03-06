@@ -58,6 +58,8 @@ public abstract class BaseNodeTest {
 
     @Before
     public void setUp() {
+        when(projectDescriptor.getPath()).thenReturn(PROJECT_PATH);
+
         Map<String, List<String>> attributes = new HashMap<>();
         attributes.put("maven.source.folder", Collections.singletonList("src/main/java"));
         when(projectDescriptor.getAttributes()).thenReturn(attributes);
@@ -67,6 +69,7 @@ public abstract class BaseNodeTest {
         when(projectDescriptor.getBuilders()).thenReturn(buildersDescriptor);
 
         when(projectNode.getData()).thenReturn(projectDescriptor);
+        when(projectNode.getProject()).thenReturn(projectNode);
         when(projectNode.getPath()).thenReturn(PROJECT_PATH);
 
         Icon icon = mock(Icon.class);
