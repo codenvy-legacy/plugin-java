@@ -34,8 +34,11 @@ import javax.annotation.Nullable;
 public class JavaFolderNode extends FolderNode {
 
     @Inject
-    public JavaFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
-                          EventBus eventBus, ProjectServiceClient projectServiceClient,
+    public JavaFolderNode(@Assisted TreeNode<?> parent,
+                          @Assisted ItemReference data,
+                          @Assisted JavaTreeStructure treeStructure,
+                          EventBus eventBus,
+                          ProjectServiceClient projectServiceClient,
                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }

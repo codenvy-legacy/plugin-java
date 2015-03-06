@@ -72,7 +72,7 @@ public class NewPackageAction extends AbstractNewResourceAction {
     }
 
     private void onAccepted(String value) {
-        final StorableNode parent = getParent();
+        final StorableNode parent = getNewResourceParent();
         if (parent == null) {
             throw new IllegalStateException("No selected parent.");
         }

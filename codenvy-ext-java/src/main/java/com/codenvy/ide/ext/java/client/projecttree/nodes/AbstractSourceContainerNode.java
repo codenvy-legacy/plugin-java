@@ -42,8 +42,12 @@ import java.util.Comparator;
 public abstract class AbstractSourceContainerNode extends FolderNode {
     protected static final Comparator<TreeNode> NODE_COMPARATOR = new NodeComparator();
 
-    public AbstractSourceContainerNode(TreeNode<?> parent, ItemReference data, JavaTreeStructure treeStructure, EventBus eventBus,
-                                       ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+    public AbstractSourceContainerNode(TreeNode<?> parent,
+                                       ItemReference data,
+                                       JavaTreeStructure treeStructure,
+                                       EventBus eventBus,
+                                       ProjectServiceClient projectServiceClient,
+                                       DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus, projectServiceClient, dtoUnmarshallerFactory);
     }
 
@@ -153,6 +157,11 @@ public abstract class AbstractSourceContainerNode extends FolderNode {
         } else {
             return super.createChildNode(item);
         }
+    }
+
+    @Override
+    public boolean canContainsFolder() {
+        return false;
     }
 
     private static class NodeComparator implements Comparator<TreeNode> {
