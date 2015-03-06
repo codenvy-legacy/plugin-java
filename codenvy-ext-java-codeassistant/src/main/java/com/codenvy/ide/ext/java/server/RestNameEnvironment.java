@@ -106,9 +106,6 @@ public class RestNameEnvironment {
     @Named("api.endpoint")
     private String apiUrl;
 
-    @Inject
-    private JavaProjectWatcher projectWatcher;
-
     private static String getAuthenticationToken() {
         User user = EnvironmentContext.getCurrent().getUser();
         if (user != null) {
@@ -265,7 +262,6 @@ public class RestNameEnvironment {
         }
 
         String url = apiUrl + "/builder/" + wsId + "/dependencies";
-        projectWatcher.projectOpened(request.getSession().getId(), wsId, projectPath);
         return getDependencies(url, projectPath, "copy", null);
     }
 
@@ -308,6 +304,8 @@ public class RestNameEnvironment {
                 File zip = doDownload(downloadLink.getHref(), projectPath, "sources.zip");
                 ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectSourcesJars);
             }
+            //create JavaProject adn put it into cache
+            javaProjectService.getOrCreateJavaProject(wsId, projectPath);
 
         } catch (Throwable debug) {
             LOG.error("RestNameEnvironment", debug);

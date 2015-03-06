@@ -20,10 +20,10 @@ import com.codenvy.ide.ext.java.jdt.core.CompletionProposal;
 import com.codenvy.ide.ext.java.jdt.core.Signature;
 import com.codenvy.ide.ext.java.jdt.core.util.CharUtil;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.env.IBinaryType;
+import com.codenvy.ide.ext.java.jdt.text.Document;
 import com.codenvy.ide.ext.java.worker.WorkerTypeInfoStorage;
 import com.codenvy.ide.ext.java.worker.env.BinaryType;
 import com.codenvy.ide.ext.java.worker.env.json.BinaryTypeJso;
-import com.codenvy.ide.ext.java.jdt.text.Document;
 
 
 /**
@@ -135,40 +135,8 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
 //      }
 //
 //   }
-
-    private static final class TypeArgumentProposal {
-        private final boolean fIsAmbiguous;
-
-        private final String fProposal;
-
-        private final String fTypeDisplayName;
-
-        TypeArgumentProposal(String proposal, boolean ambiguous, String typeDisplayName) {
-            fIsAmbiguous = ambiguous;
-            fProposal = proposal;
-            fTypeDisplayName = typeDisplayName;
-        }
-
-//      public String getDisplayName()
-//      {
-//         return fTypeDisplayName;
-//      }
-//
-//      boolean isAmbiguous()
-//      {
-//         return fIsAmbiguous;
-//      }
-
-        @Override
-        public String toString() {
-            return fProposal;
-        }
-    }
-
     private Region fSelectedRegion; // initialized by apply()
-
     private TypeArgumentProposal[] fTypeArgumentProposals;
-
     private boolean fCanUseDiamond;
 
     public LazyGenericTypeProposal(CompletionProposal typeProposal, JavaContentAssistInvocationContext context) {
@@ -246,27 +214,6 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
     protected char[] computeTriggerCharacters() {
         return GENERIC_TYPE_TRIGGERS;
     }
-
-//   /**
-//    * Adapt the parameter offsets to any modification of the replacement string done by <code>apply</code>. For example, applying
-//    * the proposal may add an import instead of inserting the fully qualified name.
-//    * <p>
-//    * This assumes that modifications happen only at the beginning of the replacement string and do not touch the type arguments
-//    * list.
-//    * </p>
-//    * 
-//    * @param offsets the offsets to modify
-//    * @param buffer the original replacement string
-//    */
-//   private void adaptOffsets(int[] offsets, StringBuffer buffer)
-//   {
-//      String replacementString = getReplacementString();
-//      int delta = buffer.length() - replacementString.length(); // due to using an import instead of package
-//      for (int i = 0; i < offsets.length; i++)
-//      {
-//         offsets[i] -= delta;
-//      }
-//   }
 
     /**
      * Computes the type argument proposals for this type proposals. If there is an expected type binding that is a super type of
@@ -354,6 +301,27 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
         return fTypeArgumentProposals;
     }
 
+//   /**
+//    * Adapt the parameter offsets to any modification of the replacement string done by <code>apply</code>. For example, applying
+//    * the proposal may add an import instead of inserting the fully qualified name.
+//    * <p>
+//    * This assumes that modifications happen only at the beginning of the replacement string and do not touch the type arguments
+//    * list.
+//    * </p>
+//    * 
+//    * @param offsets the offsets to modify
+//    * @param buffer the original replacement string
+//    */
+//   private void adaptOffsets(int[] offsets, StringBuffer buffer)
+//   {
+//      String replacementString = getReplacementString();
+//      int delta = buffer.length() - replacementString.length(); // due to using an import instead of package
+//      for (int i = 0; i < offsets.length; i++)
+//      {
+//         offsets[i] -= delta;
+//      }
+//   }
+
     private String getTypeGenerycSignature(String fqn) {
         IBinaryType type = WorkerTypeInfoStorage.get().getType(fqn);
         if (type == null) {
@@ -374,7 +342,7 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
             }
         }
 
-        if(type != null){
+        if (type != null && type.getGenericSignature() != null) {
             return String.valueOf(type.getGenericSignature());
         }
 
@@ -424,6 +392,54 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
             }
         }
         return buf.toString();
+    }
+
+    /**
+     * Returns <code>true</code> if type arguments should be appended when applying this proposal, <code>false</code> if not (for
+     * example if the document already contains a type argument list after the insertion point.
+     *
+     * @param document
+     *         the document
+     * @param offset
+     *         the insertion offset
+     * @param trigger
+     *         the trigger character
+     * @return <code>true</code> if arguments should be appended
+     */
+    private boolean shouldAppendArguments(Document document, int offset, char trigger) {
+      /*
+       * No argument list if there were any special triggers (for example a period to qualify an inner type).
+       */
+        if (trigger != '\0' && trigger != '<' && trigger != '(') {
+            return false;
+        }
+
+      /* No argument list if the completion is empty (already within the argument list). */
+        char[] completion = fProposal.getCompletion();
+        if (completion.length == 0) {
+            return false;
+        }
+
+      /* No argument list if there already is a generic signature behind the name. */
+        try {
+            Region region = document.getLineInformationOfOffset(offset);
+            String line = document.get(region.getOffset(), region.getLength());
+
+            int index = offset - region.getOffset();
+            while (index != line.length() && CharUtil.isJavaIdentifierPart(line.charAt(index))) {
+                ++index;
+            }
+
+            if (index == line.length()) {
+                return true;
+            }
+
+            char ch = line.charAt(index);
+            return ch != '<';
+
+        } catch (BadLocationException e) {
+            return true;
+        }
     }
 
     // /**
@@ -666,54 +682,6 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
     // return null;
     // }
 
-    /**
-     * Returns <code>true</code> if type arguments should be appended when applying this proposal, <code>false</code> if not (for
-     * example if the document already contains a type argument list after the insertion point.
-     *
-     * @param document
-     *         the document
-     * @param offset
-     *         the insertion offset
-     * @param trigger
-     *         the trigger character
-     * @return <code>true</code> if arguments should be appended
-     */
-    private boolean shouldAppendArguments(Document document, int offset, char trigger) {
-      /*
-       * No argument list if there were any special triggers (for example a period to qualify an inner type).
-       */
-        if (trigger != '\0' && trigger != '<' && trigger != '(') {
-            return false;
-        }
-
-      /* No argument list if the completion is empty (already within the argument list). */
-        char[] completion = fProposal.getCompletion();
-        if (completion.length == 0) {
-            return false;
-        }
-
-      /* No argument list if there already is a generic signature behind the name. */
-        try {
-            Region region = document.getLineInformationOfOffset(offset);
-            String line = document.get(region.getOffset(), region.getLength());
-
-            int index = offset - region.getOffset();
-            while (index != line.length() && CharUtil.isJavaIdentifierPart(line.charAt(index))) {
-                ++index;
-            }
-
-            if (index == line.length()) {
-                return true;
-            }
-
-            char ch = line.charAt(index);
-            return ch != '<';
-
-        } catch (BadLocationException e) {
-            return true;
-        }
-    }
-
     private StringBuffer createParameterList(TypeArgumentProposal[] typeArguments, int[] offsets, int[] lengths,
                                              boolean onlyAppendArguments) {
         StringBuffer buffer = new StringBuffer();
@@ -758,6 +726,15 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
         }
 
         return buffer;
+    }
+
+    @Override
+    public Region getSelection(Document document) {
+        if (fSelectedRegion == null) {
+            return super.getSelection(document);
+        }
+
+        return new RegionImpl(fSelectedRegion.getOffset(), fSelectedRegion.getLength());
     }
 
     // private void installLinkedMode(IDocument document, int[] offsets, int[] lengths,
@@ -837,12 +814,11 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
     // }
 
     @Override
-    public Region getSelection(Document document) {
-        if (fSelectedRegion == null) {
-            return super.getSelection(document);
+    protected int computeCursorPosition() {
+        if (fSelectedRegion != null) {
+            return fSelectedRegion.getOffset() - getReplacementOffset();
         }
-
-        return new RegionImpl(fSelectedRegion.getOffset(), fSelectedRegion.getLength());
+        return super.computeCursorPosition();
     }
 
     //
@@ -873,12 +849,16 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
 //      return super.computeContextInformation();
 //   }
 
-    @Override
-    protected int computeCursorPosition() {
-        if (fSelectedRegion != null) {
-            return fSelectedRegion.getOffset() - getReplacementOffset();
-        }
-        return super.computeCursorPosition();
+    /**
+     * Sets whether this proposal can use the diamond.
+     *
+     * @param canUseDiamond
+     *         <code>true</code> if a diamond can be inserted
+     * @see CompletionProposal#canUseDiamond(org.eclipse.jdt.core.CompletionContext)
+     * @since 3.7
+     */
+    void canUseDiamond(boolean canUseDiamond) {
+        fCanUseDiamond = canUseDiamond;
     }
 
 //   private boolean hasParameters()
@@ -899,18 +879,6 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
 //   }
 
     /**
-     * Sets whether this proposal can use the diamond.
-     *
-     * @param canUseDiamond
-     *         <code>true</code> if a diamond can be inserted
-     * @see CompletionProposal#canUseDiamond(org.eclipse.jdt.core.CompletionContext)
-     * @since 3.7
-     */
-    void canUseDiamond(boolean canUseDiamond) {
-        fCanUseDiamond = canUseDiamond;
-    }
-
-    /**
      * Tells whether this proposal can use the diamond.
      *
      * @return <code>true</code> if a diamond can be used
@@ -919,6 +887,35 @@ public final class LazyGenericTypeProposal extends LazyJavaTypeCompletionProposa
      */
     protected boolean canUseDiamond() {
         return fCanUseDiamond;
+    }
+
+    private static final class TypeArgumentProposal {
+        private final boolean fIsAmbiguous;
+
+        private final String fProposal;
+
+        private final String fTypeDisplayName;
+
+        TypeArgumentProposal(String proposal, boolean ambiguous, String typeDisplayName) {
+            fIsAmbiguous = ambiguous;
+            fProposal = proposal;
+            fTypeDisplayName = typeDisplayName;
+        }
+
+//      public String getDisplayName()
+//      {
+//         return fTypeDisplayName;
+//      }
+//
+//      boolean isAmbiguous()
+//      {
+//         return fIsAmbiguous;
+//      }
+
+        @Override
+        public String toString() {
+            return fProposal;
+        }
     }
 
 }

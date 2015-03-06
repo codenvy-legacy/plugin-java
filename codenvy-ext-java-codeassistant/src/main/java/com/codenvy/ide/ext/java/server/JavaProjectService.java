@@ -18,6 +18,10 @@ import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.ide.ext.java.server.core.resources.ResourceChangedEvent;
 import com.codenvy.ide.ext.java.server.internal.core.JavaProject;
 import com.codenvy.vfs.impl.fs.LocalFSMountStrategy;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -34,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Maintenance and create JavaProjects
@@ -45,7 +50,7 @@ public class JavaProjectService {
     /** Logger. */
     private static final Logger LOG = LoggerFactory.getLogger(JavaProjectService.class);
 
-    private ConcurrentHashMap<String, JavaProject>                 cache       = new ConcurrentHashMap<>();
+    private Cache<String, JavaProject> cache;
     private ConcurrentHashMap<String, CopyOnWriteArraySet<String>> projectInWs = new ConcurrentHashMap<>();
     private LocalFSMountStrategy fsMountStrategy;
     private String               tempDir;
@@ -73,12 +78,23 @@ public class JavaProjectService {
         options.put(JavaCore.COMPILER_ANNOTATION_NULL_ANALYSIS, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_GenerateClassFiles, JavaCore.ENABLED);
+        cache = CacheBuilder.newBuilder().expireAfterAccess(4, TimeUnit.HOURS).removalListener(
+                new RemovalListener<String, JavaProject>() {
+                    @Override
+                    public void onRemoval(RemovalNotification<String, JavaProject> notification) {
+                        JavaProject value = notification.getValue();
+                        if (value != null) {
+                            removeProject(value.getWsId(), value.getProjectPath());
+                        }
+                    }
+                }).build();
     }
 
     public JavaProject getOrCreateJavaProject(String wsId, String projectPath) {
         String key = wsId + projectPath;
-        if (cache.containsKey(key)) {
-            return cache.get(key);
+        JavaProject project = cache.getIfPresent(key);
+        if (project != null) {
+            return project;
         }
         File mountPath;
         try {
@@ -96,7 +112,7 @@ public class JavaProjectService {
     }
 
     public boolean isProjectDependencyExist(String wsId, String projectPath) {
-        if (cache.containsKey(wsId + projectPath)) {
+        if (cache.asMap().containsKey(wsId + projectPath)) {
             return true;
         }
         File projectDepDir = new File(tempDir, wsId + projectPath);
@@ -104,11 +120,12 @@ public class JavaProjectService {
     }
 
     public void removeProject(String wsId, String projectPath) {
-        JavaProject javaProject = cache.remove(wsId + projectPath);
+        JavaProject javaProject = cache.getIfPresent(wsId + projectPath);
         if (projectInWs.containsKey(wsId)) {
             projectInWs.get(wsId).remove(projectPath);
         }
         if (javaProject != null) {
+            cache.invalidate(wsId + projectPath);
             try {
                 javaProject.close();
             } catch (JavaModelException e) {
@@ -145,34 +162,35 @@ public class JavaProjectService {
             final String eventPath = event.getPath();
             try {
                 if (eventType == VirtualFileEvent.ChangeType.DELETED) {
-                    JavaProject javaProject = cache.get(eventWorkspace + eventPath);
+                    JavaProject javaProject = cache.getIfPresent(eventWorkspace + eventPath);
                     if (javaProject != null) {
                         removeProject(eventWorkspace, eventPath);
+                        return;
                     } else if (event.isFolder()) {
                         if (isProjectDependencyExist(eventWorkspace, eventPath)) {
                             deleteDependencyDirectory(eventWorkspace, eventPath);
-                        }
-                    }
-                } else {
-                    if (projectInWs.containsKey(eventWorkspace)) {
-                        for (String path : projectInWs.get(eventWorkspace)) {
-                            if (eventPath.startsWith(path)) {
-                                JavaProject javaProject = cache.get(eventWorkspace + path);
-                                if (javaProject != null) {
-                                    try {
-                                        javaProject.getJavaModelManager().deltaState.resourceChanged(
-                                                new ResourceChangedEvent(fsMountStrategy.getMountPath(eventWorkspace), event));
-                                        javaProject.creteNewNameEnvironment();
-                                    } catch (ServerException e) {
-                                        LOG.error("Can't update java model", e);
-                                    }
-                                }
-                                break;
-                            }
+                            return;
                         }
                     }
                 }
-            } catch (Throwable t){
+                if (projectInWs.containsKey(eventWorkspace)) {
+                    for (String path : projectInWs.get(eventWorkspace)) {
+                        if (eventPath.startsWith(path)) {
+                            JavaProject javaProject = cache.getIfPresent(eventWorkspace + path);
+                            if (javaProject != null) {
+                                try {
+                                    javaProject.getJavaModelManager().deltaState.resourceChanged(
+                                            new ResourceChangedEvent(fsMountStrategy.getMountPath(eventWorkspace), event));
+                                    javaProject.creteNewNameEnvironment();
+                                } catch (ServerException e) {
+                                    LOG.error("Can't update java model", e);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (Throwable t) {
                 //catch all exceptions that may be happened
                 LOG.error("Can't update java model", t);
             }

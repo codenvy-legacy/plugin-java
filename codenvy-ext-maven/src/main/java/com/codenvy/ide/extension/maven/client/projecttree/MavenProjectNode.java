@@ -17,15 +17,15 @@ import com.codenvy.ide.api.projecttree.AbstractTreeNode;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaProjectNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
+import com.codenvy.ide.ext.java.client.projecttree.nodes.JavaProjectNode;
 import com.codenvy.ide.extension.maven.shared.MavenAttributes;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class MavenProjectNode extends JavaProjectNode {
 
-    @AssistedInject
+    @Inject
     public MavenProjectNode(@Assisted TreeNode<?> parent,
                             @Assisted ProjectDescriptor data,
                             @Assisted MavenProjectTreeStructure treeStructure,

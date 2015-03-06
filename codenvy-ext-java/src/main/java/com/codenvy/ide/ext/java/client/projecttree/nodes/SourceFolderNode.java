@@ -16,8 +16,8 @@ import com.codenvy.ide.api.icon.IconRegistry;
 import com.codenvy.ide.api.projecttree.TreeNode;
 import com.codenvy.ide.ext.java.client.projecttree.JavaTreeStructure;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -27,7 +27,7 @@ import com.google.web.bindery.event.shared.EventBus;
  */
 public class SourceFolderNode extends AbstractSourceContainerNode {
 
-    @AssistedInject
+    @Inject
     public SourceFolderNode(@Assisted TreeNode<?> parent, @Assisted ItemReference data, @Assisted JavaTreeStructure treeStructure,
                             EventBus eventBus, ProjectServiceClient projectServiceClient, DtoUnmarshallerFactory dtoUnmarshallerFactory,
                             IconRegistry iconRegistry) {
