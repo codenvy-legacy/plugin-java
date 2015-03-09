@@ -200,10 +200,10 @@
                         </goals>
                         <configuration>
                             <dtoPackages>
-                                <package>com.codenvy.ide.extension.maven.server.projecttype.handler.dto</package>
+                                <package>org.eclipse.che.ide.extension.maven.server.projecttype.handler.dto</package>
                             </dtoPackages>
                             <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                            <genClassName>com.codenvy.ide.extension.maven.server.dto.DtoServerImpls</genClassName>
+                            <genClassName>org.eclipse.che.ide.extension.maven.server.dto.DtoServerImpls</genClassName>
                             <impl>server</impl>
                         </configuration>
                     </execution>

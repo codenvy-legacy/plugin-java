@@ -9,7 +9,7 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.sub;
+package org.eclipse.che.sub;
 
 import java.io.Closeable;
 import java.io.IOException;

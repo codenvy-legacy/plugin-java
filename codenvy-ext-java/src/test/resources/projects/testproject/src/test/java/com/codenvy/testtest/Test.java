@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.testtest;
+package org.eclipse.che.testtest;
 
 public class Test{
 
