@@ -11,6 +11,7 @@
 
 package com.codenvy.ide.ext.java.server.internal.core;
 
+import com.codenvy.api.project.server.Constants;
 import com.codenvy.api.project.server.ProjectJson;
 import com.codenvy.api.project.shared.Builders;
 import com.codenvy.ide.ant.tools.AntUtils;
@@ -18,7 +19,6 @@ import com.codenvy.ide.ext.java.server.core.JavaCore;
 import com.codenvy.ide.ext.java.server.internal.core.search.indexing.IndexManager;
 import com.codenvy.ide.ext.java.server.internal.core.util.JavaElementFinder;
 import com.codenvy.ide.maven.tools.MavenUtils;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -77,6 +77,7 @@ public class JavaProject extends Openable implements IJavaProject {
             return entry.getFileName().toString().endsWith("jar");
         }
     };
+    private final String workspacePath;
     private volatile SearchableEnvironment nameEnvironment;
     private String                    projectPath;
     private String                    tempDir;
@@ -87,7 +88,6 @@ public class JavaProject extends Openable implements IJavaProject {
     private IClasspathEntry[]         rawClassPath;
     private ResolvedClasspath         resolvedClasspath;
     private IndexManager              indexManager;
-    private final String workspacePath;
 
     public JavaProject(File root, String projectPath, String tempDir, String ws, Map<String, String> options) {
         super(null, new JavaModelManager());
@@ -117,7 +117,7 @@ public class JavaProject extends Openable implements IJavaProject {
                     File[] l = f.listFiles();
                     for (File c : l) {
                         if (c.isDirectory()
-                            && new File(c, com.codenvy.api.project.server.Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH).exists()) {
+                            && new File(c, Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH).exists()) {
 
                             q.add(c);
                         }
@@ -160,12 +160,32 @@ public class JavaProject extends Openable implements IJavaProject {
         creteNewNameEnvironment();
     }
 
+    /**
+     * Returns true if the given project is accessible and it has
+     * a java nature, otherwise false.
+     *
+     * @param project
+     *         IProject
+     * @return boolean
+     */
+    public static boolean hasJavaNature(IProject project) {
+//        try {
+//            return project.hasNature(JavaCore.NATURE_ID);
+//        } catch (CoreException e) {
+//            if (ExternalJavaProject.EXTERNAL_PROJECT_NAME.equals(project.getName()))
+//                return true;
+//            // project does not exist or is not open
+//        }
+//        return false;
+        return true;
+    }
+
     public SearchableEnvironment getNameEnvironment() {
         return nameEnvironment;
     }
 
     private void addSources(File projectDir, List<IClasspathEntry> paths) throws IOException {
-        File codenvy = new File(projectDir, com.codenvy.api.project.server.Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
+        File codenvy = new File(projectDir, Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
         List<File> sources = new LinkedList<>();
 
         final ProjectJson projectJson;
@@ -420,10 +440,10 @@ public class JavaProject extends Openable implements IJavaProject {
         if (rootPathToResolvedEntries == null)
             return null;
         IClasspathEntry classpathEntry = (IClasspathEntry)rootPathToResolvedEntries.get(path);
-        if (classpathEntry == null) {
-            path = getProject().getWorkspace().getRoot().getLocation().append(path);
-            classpathEntry = (IClasspathEntry)rootPathToResolvedEntries.get(path);
-        }
+//        if (classpathEntry == null) {
+//            path = getProject().getWorkspace().getRoot().getLocation().append(path);
+//            classpathEntry = (IClasspathEntry)rootPathToResolvedEntries.get(path);
+//        }
         return classpathEntry;
     }
 
@@ -463,6 +483,7 @@ public class JavaProject extends Openable implements IJavaProject {
             throw elementFinder.exception;
         return elementFinder.element;
     }
+
     public IJavaElement findPackageFragment(String packageName)
             throws JavaModelException {
         NameLookup lookup = newNameLookup((WorkingCopyOwner)null/*no need to look at working copies for pkgs*/);
@@ -483,6 +504,7 @@ public class JavaProject extends Openable implements IJavaProject {
             return pkgFragments[0];
         }
     }
+
     @Override
     public IPackageFragment findPackageFragment(IPath path) throws JavaModelException {
         return null;
@@ -895,15 +917,15 @@ public class JavaProject extends Openable implements IJavaProject {
         return true;
     }
 
-    @Override
-    public boolean exists() {
-        return false;
-    }
-
 //    @Override
 //    public IJavaElement getAncestor(int ancestorType) {
 //        return null;
 //    }
+
+    @Override
+    public boolean exists() {
+        return false;
+    }
 
     @Override
     public String getAttachedJavadoc(IProgressMonitor monitor) throws JavaModelException {
@@ -1089,6 +1111,7 @@ public class JavaProject extends Openable implements IJavaProject {
     protected IStatus validateExistence(File underlyingResource) {
         return JavaModelStatus.VERIFIED_OK;
     }
+
     /**
      * @see org.eclipse.jdt.internal.core.JavaElement#getHandleMemento(StringBuffer)
      */
@@ -1156,26 +1179,8 @@ public class JavaProject extends Openable implements IJavaProject {
         if (!(o instanceof JavaProject))
             return false;
 
-        JavaProject other = (JavaProject) o;
+        JavaProject other = (JavaProject)o;
         return this.getFullPath().equals(other.getFullPath());
-    }
-
-    /**
-     * Returns true if the given project is accessible and it has
-     * a java nature, otherwise false.
-     * @param project IProject
-     * @return boolean
-     */
-    public static boolean hasJavaNature(IProject project) {
-//        try {
-//            return project.hasNature(JavaCore.NATURE_ID);
-//        } catch (CoreException e) {
-//            if (ExternalJavaProject.EXTERNAL_PROJECT_NAME.equals(project.getName()))
-//                return true;
-//            // project does not exist or is not open
-//        }
-//        return false;
-        return true;
     }
 
     /*
