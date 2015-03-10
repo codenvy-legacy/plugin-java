@@ -128,7 +128,7 @@
                         <package>com.codenvy.builder.maven.dto</package>
                     </dtoPackages>
                     <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                    <genClassName>com.codenvy.builder.maven.dto.DtoServerImpls</genClassName>
+                    <genClassName>org.eclipse.che.builder.maven.dto.DtoServerImpls</genClassName>
                     <impl>server</impl>
                 </configuration>
             </plugin>

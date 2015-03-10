@@ -11,7 +11,8 @@
       Codenvy, S.A. - initial API and implementation
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-plugin-java-parent</artifactId>
@@ -25,11 +26,6 @@
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>com.codenvy.ide</groupId>
-            <artifactId>codenvy-ext-runner</artifactId>
-            <version>${codenvy.ide.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.codenvy.ide</groupId>
             <artifactId>codenvy-ide-api</artifactId>
@@ -93,6 +89,11 @@
             <groupId>com.codenvy.plugin-java</groupId>
             <artifactId>codenvy-ext-maven</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-runner</groupId>
+            <artifactId>codenvy-plugin-runner</artifactId>
+            <version>${codenvy.plugin.runner.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt.inject</groupId>
@@ -226,10 +227,10 @@
                         </goals>
                         <configuration>
                             <dtoPackages>
-                                <package>com.codenvy.ide.ext.java.jdi.shared</package>
+                                <package>org.eclipse.che.ide.ext.java.jdi.shared</package>
                             </dtoPackages>
                             <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                            <genClassName>com.codenvy.ide.ext.java.jdi.client.dto.DtoClientImpls</genClassName>
+                            <genClassName>org.eclipse.che.ide.ext.java.jdi.client.dto.DtoClientImpls</genClassName>
                             <impl>client</impl>
                         </configuration>
                     </execution>
@@ -241,10 +242,10 @@
                         </goals>
                         <configuration>
                             <dtoPackages>
-                                <package>com.codenvy.ide.ext.java.jdi.shared</package>
+                                <package>org.eclipse.che.ide.ext.java.jdi.shared</package>
                             </dtoPackages>
                             <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                            <genClassName>com.codenvy.ide.ext.java.jdi.server.dto.DtoServerImpls</genClassName>
+                            <genClassName>org.eclipse.che.ide.ext.java.jdi.server.dto.DtoServerImpls</genClassName>
                             <impl>server</impl>
                         </configuration>
                     </execution>

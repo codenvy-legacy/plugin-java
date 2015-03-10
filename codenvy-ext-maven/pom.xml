@@ -37,11 +37,6 @@
         </dependency>
         <dependency>
             <groupId>com.codenvy.ide</groupId>
-            <artifactId>codenvy-ext-runner</artifactId>
-            <version>${codenvy.ide.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.ide</groupId>
             <artifactId>codenvy-ide-api</artifactId>
             <version>${codenvy.ide.version}</version>
         </dependency>
@@ -69,6 +64,11 @@
             <groupId>com.codenvy.plugin-java</groupId>
             <artifactId>codenvy-maven-tools</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-runner</groupId>
+            <artifactId>codenvy-plugin-runner</artifactId>
+            <version>${codenvy.plugin.runner.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
@@ -200,10 +200,10 @@
                         </goals>
                         <configuration>
                             <dtoPackages>
-                                <package>com.codenvy.ide.extension.maven.server.projecttype.handler.dto</package>
+                                <package>org.eclipse.che.ide.extension.maven.server.projecttype.handler.dto</package>
                             </dtoPackages>
                             <outputDirectory>${dto-generator-out-directory}</outputDirectory>
-                            <genClassName>com.codenvy.ide.extension.maven.server.dto.DtoServerImpls</genClassName>
+                            <genClassName>org.eclipse.che.ide.extension.maven.server.dto.DtoServerImpls</genClassName>
                             <impl>server</impl>
                         </configuration>
                     </execution>

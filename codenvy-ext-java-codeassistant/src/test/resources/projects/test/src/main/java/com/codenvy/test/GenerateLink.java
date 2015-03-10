@@ -9,7 +9,7 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
-package com.codenvy.test;
+package org.eclipse.che.test;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
