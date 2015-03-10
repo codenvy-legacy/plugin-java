@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.JavadocFinder;
+import org.eclipse.che.jdt.JavadocFinder;
 
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;

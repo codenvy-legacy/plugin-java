@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.SourcesFromBytecodeGenerator;
+import org.eclipse.che.jdt.SourcesFromBytecodeGenerator;
 
 import org.eclipse.jdt.core.IType;
 import org.junit.Before;

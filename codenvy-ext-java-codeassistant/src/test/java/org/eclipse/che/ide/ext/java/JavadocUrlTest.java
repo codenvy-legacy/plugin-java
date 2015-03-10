@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.JavadocFinder;
-import org.eclipse.che.ide.ext.java.server.javadoc.JavaElementLinks;
+import org.eclipse.che.jdt.JavadocFinder;
+import org.eclipse.che.jdt.javadoc.JavaElementLinks;
 
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;

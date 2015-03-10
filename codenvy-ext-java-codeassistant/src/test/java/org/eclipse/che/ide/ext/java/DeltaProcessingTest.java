@@ -13,7 +13,7 @@ package org.eclipse.che.ide.ext.java;
 
 import org.eclipse.che.api.vfs.server.observation.CreateEvent;
 import org.eclipse.che.api.vfs.server.observation.DeleteEvent;
-import org.eclipse.che.ide.ext.java.server.core.resources.ResourceChangedEvent;
+import org.eclipse.che.jdt.core.resources.ResourceChangedEvent;
 
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
