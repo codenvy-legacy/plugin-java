@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2012 IBM Corporation and others.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    IBM Corporation - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.che.jdt.internal.core;
@@ -15,9 +15,8 @@ import org.eclipse.che.jdt.core.JavaConventions;
 import org.eclipse.che.jdt.internal.core.search.BasicSearchEngine;
 import org.eclipse.che.jdt.internal.core.search.IRestrictedAccessTypeRequestor;
 import org.eclipse.che.jdt.internal.core.search.JavaWorkspaceScope;
-import org.eclipse.che.jdt.internal.core.search.Util;
 import org.eclipse.che.jdt.internal.core.search.indexing.IndexManager;
-
+import org.eclipse.che.jdt.internal.core.util.Util;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,7 +41,6 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
-import org.eclipse.jdt.internal.core.JavaModelStatus;
 import org.eclipse.jdt.internal.core.util.HashtableOfArrayToObject;
 import org.eclipse.jdt.internal.core.util.LRUCache;
 import org.eclipse.jdt.internal.core.util.Messages;
@@ -66,11 +64,11 @@ import java.util.zip.ZipFile;
  * @author Evgen Vidolob
  */
 public class JavaModelManager {
-
+    public final static  String             TRUE                           = "true"; //$NON-NLS-1$
+    public final static  ICompilationUnit[] NO_WORKING_COPY                = new ICompilationUnit[0];
     private final static String             INDEXED_SECONDARY_TYPES        = "#@*_indexing secondary cache_*@#"; //$NON-NLS-1$
     public static        boolean            ZIP_ACCESS_VERBOSE             = false;
     public static        boolean            VERBOSE                        = false;
-    public final static  ICompilationUnit[] NO_WORKING_COPY                = new ICompilationUnit[0];
     /**
      * A set of java.io.Files used as a cache of external jars that
      * are known to be existing.
@@ -87,17 +85,34 @@ public class JavaModelManager {
      * Note this cache is kept for the whole session.
      */
     public static        HashSet<File>      existingExternalConfirmedFiles = new HashSet<>();
+    /**
+     * Unique handle onto the JavaModel
+     */
+    final JavaModel javaModel;
     /* whether an AbortCompilationUnit should be thrown when the source of a compilation unit cannot be retrieved */
-    public               ThreadLocal        abortOnMissingSource           = new ThreadLocal();
+    public ThreadLocal abortOnMissingSource = new ThreadLocal();
+    public IndexManager         indexManager;
+    /**
+     * Holds the state used for delta processing.
+     */
+    public DeltaProcessingState deltaState;
+    /*
+     * The unique workspace scope
+     */
+    public JavaWorkspaceScope   workspaceScope;
     /**
      * Set of elements which are out of sync with their buffers.
      */
-    protected            HashSet            elementsOutOfSynchWithBuffers  = new HashSet(11);
+    protected HashSet     elementsOutOfSynchWithBuffers = new HashSet(11);
     /**
      * Table from WorkingCopyOwner to a table of ICompilationUnit (working copy handle) to PerWorkingCopyInfo.
      * NOTE: this object itself is used as a lock to synchronize creation/removal of per working copy infos
      */
-    protected            Map                perWorkingCopyInfos            = new HashMap(5);
+    protected Map         perWorkingCopyInfos           = new HashMap(5);
+    /**
+     * A weak set of the known search scopes.
+     */
+    protected WeakHashMap searchScopes                  = new WeakHashMap();
     /**
      * List of IPath of jars that are known to be invalid - such as not being a valid/known format
      */
@@ -120,28 +135,10 @@ public class JavaModelManager {
     /**
      * Infos cache.
      */
-    private JavaModelCache       cache;
-    public  IndexManager         indexManager;
-    private PerProjectInfo       info;
-    private BufferManager        DEFAULT_BUFFER_MANAGER;
-    /**
-     * Holds the state used for delta processing.
-     */
-    public  DeltaProcessingState deltaState;
-    /**
-     * Unique handle onto the JavaModel
-     */
-    final   JavaModel            javaModel;
-    /**
-     * A weak set of the known search scopes.
-     */
-    protected WeakHashMap searchScopes = new WeakHashMap();
-
-    /*
-     * The unique workspace scope
-     */
-    public JavaWorkspaceScope workspaceScope;
-    private JavaProject javaProject;
+    private JavaModelCache cache;
+    private PerProjectInfo info;
+    private BufferManager  DEFAULT_BUFFER_MANAGER;
+    private JavaProject    javaProject;
 
 //    public static JavaModelManager getJavaModelManager() {
 //        return MANAGER;
@@ -182,14 +179,6 @@ public class JavaModelManager {
             }
         }
         return null;
-    }
-
-    public IndexManager getIndexManager() {
-        return indexManager;
-    }
-
-    public JavaModel getJavaModel() {
-        return javaModel;
     }
 
     private synchronized static void existingExternalFilesAdd(File externalFile) {
@@ -330,6 +319,218 @@ public class JavaModelManager {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Returns the Java element corresponding to the given resource, or
+     * <code>null</code> if unable to associate the given resource
+     * with a Java element.
+     * <p>
+     * The resource must be one of:<ul>
+     *	<li>a project - the element returned is the corresponding <code>IJavaProject</code></li>
+     *	<li>a <code>.java</code> file - the element returned is the corresponding <code>ICompilationUnit</code></li>
+     *	<li>a <code>.class</code> file - the element returned is the corresponding <code>IClassFile</code></li>
+     *	<li>a ZIP archive (e.g. a <code>.jar</code>, a <code>.zip</code> file, etc.) - the element returned is the corresponding
+     *	<code>IPackageFragmentRoot</code></li>
+     *  <li>a folder - the element returned is the corresponding <code>IPackageFragmentRoot</code>
+     *			or <code>IPackageFragment</code></li>
+     *  <li>the workspace root resource - the element returned is the <code>IJavaModel</code></li>
+     *	</ul>
+     * <p>
+     * Creating a Java element has the side effect of creating and opening all of the
+     * element's parents if they are not yet open.
+     */
+    public static IJavaElement create(File resource, IJavaProject project) {
+        if (resource == null) {
+            return null;
+        }
+        if (resource.isFile()) {
+            return createFromFile(resource, project);
+        } else {
+            return createFromDirectory(resource, project);
+        }
+//        int type = resource.getType();
+//        switch (type) {
+//            case IResource.PROJECT :
+//                return JavaCore.create((IProject) resource);
+//            case IResource.FILE :
+//                return create((IFile) resource, project);
+//            case IResource.FOLDER :
+//                return create((IFolder) resource, project);
+//            case IResource.ROOT :
+//                return JavaCore.create((IWorkspaceRoot) resource);
+//            default :
+//                return null;
+//        }
+    }
+
+    /**
+     * Returns the Java element corresponding to the given file, its project being the given
+     * project.
+     * Returns <code>null</code> if unable to associate the given file
+     * with a Java element.
+     *
+     * <p>The file must be one of:<ul>
+     *	<li>a <code>.java</code> file - the element returned is the corresponding <code>ICompilationUnit</code></li>
+     *	<li>a <code>.class</code> file - the element returned is the corresponding <code>IClassFile</code></li>
+     *	<li>a ZIP archive (e.g. a <code>.jar</code>, a <code>.zip</code> file, etc.) - the element returned is the corresponding
+     *	<code>IPackageFragmentRoot</code></li>
+     *	</ul>
+     * <p>
+     * Creating a Java element has the side effect of creating and opening all of the
+     * element's parents if they are not yet open.
+     */
+    public static IJavaElement createFromFile(File file, IJavaProject project) {
+        if (file == null) {
+            return null;
+        }
+//        if (project == null) {
+//            project = JavaCore.create(file.getProject());
+//        }
+
+//        if (file.getFileExtension() != null) {
+        String name = file.getName();
+        if (Util.isJavaLikeFileName(name))
+            return createCompilationUnitFrom(file, project);
+        if (org.eclipse.jdt.internal.compiler.util.Util.isClassFileName(name))
+            return createClassFileFrom(file, project);
+        return createJarPackageFragmentRootFrom(file, (JavaProject)project);
+//        }
+//        return null;
+    }
+
+    /**
+     * Creates and returns a class file element for the given <code>.class</code> file,
+     * its project being the given project. Returns <code>null</code> if unable
+     * to recognize the class file.
+     */
+    public static IClassFile createClassFileFrom(File file, IJavaProject project) {
+        if (file == null) {
+            return null;
+        }
+//        if (project == null) {
+//            project = JavaCore.create(file.getProject());
+//        }
+        IPackageFragment pkg = (IPackageFragment)determineIfOnClasspath(file, (JavaProject)project);
+        if (pkg == null) {
+            // fix for 1FVS7WE
+            // not on classpath - make the root its folder, and a default package
+            PackageFragmentRoot root = (PackageFragmentRoot)project.getPackageFragmentRoot(file.getParent());
+            pkg = root.getPackageFragment(CharOperation.NO_STRINGS);
+        }
+        return pkg.getClassFile(file.getName());
+    }
+
+    /**
+     * Creates and returns a handle for the given JAR file, its project being the given project.
+     * The Java model associated with the JAR's project may be
+     * created as a side effect.
+     * Returns <code>null</code> if unable to create a JAR package fragment root.
+     * (for example, if the JAR file represents a non-Java resource)
+     */
+    public static IPackageFragmentRoot createJarPackageFragmentRootFrom(File file, JavaProject project) {
+        if (file == null) {
+            return null;
+        }
+//        if (project == null) {
+//            project = JavaCore.create(file.getProject());
+//        }
+
+        // Create a jar package fragment root only if on the classpath
+        IPath resourcePath = new Path(file.getPath());
+        try {
+            IClasspathEntry entry = project.getClasspathEntryFor(resourcePath);
+            if (entry != null) {
+                return project.getPackageFragmentRoot(file);
+            }
+        } catch (JavaModelException e) {
+            // project doesn't exist: return null
+        }
+        return null;
+    }
+
+    /**
+     * Returns the package fragment or package fragment root corresponding to the given folder,
+     * its parent or great parent being the given project.
+     * or <code>null</code> if unable to associate the given folder with a Java element.
+     * <p>
+     * Note that a package fragment root is returned rather than a default package.
+     * <p>
+     * Creating a Java element has the side effect of creating and opening all of the
+     * element's parents if they are not yet open.
+     */
+    public static IJavaElement createFromDirectory(File folder, IJavaProject project) {
+        if (folder == null) {
+            return null;
+        }
+        IJavaElement element;
+//        if (project == null) {
+//            project = JavaCore.create(folder.getProject());
+//            element = determineIfOnClasspath(folder, project);
+//            if (element == null) {
+//                // walk all projects and find one that have the given folder on its classpath
+//                IJavaProject[] projects;
+//                try {
+//                    projects = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProjects();
+//                } catch (JavaModelException e) {
+//                    return null;
+//                }
+//                for (int i = 0, length = projects.length; i < length; i++) {
+//                    project = projects[i];
+//                    element = determineIfOnClasspath(folder, project);
+//                    if (element != null)
+//                        break;
+//                }
+//            }
+//        } else {
+        element = determineIfOnClasspath(folder, (JavaProject)project);
+//        }
+        return element;
+    }
+
+    public IndexManager getIndexManager() {
+        return indexManager;
+    }
+
+    public void setIndexManager(IndexManager indexManager) {
+        this.indexManager = indexManager;
+    }
+
+    public JavaModel getJavaModel() {
+        return javaModel;
+    }
+
+    public DeltaProcessor getDeltaProcessor() {
+        return this.deltaState.getDeltaProcessor();
+    }
+
+    /**
+     * Flushes ZipFiles cache if there are no more clients.
+     */
+    public void flushZipFiles(Object owner) {
+        ZipCache zipCache = this.zipFiles.get();
+        if (zipCache == null) {
+            return;
+        }
+        // the owner will be responsible for flushing the cache
+        // we want to check object identity to make sure this is the owner that created the cache
+        if (zipCache.owner == owner) {
+            this.zipFiles.set(null);
+            zipCache.flush();
+        }
+    }
+
+    /**
+     * Starts caching ZipFiles.
+     * Ignores if there are already clients.
+     */
+    public void cacheZipFiles(Object owner) {
+        ZipCache zipCache = this.zipFiles.get();
+        if (zipCache != null) {
+            return;
+        }
+        // the owner will be responsible for flushing the cache
+        this.zipFiles.set(new ZipCache(owner));
     }
 
     public synchronized char[] intern(char[] array) {
@@ -531,6 +732,7 @@ public class JavaModelManager {
         }
         return null;
     }
+
     public void removePerProjectInfo(JavaProject javaProject, boolean removeExtJarInfo) {
         //todo
 //        synchronized(this.perProjectInfos) { // use the perProjectInfo collection as its own lock
@@ -1035,7 +1237,8 @@ public class JavaModelManager {
                 names.remove();
                 if (Util.isJavaLikeFileName(path)) {
                     File file = new File(path);// ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path));
-                    ICompilationUnit unit = JavaModelManager.createCompilationUnitFrom(file, null);
+                    ICompilationUnit unit = JavaModelManager
+                            .createCompilationUnitFrom(file, null);
                     IType type = unit.getType(typeName);
                     tempTypes.put(typeName, type);
                 }
@@ -1087,10 +1290,6 @@ public class JavaModelManager {
         }
     }
 
-    public void setIndexManager(IndexManager indexManager) {
-        this.indexManager = indexManager;
-    }
-
     public synchronized BufferManager getDefaultBufferManager() {
         if (DEFAULT_BUFFER_MANAGER == null) {
             DEFAULT_BUFFER_MANAGER = new BufferManager();
@@ -1098,180 +1297,16 @@ public class JavaModelManager {
         return DEFAULT_BUFFER_MANAGER;
     }
 
-    /**
-     * Returns the Java element corresponding to the given resource, or
-     * <code>null</code> if unable to associate the given resource
-     * with a Java element.
-     * <p>
-     * The resource must be one of:<ul>
-     *	<li>a project - the element returned is the corresponding <code>IJavaProject</code></li>
-     *	<li>a <code>.java</code> file - the element returned is the corresponding <code>ICompilationUnit</code></li>
-     *	<li>a <code>.class</code> file - the element returned is the corresponding <code>IClassFile</code></li>
-     *	<li>a ZIP archive (e.g. a <code>.jar</code>, a <code>.zip</code> file, etc.) - the element returned is the corresponding <code>IPackageFragmentRoot</code></li>
-     *  <li>a folder - the element returned is the corresponding <code>IPackageFragmentRoot</code>
-     *			or <code>IPackageFragment</code></li>
-     *  <li>the workspace root resource - the element returned is the <code>IJavaModel</code></li>
-     *	</ul>
-     * <p>
-     * Creating a Java element has the side effect of creating and opening all of the
-     * element's parents if they are not yet open.
-     */
-    public static IJavaElement create(File resource, IJavaProject project) {
-        if (resource == null) {
-            return null;
-        }
-        if(resource.isFile()) {
-            return createFromFile(resource, project);
-        } else {
-            return createFromDirectory(resource, project);
-        }
-//        int type = resource.getType();
-//        switch (type) {
-//            case IResource.PROJECT :
-//                return JavaCore.create((IProject) resource);
-//            case IResource.FILE :
-//                return create((IFile) resource, project);
-//            case IResource.FOLDER :
-//                return create((IFolder) resource, project);
-//            case IResource.ROOT :
-//                return JavaCore.create((IWorkspaceRoot) resource);
-//            default :
-//                return null;
-//        }
-    }
-
-    /**
-     * Returns the Java element corresponding to the given file, its project being the given
-     * project.
-     * Returns <code>null</code> if unable to associate the given file
-     * with a Java element.
-     *
-     * <p>The file must be one of:<ul>
-     *	<li>a <code>.java</code> file - the element returned is the corresponding <code>ICompilationUnit</code></li>
-     *	<li>a <code>.class</code> file - the element returned is the corresponding <code>IClassFile</code></li>
-     *	<li>a ZIP archive (e.g. a <code>.jar</code>, a <code>.zip</code> file, etc.) - the element returned is the corresponding <code>IPackageFragmentRoot</code></li>
-     *	</ul>
-     * <p>
-     * Creating a Java element has the side effect of creating and opening all of the
-     * element's parents if they are not yet open.
-     */
-    public static IJavaElement createFromFile(File file, IJavaProject project) {
-        if (file == null) {
-            return null;
-        }
-//        if (project == null) {
-//            project = JavaCore.create(file.getProject());
-//        }
-
-//        if (file.getFileExtension() != null) {
-            String name = file.getName();
-            if (Util.isJavaLikeFileName(name))
-                return createCompilationUnitFrom(file, project);
-            if (org.eclipse.jdt.internal.compiler.util.Util.isClassFileName(name))
-                return createClassFileFrom(file, project);
-            return createJarPackageFragmentRootFrom(file, (JavaProject)project);
-//        }
-//        return null;
-    }
-
-    /**
-     * Creates and returns a class file element for the given <code>.class</code> file,
-     * its project being the given project. Returns <code>null</code> if unable
-     * to recognize the class file.
-     */
-    public static IClassFile createClassFileFrom(File file, IJavaProject project ) {
-        if (file == null) {
-            return null;
-        }
-//        if (project == null) {
-//            project = JavaCore.create(file.getProject());
-//        }
-        IPackageFragment pkg = (IPackageFragment) determineIfOnClasspath(file, (JavaProject)project);
-        if (pkg == null) {
-            // fix for 1FVS7WE
-            // not on classpath - make the root its folder, and a default package
-            PackageFragmentRoot root = (PackageFragmentRoot) project.getPackageFragmentRoot(file.getParent());
-            pkg = root.getPackageFragment(CharOperation.NO_STRINGS);
-        }
-        return pkg.getClassFile(file.getName());
-    }
-
-    /**
-     * Creates and returns a handle for the given JAR file, its project being the given project.
-     * The Java model associated with the JAR's project may be
-     * created as a side effect.
-     * Returns <code>null</code> if unable to create a JAR package fragment root.
-     * (for example, if the JAR file represents a non-Java resource)
-     */
-    public static IPackageFragmentRoot createJarPackageFragmentRootFrom(File file, JavaProject project) {
-        if (file == null) {
-            return null;
-        }
-//        if (project == null) {
-//            project = JavaCore.create(file.getProject());
-//        }
-
-        // Create a jar package fragment root only if on the classpath
-        IPath resourcePath = new Path(file.getPath());
-        try {
-            IClasspathEntry entry = project.getClasspathEntryFor(resourcePath);
-            if (entry != null) {
-                return project.getPackageFragmentRoot(file);
-            }
-        } catch (JavaModelException e) {
-            // project doesn't exist: return null
-        }
-        return null;
-    }
-    /**
-     * Returns the package fragment or package fragment root corresponding to the given folder,
-     * its parent or great parent being the given project.
-     * or <code>null</code> if unable to associate the given folder with a Java element.
-     * <p>
-     * Note that a package fragment root is returned rather than a default package.
-     * <p>
-     * Creating a Java element has the side effect of creating and opening all of the
-     * element's parents if they are not yet open.
-     */
-    public static IJavaElement createFromDirectory(File folder, IJavaProject project) {
-        if (folder == null) {
-            return null;
-        }
-        IJavaElement element;
-//        if (project == null) {
-//            project = JavaCore.create(folder.getProject());
-//            element = determineIfOnClasspath(folder, project);
-//            if (element == null) {
-//                // walk all projects and find one that have the given folder on its classpath
-//                IJavaProject[] projects;
-//                try {
-//                    projects = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProjects();
-//                } catch (JavaModelException e) {
-//                    return null;
-//                }
-//                for (int i = 0, length = projects.length; i < length; i++) {
-//                    project = projects[i];
-//                    element = determineIfOnClasspath(folder, project);
-//                    if (element != null)
-//                        break;
-//                }
-//            }
-//        } else {
-            element = determineIfOnClasspath(folder, (JavaProject)project);
-//        }
-        return element;
-    }
-
     public boolean forceBatchInitializations(boolean initAfterLoad) {
         return false;
     }
 
-    public void setJavaProject(JavaProject javaProject) {
-        this.javaProject = javaProject;
-    }
-
     public JavaProject getJavaProject() {
         return javaProject;
+    }
+
+    public void setJavaProject(JavaProject javaProject) {
+        this.javaProject = javaProject;
     }
 
     /**
@@ -1462,7 +1497,7 @@ public class JavaModelManager {
          * to 2.
          * The first element is an array of raw classpath entries and the second element is an array of referenced entries that may have
          * been stored
-         * by the client earlier. See {@link IJavaProject#getReferencedClasspathEntries()} for more details.
+         * by the client earlier. See {@link org.eclipse.jdt.core.IJavaProject#getReferencedClasspathEntries()} for more details.
          */
         public synchronized IClasspathEntry[][] readAndCacheClasspath(JavaProject javaProject) {
 //            // read file entries and update status

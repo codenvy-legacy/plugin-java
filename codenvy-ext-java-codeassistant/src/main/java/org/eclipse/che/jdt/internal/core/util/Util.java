@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.jdt.internal.core.util;
 
+import org.eclipse.che.ide.runtime.Assert;
 import org.eclipse.che.jdt.dom.JavaConventions;
 import org.eclipse.che.jdt.internal.core.Annotation;
 import org.eclipse.che.jdt.internal.core.CompilationUnit;
@@ -18,8 +19,6 @@ import org.eclipse.che.jdt.internal.core.JavaModelManager;
 import org.eclipse.che.jdt.internal.core.MemberValuePair;
 import org.eclipse.che.jdt.internal.core.PackageFragment;
 import org.eclipse.che.jdt.internal.core.PackageFragmentRoot;
-import org.eclipse.che.ide.runtime.Assert;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -28,6 +27,7 @@ import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModelStatusConstants;
 import org.eclipse.jdt.core.IMemberValuePair;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.compiler.CharOperation;
@@ -50,6 +50,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2093,6 +2094,48 @@ public class Util {
                 // ignore
             }
         }
+    }
+
+    /**
+     * Converts the given relative path into a package name.
+     * Returns null if the path is not a valid package name.
+     *
+     * @param pkgPath
+     *         the package path
+     * @param sourceLevel
+     *         the source level
+     * @param complianceLevel
+     *         the compliance level
+     */
+    public static String packageName(IPath pkgPath, String sourceLevel, String complianceLevel) {
+        StringBuffer pkgName = new StringBuffer(IPackageFragment.DEFAULT_PACKAGE_NAME);
+        for (int j = 0, max = pkgPath.segmentCount(); j < max; j++) {
+            String segment = pkgPath.segment(j);
+            if (!isValidFolderNameForPackage(segment, sourceLevel, complianceLevel)) {
+                return null;
+            }
+            pkgName.append(segment);
+            if (j < pkgPath.segmentCount() - 1) {
+                pkgName.append("."); //$NON-NLS-1$
+            }
+        }
+        return pkgName.toString();
+    }
+
+    public static void verbose(String log) {
+        verbose(log, System.out);
+    }
+
+    public static synchronized void verbose(String log, PrintStream printStream) {
+        int start = 0;
+        do {
+            int end = log.indexOf('\n', start);
+            printStream.print(Thread.currentThread());
+            printStream.print(" "); //$NON-NLS-1$
+            printStream.print(log.substring(start, end == -1 ? log.length() : end + 1));
+            start = end + 1;
+        } while (start != 0);
+        printStream.println();
     }
 
     public interface Comparable {
