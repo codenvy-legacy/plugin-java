@@ -23,7 +23,7 @@ import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 
 /**
- * Client for Java Name Environment service.
+ * Implementation of {@link JavaNameEnvironmentServiceClient}.
  *
  * @author Artem Zatsarynnyy
  */

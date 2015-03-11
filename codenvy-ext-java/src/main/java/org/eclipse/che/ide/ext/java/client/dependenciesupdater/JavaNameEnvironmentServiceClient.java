@@ -14,7 +14,7 @@ import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
 /**
- * //
+ * Client for Java Name Environment service.
  *
  * @author Artem Zatsarynnyy
  */
