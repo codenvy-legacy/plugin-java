@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.JavaNavigation;
-import org.eclipse.che.ide.ext.java.server.SourcesFromBytecodeGenerator;
+import org.eclipse.che.jdt.JavaNavigation;
+import org.eclipse.che.jdt.SourcesFromBytecodeGenerator;
 import org.eclipse.che.ide.ext.java.shared.Jar;
 import org.eclipse.che.ide.ext.java.shared.JarEntry;
 

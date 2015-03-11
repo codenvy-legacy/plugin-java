@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.internal.core.JavaProject;
+import org.eclipse.che.jdt.internal.core.JavaProject;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;

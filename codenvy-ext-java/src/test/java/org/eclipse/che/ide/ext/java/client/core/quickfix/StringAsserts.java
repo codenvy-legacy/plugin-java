@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java.client.core.quickfix;
 
-import junit.framework.Assert;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -53,9 +54,9 @@ public class StringAsserts {
                 return;
             }
             if (actual == null) {
-                Assert.assertTrue("Content not as expected: is 'null' expected: " + expected, false);
+                assertTrue("Content not as expected: is 'null' expected: " + expected, false);
             } else {
-                Assert.assertTrue("Content not as expected: expected 'null' is: " + actual, false);
+                assertTrue("Content not as expected: expected 'null' is: " + actual, false);
             }
         }
 
@@ -70,7 +71,7 @@ public class StringAsserts {
             String message = "Content not as expected: is\n" + actual + "\nDiffers at pos " + diffPos + ": " + diffStr + "\nexpected:\n" +
                              expected;  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
-            Assert.assertEquals(message, expected, actual);
+            assertEquals(message, expected, actual);
         }
     }
 
@@ -80,9 +81,9 @@ public class StringAsserts {
                 return;
             }
             if (actual == null) {
-                Assert.assertTrue("Content not as expected: is 'null' expected: " + expected, false);
+                assertTrue("Content not as expected: is 'null' expected: " + expected, false);
             } else {
-                Assert.assertTrue("Content not as expected: expected 'null' is: " + actual, false);
+                assertTrue("Content not as expected: expected 'null' is: " + actual, false);
             }
         }
 
@@ -102,7 +103,7 @@ public class StringAsserts {
 
                 String message = "Content not as expected: Content is: \n" + actual + "\nDiffers at line " + line + ": " + diffStr +
                                  "\nExpected contents: \n" + expected;
-                Assert.assertEquals(message, expected, actual);
+                assertEquals(message, expected, actual);
             }
             line++;
         } while (true);
@@ -147,7 +148,7 @@ public class StringAsserts {
             String expected = buf.toString();
 
             String message = "Content not as expected: Content is: \n" + actual + "\nExpected contents: \n" + expected;
-            Assert.assertEquals(message, expected, actual);
+            assertEquals(message, expected, actual);
         }
     }
 
@@ -190,7 +191,7 @@ public class StringAsserts {
             String expected = buf.toString();
 
             String message = "Content not as expected: Content is: \n" + actual + "\nExpected contents: \n" + expected;
-            Assert.assertEquals(message, expected, actual);
+            assertEquals(message, expected, actual);
         }
     }
 

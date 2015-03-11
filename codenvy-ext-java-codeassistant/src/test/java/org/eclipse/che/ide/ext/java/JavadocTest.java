@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.JavadocFinder;
-import org.eclipse.che.ide.ext.java.server.javadoc.JavadocContentAccess2;
-
+import org.eclipse.che.jdt.JavadocFinder;
+import org.eclipse.che.jdt.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;

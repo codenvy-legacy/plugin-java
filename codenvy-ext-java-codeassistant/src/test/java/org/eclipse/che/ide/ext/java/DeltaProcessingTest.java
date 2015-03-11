@@ -13,8 +13,7 @@ package org.eclipse.che.ide.ext.java;
 
 import org.eclipse.che.api.vfs.server.observation.CreateEvent;
 import org.eclipse.che.api.vfs.server.observation.DeleteEvent;
-import org.eclipse.che.ide.ext.java.server.core.resources.ResourceChangedEvent;
-
+import org.eclipse.che.jdt.core.resources.ResourceChangedEvent;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.junit.After;
@@ -45,7 +44,7 @@ public class DeltaProcessingTest extends BaseTest {
     public void testRemoveClass() throws Exception {
         ResourceChangedEvent event = new ResourceChangedEvent(new File(BaseTest.class.getResource("/projects").getFile()),new DeleteEvent("projects", "/test/src/main/java/com/codenvy/test/MyClass.java", false));
         NameEnvironmentAnswer answer =
-                project.getNameEnvironment().findType(CharOperation.splitOn('.', "org.eclipse.che.test.MyClass".toCharArray()));
+                project.getNameEnvironment().findType(CharOperation.splitOn('.', "com.codenvy.test.MyClass".toCharArray()));
 
         assertThat(answer).isNotNull();
 
@@ -53,7 +52,7 @@ public class DeltaProcessingTest extends BaseTest {
         project.creteNewNameEnvironment();
 
         answer =
-                project.getNameEnvironment().findType(CharOperation.splitOn('.', "org.eclipse.che.test.MyClass".toCharArray()));
+                project.getNameEnvironment().findType(CharOperation.splitOn('.', "com.codenvy.test.MyClass".toCharArray()));
         assertThat(answer).isNull();
     }
 
@@ -61,13 +60,13 @@ public class DeltaProcessingTest extends BaseTest {
     public void testRemoveFolder() throws Exception {
         ResourceChangedEvent event = new ResourceChangedEvent(new File(BaseTest.class.getResource("/projects").getFile()),new DeleteEvent("projects", "/test/src/main/java/com/codenvy/test", true));
         NameEnvironmentAnswer answer =
-                project.getNameEnvironment().findType(CharOperation.splitOn('.', "org.eclipse.che.test.MyClass".toCharArray()));
+                project.getNameEnvironment().findType(CharOperation.splitOn('.', "com.codenvy.test.MyClass".toCharArray()));
 
         assertThat(answer).isNotNull();
         project.getJavaModelManager().deltaState.resourceChanged(event);
         project.creteNewNameEnvironment();
         answer =
-                project.getNameEnvironment().findType(CharOperation.splitOn('.', "org.eclipse.che.test.MyClass".toCharArray()));
+                project.getNameEnvironment().findType(CharOperation.splitOn('.', "com.codenvy.test.MyClass".toCharArray()));
         assertThat(answer).isNull();
     }
 
@@ -80,17 +79,17 @@ public class DeltaProcessingTest extends BaseTest {
 
 
         NameEnvironmentAnswer answer =
-                project.getNameEnvironment().findType(CharOperation.splitOn('.', "org.eclipse.che.test.NewClass".toCharArray()));
+                project.getNameEnvironment().findType(CharOperation.splitOn('.', "com.codenvy.test.NewClass".toCharArray()));
         assertThat(answer).isNull();
 
         FileOutputStream outputStream = new FileOutputStream(new File(workspace, "/test/src/main/java/com/codenvy/test/NewClass.java"));
-        outputStream.write("package org.eclipse.che.test;\n public class NewClass{}\n".getBytes());
+        outputStream.write("packagecom.codenvy.test;\n public class NewClass{}\n".getBytes());
         outputStream.close();
 
         project.getJavaModelManager().deltaState.resourceChanged(event);
         project.creteNewNameEnvironment();
         answer =
-                project.getNameEnvironment().findType(CharOperation.splitOn('.', "org.eclipse.che.test.NewClass".toCharArray()));
+                project.getNameEnvironment().findType(CharOperation.splitOn('.', "com.codenvy.test.NewClass".toCharArray()));
         assertThat(answer).isNotNull();
     }
 

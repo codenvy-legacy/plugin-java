@@ -11,11 +11,11 @@
 package org.eclipse.che.ide.ext.java;
 
 
-import org.eclipse.che.ide.ext.java.server.BinaryTypeConvector;
-import org.eclipse.che.ide.ext.java.server.BindingASTVisitor;
-import org.eclipse.che.ide.ext.java.server.JsonSearchRequester;
-import org.eclipse.che.ide.ext.java.server.TypeBindingConvector;
-import org.eclipse.che.ide.ext.java.server.internal.core.SourceTypeElementInfo;
+import org.eclipse.che.jdt.BinaryTypeConvector;
+import org.eclipse.che.jdt.BindingASTVisitor;
+import org.eclipse.che.jdt.JsonSearchRequester;
+import org.eclipse.che.jdt.TypeBindingConvector;
+import org.eclipse.che.jdt.internal.core.SourceTypeElementInfo;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;

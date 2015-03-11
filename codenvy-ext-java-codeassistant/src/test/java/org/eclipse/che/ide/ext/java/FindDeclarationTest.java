@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java;
 
-import org.eclipse.che.ide.ext.java.server.JavaNavigation;
-import org.eclipse.che.ide.ext.java.server.SourcesFromBytecodeGenerator;
-import org.eclipse.che.ide.ext.java.server.internal.core.JavaProject;
+import org.eclipse.che.jdt.JavaNavigation;
+import org.eclipse.che.jdt.SourcesFromBytecodeGenerator;
+import org.eclipse.che.jdt.internal.core.JavaProject;
 import org.eclipse.che.ide.ext.java.shared.OpenDeclarationDescriptor;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
