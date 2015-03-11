@@ -26,17 +26,17 @@ import com.google.inject.Singleton;
 @Singleton
 public class UpdateDependencyAction extends ProjectAction {
 
-    private final AppContext           appContext;
-    private final AnalyticsEventLogger eventLogger;
-    private final DependenciesUpdater  dependenciesUpdater;
-    private       BuildContext         buildContext;
+    private final AppContext                                          appContext;
+    private final AnalyticsEventLogger                                eventLogger;
+    private final com.codenvy.ide.ext.java.client.DependenciesUpdater dependenciesUpdater;
+    private       BuildContext                                        buildContext;
 
     @Inject
     public UpdateDependencyAction(AppContext appContext,
                                   AnalyticsEventLogger eventLogger,
                                   JavaResources resources,
                                   BuildContext buildContext,
-                                  DependenciesUpdater dependenciesUpdater) {
+                                  com.codenvy.ide.ext.java.client.DependenciesUpdater dependenciesUpdater) {
         super("Update Dependencies", "Update Dependencies", resources.updateDependencies());
         this.appContext = appContext;
         this.eventLogger = eventLogger;
@@ -48,7 +48,9 @@ public class UpdateDependencyAction extends ProjectAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getProjectDescription(), true);
+        dependenciesUpdater
+                .updateDependencies(appContext.getCurrentProject().getRootProject(), appContext.getCurrentProject().getProjectDescription(),
+                                    true);
     }
 
     @Override

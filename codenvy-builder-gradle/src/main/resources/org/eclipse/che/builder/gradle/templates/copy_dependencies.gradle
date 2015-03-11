@@ -1,0 +1,95 @@
+//projectsEvaluated {
+//    rootProject.allprojects {
+//        project ->
+//            def javaProject = project.plugins.hasPlugin('java')
+//            if (javaProject) {
+//                task internalCopyDependencies {
+//                    project.configurations.compile.each {
+//                        File dependencyJar ->
+//                            def copy = { File src, File dest ->
+//                                def input = src.newDataInputStream()
+//                                def output = dest.newDataOutputStream()
+//                                output << input
+//                                input.close()
+//                                output.close()
+//                            }
+//                            File depDir = new File(projectDir, "${DEPENDENCIES}")
+//                            depDir.mkdir()
+//                            copy(dependencyJar, new File(depDir, dependencyJar.name))
+//                    }
+//                }
+//            }
+//    }
+//}
+
+
+import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
+
+class CodenvyGreetingPlugin implements Plugin<Project> {
+    private static final String PLUGIN_EXTENSION = "codenvy"
+
+    Project project;
+
+    void apply(Project project) {
+        CodenvyGreetingPlugin plugin = project.extensions.create(PLUGIN_EXTENSION, CodenvyGreetingPlugin.class)
+        plugin.project = project
+    }
+
+    public void provideCopyDependenciesTask() {
+        project.afterEvaluate {
+            it.task('copy-dependencies', type: Copy) {
+                def list = []
+                into ('dependency')
+                if (java.lang.Boolean.parseBoolean(project.sources)) {
+                    project.configurations.each {
+                        it.incoming.dependencies.collect {
+                            dependency ->
+                                if (dependency instanceof DefaultExternalModuleDependency) {
+                                    dependency.artifact {
+                                        artifact ->
+                                            artifact.name = dependency.name
+                                            artifact.type = 'sources'
+                                            artifact.extension = 'jar'
+                                            artifact.classifier = 'sources'
+                                    }
+                                    list.add(dependency)
+                                }
+                        }
+                    }
+
+                    if (!list.isEmpty()) {
+                        from(project.configurations.detachedConfiguration(list as Dependency[])
+                                .resolvedConfiguration
+                                .lenientConfiguration
+                                .getFiles(Specs.SATISFIES_ALL).findAll {it.getName().contains("sources")})
+                    }
+                } else {
+                    project.configurations.each {
+                        it.incoming.dependencies.collect {
+                            if (it instanceof DefaultExternalModuleDependency) {
+                                list.add(it)
+                            }
+                        }
+                    }
+                    if (!list.isEmpty()) {
+                        from(project.configurations.detachedConfiguration(list as Dependency[])
+                                .resolvedConfiguration
+                                .lenientConfiguration
+                                .getFiles(Specs.SATISFIES_ALL)
+                        )
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+allprojects {
+    project.apply plugin: CodenvyGreetingPlugin
+
+    codenvy {
+        provideCopyDependenciesTask()
+    }
+}
+

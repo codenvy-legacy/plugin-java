@@ -15,6 +15,7 @@ import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.event.FileEvent;
@@ -84,12 +85,14 @@ public class MavenExtension {
     private void bindEvents(final EventBus eventBus,
                             final DependenciesUpdater dependenciesUpdater,
                             final ProjectServiceClient projectServiceClient,
-                            final DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                            final DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                            final AppContext appContext) {
         eventBus.addHandler(BeforeModuleOpenEvent.TYPE, new BeforeModuleOpenHandler() {
             @Override
             public void onBeforeModuleOpen(BeforeModuleOpenEvent event) {
                 if (isValidForResolveDependencies(event.getModule().getProject().getData())) {
-                    dependenciesUpdater.updateDependencies(event.getModule().getData(), false);
+
+                    dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getRootProject(), event.getModule().getData(), false);
                 }
             }
         });
@@ -101,7 +104,7 @@ public class MavenExtension {
                     && "pom.xml".equals(event.getFile().getName())
                     && isValidForResolveDependencies(event.getFile().getProject().getData())) {
                     final ProjectNode project = event.getFile().getProject();
-                    dependenciesUpdater.updateDependencies(project.getData(), true);
+                    dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getRootProject(), project.getData(), true);
 
                     final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
                     projectServiceClient.getProject(
@@ -129,7 +132,7 @@ public class MavenExtension {
             public void onProjectOpened(ProjectActionEvent event) {
                 ProjectDescriptor project = event.getProject();
                 if (isValidForResolveDependencies(project)) {
-                    dependenciesUpdater.updateDependencies(project, false);
+                    dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getRootProject(), project, false);
                 }
             }
 

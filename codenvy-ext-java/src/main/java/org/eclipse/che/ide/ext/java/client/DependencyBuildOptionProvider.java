@@ -1,0 +1,46 @@
+/*******************************************************************************
+ * Copyright (c) 2012-2015 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
+package org.eclipse.che.ide.ext.java.client;
+
+import org.eclipse.che.api.builder.dto.BuildOptions;
+import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+
+/**
+ * Provide build options to allow update dependency mechanism run build with specified arguments.
+ *
+ * @author Vladyslav Zhukovskii
+ */
+public interface DependencyBuildOptionProvider {
+    /**
+     * Builder name.
+     *
+     * @return builder name
+     */
+    String getBuilder();
+
+    /**
+     * Build options for update binary dependencies.
+     *
+     * @param project
+     *         project descriptor on which build will be performed.
+     * @return build options specified for current project
+     */
+    BuildOptions getOptionsForBinJars(ProjectDescriptor project);
+
+    /**
+     * Build options for update source dependencies.
+     *
+     * @param project
+     *         project descriptor on which build will be performed.
+     * @return build options specified for current project
+     */
+    BuildOptions getOptionsForSrcJars(ProjectDescriptor project);
+}

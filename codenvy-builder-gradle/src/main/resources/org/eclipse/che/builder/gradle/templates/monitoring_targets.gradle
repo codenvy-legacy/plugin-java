@@ -1,0 +1,19 @@
+gradle.buildFinished {
+    result ->
+        String[] monitoredTasks = [ "jar", "war", "ear", "distZip", "distTar" ]
+        File workDir = result.gradle.rootProject.projectDir as File
+        PrintWriter artifactWriter = new PrintWriter(new File(workDir, "${ARTIFACTS_LIST}"))
+        result.gradle.rootProject.tasks.each {
+            task ->
+                if (monitoredTasks.contains(task.name)) {
+                    task.outputs.files.files.each {
+                        builtArtifact ->
+                            if (builtArtifact.exists()) {
+                                artifactWriter.println(builtArtifact.absolutePath)
+                            }
+                    }
+                }
+        }
+        artifactWriter.flush()
+        artifactWriter.close()
+}

@@ -14,10 +14,12 @@ import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.build.BuildContext;
 import org.eclipse.che.ide.extension.maven.client.MavenLocalizationConstant;
 import org.eclipse.che.ide.extension.maven.client.MavenResources;
 import org.eclipse.che.ide.extension.maven.client.build.MavenBuildPresenter;
+import org.eclipse.che.ide.extension.maven.shared.MavenAttributes;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -60,14 +62,9 @@ public class CustomBuildAction extends ProjectAction {
     /** {@inheritDoc} */
     @Override
     public void updateProjectAction(ActionEvent e) {
-        final String builder = appContext.getCurrentProject().getBuilder();
-        if ("maven".equals(builder)) {
-            e.getPresentation().setEnabledAndVisible(true);
-        } else {
-            e.getPresentation().setEnabledAndVisible(false);
-        }
-        if (buildContext.isBuilding()) {
-            e.getPresentation().setEnabled(false);
-        }
+        CurrentProject project = appContext.getCurrentProject();
+
+        e.getPresentation().setEnabledAndVisible(project != null && MavenAttributes.MAVEN_ID.equals(project.getBuilder()));
+        e.getPresentation().setEnabled(!buildContext.isBuilding());
     }
 }

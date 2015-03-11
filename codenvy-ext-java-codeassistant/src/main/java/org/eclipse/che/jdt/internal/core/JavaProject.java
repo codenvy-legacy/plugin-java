@@ -12,8 +12,11 @@
 package org.eclipse.che.jdt.internal.core;
 
 import org.eclipse.che.api.project.server.Constants;
+import com.codenvy.ide.gradle.dto.GrdSourceSet;
+
 import org.eclipse.che.api.project.server.ProjectJson;
 import org.eclipse.che.api.project.shared.Builders;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.ide.ant.tools.AntUtils;
 import org.eclipse.che.jdt.core.JavaCore;
 import org.eclipse.che.jdt.internal.core.search.indexing.IndexManager;
@@ -51,6 +54,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -209,6 +213,17 @@ public class JavaProject extends Openable implements IJavaProject {
                     for (String src : AntUtils.getSourceDirectories(build)) {
                         sources.add(new File(projectDir, src));
                     }
+                }
+            } else if ("gradle".equals(defBuilder.getDefault())) {
+                try (FileInputStream in = new FileInputStream(new File(projectDir, ".codenvy/gradle_source_set.json"))) {
+                    List<GrdSourceSet> grdSourceSets = DtoFactory.getInstance().createListDtoFromJson(in, GrdSourceSet.class);
+
+                    for (GrdSourceSet grdSourceSet : grdSourceSets) {
+                        for (String source : grdSourceSet.getSource()) {
+                            sources.add(new File(projectDir, "/" + source));
+                        }
+                    }
+                } catch (FileNotFoundException ignored) {
                 }
             }
         }

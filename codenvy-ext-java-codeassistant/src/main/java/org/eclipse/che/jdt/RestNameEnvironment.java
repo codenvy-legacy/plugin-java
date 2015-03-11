@@ -11,11 +11,16 @@
 package org.eclipse.che.jdt;
 
 import org.eclipse.che.api.builder.BuildStatus;
-import org.eclipse.che.api.builder.BuilderException;
 import org.eclipse.che.api.builder.dto.BuildOptions;
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
+import org.eclipse.che.api.core.*;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.util.DownloadPlugin;
+import org.eclipse.che.api.core.util.HttpDownloadPlugin;
+import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.vfs.server.util.DeleteOnCloseFileInputStream;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
@@ -26,6 +31,8 @@ import org.eclipse.che.jdt.internal.core.JavaProject;
 import org.eclipse.che.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.che.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.che.vfs.impl.fs.LocalFSMountStrategy;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.name.Named;
 
 import org.eclipse.jdt.core.IJavaProject;
@@ -48,15 +55,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -72,6 +75,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Rest service for WorkerNameEnvironment
@@ -84,9 +89,6 @@ import java.util.Map;
 public class RestNameEnvironment {
     /** Logger. */
     private static final Logger LOG = LoggerFactory.getLogger(RestNameEnvironment.class);
-
-    @Inject
-    private LocalFSMountStrategy fsMountStrategy;
 
     @Inject
     private JavaProjectService javaProjectService;
@@ -106,17 +108,23 @@ public class RestNameEnvironment {
     @Named("api.endpoint")
     private String apiUrl;
 
-    private static String getAuthenticationToken() {
-        User user = EnvironmentContext.getCurrent().getUser();
-        if (user != null) {
-            return user.getToken();
-        }
-        return null;
+    private DownloadPlugin downloadPlugin = new HttpDownloadPlugin();
+    private ExecutorService executor;
+
+    @PostConstruct
+    public void start() {
+        executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("-DependencyChecker-").setDaemon(true).build());
+    }
+
+    @PreDestroy
+    public void stop() {
+        executor.shutdownNow();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @javax.ws.rs.Path("findTypeCompound")
+    @SuppressWarnings("unchecked")
     public String findTypeCompound(@QueryParam("compoundTypeName") String compoundTypeName, @QueryParam("projectpath") String projectPath) {
         JavaProject javaProject = getJavaProject(projectPath);
         SearchableEnvironment environment = javaProject.getNameEnvironment();
@@ -242,129 +250,125 @@ public class RestNameEnvironment {
         return searchRequester.toJsonString();
     }
 
-    @GET
-    @javax.ws.rs.Path("/update-dependencies-launch-task")
-    @Produces(MediaType.APPLICATION_JSON)
-    public BuildTaskDescriptor updateDependency(@QueryParam("projectpath") String projectPath, @QueryParam("force") boolean force,
-                                                @Context UriInfo uriInfo) throws Exception {
+    //TODO in future it is strongly recommended to rewrite mechanism of updating dependencies!
 
-        //project already has updated dependency's, so skip build
-        if (javaProjectService.isProjectDependencyExist(wsId, projectPath) && !force) {
+    @POST
+    @Path("/dependency/binaries")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public BuildTaskDescriptor updateBinaryDependency(@QueryParam("project") final String projectPath,
+                                                      @QueryParam("module") final String modulePath,
+                                                      @QueryParam("force") boolean force,
+                                                      BuildOptions buildOptions)
+            throws ForbiddenException, IOException, ConflictException, ServerException, UnauthorizedException,
+                   NotFoundException {
+        if (javaProjectService.isProjectDependencyExist(wsId, modulePath) && !force) {
             BuildTaskDescriptor descriptor = DtoFactory.getInstance().createDto(BuildTaskDescriptor.class);
             descriptor.setStatus(BuildStatus.SUCCESSFUL);
             return descriptor;
         }
-        File workspace = fsMountStrategy.getMountPath(wsId);
-        File project = new File(workspace, projectPath);
-        if (!project.exists()) {
-            LOG.warn("Project doesn't exist in workspace: " + wsId + ", path: " + projectPath);
-            throw new CodeAssistantException(500, "Project doesn't exist");
-        }
 
-        String url = apiUrl + "/builder/" + wsId + "/dependencies";
-        return getDependencies(url, projectPath, "copy", null);
+        BuildOptions dtoBuildOptions = DtoFactory.getInstance().createDto(BuildOptions.class)
+                                                 .withOptions(buildOptions.getOptions())
+                                                 .withBuilderName(buildOptions.getBuilderName())
+                                                 .withIncludeDependencies(buildOptions.isIncludeDependencies())
+                                                 .withSkipTest(buildOptions.isSkipTest())
+                                                 .withTargets(buildOptions.getTargets());
+
+        final BuildTaskDescriptor taskDescriptor = HttpJsonHelper.request(BuildTaskDescriptor.class,
+                                                                          String.format("%s/builder/%s/dependencies", apiUrl, wsId),
+                                                                          "POST",
+                                                                          dtoBuildOptions,
+                                                                          Pair.of("project", projectPath));
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BuildTaskDescriptor finishedBuildStatus = waitTaskFinish(taskDescriptor);
+                    if (finishedBuildStatus.getStatus() != BuildStatus.SUCCESSFUL) {
+                        LOG.info("Something with user project, received build status {}.", finishedBuildStatus.getStatus());
+                        return;
+                    }
+
+                    javaProjectService.removeProject(wsId, modulePath);
+                    File projectDepDir = new File(temp, wsId + modulePath);
+                    if (!projectDepDir.mkdirs()) {
+                        LOG.info("Directory {} already exists.", projectDepDir.getPath());
+                    }
+
+                    Link downloadLink = LinksHelper.findLink("download result", finishedBuildStatus.getLinks());
+                    if (downloadLink != null) {
+                        File zip = new File(projectDepDir, "dependencies.zip");
+                        downloadPlugin.download(downloadLink.getHref(), zip.getParentFile(), zip.getName(), true);
+                        ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
+                    }
+
+                    //create JavaProject adn put it into cache
+                    javaProjectService.getOrCreateJavaProject(wsId, projectPath);
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+        });
+
+        return taskDescriptor;
     }
 
-    /** Get list of all package names in project */
     @POST
-    @javax.ws.rs.Path("/update-dependencies-wait-build-end")
+    @Path("/dependency/sources")
     @Produces(MediaType.APPLICATION_JSON)
-    public void waitUpdateDependencyBuildEnd(@QueryParam("projectpath") String projectPath,
-                                             BuildTaskDescriptor descriptor,
-                                             @Context UriInfo uriInfo) throws Exception {
-        // call to wait-for-build-finish method
-        try {
-            BuildTaskDescriptor finishedBuildStatus = waitTaskFinish(descriptor);
-            if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
-                buildFailed(finishedBuildStatus);
-            }
-            javaProjectService.removeProject(wsId, projectPath);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public BuildTaskDescriptor updateSourceDependency(@QueryParam("project") final String projectPath,
+                                                      @QueryParam("module") final String modulePath,
+                                                      BuildOptions buildOptions)
+            throws ForbiddenException, IOException, ConflictException, NotFoundException, ServerException, UnauthorizedException {
 
-            File projectDepDir = new File(temp, wsId + projectPath);
-            projectDepDir.mkdirs();
+        BuildOptions dtoBuildOptions = DtoFactory.getInstance().createDto(BuildOptions.class)
+                                                 .withOptions(buildOptions.getOptions())
+                                                 .withBuilderName(buildOptions.getBuilderName())
+                                                 .withIncludeDependencies(buildOptions.isIncludeDependencies())
+                                                 .withSkipTest(buildOptions.isSkipTest())
+                                                 .withTargets(buildOptions.getTargets());
 
-            Link downloadLink = findLink("download result", finishedBuildStatus.getLinks());
-            if (downloadLink != null) {
-                File zip = doDownload(downloadLink.getHref(), projectPath, "dependencies.zip");
-                ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectDepDir);
-            }
+        final BuildTaskDescriptor taskDescriptor = HttpJsonHelper.request(BuildTaskDescriptor.class,
+                                                                          String.format("%s/builder/%s/dependencies", apiUrl, wsId),
+                                                                          "POST",
+                                                                          dtoBuildOptions,
+                                                                          Pair.of("project", projectPath));
 
-            BuildOptions buildOptions = DtoFactory.getInstance().createDto(BuildOptions.class);
-            buildOptions.getOptions().put("-Dclassifier", "sources");
-            String url = apiUrl + "/builder/" + wsId + "/dependencies";
-            BuildTaskDescriptor dependencies = getDependencies(url, projectPath, "copy", buildOptions);
-            BuildTaskDescriptor buildTaskDescriptor = waitTaskFinish(dependencies);
-            if (finishedBuildStatus.getStatus() == BuildStatus.FAILED) {
-                buildFailed(finishedBuildStatus);
-            }
-            File projectSourcesJars = new File(projectDepDir, "sources");
-            projectSourcesJars.mkdirs();
-            downloadLink = findLink("download result", buildTaskDescriptor.getLinks());
-            if (downloadLink != null) {
-                File zip = doDownload(downloadLink.getHref(), projectPath, "sources.zip");
-                ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectSourcesJars);
-            }
-            //create JavaProject adn put it into cache
-            javaProjectService.getOrCreateJavaProject(wsId, projectPath);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BuildTaskDescriptor finishedBuildStatus = waitTaskFinish(taskDescriptor);
+                    if (finishedBuildStatus.getStatus() != BuildStatus.SUCCESSFUL) {
+                        LOG.info("Something with user project, received build status {}.", finishedBuildStatus.getStatus());
+                        return;
+                    }
+                    File projectDepDir = new File(temp, wsId + modulePath);
+                    if (!projectDepDir.mkdirs()) {
+                        LOG.info("Directory {} already exists.", projectDepDir.getPath());
+                    }
 
-        } catch (Throwable debug) {
-            LOG.error("RestNameEnvironment", debug);
-            throw new WebApplicationException(debug);
-        }
-    }
+                    File projectSourcesJars = new File(projectDepDir, "sources");
+                    if (!projectSourcesJars.mkdirs()) {
+                        LOG.info("Directory {} already exists.", projectSourcesJars.getPath());
+                    }
 
-    private File doDownload(String downloadURL, String projectPath, String zipName) throws IOException {
-        HttpURLConnection http = null;
-        HttpStream stream = null;
-        try {
-            URI uri = UriBuilder.fromUri(downloadURL).queryParam("token", getAuthenticationToken()).build();
-            http = (HttpURLConnection)uri.toURL().openConnection();
-            http.setRequestMethod("GET");
-            int responseCode = http.getResponseCode();
-            if (responseCode != 200) {
-                throw new IOException("Your project referenced a zipped dependency that cannot be downloaded.");
+                    Link downloadLink = LinksHelper.findLink("download result", finishedBuildStatus.getLinks());
+                    if (downloadLink != null) {
+                        File zip = new File(projectSourcesJars, "sources.zip");
+                        downloadPlugin.download(downloadLink.getHref(), zip.getParentFile(), zip.getName(), true);
+                        ZipUtils.unzip(new DeleteOnCloseFileInputStream(zip), projectSourcesJars);
+                    }
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
             }
-            // Connection closed automatically when input stream closed.
-            // If IOException or BuilderException occurs then connection closed immediately.
-            stream = new HttpStream(http);
-            java.nio.file.Path path = Paths.get(temp, wsId + projectPath + "/" + zipName);
-            Files.copy(stream, path);
-            return path.toFile();
-        } catch (MalformedURLException e) {
-            throw e;
-        } catch (IOException ioe) {
-            if (http != null) {
-                http.disconnect();
-            }
-            throw ioe;
-        } finally {
-            if (stream != null) {
-                stream.close();
-            }
-        }
+        });
 
-    }
-
-    private void buildFailed(@Nullable BuildTaskDescriptor buildStatus) throws BuilderException {
-        if (buildStatus != null) {
-            Link logLink = findLink("view build log", buildStatus.getLinks());
-            LOG.error("Build failed see more detail here: " + logLink.getHref());
-            throw new BuilderException(
-                    "Build failed see more detail here: <a href=\"" + logLink.getHref() + "\" target=\"_blank\">" + logLink.getHref() +
-                    "</a>."
-            );
-        }
-        throw new BuilderException("Build failed");
-    }
-
-    @Nullable
-    private Link findLink(@Nonnull String rel, List<Link> links) {
-        for (Link link : links) {
-            if (link.getRel().equals(rel)) {
-                return link;
-            }
-        }
-        return null;
+        return taskDescriptor;
     }
 
     @Nonnull
@@ -372,7 +376,7 @@ public class RestNameEnvironment {
         BuildTaskDescriptor request = buildDescription;
         final int sleepTime = 500;
 
-        Link statusLink = findLink("get status", buildDescription.getLinks());
+        Link statusLink = LinksHelper.findLink("get status", buildDescription.getLinks());
 
         if (statusLink != null) {
             while (request.getStatus() == BuildStatus.IN_PROGRESS || request.getStatus() == BuildStatus.IN_QUEUE) {
@@ -386,17 +390,6 @@ public class RestNameEnvironment {
 
         return request;
     }
-
-
-    @Nonnull
-    private BuildTaskDescriptor getDependencies(@Nonnull String url, @Nonnull String projectName, @Nonnull String analyzeType, @Nullable
-    BuildOptions options)
-            throws Exception {
-        Pair<String, String> projectParam = Pair.of("project", projectName);
-        Pair<String, String> typeParam = Pair.of("type", analyzeType);
-        return HttpJsonHelper.request(BuildTaskDescriptor.class, url, "POST", options, projectParam, typeParam);
-    }
-
 
     private String processAnswer(NameEnvironmentAnswer answer, IJavaProject project, INameEnvironment environment)
             throws JavaModelException {
@@ -420,6 +413,7 @@ public class RestNameEnvironment {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private String getSourceTypeInfo(IJavaProject project, INameEnvironment environment, ICompilationUnit compilationUnit)
             throws JavaModelException {
         CompilationUnit result = getCompilationUnit(project, environment, compilationUnit);
@@ -454,7 +448,7 @@ public class RestNameEnvironment {
     }
 
     private char[][] getCharArrayFrom(String list) {
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             return null;
         }
         String[] strings = list.split(",");
@@ -465,57 +459,4 @@ public class RestNameEnvironment {
         }
         return arr;
     }
-
-    /** Stream that automatically close HTTP connection when all data ends. */
-    private static class HttpStream extends FilterInputStream {
-        private final HttpURLConnection http;
-
-        private boolean closed;
-
-        private HttpStream(HttpURLConnection http) throws IOException {
-            super(http.getInputStream());
-            this.http = http;
-        }
-
-        @Override
-        public int read() throws IOException {
-            int r = super.read();
-            if (r == -1) {
-                close();
-            }
-            return r;
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-            int r = super.read(b);
-            if (r == -1) {
-                close();
-            }
-            return r;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            int r = super.read(b, off, len);
-            if (r == -1) {
-                close();
-            }
-            return r;
-        }
-
-        @Override
-        public void close() throws IOException {
-            if (closed) {
-                return;
-            }
-            try {
-                super.close();
-            } finally {
-                http.disconnect();
-                closed = true;
-            }
-        }
-    }
-
 }

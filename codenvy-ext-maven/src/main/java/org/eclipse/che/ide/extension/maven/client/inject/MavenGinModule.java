@@ -13,11 +13,14 @@ package org.eclipse.che.ide.extension.maven.client.inject;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProvider;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
+import org.eclipse.che.ide.extension.maven.client.MavenDependencyBuildOptions;
 import org.eclipse.che.ide.extension.maven.client.build.MavenBuildView;
 import org.eclipse.che.ide.extension.maven.client.build.MavenBuildViewImpl;
 import org.eclipse.che.ide.extension.maven.client.projecttree.MavenNodeFactory;
 import org.eclipse.che.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
 import org.eclipse.che.ide.extension.maven.client.wizard.MavenProjectWizardRegistrar;
+
+import org.eclipse.che.ide.ext.java.client.DependencyBuildOptionProvider;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
 import com.google.gwt.inject.client.multibindings.GinMultibinder;
@@ -38,5 +41,7 @@ public class MavenGinModule extends AbstractGinModule {
         GinMultibinder.newSetBinder(binder(), TreeStructureProvider.class).addBinding().to(MavenProjectTreeStructureProvider.class);
 
         GinMultibinder.newSetBinder(binder(), ProjectWizardRegistrar.class).addBinding().to(MavenProjectWizardRegistrar.class);
+
+        GinMultibinder.newSetBinder(binder(), DependencyBuildOptionProvider.class).addBinding().to(MavenDependencyBuildOptions.class);
     }
 }

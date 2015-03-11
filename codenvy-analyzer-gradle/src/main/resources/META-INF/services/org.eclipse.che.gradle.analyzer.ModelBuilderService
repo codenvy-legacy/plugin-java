@@ -1,0 +1,2 @@
+org.eclipse.che.gradle.analyzer.model.builder.ProjectDefinitionBuilder
+org.eclipse.che.gradle.analyzer.model.builder.MiscDefinitionBuilder

@@ -33,11 +33,17 @@ public class JavaSourceFolderUtil {
                 boolean isTestDir = false;
 
                 if (attributes.containsKey(builders.getDefault() + ".source.folder")) {
-                    isSrcDir = (projectDescriptor.getPath() + "/" + attributes.get(builders.getDefault() + ".source.folder").get(0)).equals(item.getPath());
+                    List<String> srcFolders = attributes.get(builders.getDefault() + ".source.folder");
+                    for (String srcFolder : srcFolders) {
+                        isSrcDir |= (projectDescriptor.getPath() + "/" + srcFolder).equals(item.getPath());
+                    }
                 }
 
                 if (attributes.containsKey(builders.getDefault() + ".test.source.folder")) {
-                    isTestDir = (projectDescriptor.getPath() + "/" + attributes.get(builders.getDefault() + ".test.source.folder").get(0)).equals(item.getPath());
+                    List<String> testSrcFolders = attributes.get(builders.getDefault() + ".test.source.folder");
+                    for (String srcFolder : testSrcFolders) {
+                        isTestDir |= (projectDescriptor.getPath() + "/" + srcFolder).equals(item.getPath());
+                    }
                 }
 
                 return isSrcDir || isTestDir;

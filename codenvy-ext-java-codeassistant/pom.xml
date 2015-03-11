@@ -62,6 +62,11 @@
         </dependency>
         <dependency>
             <groupId>com.codenvy.plugin-java</groupId>
+            <artifactId>codenvy-gradle-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.plugin-java</groupId>
             <artifactId>codenvy-jdt-core-repack</artifactId>
             <version>${codenvy.plugin-java.version}</version>
         </dependency>

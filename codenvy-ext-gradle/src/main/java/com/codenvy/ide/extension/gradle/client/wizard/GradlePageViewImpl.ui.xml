@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2012-2015 Codenvy, S.A.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    Contributors:
+      Codenvy, S.A. - initial API and implementation
+
+-->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:with field='resources' type='com.codenvy.ide.extension.gradle.client.GradleResources'/>
+    <ui:with field='localization' type='com.codenvy.ide.extension.gradle.client.GradleLocalizationConstant'/>
+    <g:DockLayoutPanel unit="PX" addStyleNames="{resources.getCSS.wizardContentWrapped}">
+        <g:north size="100">
+            <g:DockLayoutPanel unit="PX" width="100%" height="100%" ui:field="configPanel" debugId="configPanel">
+                <g:north size="50">
+                    <g:DockLayoutPanel unit="PX" width="100%" height="100%">
+                        <g:west size="138">
+                            <g:FlowPanel>
+                                <g:Label text="{localization.wizardUseGradleDistribution}"
+                                         addStyleNames="{resources.getCSS.projectNamePosition}"/>
+                            </g:FlowPanel>
+                        </g:west>
+                        <g:center>
+                            <g:SimplePanel addStyleNames="{resources.getCSS.spaceRight}">
+                                <g:ListBox ui:field="gradleType" multipleSelect="false" visibleItemCount="1" selectedIndex="0"
+                                           width="511px" height="29px" addStyleNames="{resources.getCSS.field}" debugId="gradleType"/>
+                            </g:SimplePanel>
+                        </g:center>
+                    </g:DockLayoutPanel>
+                </g:north>
+                <g:north size="50">
+                    <g:DockLayoutPanel unit="PX" width="100%" height="100%" ui:field="versionChoosePanel" debugId="versionChoosePanel">
+                        <g:west size="138">
+                            <g:FlowPanel>
+                                <g:Label text="{localization.wizardUseGradleWrapperVersion}"
+                                         addStyleNames="{resources.getCSS.projectNamePosition}"/>
+                            </g:FlowPanel>
+                        </g:west>
+                        <g:center>
+                            <g:SimplePanel addStyleNames="{resources.getCSS.spaceRight}">
+                                <g:ListBox ui:field="gradleVersion" multipleSelect="false" visibleItemCount="1" selectedIndex="0"
+                                           width="511px" height="29px" addStyleNames="{resources.getCSS.field}" debugId="gradleVersion"/>
+                            </g:SimplePanel>
+                        </g:center>
+                    </g:DockLayoutPanel>
+                </g:north>
+            </g:DockLayoutPanel>
+        </g:north>
+        <g:north size="50">
+            <g:DockLayoutPanel unit="PX" width="100%" height="100%" ui:field="nothingToConfigurePanel" debugId="nothingToConfigurePanel">
+                <g:center>
+                    <g:Label text="{localization.wizardNothingToConfigure}"/>
+                </g:center>
+            </g:DockLayoutPanel>
+        </g:north>
+    </g:DockLayoutPanel>
+</ui:UiBinder>

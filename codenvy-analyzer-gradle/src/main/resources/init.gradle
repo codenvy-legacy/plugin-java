@@ -1,0 +1,29 @@
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+import javax.inject.Inject
+
+@SuppressWarnings("GrPackage")
+class CodenvyGradlePlugin implements Plugin<Project> {
+    private final ToolingModelBuilderRegistry registry
+
+    @Inject
+    public CodenvyGradlePlugin(ToolingModelBuilderRegistry registry) {
+        this.registry = registry
+    }
+
+    public void apply(Project project) {
+        registry.register(project.mainModelBuilderClass.newInstance())
+    }
+}
+
+try {
+    String[] paths = ${JARS_PATH}
+    URL[] urls = paths.collect{ new File(it).toURI().toURL() }
+    URLClassLoader classLoader = new URLClassLoader(urls, getClass().classLoader)
+    Class modelClass = classLoader.loadClass('org.eclipse.che.gradle.analyzer.GradleModelBuilder')
+    allprojects {
+        ext.mainModelBuilderClass = modelClass
+        apply plugin: CodenvyGradlePlugin
+    }
+}
+catch (all) {
+}

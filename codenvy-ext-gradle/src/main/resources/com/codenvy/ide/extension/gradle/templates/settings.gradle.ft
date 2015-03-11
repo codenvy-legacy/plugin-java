@@ -1,0 +1,6 @@
+#if (${ROOT_PROJECT_NAME} && ${ROOT_PROJECT_NAME} != "")
+rootProject.name = '${ROOT_PROJECT_NAME}'
+#end
+#foreach(${MODULE} in ${MODULES})
+include '${MODULE}'
+#end

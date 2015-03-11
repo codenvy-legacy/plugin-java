@@ -12,6 +12,7 @@ package org.eclipse.che.ide.extension.ant.client;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEventHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
@@ -47,7 +48,8 @@ public class AntExtension {
                         final DependenciesUpdater dependenciesUpdater,
                         final DtoUnmarshallerFactory dtoUnmarshallerFactory,
                         final ProjectServiceClient projectServiceClient,
-                        TreeStructureProviderRegistry treeStructureProviderRegistry) {
+                        TreeStructureProviderRegistry treeStructureProviderRegistry,
+                        final AppContext appContext) {
         // Handle project opened event to fire update dependencies.
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -56,7 +58,7 @@ public class AntExtension {
                 if (AntAttributes.ANT_ID.equals(project.getType())
                     && project.getAttributes().containsKey(Constants.LANGUAGE)
                     && project.getAttributes().get(Constants.LANGUAGE).get(0).equals("java")) {
-                    dependenciesUpdater.updateDependencies(project, false);
+                    dependenciesUpdater.updateDependencies(appContext.getCurrentProject().getRootProject(), project, false);
                 }
             }
 
