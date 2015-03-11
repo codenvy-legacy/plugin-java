@@ -30,7 +30,7 @@ import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
-import org.eclipse.che.ide.ext.java.client.DependenciesUpdater;
+import org.eclipse.che.ide.ext.java.client.dependenciesupdater.DependenciesUpdater;
 import org.eclipse.che.ide.extension.maven.client.actions.CreateMavenModuleAction;
 import org.eclipse.che.ide.extension.maven.client.actions.CustomBuildAction;
 import org.eclipse.che.ide.extension.maven.client.actions.UpdateDependencyAction;

@@ -10,11 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java.client.inject;
 
+import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.ext.java.client.JavaExtension;
 import org.eclipse.che.ide.ext.java.client.JavaResources;
+import org.eclipse.che.ide.ext.java.client.dependenciesupdater.JavaNameEnvironmentServiceClient;
+import org.eclipse.che.ide.ext.java.client.dependenciesupdater.JavaNameEnvironmentServiceClientImpl;
 import org.eclipse.che.ide.ext.java.client.documentation.QuickDocPresenter;
 import org.eclipse.che.ide.ext.java.client.documentation.QuickDocumentation;
 import org.eclipse.che.ide.ext.java.client.editor.JavaParserWorker;
@@ -25,11 +33,6 @@ import org.eclipse.che.ide.ext.java.client.navigation.JavaNavigationServiceImpl;
 import org.eclipse.che.ide.ext.java.client.newsourcefile.NewJavaSourceFileView;
 import org.eclipse.che.ide.ext.java.client.newsourcefile.NewJavaSourceFileViewImpl;
 import org.eclipse.che.ide.ext.java.client.projecttree.JavaNodeFactory;
-import com.google.gwt.inject.client.AbstractGinModule;
-import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  * @author Evgen Vidolob
@@ -46,6 +49,7 @@ public class JavaGinModule extends AbstractGinModule {
         bind(NewJavaSourceFileView.class).to(NewJavaSourceFileViewImpl.class).in(Singleton.class);
         bind(QuickDocumentation.class).to(QuickDocPresenter.class).in(Singleton.class);
         bind(JavaNavigationService.class).to(JavaNavigationServiceImpl.class);
+        bind(JavaNameEnvironmentServiceClient.class).to(JavaNameEnvironmentServiceClientImpl.class);
 
         install(new GinFactoryModuleBuilder().build(JavaNodeFactory.class));
     }

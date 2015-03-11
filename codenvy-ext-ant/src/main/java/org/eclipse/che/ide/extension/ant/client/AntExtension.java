@@ -20,7 +20,7 @@ import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.extension.Extension;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
-import org.eclipse.che.ide.ext.java.client.DependenciesUpdater;
+import org.eclipse.che.ide.ext.java.client.dependenciesupdater.DependenciesUpdater;
 import org.eclipse.che.ide.ext.java.shared.Constants;
 import org.eclipse.che.ide.extension.ant.client.projecttree.AntProjectTreeStructureProvider;
 import org.eclipse.che.ide.extension.ant.shared.AntAttributes;
