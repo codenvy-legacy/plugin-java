@@ -10,23 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.ide.extension.maven.client;
 
-import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.shared.dto.BuildersDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
-import org.eclipse.che.ide.api.event.FileEvent;
-import org.eclipse.che.ide.api.event.FileEventHandler;
 import org.eclipse.che.ide.api.event.ProjectActionEvent;
 import org.eclipse.che.ide.api.event.ProjectActionHandler;
-import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
 import org.eclipse.che.ide.api.extension.Extension;
 import org.eclipse.che.ide.api.icon.Icon;
 import org.eclipse.che.ide.api.icon.IconRegistry;
 import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
-import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
@@ -38,13 +37,6 @@ import org.eclipse.che.ide.extension.maven.client.event.BeforeModuleOpenEvent;
 import org.eclipse.che.ide.extension.maven.client.event.BeforeModuleOpenHandler;
 import org.eclipse.che.ide.extension.maven.client.projecttree.MavenProjectTreeStructureProvider;
 import org.eclipse.che.ide.extension.maven.shared.MavenAttributes;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.util.loging.Log;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import java.util.List;
 import java.util.Map;
@@ -82,44 +74,12 @@ public class MavenExtension {
 
     @Inject
     private void bindEvents(final EventBus eventBus,
-                            final DependenciesUpdater dependenciesUpdater,
-                            final ProjectServiceClient projectServiceClient,
-                            final DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                            final DependenciesUpdater dependenciesUpdater) {
         eventBus.addHandler(BeforeModuleOpenEvent.TYPE, new BeforeModuleOpenHandler() {
             @Override
             public void onBeforeModuleOpen(BeforeModuleOpenEvent event) {
                 if (isValidForResolveDependencies(event.getModule().getProject().getData())) {
                     dependenciesUpdater.updateDependencies(event.getModule().getData(), false);
-                }
-            }
-        });
-
-        eventBus.addHandler(FileEvent.TYPE, new FileEventHandler() {
-            @Override
-            public void onFileOperation(final FileEvent event) {
-                if (event.getOperationType() == FileEvent.FileOperation.SAVE
-                    && "pom.xml".equals(event.getFile().getName())
-                    && isValidForResolveDependencies(event.getFile().getProject().getData())) {
-                    final ProjectNode project = event.getFile().getProject();
-                    dependenciesUpdater.updateDependencies(project.getData(), true);
-
-                    final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-                    projectServiceClient.getProject(
-                            project.getData().getPath(),
-                            new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
-                                @Override
-                                protected void onSuccess(ProjectDescriptor result) {
-                                    if (!result.getAttributes().equals(project.getData().getAttributes())) {
-                                        project.setData(result);
-                                        eventBus.fireEvent(new RefreshProjectTreeEvent(project));
-                                    }
-                                }
-
-                                @Override
-                                protected void onFailure(Throwable exception) {
-                                    Log.info(getClass(), "Unable to get the project.", exception);
-                                }
-                            });
                 }
             }
         });
