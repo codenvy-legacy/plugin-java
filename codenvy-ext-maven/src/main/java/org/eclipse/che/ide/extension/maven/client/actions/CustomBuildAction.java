@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.extension.maven.client.actions;
 
+import com.codenvy.ide.api.action.permits.ActionDenyAccessDialog;
+import com.codenvy.ide.api.action.permits.ActionPermit;
+import com.codenvy.ide.api.action.permits.Build;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ProjectAction;
@@ -19,9 +25,6 @@ import org.eclipse.che.ide.extension.maven.client.MavenLocalizationConstant;
 import org.eclipse.che.ide.extension.maven.client.MavenResources;
 import org.eclipse.che.ide.extension.maven.client.build.MavenBuildPresenter;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 /**
  * Action to build current project.
  *
@@ -29,11 +32,12 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class CustomBuildAction extends ProjectAction {
-
-    private final AppContext           appContext;
-    private final MavenBuildPresenter  presenter;
-    private final AnalyticsEventLogger eventLogger;
-    private       BuildContext         buildContext;
+    private final AppContext             appContext;
+    private final MavenBuildPresenter    presenter;
+    private final AnalyticsEventLogger   eventLogger;
+    private final BuildContext           buildContext;
+    private final ActionPermit           buildActionPermit;
+    private final ActionDenyAccessDialog buildActionDenyAccessDialog;
 
     @Inject
     public CustomBuildAction(MavenBuildPresenter presenter,
@@ -41,20 +45,26 @@ public class CustomBuildAction extends ProjectAction {
                              MavenLocalizationConstant localizationConstant,
                              AppContext appContext,
                              AnalyticsEventLogger eventLogger,
-                             BuildContext buildContext) {
-        super(localizationConstant.buildProjectControlTitle(),
-              localizationConstant.buildProjectControlDescription(), resources.build());
+                             BuildContext buildContext,
+                             @Build ActionPermit buildActionPermit,
+                             @Build ActionDenyAccessDialog buildActionDenyAccessDialog) {
+        super(localizationConstant.buildProjectControlTitle(), localizationConstant.buildProjectControlDescription(), resources.build());
         this.presenter = presenter;
         this.appContext = appContext;
         this.eventLogger = eventLogger;
         this.buildContext = buildContext;
+        this.buildActionPermit = buildActionPermit;
+        this.buildActionDenyAccessDialog = buildActionDenyAccessDialog;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        presenter.showDialog();
+        if (buildActionPermit.isAllowed()) {
+            presenter.showDialog();
+        } else {
+            buildActionDenyAccessDialog.show();
+        }
     }
 
     /** {@inheritDoc} */
@@ -66,6 +76,7 @@ public class CustomBuildAction extends ProjectAction {
         } else {
             e.getPresentation().setEnabledAndVisible(false);
         }
+
         if (buildContext.isBuilding()) {
             e.getPresentation().setEnabled(false);
         }
