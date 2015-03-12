@@ -510,11 +510,11 @@ public class CompilationUnitResolver extends Compiler {
             } else if (enclosingTypeDeclaration != null) {
                 if (node instanceof com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Initializer) {
                     ((com.codenvy.ide.ext.java.jdt.internal.compiler.ast.Initializer)node).parseStatements(parser,
-                                                                                                          enclosingTypeDeclaration,
-                                                                                                          compilationUnitDeclaration);
+                                                                                                               enclosingTypeDeclaration,
+                                                                                                               compilationUnitDeclaration);
                 } else if (node instanceof com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TypeDeclaration) {
                     ((com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TypeDeclaration)node).parseMethods(parser,
-                                                                                                           compilationUnitDeclaration);
+                                                                                                                compilationUnitDeclaration);
                 }
             }
         } else {
@@ -675,9 +675,9 @@ public class CompilationUnitResolver extends Compiler {
     // {
     //
     // final int length = elements.length;
-    // final HashMap sourceElementPositions = new HashMap(); // a map from ICompilationUnit to int[] (positions in elements)
+    // final HashMap sourceElementPositions = new HashMap(); // a valueMap from ICompilationUnit to int[] (positions in elements)
     // int cuNumber = 0;
-    // final HashtableOfObjectToInt binaryElementPositions = new HashtableOfObjectToInt(); // a map from String (binding key) to
+    // final HashtableOfObjectToInt binaryElementPositions = new HashtableOfObjectToInt(); // a valueMap from String (binding key) to
     // int (position in elements)
     // for (int i = 0; i < length; i++)
     // {
@@ -1045,7 +1045,7 @@ public class CompilationUnitResolver extends Compiler {
             DefaultBindingResolver resolver =
                     new DefaultBindingResolver(this.lookupEnvironment, this.bindingTables,
                                                (flags & ENABLE_BINDINGS_RECOVERY) != 0, true);
-            Object[] keys = this.requestedKeys.valueTable;
+            Object[] keys = this.requestedKeys.getArrayValues();
             for (int j = 0, keysLength = keys.length; j < keysLength; j++) {
                 BindingKeyResolver keyResolver = (BindingKeyResolver)keys[j];
                 if (keyResolver == null) {
@@ -1054,7 +1054,7 @@ public class CompilationUnitResolver extends Compiler {
                 Binding compilerBinding = keyResolver.getCompilerBinding();
                 IBinding binding = compilerBinding == null ? null : resolver.getBinding(compilerBinding);
                 // pass it to requestor
-                astRequestor.acceptBinding(((BindingKeyResolver)this.requestedKeys.valueTable[j]).getKey(), binding);
+                astRequestor.acceptBinding(((BindingKeyResolver)this.requestedKeys.getArrayValues()[j]).getKey(), binding);
             }
         } catch (AbortCompilation e) {
             this.handleInternalException(e, unit);
@@ -1256,13 +1256,13 @@ public class CompilationUnitResolver extends Compiler {
             return false; // must process at least this many units before checking to see if all are done
         }
 
-        Object[] sources = this.requestedSources.valueTable;
+        Object[] sources = this.requestedSources.getArrayValues();
         for (int i = 0, l = sources.length; i < l; i++) {
             if (sources[i] != null) {
                 return false;
             }
         }
-        Object[] keys = this.requestedKeys.valueTable;
+        Object[] keys = this.requestedKeys.getArrayValues();
         for (int i = 0, l = keys.length; i < l; i++) {
             if (keys[i] != null) {
                 return false;

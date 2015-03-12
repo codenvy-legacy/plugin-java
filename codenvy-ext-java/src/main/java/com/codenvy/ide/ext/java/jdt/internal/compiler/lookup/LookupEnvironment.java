@@ -175,7 +175,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
             try {
                 this.typeRequestor.accept(answer.getCompilationUnit(), answer.getAccessRestriction());
             } catch (AbortCompilation abort) {
-                if (CharOperation.equals(name, TypeConstants.PACKAGE_INFO_NAME))
+                if (CharOperation.equals(name, PACKAGE_INFO_NAME))
                     return null; // silently, requestor may not be able to handle compilation units (HierarchyResolver)
                 throw abort;
             }
@@ -337,7 +337,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
             this.arrayClone =
                     new MethodBinding(
                             (objectClone.modifiers & ~ClassFileConstants.AccProtected) | ClassFileConstants.AccPublic,
-                            TypeConstants.CLONE, objectClone.returnType, Binding.NO_PARAMETERS, Binding.NO_EXCEPTIONS, // no exception for
+                            CLONE, objectClone.returnType, Binding.NO_PARAMETERS, Binding.NO_EXCEPTIONS, // no exception for
                             // array specific method
                             (ReferenceBinding)objectClone.returnType);
         }
@@ -748,9 +748,9 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
         MissingTypeBinding missingType = new MissingTypeBinding(packageBinding, compoundName, this);
         if (missingType.id != TypeIds.T_JavaLangObject) {
             // make Object be its superclass - it could in turn be missing as well
-            ReferenceBinding objectType = getType(TypeConstants.JAVA_LANG_OBJECT);
+            ReferenceBinding objectType = getType(JAVA_LANG_OBJECT);
             if (objectType == null) {
-                objectType = createMissingType(null, TypeConstants.JAVA_LANG_OBJECT); // create a proxy for the missing Object type
+                objectType = createMissingType(null, JAVA_LANG_OBJECT); // create a proxy for the missing Object type
             }
             missingType.setMissingSuperclass(objectType);
         }
@@ -1586,7 +1586,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
         // walk all the unique collections & replace the unresolvedType with the resolvedType
         // must prevent 2 entries so == still works (1 containing the unresolvedType and the other containing the resolvedType)
         if (this.uniqueParameterizedTypeBindings.get(unresolvedType) != null) { // update the key
-            Object[] keys = this.uniqueParameterizedTypeBindings.keyTable;
+            Object[] keys = this.uniqueParameterizedTypeBindings.keys();
             for (int i = 0, l = keys.length; i < l; i++) {
                 if (keys[i] == unresolvedType) {
                     keys[i] = resolvedType; // hashCode is based on compoundName so this works - cannot be raw since type of
@@ -1596,7 +1596,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
             }
         }
         if (this.uniqueRawTypeBindings.get(unresolvedType) != null) { // update the key
-            Object[] keys = this.uniqueRawTypeBindings.keyTable;
+            Object[] keys = this.uniqueRawTypeBindings.keys();
             for (int i = 0, l = keys.length; i < l; i++) {
                 if (keys[i] == unresolvedType) {
                     keys[i] = resolvedType; // hashCode is based on compoundName so this works
@@ -1605,7 +1605,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
             }
         }
         if (this.uniqueWildcardBindings.get(unresolvedType) != null) { // update the key
-            Object[] keys = this.uniqueWildcardBindings.keyTable;
+            Object[] keys = this.uniqueWildcardBindings.keys();
             for (int i = 0, l = keys.length; i < l; i++) {
                 if (keys[i] == unresolvedType) {
                     keys[i] = resolvedType; // hashCode is based on compoundName so this works

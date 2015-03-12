@@ -100,7 +100,7 @@ public class ThrownExceptionFinder extends ASTVisitor {
      *         {@link ThrownExceptionFinder#getDiscouragedExceptions()}.
      */
     public ReferenceBinding[] getAlreadyCaughtExceptions() {
-        ReferenceBinding[] allCaughtExceptions = new ReferenceBinding[this.caughtExceptions.elementSize];
+        ReferenceBinding[] allCaughtExceptions = new ReferenceBinding[this.caughtExceptions.size()];
         this.caughtExceptions.asArray(allCaughtExceptions);
         return allCaughtExceptions;
     }
@@ -112,7 +112,7 @@ public class ThrownExceptionFinder extends ASTVisitor {
      * @return Returns an array of thrown exceptions that are still not caught in any catch block.
      */
     public ReferenceBinding[] getThrownUncaughtExceptions() {
-        ReferenceBinding[] result = new ReferenceBinding[this.thrownExceptions.elementSize];
+        ReferenceBinding[] result = new ReferenceBinding[this.thrownExceptions.size()];
         this.thrownExceptions.asArray(result);
         return result;
     }
@@ -124,7 +124,7 @@ public class ThrownExceptionFinder extends ASTVisitor {
      * @return all discouraged exceptions
      */
     public ReferenceBinding[] getDiscouragedExceptions() {
-        ReferenceBinding[] allDiscouragedExceptions = new ReferenceBinding[this.discouragedExceptions.elementSize];
+        ReferenceBinding[] allDiscouragedExceptions = new ReferenceBinding[this.discouragedExceptions.size()];
         this.discouragedExceptions.asArray(allDiscouragedExceptions);
         return allDiscouragedExceptions;
     }
@@ -155,7 +155,7 @@ public class ThrownExceptionFinder extends ASTVisitor {
 
         this.thrownExceptions = (SimpleSet)this.exceptionsStack.pop();
 
-        Object[] values = exceptionSet.values;
+        Object[] values = exceptionSet.getArrayValues();
         for (int i = 0; i < values.length; i++) {
             if (values[i] != null) {
                 this.thrownExceptions.add(values[i]);
@@ -214,7 +214,7 @@ public class ThrownExceptionFinder extends ASTVisitor {
     }
 
     private void removeCaughtException(ReferenceBinding caughtException) {
-        Object[] exceptions = this.thrownExceptions.values;
+        Object[] exceptions = this.thrownExceptions.getArrayValues();
         for (int i = 0; i < exceptions.length; i++) {
             ReferenceBinding exception = (ReferenceBinding)exceptions[i];
             if (exception != null) {

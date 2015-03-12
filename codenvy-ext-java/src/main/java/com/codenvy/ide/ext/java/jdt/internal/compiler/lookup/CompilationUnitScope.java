@@ -814,7 +814,7 @@ public class CompilationUnitScope extends Scope {
     public void storeDependencyInfo() {
         // add the type hierarchy of each referenced supertype
         // cannot do early since the hierarchy may not be fully resolved
-        for (int i = 0; i < this.referencedSuperTypes.size; i++) { // grows as more types are added
+        for (int i = 0; i < this.referencedSuperTypes.size(); i++) { // grows as more types are added
             ReferenceBinding type = (ReferenceBinding)this.referencedSuperTypes.elementAt(i);
             if (!this.referencedTypes.containsIdentical(type))
                 this.referencedTypes.add(type);
@@ -833,7 +833,7 @@ public class CompilationUnitScope extends Scope {
                     recordSuperTypeReference(interfaces[j]);
         }
 
-        for (int i = 0, l = this.referencedTypes.size; i < l; i++) {
+        for (int i = 0, l = this.referencedTypes.size(); i < l; i++) {
             ReferenceBinding type = (ReferenceBinding)this.referencedTypes.elementAt(i);
             if (!type.isLocalType())
                 recordQualifiedReference(type.isMemberType() ? CharOperation.splitOn('.', type.readableName())

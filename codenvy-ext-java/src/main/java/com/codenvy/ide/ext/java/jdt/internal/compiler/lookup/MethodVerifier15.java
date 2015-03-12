@@ -22,6 +22,7 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.impl.CompilerOptions;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.problem.ProblemSeverities;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.HashtableOfObject;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.SimpleSet;
+import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util;
 
 class MethodVerifier15 extends MethodVerifier {
 
@@ -406,7 +407,7 @@ class MethodVerifier15 extends MethodVerifier {
        * Code below is only for a method that does not override/implement a super type method. If it were to, it would have been
        * handled in checkAgainstInheritedMethods.
        */
-        Object[] methodArray = this.currentMethods.valueTable;
+        Object[] methodArray = this.currentMethods.getArrayValues();
         for (int s = methodArray.length; --s >= 0; ) {
             if (methodArray[s] == null)
                 continue;
@@ -495,14 +496,14 @@ class MethodVerifier15 extends MethodVerifier {
         // superclass so only check
         // overridden methods
         boolean isOrEnclosedByPrivateType = this.type.isOrEnclosedByPrivateType();
-        char[][] methodSelectors = this.inheritedMethods.keyTable;
+        char[][] methodSelectors = Util.toArrays(this.inheritedMethods.getKeys());
         nextSelector:
         for (int s = methodSelectors.length; --s >= 0; ) {
             if (methodSelectors[s] == null)
                 continue nextSelector;
 
             MethodBinding[] current = (MethodBinding[])this.currentMethods.get(methodSelectors[s]);
-            MethodBinding[] inherited = (MethodBinding[])this.inheritedMethods.valueTable[s];
+            MethodBinding[] inherited = (MethodBinding[])this.inheritedMethods.getArrayValues()[s];
 
             // https://bugs.eclipse.org/bugs/show_bug.cgi?id=296660, if current type is exposed,
             // inherited methods of super classes are too. current != null case handled below.
@@ -643,12 +644,12 @@ class MethodVerifier15 extends MethodVerifier {
     }
 
     void checkTypeVariableMethods(TypeParameter typeParameter) {
-        char[][] methodSelectors = this.inheritedMethods.keyTable;
+        char[][] methodSelectors = Util.toArrays(this.inheritedMethods.getKeys());
         nextSelector:
         for (int s = methodSelectors.length; --s >= 0; ) {
             if (methodSelectors[s] == null)
                 continue nextSelector;
-            MethodBinding[] inherited = (MethodBinding[])this.inheritedMethods.valueTable[s];
+            MethodBinding[] inherited = (MethodBinding[])this.inheritedMethods.getArrayValues()[s];
             if (inherited.length == 1)
                 continue nextSelector;
 

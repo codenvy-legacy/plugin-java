@@ -934,7 +934,7 @@ public abstract class Scope {
                                                       ReferenceBinding classHierarchyStart,
                                                       ObjectVector found, MethodBinding concreteMatch) {
 
-        int startFoundSize = found.size;
+        int startFoundSize = found.size();
         ReferenceBinding currentType = classHierarchyStart;
         while (currentType != null) {
             findMethodInSuperInterfaces(currentType, selector, found, invocationSite);
@@ -943,7 +943,7 @@ public abstract class Scope {
         MethodBinding[] candidates = null;
         int candidatesCount = 0;
         MethodBinding problemMethod = null;
-        int foundSize = found.size;
+        int foundSize = found.size();
         if (foundSize > startFoundSize) {
             // argument type compatibility check
             for (int i = startFoundSize; i < foundSize; i++) {
@@ -1387,7 +1387,7 @@ public abstract class Scope {
             MethodBinding[] currentMethods = currentType.getMethods(selector, argumentTypes.length);
             int currentLength = currentMethods.length;
             if (currentLength > 0) {
-                if (isCompliant14 && (receiverTypeIsInterface || found.size > 0)) {
+                if (isCompliant14 && (receiverTypeIsInterface || found.size() > 0)) {
                     nextMethod:
                     for (int i = 0, l = currentLength; i < l; i++) { // currentLength can be modified inside the loop
                         MethodBinding currentMethod = currentMethods[i];
@@ -1405,7 +1405,7 @@ public abstract class Scope {
                         // when checking that p.C -> q.B -> p.A cannot see default access members from A through B.
                         // if ((currentMethod.modifiers & AccProtected) == 0) continue nextMethod;
                         // BUT we can also ignore any overridden method since we already know the better match (fixes 80028)
-                        for (int j = 0, max = found.size; j < max; j++) {
+                        for (int j = 0, max = found.size(); j < max; j++) {
                             MethodBinding matchingMethod = (MethodBinding)found.elementAt(j);
                             MethodBinding matchingOriginal = matchingMethod.original();
                             MethodBinding currentOriginal = matchingOriginal.findOriginalInheritedMethod(currentMethod);
@@ -1439,7 +1439,7 @@ public abstract class Scope {
         }
 
         // if found several candidates, then eliminate those not matching argument types
-        int foundSize = found.size;
+        int foundSize = found.size();
         MethodBinding[] candidates = null;
         int candidatesCount = 0;
         MethodBinding problemMethod = null;
@@ -1487,7 +1487,7 @@ public abstract class Scope {
                                               found, null);
             if (interfaceMethod != null)
                 return interfaceMethod;
-            if (found.size == 0)
+            if (found.size() == 0)
                 return null;
             if (problemMethod != null)
                 return problemMethod;
@@ -1502,7 +1502,7 @@ public abstract class Scope {
             int bestArgMatches = -1;
             MethodBinding bestGuess = (MethodBinding)found.elementAt(0); // if no good match so just use the first one found
             int argLength = argumentTypes.length;
-            foundSize = found.size;
+            foundSize = found.size();
             nextMethod:
             for (int i = 0; i < foundSize; i++) {
                 MethodBinding methodBinding = (MethodBinding)found.elementAt(i);
@@ -1685,7 +1685,7 @@ public abstract class Scope {
                         (ReferenceBinding)currentType.capture(this, invocationSite == null ? 0 : invocationSite.sourceEnd());
                 MethodBinding[] currentMethods = currentType.getMethods(selector);
                 if (currentMethods.length > 0) {
-                    int foundSize = found.size;
+                    int foundSize = found.size();
                     if (foundSize > 0) {
                         // its possible to walk the same superinterface from different classes in the hierarchy
                         next:
@@ -2340,7 +2340,7 @@ public abstract class Scope {
                     }
                 }
                 if (visible != null) {
-                    MethodBinding[] temp = new MethodBinding[visible.size];
+                    MethodBinding[] temp = new MethodBinding[visible.size()];
                     visible.copyInto(temp);
                     foundMethod = mostSpecificMethodBinding(temp, temp.length, argumentTypes, invocationSite, null);
                 }
@@ -4191,7 +4191,7 @@ public abstract class Scope {
                                     }
                                     if (changed) {
                                         mostSpecificExceptions =
-                                                temp.elementSize == 0 ? Binding.NO_EXCEPTIONS : new ReferenceBinding[temp.elementSize];
+                                                temp.size() == 0 ? Binding.NO_EXCEPTIONS : new ReferenceBinding[temp.size()];
                                         temp.asArray(mostSpecificExceptions);
                                     }
                                 }
@@ -4441,9 +4441,9 @@ public abstract class Scope {
                 TypeBinding substitutedType = (TypeBinding)map.get(originalVariable);
                 if (substitutedType instanceof TypeVariableBinding) {
                     TypeVariableBinding substitutedVariable = (TypeVariableBinding)substitutedType;
-                    TypeBinding substitutedSuperclass = Scope.substitute(substitution, originalVariable.superclass);
+                    TypeBinding substitutedSuperclass = substitute(substitution, originalVariable.superclass);
                     ReferenceBinding[] substitutedInterfaces =
-                            Scope.substitute(substitution, originalVariable.superInterfaces);
+                            substitute(substitution, originalVariable.superInterfaces);
                     if (originalVariable.firstBound != null) {
                         substitutedVariable.firstBound =
                                 originalVariable.firstBound == originalVariable.superclass ? substitutedSuperclass // could be array type or
@@ -4479,8 +4479,8 @@ public abstract class Scope {
             }
             staticFactory.returnType =
                     environment.createParameterizedType(allocationType, returnTypeParameters, allocationType.enclosingType());
-            staticFactory.parameters = Scope.substitute(substitution, method.parameters);
-            staticFactory.thrownExceptions = Scope.substitute(substitution, method.thrownExceptions);
+            staticFactory.parameters = substitute(substitution, method.parameters);
+            staticFactory.thrownExceptions = substitute(substitution, method.thrownExceptions);
             if (staticFactory.thrownExceptions == null) {
                 staticFactory.thrownExceptions = Binding.NO_EXCEPTIONS;
             }

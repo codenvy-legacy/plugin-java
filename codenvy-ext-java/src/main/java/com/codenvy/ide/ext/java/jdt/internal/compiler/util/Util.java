@@ -16,6 +16,7 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.ClassFileConstants;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.ast.TypeDeclaration;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 
+import java.util.Collection;
 import java.util.List;
 
 public class Util implements SuffixConstants {
@@ -273,6 +274,15 @@ public class Util implements SuffixConstants {
     // return getInputStreamAsCharArray(new ByteArrayInputStream(bytes), bytes.length, encoding);
     //
     // }
+
+    public static char[][] toArrays(Collection<String> strings) {
+        char[][] arr = new char[strings.size()][];
+        int i=0;
+        for(String str : strings) {
+            arr[i++] = str.toCharArray();
+        }
+        return arr;
+    }
 
     /** Returns the outer most enclosing type's visibility for the given TypeDeclaration and visibility based on compiler options. */
     public static int computeOuterMostVisibility(TypeDeclaration typeDeclaration, int visibility) {

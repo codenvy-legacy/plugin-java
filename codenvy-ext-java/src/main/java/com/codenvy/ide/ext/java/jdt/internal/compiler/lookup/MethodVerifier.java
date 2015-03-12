@@ -19,6 +19,7 @@ import com.codenvy.ide.ext.java.jdt.internal.compiler.impl.CompilerOptions;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.problem.ProblemReporter;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.HashtableOfObject;
 import com.codenvy.ide.ext.java.jdt.internal.compiler.util.SimpleSet;
+import com.codenvy.ide.ext.java.jdt.internal.compiler.util.Util;
 
 public class MethodVerifier {
     SourceTypeBinding type;
@@ -333,7 +334,7 @@ public class MethodVerifier {
             superType = superType.superclass();
         }
 
-        int nextPosition = inheritedInterfaces.elementSize;
+        int nextPosition = inheritedInterfaces.size();
         if (nextPosition == 0)
             return;
         ReferenceBinding[] interfacesToVisit = new ReferenceBinding[nextPosition];
@@ -473,14 +474,14 @@ public class MethodVerifier {
         // superclass so only check
         // overridden methods
         boolean isOrEnclosedByPrivateType = this.type.isOrEnclosedByPrivateType();
-        char[][] methodSelectors = this.inheritedMethods.keyTable;
+        char[][] methodSelectors = Util.toArrays(this.inheritedMethods.getKeys());
         nextSelector:
         for (int s = methodSelectors.length; --s >= 0; ) {
             if (methodSelectors[s] == null)
                 continue nextSelector;
 
             MethodBinding[] current = (MethodBinding[])this.currentMethods.get(methodSelectors[s]);
-            MethodBinding[] inherited = (MethodBinding[])this.inheritedMethods.valueTable[s];
+            MethodBinding[] inherited = (MethodBinding[])this.inheritedMethods.getArrayValues()[s];
 
             // https://bugs.eclipse.org/bugs/show_bug.cgi?id=296660, if current type is exposed,
             // inherited methods of super classes are too. current != null case handled below.
