@@ -19,7 +19,27 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
  * @author Artem Zatsarynnyy
  */
 public interface JavaNameEnvironmentServiceClient {
+    /**
+     * Update project dependencies.
+     *
+     * @param projectPath
+     *         path to the project to update its dependencies
+     * @param force
+     *         force update
+     * @param callback
+     *         the callback to use for the response
+     */
     void updateDependencies(String projectPath, boolean force, AsyncRequestCallback<BuildTaskDescriptor> callback);
 
+    /**
+     * Update project dependencies and wait for ending.
+     *
+     * @param projectPath
+     *         path to the project to update its dependencies
+     * @param buildTaskDescriptor
+     *         {@link BuildTaskDescriptor}
+     * @param callback
+     *         the callback to use for the response
+     */
     void updateDependenciesAndWait(String projectPath, BuildTaskDescriptor buildTaskDescriptor, AsyncRequestCallback<Void> callback);
 }

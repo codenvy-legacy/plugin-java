@@ -31,30 +31,31 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 public class JavaNameEnvironmentServiceClientImpl implements JavaNameEnvironmentServiceClient {
     private final AsyncRequestFactory asyncRequestFactory;
 
-    private final String UPD_DEPS;
-    private final String UPD_DEPS_AND_WAIT;
+    private final String UPDATE_DEPENDENCIES          = "/update-dependencies-launch-task";
+    private final String UPDATE_DEPENDENCIES_AND_WAIT = "/update-dependencies-wait-build-end";
+    private final String SERVICE_PATH;
 
     @Inject
     protected JavaNameEnvironmentServiceClientImpl(@Named("workspaceId") String workspaceId, AsyncRequestFactory asyncRequestFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
-
-        UPD_DEPS = JavaExtension.getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-launch-task";
-        UPD_DEPS_AND_WAIT = JavaExtension.getJavaCAPath() + "/java-name-environment/" + workspaceId + "/update-dependencies-wait-build-end";
+        SERVICE_PATH = JavaExtension.getJavaCAPath() + "/java-name-environment/" + workspaceId;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void updateDependencies(String projectPath, boolean force, AsyncRequestCallback<BuildTaskDescriptor> callback) {
-        final String requestUrl = UPD_DEPS + "?projectpath=" + projectPath + "&force=" + force;
+        final String requestUrl = SERVICE_PATH + UPDATE_DEPENDENCIES + "?projectpath=" + projectPath + "&force=" + force;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, APPLICATION_JSON)
                            .send(callback);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void updateDependenciesAndWait(String projectPath,
                                           BuildTaskDescriptor buildTaskDescriptor,
                                           AsyncRequestCallback<Void> callback) {
-        final String requestUrl = UPD_DEPS_AND_WAIT + "?projectpath=" + projectPath;
+        final String requestUrl = SERVICE_PATH + UPDATE_DEPENDENCIES_AND_WAIT + "?projectpath=" + projectPath;
         asyncRequestFactory.createPostRequest(requestUrl, buildTaskDescriptor, true)
                            .send(callback);
     }
