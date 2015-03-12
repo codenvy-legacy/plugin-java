@@ -16,6 +16,7 @@ import org.eclipse.che.ide.ext.java.jdt.internal.compiler.ClassFileConstants;
 import org.eclipse.che.ide.ext.java.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.che.ide.ext.java.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 
+import java.util.Collection;
 import java.util.List;
 
 public class Util implements SuffixConstants {
@@ -274,6 +275,16 @@ public class Util implements SuffixConstants {
     //
     // }
 
+
+    public static char[][] toArrays(Collection<String> strings) {
+        char[][] arr = new char[strings.size()][];
+        int i=0;
+        for(String str : strings) {
+            arr[i++] = str.toCharArray();
+        }
+        return arr;
+    }
+
     /** Returns the outer most enclosing type's visibility for the given TypeDeclaration and visibility based on compiler options. */
     public static int computeOuterMostVisibility(TypeDeclaration typeDeclaration, int visibility) {
         while (typeDeclaration != null) {
@@ -439,7 +450,7 @@ public class Util implements SuffixConstants {
     * getInputStreamAsCharArray(FileInputStream stream, int length, String encoding) throws IOException { FileChannel channel =
     * stream.getChannel(); int size = (int)channel.size(); if (length >= 0 && length < size) size = length; Charset charset =
     * encoding==null?systemCharset:Charset.forName(encoding); if (charset != null) { MappedByteBuffer bbuffer =
-    * channel.map(FileChannel.MapMode.READ_ONLY, 0, size); CharsetDecoder decoder = charset.newDecoder(); CharBuffer buffer =
+    * channel.valueMap(FileChannel.MapMode.READ_ONLY, 0, size); CharsetDecoder decoder = charset.newDecoder(); CharBuffer buffer =
     * decoder.decode(bbuffer); char[] contents = new char[buffer.limit()]; buffer.get(contents); return contents; } throw new
     * UnsupportedCharsetException(SYSTEM_FILE_ENCODING); }
     */
