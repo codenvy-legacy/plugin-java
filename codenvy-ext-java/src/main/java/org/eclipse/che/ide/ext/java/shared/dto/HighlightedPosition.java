@@ -23,11 +23,42 @@ import org.eclipse.che.dto.shared.DTO;
 public interface HighlightedPosition {
 
     /**
+     * A type that do the highlighting of static final fields.
+     */
+    String STATIC_FINAL_FIELD       = "staticFinalField";
+    /**
+     * A type that do the highlighting of static fields.
+     */
+    String STATIC_FIELD             = "staticField";
+    /**
+     * A type that do the highlighting of fields.
+     */
+    String FIELD                    = "field";
+    /**
+     * A type that do the highlighting of static method invocations.
+     */
+    String STATIC_METHOD_INVOCATION = "staticMethodInvocation";
+    /**
+     * A type that do the highlighting of deprecated members.
+     */
+    String DEPRECATED_MEMBER        = "deprecatedMember";
+    /**
+     * A type that do the highlighting of type parameters.
+     */
+    String TYPE_VARIABLE            = "typeParameter";
+    /**
+     * A type that do the highlighting of method declarations.
+     */
+    String METHOD_DECLARATION="methodDeclaration";
+
+    /**
      * Returns the length of this position.
      *
      * @return the length of this position
      */
     int getLength();
+
+    void setLength(int length);
 
     /**
      * Returns the offset of this position.
@@ -36,15 +67,19 @@ public interface HighlightedPosition {
      */
     int getOffset();
 
+    void setOffset(int offset);
+
     /**
      * Type of highlighting.
      * Used for selecting proper css style for this highlighting;
      * Example:<code>
-     * staticFinalField, staticField, field, enum
+     * staticFinalField, staticField, field
      * </code>
      *
      * @return
      */
     String getType();
+
+    void setType(String type);
 
 }

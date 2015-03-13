@@ -47,17 +47,17 @@ public class BecomeWorkingCopyOperation extends JavaModelOperation {
             delta.added(workingCopy);
             addDelta(delta);
         } else {
-            if (workingCopy.getResource().isAccessible()) {
+//            if (workingCopy.getResource().isAccessible()) {
                 // report a F_PRIMARY_WORKING_COPY change delta for a primary working copy
                 JavaElementDelta delta = new JavaElementDelta(getJavaModel());
                 delta.changed(workingCopy, IJavaElementDelta.F_PRIMARY_WORKING_COPY);
                 addDelta(delta);
-            } else {
-                // report an ADDED delta
-                JavaElementDelta delta = new JavaElementDelta(getJavaModel());
-                delta.added(workingCopy, IJavaElementDelta.F_PRIMARY_WORKING_COPY);
-                addDelta(delta);
-            }
+//            } else {
+//                // report an ADDED delta
+//                JavaElementDelta delta = new JavaElementDelta(getJavaModel());
+//                delta.added(workingCopy, IJavaElementDelta.F_PRIMARY_WORKING_COPY);
+//                addDelta(delta);
+//            }
         }
 
         this.resultElements = new IJavaElement[]{workingCopy};

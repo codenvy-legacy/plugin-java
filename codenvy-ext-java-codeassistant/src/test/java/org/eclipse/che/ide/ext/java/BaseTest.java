@@ -11,10 +11,10 @@
 package org.eclipse.che.ide.ext.java;
 
 import org.eclipse.che.jdt.internal.core.JavaProject;
-
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.junit.After;
 import org.junit.Before;
 
 import java.io.File;
@@ -30,12 +30,6 @@ public class BaseTest {
     protected static JavaProject         project;
 
 
-
-    @Before
-    public void setUp() throws Exception {
-        project = new JavaProject(new File(BaseTest.class.getResource("/projects").getFile()), "/test",BaseTest.class.getResource("/temp").getPath(),
-                                  "ws", options);
-    }
 
     public BaseTest() {
         options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_7);
@@ -57,6 +51,17 @@ public class BaseTest {
         String javaHome = System.getProperty("java.home") + "/lib/rt.jar";
         javaHome = javaHome.replaceAll("/","\\\\/");
         return "☂/" + javaHome;
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        project = new JavaProject(new File(BaseTest.class.getResource("/projects").getFile()), "/test",BaseTest.class.getResource("/temp").getPath(),
+                                  "ws", options);
+    }
+
+    @After
+    public void closeProject() throws Exception {
+        project.close();
     }
 
 

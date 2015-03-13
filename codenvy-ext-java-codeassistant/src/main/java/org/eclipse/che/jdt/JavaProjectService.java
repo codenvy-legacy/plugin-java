@@ -10,14 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.jdt;
 
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
-import org.eclipse.che.commons.lang.IoUtil;
-import org.eclipse.che.jdt.core.resources.ResourceChangedEvent;
-import org.eclipse.che.jdt.internal.core.JavaProject;
-import org.eclipse.che.vfs.impl.fs.LocalFSMountStrategy;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -26,6 +18,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.notification.EventSubscriber;
+import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
+import org.eclipse.che.commons.lang.IoUtil;
+import org.eclipse.che.jdt.core.resources.ResourceChangedEvent;
+import org.eclipse.che.jdt.internal.core.JavaProject;
+import org.eclipse.che.vfs.impl.fs.LocalFSMountStrategy;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;
@@ -71,13 +71,14 @@ public class JavaProjectService {
         options.put(CompilerOptions.OPTION_ReportUnusedLocal, CompilerOptions.WARNING);
         options.put(CompilerOptions.OPTION_TaskTags, CompilerOptions.WARNING);
         options.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, CompilerOptions.WARNING);
-        options.put(CompilerOptions.OPTION_SuppressWarnings, CompilerOptions.DISABLED);
+        options.put(CompilerOptions.OPTION_SuppressWarnings, CompilerOptions.ENABLED);
         options.put(JavaCore.COMPILER_TASK_TAGS, "TODO,FIXME,XXX");
         options.put(JavaCore.COMPILER_PB_UNUSED_PARAMETER_INCLUDE_DOC_COMMENT_REFERENCE, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
         options.put(JavaCore.COMPILER_ANNOTATION_NULL_ANALYSIS, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_Process_Annotations, JavaCore.ENABLED);
         options.put(CompilerOptions.OPTION_GenerateClassFiles, JavaCore.ENABLED);
+
         cache = CacheBuilder.newBuilder().expireAfterAccess(4, TimeUnit.HOURS).removalListener(
                 new RemovalListener<String, JavaProject>() {
                     @Override

@@ -841,8 +841,7 @@ public class CompilationUnit extends Openable
      * @see org.eclipse.jdt.internal.compiler.env.IDependent#getFileName()
      */
     public char[] getFileName() {
-        String toString = ((JavaProject)getJavaProject()).getWorkspacePath();
-        return getPath().toString().substring(toString.length()).toCharArray();
+        return getPath().toString().toCharArray();
     }
 
     /*
@@ -1170,7 +1169,7 @@ public class CompilationUnit extends Openable
 
     public boolean ignoreOptionalProblems() {
 //	return getPackageFragmentRoot().ignoreOptionalProblems();
-        return true;
+        return false;
     }
 
     /**

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.jdt.internal.core;
 
+import org.eclipse.che.jdt.internal.compiler.parser.SourceTypeConverter;
 import org.eclipse.che.jdt.internal.core.util.Util;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -34,7 +35,6 @@ import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.env.ISourceType;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
-import org.eclipse.jdt.internal.compiler.parser.SourceTypeConverter;
 import org.eclipse.jdt.internal.core.CancelableProblemFactory;
 import org.eclipse.jdt.internal.core.util.CommentRecorderParser;
 

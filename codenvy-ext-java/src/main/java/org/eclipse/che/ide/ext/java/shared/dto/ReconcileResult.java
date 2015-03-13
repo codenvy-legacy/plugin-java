@@ -20,10 +20,14 @@ import java.util.List;
  * @author Evgen Vidolob
  */
 @DTO
-public interface ReconcilerResult {
+public interface ReconcileResult {
 
     List<Problem> getProblems();
 
+    void setProblems(List<Problem> problems);
+
     List<HighlightedPosition> getHighlightedPositions();
+
+    void setHighlightedPositions(List<HighlightedPosition> positions);
 
 }
