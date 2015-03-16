@@ -166,11 +166,13 @@ import org.eclipse.che.ide.ext.java.jdt.internal.compiler.problem.ProblemSeverit
 import org.eclipse.che.ide.ext.java.jdt.internal.compiler.util.HashtableOfObject;
 import org.eclipse.che.ide.ext.java.jdt.internal.compiler.util.ObjectVector;
 import org.eclipse.che.ide.ext.java.jdt.internal.compiler.util.SuffixConstants;
+import org.eclipse.che.ide.ext.java.jdt.internal.compiler.util.Util;
 import org.eclipse.che.ide.ext.java.jdt.internal.core.BasicCompilationUnit;
 import org.eclipse.che.ide.ext.java.jdt.internal.core.INamingRequestor;
 import org.eclipse.che.ide.ext.java.jdt.internal.core.InternalNamingConventions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -1052,8 +1054,8 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                 }
             }
 
-            char[][] keys = onDemandFound.keyTable;
-            Object[] values = onDemandFound.valueTable;
+            char[][] keys = Util.toArrays(onDemandFound.getKeys());
+            Object[] values = onDemandFound.getArrayValues();
             int max = keys.length;
             for (int i = 0; i < max; i++) {
 
@@ -1111,6 +1113,9 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
             this.acceptedTypes = null; // reset
         }
     }
+
+
+
 
     /**
      * One result of the search consists of a new package.
@@ -1354,8 +1359,8 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                 }
             }
 
-            char[][] keys = onDemandFound.keyTable;
-            Object[] values = onDemandFound.valueTable;
+            char[][] keys = Util.toArrays(onDemandFound.getKeys());
+            Object[] values = onDemandFound.getArrayValues();
             int max = keys.length;
             for (int i = 0; i < max; i++) {
 //            if ((i % CHECK_CANCEL_FREQUENCY) == 0)
@@ -5251,7 +5256,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
         if (isForbidden(exceptionType))
             return;
 
-        for (int j = typesFound.size; --j >= 0; ) {
+        for (int j = typesFound.size(); --j >= 0; ) {
             ReferenceBinding otherType = (ReferenceBinding)typesFound.elementAt(j);
 
             if (exceptionType == otherType)
@@ -5563,7 +5568,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
 
             boolean prefixRequired = false;
 
-            for (int i = fieldsFound.size; --i >= 0; ) {
+            for (int i = fieldsFound.size(); --i >= 0; ) {
                 Object[] other = (Object[])fieldsFound.elementAt(i);
                 FieldBinding otherField = (FieldBinding)other[0];
                 ReferenceBinding otherReceiverType = (ReferenceBinding)other[1];
@@ -5589,7 +5594,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                 }
             }
 
-            for (int l = localsFound.size; --l >= 0; ) {
+            for (int l = localsFound.size(); --l >= 0; ) {
                 LocalVariableBinding local = (LocalVariableBinding)localsFound.elementAt(l);
 
                 if (CharOperation.equals(field.name, local.name, true)) {
@@ -6490,7 +6495,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
             if (this.options.checkVisibility && !field.canBeSeenBy(receiverType, invocationSite, scope))
                 continue next;
 
-            for (int i = fieldsFound.size; --i >= 0; ) {
+            for (int i = fieldsFound.size(); --i >= 0; ) {
                 Object[] other = (Object[])fieldsFound.elementAt(i);
                 FieldBinding otherField = (FieldBinding)other[0];
 
@@ -7253,7 +7258,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                     continue next;
             }
 
-            for (int i = methodsFound.size; --i >= 0; ) {
+            for (int i = methodsFound.size(); --i >= 0; ) {
                 MethodBinding otherMethod = (MethodBinding)methodsFound.elementAt(i);
                 if (method == otherMethod)
                     continue next;
@@ -7418,7 +7423,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
 
             boolean prefixRequired = false;
 
-            for (int i = methodsFound.size; --i >= 0; ) {
+            for (int i = methodsFound.size(); --i >= 0; ) {
                 Object[] other = (Object[])methodsFound.elementAt(i);
                 MethodBinding otherMethod = (MethodBinding)other[0];
                 ReferenceBinding otherReceiverType = (ReferenceBinding)other[1];
@@ -7729,7 +7734,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                 continue next;
             }
 
-            for (int i = methodsFoundFromFavorites.size; --i >= 0; ) {
+            for (int i = methodsFoundFromFavorites.size(); --i >= 0; ) {
                 Object[] other = (Object[])methodsFoundFromFavorites.elementAt(i);
                 MethodBinding otherMethod = (MethodBinding)other[0];
 
@@ -7744,7 +7749,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                 }
             }
 
-            for (int i = methodsFound.size; --i >= 0; ) {
+            for (int i = methodsFound.size(); --i >= 0; ) {
                 Object[] other = (Object[])methodsFound.elementAt(i);
                 MethodBinding otherMethod = (MethodBinding)other[0];
 
@@ -8006,7 +8011,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
             if (this.options.checkVisibility && !method.canBeSeenBy(receiverType, invocationSite, scope))
                 continue next;
 
-            for (int i = methodsFound.size; --i >= 0; ) {
+            for (int i = methodsFound.size(); --i >= 0; ) {
                 Object[] other = (Object[])methodsFound.elementAt(i);
                 MethodBinding otherMethod = (MethodBinding)other[0];
                 ReferenceBinding otherReceiverType = (ReferenceBinding)other[1];
@@ -8315,7 +8320,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                 continue next;
             }
 
-            for (int i = typesFound.size; --i >= 0; ) {
+            for (int i = typesFound.size(); --i >= 0; ) {
                 ReferenceBinding otherType = (ReferenceBinding)typesFound.elementAt(i);
 
                 if (memberType == otherType)
@@ -8677,7 +8682,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                                                                                                      localType.sourceName)))
                                     continue next;
 
-                                for (int j = typesFound.size; --j >= 0; ) {
+                                for (int j = typesFound.size(); --j >= 0; ) {
                                     ReferenceBinding otherType = (ReferenceBinding)typesFound.elementAt(j);
 
                                     if (localType == otherType)
@@ -8996,7 +9001,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                     continue next;
                 }
 
-                for (int j = typesFound.size; --j >= 0; ) {
+                for (int j = typesFound.size(); --j >= 0; ) {
                     ReferenceBinding otherType = (ReferenceBinding)typesFound.elementAt(j);
 
                     if (sourceType == otherType)
@@ -10041,7 +10046,7 @@ public final class CompletionEngine extends Engine implements ISearchRequestor, 
                                 ptr--;
                             }
 
-                            for (int f = 0; f < localsFound.size; f++) {
+                            for (int f = 0; f < localsFound.size(); f++) {
                                 LocalVariableBinding otherLocal = (LocalVariableBinding)localsFound.elementAt(f);
                                 if (CharOperation.equals(otherLocal.name, local.name, true))
                                     continue next;

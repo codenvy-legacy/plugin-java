@@ -17,7 +17,7 @@ import org.eclipse.che.ide.api.action.ProjectAction;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.build.BuildContext;
-import org.eclipse.che.ide.ext.java.client.DependenciesUpdater;
+import org.eclipse.che.ide.ext.java.client.dependenciesupdater.DependenciesUpdater;
 import org.eclipse.che.ide.ext.java.client.JavaResources;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

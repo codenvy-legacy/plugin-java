@@ -1586,7 +1586,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
         // walk all the unique collections & replace the unresolvedType with the resolvedType
         // must prevent 2 entries so == still works (1 containing the unresolvedType and the other containing the resolvedType)
         if (this.uniqueParameterizedTypeBindings.get(unresolvedType) != null) { // update the key
-            Object[] keys = this.uniqueParameterizedTypeBindings.keyTable;
+            Object[] keys = this.uniqueParameterizedTypeBindings.keys();
             for (int i = 0, l = keys.length; i < l; i++) {
                 if (keys[i] == unresolvedType) {
                     keys[i] = resolvedType; // hashCode is based on compoundName so this works - cannot be raw since type of
@@ -1596,7 +1596,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
             }
         }
         if (this.uniqueRawTypeBindings.get(unresolvedType) != null) { // update the key
-            Object[] keys = this.uniqueRawTypeBindings.keyTable;
+            Object[] keys = this.uniqueRawTypeBindings.keys();
             for (int i = 0, l = keys.length; i < l; i++) {
                 if (keys[i] == unresolvedType) {
                     keys[i] = resolvedType; // hashCode is based on compoundName so this works
@@ -1605,7 +1605,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
             }
         }
         if (this.uniqueWildcardBindings.get(unresolvedType) != null) { // update the key
-            Object[] keys = this.uniqueWildcardBindings.keyTable;
+            Object[] keys = this.uniqueWildcardBindings.keys();
             for (int i = 0, l = keys.length; i < l; i++) {
                 if (keys[i] == unresolvedType) {
                     keys[i] = resolvedType; // hashCode is based on compoundName so this works
