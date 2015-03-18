@@ -10,27 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java.jdi.client;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.Constants;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.extension.Extension;
-import org.eclipse.che.ide.ext.java.jdi.client.debug.DebuggerPresenter;
-import org.eclipse.che.ide.ext.java.jdi.client.fqn.FqnResolverFactory;
-
-import org.eclipse.che.ide.Constants;
 import org.eclipse.che.ide.debug.DebuggerManager;
 import org.eclipse.che.ide.ext.java.jdi.client.actions.DebugAction;
+import org.eclipse.che.ide.ext.java.jdi.client.debug.DebuggerPresenter;
+import org.eclipse.che.ide.ext.java.jdi.client.fqn.FqnResolverFactory;
 import org.eclipse.che.ide.ext.java.jdi.client.fqn.JavaFqnResolver;
 import org.eclipse.che.ide.extension.maven.shared.MavenAttributes;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import static org.eclipse.che.ide.MimeType.TEXT_X_JAVA;
 import static org.eclipse.che.ide.MimeType.TEXT_X_JAVA_SOURCE;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_BUILD_TOOLBAR;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_MAIN_TOOLBAR;
+import static org.eclipse.che.ide.api.action.IdeActions.GROUP_RUN;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_RUN_CONTEXT_MENU;
+import static org.eclipse.che.ide.ext.runner.client.constants.ActionId.RUN_WITH;
 
 /**
  * Extension allows debug Java web applications.
@@ -58,8 +60,13 @@ public class JavaRuntimeExtension {
         // register actions
         actionManager.registerAction(localizationConstant.debugAppActionId(), debugAction);
 
+        // add actions in main toolbar
         DefaultActionGroup mainToolbarGroup = (DefaultActionGroup)actionManager.getAction(GROUP_MAIN_TOOLBAR);
         mainToolbarGroup.add(debugAction, new Constraints(Anchor.AFTER, GROUP_BUILD_TOOLBAR));
+
+        // add actions in main menu
+        DefaultActionGroup runMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN);
+        runMenuActionGroup.add(debugAction, new Constraints(Anchor.BEFORE, RUN_WITH.getId()));
 
         // add actions in context menu
         DefaultActionGroup runContextGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN_CONTEXT_MENU);
