@@ -95,7 +95,7 @@ public class RestNameEnvironment {
     private HttpServletRequest request;
 
     @Inject
-    @Named("project.temp")
+    @Named("che.java.codeassistant.index.dir")
     private String temp;
 
     @PathParam("ws-id")
