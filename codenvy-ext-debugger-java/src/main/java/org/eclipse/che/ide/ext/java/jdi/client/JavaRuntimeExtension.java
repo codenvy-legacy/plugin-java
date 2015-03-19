@@ -16,6 +16,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.ide.Constants;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
+import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.extension.Extension;
@@ -30,8 +31,10 @@ import static org.eclipse.che.ide.MimeType.TEXT_X_JAVA;
 import static org.eclipse.che.ide.MimeType.TEXT_X_JAVA_SOURCE;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_BUILD_TOOLBAR;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_MAIN_TOOLBAR;
+import static org.eclipse.che.ide.api.action.IdeActions.GROUP_RIGHT_TOOLBAR;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_RUN;
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_RUN_CONTEXT_MENU;
+import static org.eclipse.che.ide.api.action.IdeActions.GROUP_RUN_TOOLBAR;
 import static org.eclipse.che.ide.ext.runner.client.constants.ActionId.RUN_WITH;
 
 /**
@@ -61,8 +64,13 @@ public class JavaRuntimeExtension {
         actionManager.registerAction(localizationConstant.debugAppActionId(), debugAction);
 
         // add actions in main toolbar
-        DefaultActionGroup mainToolbarGroup = (DefaultActionGroup)actionManager.getAction(GROUP_MAIN_TOOLBAR);
-        mainToolbarGroup.add(debugAction, new Constraints(Anchor.AFTER, GROUP_BUILD_TOOLBAR));
+        DefaultActionGroup runToolbarGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN_TOOLBAR);
+        if (runToolbarGroup == null) {
+            DefaultActionGroup rightToolbarGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RIGHT_TOOLBAR);
+            runToolbarGroup = new DefaultActionGroup(IdeActions.GROUP_RUN_TOOLBAR, false, actionManager);
+            rightToolbarGroup.add(runToolbarGroup);
+        }
+        runToolbarGroup.add(debugAction, new Constraints(Anchor.BEFORE, "chooseRunner"));
 
         // add actions in main menu
         DefaultActionGroup runMenuActionGroup = (DefaultActionGroup)actionManager.getAction(GROUP_RUN);
