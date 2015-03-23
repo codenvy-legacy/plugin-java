@@ -314,7 +314,7 @@
     {
         "displayName": "Android",
         "category": "Samples - Hello World",
-        "description": "A simple Android application natively laucnhed in an emulator.",
+        "description": "A simple Android application natively launched in an emulator.",
         "source": {
             "type": "git",
             "location": "https://github.com/codenvy-templates/mobile-android-java-basic.git",

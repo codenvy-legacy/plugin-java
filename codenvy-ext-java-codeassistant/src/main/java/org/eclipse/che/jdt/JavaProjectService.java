@@ -59,7 +59,7 @@ public class JavaProjectService {
     @Inject
     public JavaProjectService(EventService eventService,
                               LocalFSMountStrategy fsMountStrategy,
-                              @Named("project.temp") String temp) {
+                              @Named("che.java.codeassistant.index.dir") String temp) {
         eventService.subscribe(new VirtualFileEventSubscriber());
         this.fsMountStrategy = fsMountStrategy;
         tempDir = temp;
