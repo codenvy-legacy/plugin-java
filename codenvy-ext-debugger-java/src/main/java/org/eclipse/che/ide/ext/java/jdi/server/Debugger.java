@@ -10,20 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.java.jdi.server;
 
-import org.eclipse.che.dto.server.DtoFactory;
-import org.eclipse.che.ide.ext.java.jdi.server.expression.Evaluator;
-import org.eclipse.che.ide.ext.java.jdi.server.expression.ExpressionParser;
-import org.eclipse.che.ide.ext.java.jdi.shared.BreakPoint;
-import org.eclipse.che.ide.ext.java.jdi.shared.BreakPointEvent;
-import org.eclipse.che.ide.ext.java.jdi.shared.DebuggerEvent;
-import org.eclipse.che.ide.ext.java.jdi.shared.DebuggerEventList;
-import org.eclipse.che.ide.ext.java.jdi.shared.Field;
-import org.eclipse.che.ide.ext.java.jdi.shared.Location;
-import org.eclipse.che.ide.ext.java.jdi.shared.StackFrameDump;
-import org.eclipse.che.ide.ext.java.jdi.shared.StepEvent;
-import org.eclipse.che.ide.ext.java.jdi.shared.Value;
-import org.eclipse.che.ide.ext.java.jdi.shared.Variable;
-import org.eclipse.che.ide.ext.java.jdi.shared.VariablePath;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ClassNotPreparedException;
@@ -43,6 +29,20 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
 
+import org.eclipse.che.dto.server.DtoFactory;
+import org.eclipse.che.ide.ext.java.jdi.server.expression.Evaluator;
+import org.eclipse.che.ide.ext.java.jdi.server.expression.ExpressionParser;
+import org.eclipse.che.ide.ext.java.jdi.shared.BreakPoint;
+import org.eclipse.che.ide.ext.java.jdi.shared.BreakPointEvent;
+import org.eclipse.che.ide.ext.java.jdi.shared.DebuggerEvent;
+import org.eclipse.che.ide.ext.java.jdi.shared.DebuggerEventList;
+import org.eclipse.che.ide.ext.java.jdi.shared.Field;
+import org.eclipse.che.ide.ext.java.jdi.shared.Location;
+import org.eclipse.che.ide.ext.java.jdi.shared.StackFrameDump;
+import org.eclipse.che.ide.ext.java.jdi.shared.StepEvent;
+import org.eclipse.che.ide.ext.java.jdi.shared.Value;
+import org.eclipse.che.ide.ext.java.jdi.shared.Variable;
+import org.eclipse.che.ide.ext.java.jdi.shared.VariablePath;
 import org.everrest.websockets.WSConnectionContext;
 import org.everrest.websockets.message.ChannelBroadcastMessage;
 import org.slf4j.Logger;
@@ -68,6 +68,7 @@ import static org.eclipse.che.commons.json.JsonHelper.toJson;
  *
  * @author andrew00x
  * @author Artem Zatsarynnyy
+ * @author Valeriy Svydenko
  */
 public class Debugger implements EventsHandler {
     private static final Logger                          LOG                  = LoggerFactory.getLogger(Debugger.class);
@@ -147,6 +148,7 @@ public class Debugger implements EventsHandler {
         int attempt = 0;
         for (; ; ) {
             try {
+                Thread.sleep(2000);
                 vm = connector.attach(arguments);
                 break;
             } catch (IOException e) {
@@ -160,6 +162,7 @@ public class Debugger implements EventsHandler {
                 }
             } catch (IllegalConnectorArgumentsException e) {
                 throw new VMConnectException(e.getMessage(), e);
+            } catch (InterruptedException ignored) {
             }
         }
         eventsCollector = new EventsCollector(vm.eventQueue(), this);
@@ -592,6 +595,7 @@ public class Debugger implements EventsHandler {
                 } else if (event instanceof com.sun.jdi.event.StepEvent) {
                     resume = processStepEvent((com.sun.jdi.event.StepEvent)event);
                 } else if (event instanceof com.sun.jdi.event.VMDisconnectEvent) {
+                    disconnect();
                     resume = processDisconnectEvent((com.sun.jdi.event.VMDisconnectEvent)event);
                 } else if (event instanceof com.sun.jdi.event.ClassPrepareEvent) {
                     resume = processClassPrepareEvent((com.sun.jdi.event.ClassPrepareEvent)event);
