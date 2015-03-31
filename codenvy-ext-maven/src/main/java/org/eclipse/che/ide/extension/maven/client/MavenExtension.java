@@ -74,7 +74,9 @@ public class MavenExtension {
         archetypes =
                 Collections.createArray(new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "RELEASE", null),
                                         new MavenArchetype("org.apache.maven.archetypes", "maven-archetype-webapp", "RELEASE", null),
-                                        new MavenArchetype("org.apache.openejb.maven", "tomee-webapp-archetype", "1.7.1", null));
+                                        new MavenArchetype("org.apache.openejb.maven", "tomee-webapp-archetype", "1.7.1", null),
+                                        new MavenArchetype("org.apache.cxf.archetype", "cxf-jaxws-javafirst", "RELEASE", null),
+                                        new MavenArchetype("org.apache.cxf.archetype", "cxf-jaxrs-service", "RELEASE", null));
     }
 
     public static Array<MavenArchetype> getAvailableArchetypes() {
