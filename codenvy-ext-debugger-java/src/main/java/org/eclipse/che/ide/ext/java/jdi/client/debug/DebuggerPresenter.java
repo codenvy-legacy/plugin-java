@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
@@ -80,6 +81,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.eclipse.che.api.runner.ApplicationStatus.CANCELLED;
 import static org.eclipse.che.api.runner.ApplicationStatus.RUNNING;
@@ -97,6 +99,7 @@ import static org.eclipse.che.ide.ext.java.jdi.shared.DebuggerEvent.STEP;
  * @author Vitaly Parfonov
  * @author Artem Zatsarynnyy
  * @author Valeriy Svydenko
+ * @author Dmitry Shnurenko
  */
 @Singleton
 public class DebuggerPresenter extends BasePresenter implements DebuggerView.ActionDelegate, Debugger {
@@ -119,21 +122,21 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     private       WorkspaceAgent                         workspaceAgent;
     private       FqnResolverFactory                     resolverFactory;
     private       EditorAgent                            editorAgent;
-    private       Variable                               selectedVariable;
+    private       DebuggerVariable                       selectedVariable;
     private       EvaluateExpressionPresenter            evaluateExpressionPresenter;
     private       ChangeValuePresenter                   changeValuePresenter;
     private       NotificationManager                    notificationManager;
     /** Handler for processing events which is received from debugger over WebSocket connection. */
     private       SubscriptionHandler<DebuggerEventList> debuggerEventsHandler;
     private       SubscriptionHandler<Void>              debuggerDisconnectedHandler;
-    private       List<Variable>                         variables;
+    private       List<DebuggerVariable>                 variables;
     private       Location                               executionPoint;
     private       Runner                                 runner;
 
     private String host;
     private int    port;
+    private String srcFolder;
 
-    /** Create presenter. */
     @Inject
     public DebuggerPresenter(DebuggerView view,
                              final DebuggerServiceClient service,
@@ -227,7 +230,23 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
-                // do nothing
+                CurrentProject currentProject = appContext.getCurrentProject();
+
+                if (currentProject == null) {
+                    return;
+                }
+
+                ProjectDescriptor descriptor = currentProject.getProjectDescription();
+
+                Map<String, List<String>> attributes = descriptor.getAttributes();
+
+                String defaultBuilder = descriptor.getBuilders().getDefault();
+
+                String key = defaultBuilder + ".source.folder";
+
+                List<String> sources = attributes.get(key);
+
+                srcFolder = sources == null ? "src/main/java" : sources.get(0);
             }
 
             @Override
@@ -249,18 +268,23 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
             @Override
             public void onRunnerStatusChanged(@Nonnull Runner changedRunner) {
                 CurrentProject currentProject = appContext.getCurrentProject();
-                ApplicationProcessDescriptor descriptor = changedRunner.getDescriptor();
-                if (descriptor == null || runner == null || runner.getProcessId() != changedRunner.getProcessId() ||
+                ApplicationProcessDescriptor changedDescriptor = changedRunner.getDescriptor();
+                ApplicationProcessDescriptor existingDescriptor = null;
+                if (runner != null) {
+                    existingDescriptor = runner.getDescriptor();
+                }
+                if (changedDescriptor == null || runner == null || existingDescriptor == null ||
+                    runner.getProcessId() != changedRunner.getProcessId() ||
                     currentProject == null) {
                     return;
                 }
 
                 runner = changedRunner;
-                if (RUNNING.equals(descriptor.getStatus())) {
-                    attachDebugger(descriptor.getDebugHost(), descriptor.getDebugPort());
+                if (RUNNING.equals(changedDescriptor.getStatus())) {
+                    attachDebugger(changedDescriptor.getDebugHost(), changedDescriptor.getDebugPort());
                 }
 
-                if (STOPPED.equals(descriptor.getStatus()) || CANCELLED.equals(descriptor.getStatus())) {
+                if (STOPPED.equals(changedDescriptor.getStatus()) || CANCELLED.equals(changedDescriptor.getStatus())) {
                     onDebuggerDisconnected();
                     closeView();
                 }
@@ -270,6 +294,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
+    @Nonnull
     public String getTitle() {
         return TITLE;
     }
@@ -353,7 +378,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     }
 
     /**
-     * Create file path from {@link Location}.
+     * Create file path from {@link org.eclipse.che.ide.ext.java.jdi.shared.Location}.
      *
      * @param location
      *         location of class
@@ -365,8 +390,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
             return "";
         }
 
-        final String sourcePath = "src/main/java";
-        return activeFile.getProject().getPath() + "/" + sourcePath + "/" + location.getClassName().replace(".", "/") + ".java";
+        return activeFile.getProject().getPath() + "/" + srcFolder + "/" + location.getClassName().replace(".", "/") + ".java";
     }
 
     private void openFile(@Nonnull Location location, @Nullable VirtualFile activeFile, final AsyncCallback<FileNode> callback) {
@@ -422,8 +446,10 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                                           variables.addAll(result.getFields());
                                           variables.addAll(result.getLocalVariables());
 
-                                          DebuggerPresenter.this.variables = variables;
-                                          view.setVariables(variables);
+                                          List<DebuggerVariable> debuggerVariables = getDebuggerVariables(variables);
+
+                                          DebuggerPresenter.this.variables = debuggerVariables;
+                                          view.setVariables(debuggerVariables);
                                           if (!variables.isEmpty()) {
                                               view.setExecutionPoint(variables.get(0).isExistInformation(), executionPoint);
                                           }
@@ -436,6 +462,17 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                                       }
                                   }
                                  );
+    }
+
+    @Nonnull
+    private List<DebuggerVariable> getDebuggerVariables(@Nonnull List<Variable> variables) {
+        List<DebuggerVariable> debuggerVariables = new ArrayList<>();
+
+        for (Variable variable : variables) {
+            debuggerVariables.add(new DebuggerVariable(variable));
+        }
+
+        return debuggerVariables;
     }
 
     /** Change enable state of all buttons (except Disconnect button) on Debugger panel. */
@@ -474,7 +511,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
                 breakpointManager.removeAllBreakpoints();
                 view.setBreakpoints(new ArrayList<Breakpoint>());
                 view.setExecutionPoint(true, null);
-                view.setVariables(new ArrayList<Variable>());
+                view.setVariables(new ArrayList<DebuggerVariable>());
             }
 
             @Override
@@ -561,7 +598,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
             return;
         }
 
-        changeValuePresenter.showDialog(debuggerInfo, selectedVariable, new AsyncCallback<String>() {
+        changeValuePresenter.showDialog(debuggerInfo, selectedVariable.getVariable(), new AsyncCallback<String>() {
             @Override
             public void onSuccess(String s) {
                 getStackFrameDump();
@@ -583,14 +620,17 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
     /** {@inheritDoc} */
     @Override
     public void onExpandVariablesTree() {
-        List<Variable> rootVariables = selectedVariable.getVariables();
+        List<DebuggerVariable> rootVariables = selectedVariable.getVariables();
         if (rootVariables.size() == 0) {
-            service.getValue(debuggerInfo.getId(), selectedVariable,
+            service.getValue(debuggerInfo.getId(), selectedVariable.getVariable(),
                              new AsyncRequestCallback<Value>(dtoUnmarshallerFactory.newUnmarshaller(Value.class)) {
                                  @Override
                                  protected void onSuccess(Value result) {
                                      List<Variable> variables = result.getVariables();
-                                     view.setVariablesIntoSelectedVariable(variables);
+
+                                     List<DebuggerVariable> debuggerVariables = getDebuggerVariables(variables);
+
+                                     view.setVariablesIntoSelectedVariable(debuggerVariables);
                                      view.updateSelectedVariable();
                                  }
 
@@ -606,7 +646,7 @@ public class DebuggerPresenter extends BasePresenter implements DebuggerView.Act
 
     /** {@inheritDoc} */
     @Override
-    public void onSelectedVariableElement(@Nonnull Variable variable) {
+    public void onSelectedVariableElement(@Nonnull DebuggerVariable variable) {
         this.selectedVariable = variable;
         updateChangeValueButtonEnableState();
     }
