@@ -16,6 +16,21 @@ import elemental.events.MouseEvent;
 import elemental.html.TableCellElement;
 import elemental.html.TableElement;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PushButton;
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.ToggleButton;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.base.BaseView;
@@ -30,30 +45,17 @@ import org.eclipse.che.ide.ui.tree.Tree;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.eclipse.che.ide.util.dom.Elements;
 import org.eclipse.che.ide.util.input.SignalEvent;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.uibinder.client.UiBinder;
-import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PushButton;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.ToggleButton;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * The implementation of {@link DebuggerView}.
+ * The class business logic which allow us to change visual representation of debugger panel.
  *
  * @author Andrey Plotnikov
+ * @@author Dmitry Shnurenko
  */
 @Singleton
 public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> implements DebuggerView {
@@ -92,21 +94,13 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
     @UiField(provided = true)
     SplitLayoutPanel splitPanel = new SplitLayoutPanel(3);
 
-    private final DtoFactory                dtoFactory;
-    private       SimpleList<Breakpoint>    breakpoints;
-    private       Tree<Variable>            variables;
-    private       TreeNodeElement<Variable> selectedVariable;
-    private       JavaRuntimeResources      res;
+    private final DtoFactory             dtoFactory;
+    private final Tree<DebuggerVariable> variables;
+    private final SimpleList<Breakpoint> breakpoints;
+    private final JavaRuntimeResources   res;
 
-    /**
-     * Create view.
-     *
-     * @param partStackUIResources
-     * @param resources
-     * @param locale
-     * @param coreRes
-     * @param rendererResources
-     */
+    private TreeNodeElement<DebuggerVariable> selectedVariable;
+
     @Inject
     protected DebuggerViewImpl(PartStackUIResources partStackUIResources,
                                JavaRuntimeResources resources,
@@ -176,40 +170,43 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
                     }
                 };
 
-        breakpoints = SimpleList.create((SimpleList.View)breakPointsElement, coreRes.defaultSimpleListCss(), breakpointListItemRenderer,
+        breakpoints = SimpleList.create((SimpleList.View)breakPointsElement,
+                                        coreRes.defaultSimpleListCss(),
+                                        breakpointListItemRenderer,
                                         breakpointListEventDelegate);
         this.breakpointsPanel.add(breakpoints);
         this.variables = Tree.create(rendererResources, new VariableNodeDataAdapter(), new VariableTreeNodeRenderer(rendererResources));
-        this.variables.setTreeEventHandler(new Tree.Listener<Variable>() {
+        this.variables.setTreeEventHandler(new Tree.Listener<DebuggerVariable>() {
             @Override
-            public void onNodeAction(TreeNodeElement<Variable> node) {
+            public void onNodeAction(@Nonnull TreeNodeElement<DebuggerVariable> node) {
             }
 
             @Override
-            public void onNodeClosed(TreeNodeElement<Variable> node) {
+            public void onNodeClosed(@Nonnull TreeNodeElement<DebuggerVariable> node) {
+                selectedVariable = null;
             }
 
             @Override
-            public void onNodeContextMenu(int mouseX, int mouseY, TreeNodeElement<Variable> node) {
+            public void onNodeContextMenu(int mouseX, int mouseY, @Nonnull TreeNodeElement<DebuggerVariable> node) {
             }
 
             @Override
-            public void onNodeDragStart(TreeNodeElement<Variable> node, MouseEvent event) {
+            public void onNodeDragStart(@Nonnull TreeNodeElement<DebuggerVariable> node, @Nonnull MouseEvent event) {
             }
 
             @Override
-            public void onNodeDragDrop(TreeNodeElement<Variable> node, MouseEvent event) {
+            public void onNodeDragDrop(@Nonnull TreeNodeElement<DebuggerVariable> node, @Nonnull MouseEvent event) {
             }
 
             @Override
-            public void onNodeExpanded(final TreeNodeElement<Variable> node) {
+            public void onNodeExpanded(@Nonnull final TreeNodeElement<DebuggerVariable> node) {
                 selectedVariable = node;
                 delegate.onSelectedVariableElement(selectedVariable.getData());
                 delegate.onExpandVariablesTree();
             }
 
             @Override
-            public void onNodeSelected(TreeNodeElement<Variable> node, SignalEvent event) {
+            public void onNodeSelected(@Nonnull TreeNodeElement<DebuggerVariable> node, @Nonnull SignalEvent event) {
                 selectedVariable = node;
                 delegate.onSelectedVariableElement(selectedVariable.getData());
             }
@@ -219,11 +216,11 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
             }
 
             @Override
-            public void onRootDragDrop(MouseEvent event) {
+            public void onRootDragDrop(@Nonnull MouseEvent event) {
             }
-            
+
             @Override
-            public void onKeyboard(KeyboardEvent event) {
+            public void onKeyboard(@Nonnull KeyboardEvent event) {
             }
         });
 
@@ -233,10 +230,10 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setExecutionPoint(boolean existInformation, Location location) {
+    public void setExecutionPoint(boolean existInformation, @Nullable Location location) {
         StringBuilder labelText = new StringBuilder();
         if (location != null) {
-            labelText.append("{" + location.getClassName() + ":" + location.getLineNumber() + "} ");
+            labelText.append("{").append(location.getClassName()).append(":").append(location.getLineNumber()).append("} ");
         }
         if (existInformation) {
             executionPoint.getElement().setClassName(coreRes.coreCss().defaultFont());
@@ -249,10 +246,10 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setVariables(@Nonnull List<Variable> variables) {
-        Variable root = this.variables.getModel().getRoot();
+    public void setVariables(@Nonnull List<DebuggerVariable> variables) {
+        DebuggerVariable root = this.variables.getModel().getRoot();
         if (root == null) {
-            root = dtoFactory.createDto(Variable.class);
+            root = new DebuggerVariable(dtoFactory.createDto(Variable.class));
             this.variables.getModel().setRoot(root);
         }
         root.setVariables(variables);
@@ -327,7 +324,7 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public boolean setButtonState(ToggleButton button, boolean state) {
+    public boolean setButtonState(@Nonnull ToggleButton button, boolean state) {
         if (state) {
             if (!button.isDown()) return true;
             button.setDown(false);
@@ -359,48 +356,48 @@ public class DebuggerViewImpl extends BaseView<DebuggerView.ActionDelegate> impl
 
     /** {@inheritDoc} */
     @Override
-    public void setVariablesIntoSelectedVariable(@Nonnull List<Variable> variables) {
-        Variable rootVariable = selectedVariable.getData();
+    public void setVariablesIntoSelectedVariable(@Nonnull List<DebuggerVariable> variables) {
+        DebuggerVariable rootVariable = selectedVariable.getData();
         rootVariable.setVariables(variables);
     }
 
     @UiHandler("btnResume")
-    public void onResumeButtonClicked(ClickEvent event) {
+    public void onResumeButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onResumeButtonClicked();
     }
 
     @UiHandler("btnStepInto")
-    public void onStepIntoButtonClicked(ClickEvent event) {
+    public void onStepIntoButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onStepIntoButtonClicked();
     }
 
     @UiHandler("btnStepOver")
-    public void onStepOverButtonClicked(ClickEvent event) {
+    public void onStepOverButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onStepOverButtonClicked();
     }
 
     @UiHandler("btnStepReturn")
-    public void onStepReturnButtonClicked(ClickEvent event) {
+    public void onStepReturnButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onStepReturnButtonClicked();
     }
 
     @UiHandler("btnDisconnect")
-    public void onDisconnectButtonClicked(ClickEvent event) {
+    public void onDisconnectButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onDisconnectButtonClicked();
     }
 
     @UiHandler("btnRemoveAllBreakpoints")
-    public void onRemoveAllBreakpointsButtonClicked(ClickEvent event) {
+    public void onRemoveAllBreakpointsButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onRemoveAllBreakpointsButtonClicked();
     }
 
     @UiHandler("btnChangeValue")
-    public void onChangeValueButtonClicked(ClickEvent event) {
+    public void onChangeValueButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onChangeValueButtonClicked();
     }
 
     @UiHandler("btnEvaluateExpression")
-    public void onEvaluateExpressionButtonClicked(ClickEvent event) {
+    public void onEvaluateExpressionButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
         delegate.onEvaluateExpressionButtonClicked();
     }
 
